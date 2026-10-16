@@ -56,7 +56,7 @@ NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系�
 
 - 分支：`feat/<任務ID>-<簡短描述>`；修正用 `fix/<任務ID>-<簡短描述>`。
 - Commit 訊息：`feat(<任務ID>): <摘要>`，一個任務的變更集中在該任務分支。
-- 不 push、不開 PR、不 force push，除非使用者要求。
+- `/finish` 結案時：commit 後 push 任務分支，再以 `--no-ff` 合併進 `main` 並 push `main`；其他時候不 push。不開 PR、不 force push，除非使用者要求。
 - commit 前確認 `git status` 中沒有 `.env`、金鑰檔或 `data/raw/`、`data/labeled/` 的內容。
 
 ## AI 與產品 Skills 規範
