@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python .claude/skills/ncu-resilience-tracker/scripts/tracker.py:*)",
+      "Bash(python3 .claude/skills/ncu-resilience-tracker/scripts/tracker.py:*)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(uv run pytest:*)",
+      "Bash(uv run ruff:*)",
+      "Bash(uv run mypy:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run test)",
+      "Bash(npm run build)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./data/labeled/**)"
+    ]
+  }
+}

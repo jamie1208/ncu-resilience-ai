@@ -1,0 +1,189 @@
+project: NCU Resilience AI
+plan: .claude/skills/ncu-resilience-tracker/references/phases.yaml
+created_at: '2026-10-17T00:04:27+08:00'
+tasks:
+  P0-T01:
+    status: done
+    updated_at: '2026-10-17T00:24:31+08:00'
+    evidence: docs/progress/records/P0-T01-20261017.md
+  P0-T02:
+    status: pending
+  P0-T03:
+    status: pending
+  P0-T04:
+    status: pending
+  P0-T05:
+    status: pending
+  P0-T06:
+    status: pending
+  P0-T07:
+    status: pending
+  P0-T08:
+    status: pending
+  P0-T09:
+    status: pending
+  P0-T10:
+    status: pending
+  P1-T01:
+    status: pending
+  P1-T02:
+    status: pending
+  P1-T03:
+    status: pending
+  P1-T04:
+    status: pending
+  P1-T05:
+    status: pending
+  P1-T06:
+    status: pending
+  P1-T07:
+    status: pending
+  P1-T08:
+    status: pending
+  P1-T09:
+    status: pending
+  P1-T10:
+    status: pending
+  P2-T01:
+    status: pending
+  P2-T02:
+    status: pending
+  P2-T03:
+    status: pending
+  P2-T04:
+    status: pending
+  P2-T05:
+    status: pending
+  P2-T06:
+    status: pending
+  P2-T07:
+    status: pending
+  P2-T08:
+    status: pending
+  P2-T09:
+    status: pending
+  P2-T10:
+    status: pending
+  P2-T11:
+    status: pending
+  P2-T12:
+    status: pending
+  P2-T13:
+    status: pending
+  P2-T14:
+    status: pending
+  P3-T01:
+    status: pending
+  P3-T02:
+    status: pending
+  P3-T03:
+    status: pending
+  P3-T04:
+    status: pending
+  P3-T05:
+    status: pending
+  P3-T06:
+    status: pending
+  P3-T07:
+    status: pending
+  P3-T08:
+    status: pending
+  P3-T09:
+    status: pending
+  P3-T10:
+    status: pending
+  P4-T01:
+    status: pending
+  P4-T02:
+    status: pending
+  P4-T03:
+    status: pending
+  P4-T04:
+    status: pending
+  P4-T05:
+    status: pending
+  P4-T06:
+    status: pending
+  P5-T01:
+    status: pending
+  P5-T02:
+    status: pending
+  P5-T03:
+    status: pending
+  P5-T04:
+    status: pending
+  P5-T05:
+    status: pending
+  P5-T06:
+    status: pending
+  P5-T07:
+    status: pending
+  P5-T08:
+    status: pending
+  P5-T09:
+    status: pending
+gates:
+  G0-1:
+    status: pending
+  G0-2:
+    status: pending
+  G0-3:
+    status: pending
+  G0-4:
+    status: pending
+  G1-1:
+    status: pending
+  G1-2:
+    status: pending
+  G1-3:
+    status: pending
+  G1-4:
+    status: pending
+  G1-5:
+    status: pending
+  G2-1:
+    status: pending
+  G2-2:
+    status: pending
+  G2-3:
+    status: pending
+  G2-4:
+    status: pending
+  G3-1:
+    status: pending
+  G3-2:
+    status: pending
+  G3-3:
+    status: pending
+  G3-4:
+    status: pending
+  G3-5:
+    status: pending
+  G4-1:
+    status: pending
+  G4-2:
+    status: pending
+  G4-3:
+    status: pending
+  G4-4:
+    status: pending
+  G5-1:
+    status: pending
+  G5-2:
+    status: pending
+  G5-3:
+    status: pending
+  G5-4:
+    status: pending
+history:
+- at: '2026-10-17T00:16:59+08:00'
+  id: P0-T01
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-17T00:24:31+08:00'
+  id: P0-T01
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-17T00:24:31+08:00'
