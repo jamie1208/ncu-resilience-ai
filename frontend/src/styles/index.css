@@ -1,0 +1,107 @@
+/*
+ * NCU Resilience AI 設計 token（Minimalist Modern，見 ncu-frontend-design skill 與 ADR-0003）。
+ * 所有色彩、字體、陰影都從這裡取用；元件不得寫死色碼。
+ */
+@import 'tailwindcss';
+
+@theme {
+  /* 基礎色彩 */
+  --color-background: #fafafa;
+  --color-foreground: #0f172a;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-accent: #0052ff;
+  --color-accent-secondary: #4d7cff;
+  --color-accent-foreground: #ffffff;
+  --color-border: #e2e8f0;
+  --color-card: #ffffff;
+  --color-ring: #0052ff;
+
+  /*
+   * 語意色：風險等級、事件狀態用，不得只靠 Electric Blue 區分，且須搭配文字或圖示。
+   * 前景色對白字皆達 WCAG AA（4.5:1 以上）。
+   */
+  --color-danger: #b91c1c;
+  --color-danger-foreground: #ffffff;
+  --color-danger-muted: #fef2f2;
+  --color-warning: #b45309;
+  --color-warning-foreground: #ffffff;
+  --color-warning-muted: #fffbeb;
+  --color-success: #15803d;
+  --color-success-foreground: #ffffff;
+  --color-success-muted: #f0fdf4;
+  --color-info: #0052ff;
+  --color-info-foreground: #ffffff;
+  --color-info-muted: #eff4ff;
+
+  /* 字體：拉丁字體都沒有繁中字形，一律接繁中 fallback */
+  --font-display: 'Calistoga', 'Noto Serif TC', Georgia, serif;
+  --font-sans: 'Inter', 'Noto Sans TC', 'PingFang TC', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Noto Sans Mono CJK TC', ui-monospace, monospace;
+
+  /* 陰影 */
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 4px 6px rgb(0 0 0 / 0.07);
+  --shadow-lg: 0 10px 15px rgb(0 0 0 / 0.08);
+  --shadow-xl: 0 20px 25px rgb(0 0 0 / 0.1);
+  --shadow-accent: 0 4px 14px rgb(0 82 255 / 0.25);
+  --shadow-accent-lg: 0 8px 24px rgb(0 82 255 / 0.35);
+
+  /* 持續性動畫（只用於裝飾；緊急資訊不得使用） */
+  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.3);
+      opacity: 0.7;
+    }
+  }
+}
+
+/* 簽名漸層文字：只用於標題裝飾字，不得用於關鍵數字或警告文字 */
+@utility gradient-text {
+  background-image: linear-gradient(to right, var(--color-accent), var(--color-accent-secondary));
+  background-clip: text;
+  color: transparent;
+}
+
+/* 反轉深色區塊的點狀紋理 */
+@utility bg-dot-pattern {
+  background-image: radial-gradient(circle, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* 使用者要求減少動態時，停用所有持續性動畫與轉場 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
