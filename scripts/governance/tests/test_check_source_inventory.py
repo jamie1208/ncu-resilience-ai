@@ -4,6 +4,7 @@
 """
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -73,4 +74,8 @@ def test_missing_status_column_is_an_error(tmp_path: Path) -> None:
 def test_repo_inventory_is_parseable() -> None:
     res = run(REPO_INVENTORY, "--min", "0")
     assert res.returncode == 0, res.stdout + res.stderr
-    assert "來源 27" in res.stdout
+    # 用與腳本不同的方式獨立計數：「## 總表」段落中，第一欄是來源代碼的列
+    section = REPO_INVENTORY.read_text(encoding="utf-8").split("## 總表", 1)[1].split("\n## ", 1)[0]
+    expected = len(re.findall(r"^\| [a-z0-9][a-z0-9-]* +\|", section, flags=re.MULTILINE))
+    assert expected >= 27  # P0-T09 盤點時的來源數；來源只會增加或改狀態
+    assert f"來源 {expected} 個" in res.stdout
