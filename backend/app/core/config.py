@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     db_host: str = Field("localhost", validation_alias=AliasChoices("NCU_DB_HOST"))
     db_port: int = Field(5432, validation_alias=AliasChoices("NCU_DB_PORT", "POSTGRES_PORT"))
 
+    # Celery broker（P1-T07）：容器內為 redis://redis:6379/0，見 .env.example
+    redis_url: str = "redis://localhost:6379/0"
+
     @property
     def database_url(self) -> URL:
         """asyncpg 連線 URL；缺少帳密或資料庫名稱時拋出 ValueError。"""

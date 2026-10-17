@@ -11,9 +11,13 @@ x-backend: &backend
     # 容器內以服務名稱連線資料庫（主機上預設 localhost）
     NCU_DB_HOST: db
     NCU_DB_PORT: "5432"
+    # Celery broker：容器內以服務名稱連線 Redis（P1-T07）
+    NCU_REDIS_URL: redis://redis:6379/0
   volumes:
     # alembic.ini 的 script_location 指向 /app/../infra/migrations
     - ../migrations:/infra/migrations:ro
+    # 來源連線設定（P1-T07）：app/ingestion/source_settings.py 預設讀 /config/sources.yaml
+    - ../../config:/config:ro
   depends_on:
     db:
       condition: service_healthy
@@ -58,14 +62,39 @@ services:
     ports:
       - "127.0.0.1:${API_PORT:-8000}:8000"
 
-  # Celery worker：celery_app 於 P1-T07 建立，在那之前不隨 make up 啟動。
-  # 手動啟動：docker compose --profile worker up -d worker
+  # Celery worker（P1-T07）：執行擷取任務。只開一個行程，讓每網域限速在行程內生效。
+  # 隨 make up 啟動後就會定時擷取已同步（make sources）且核准、啟用的來源。
   worker:
     <<: *backend
-    profiles: ["worker"]
-    command: ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=INFO"]
+    command:
+      ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=INFO", "--concurrency=1"]
     healthcheck:
-      disable: true
+      # worker 正在執行擷取時仍會回應 ping（由主行程處理）
+      test: ["CMD-SHELL", "celery -A app.worker.celery_app inspect ping -d celery@$$HOSTNAME --timeout 10"]
+      interval: 30s
+      timeout: 20s
+      start_period: 30s
+      retries: 3
+
+  # Celery beat（P1-T07）：每 60 秒派工一次。排程狀態檔放 /tmp（映像的 /app 不可寫）。
+  beat:
+    <<: *backend
+    command:
+      [
+        "celery", "-A", "app.worker.celery_app", "beat", "--loglevel=INFO",
+        "--schedule", "/tmp/celerybeat-schedule",
+      ]
+    healthcheck:
+      # beat 至少每 5 分鐘醒來一次並同步排程狀態檔；10 分鐘沒更新視為停擺
+      test:
+        [
+          "CMD", "python", "-c",
+          "import os,sys,time; sys.exit(time.time() - os.path.getmtime('/tmp/celerybeat-schedule') > 600)",
+        ]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
 
   web:
     build:

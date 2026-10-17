@@ -120,3 +120,33 @@ def test_unsafe_yaml_tags_are_rejected(tmp_path: Path) -> None:
 def test_missing_file_raises(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         load_source_settings(tmp_path / "nope.yaml")
+
+
+# --- P1-T07：名稱與擷取間隔（sync_sources 建立 sources 資料列時使用） -------------------
+
+
+def test_name_and_poll_interval_are_optional(tmp_path: Path) -> None:
+    settings = load_source_settings(write(tmp_path, "sources:\n  demo:\n    type: rss\n"))
+    assert settings["demo"].name is None
+    assert settings["demo"].poll_interval is None
+
+
+def test_name_and_poll_interval_are_loaded(tmp_path: Path) -> None:
+    text = "sources:\n  demo:\n    type: rss\n    name: 測試來源\n    poll_interval: 1800\n"
+    settings = load_source_settings(write(tmp_path, text))
+    assert settings["demo"].name == "測試來源"
+    assert settings["demo"].poll_interval == 1800
+
+
+@pytest.mark.parametrize("interval", [0, 59, -1])
+def test_poll_interval_must_be_at_least_one_minute(tmp_path: Path, interval: int) -> None:
+    text = f"sources:\n  demo:\n    type: rss\n    poll_interval: {interval}\n"
+    with pytest.raises(ValueError):
+        load_source_settings(write(tmp_path, text))
+
+
+def test_repo_sources_have_names_and_intervals() -> None:
+    for code, s in load_source_settings().items():
+        assert s.name, code
+        assert s.poll_interval is not None, code
+        assert s.poll_interval >= 1800, code  # 校方網站：來源盤點建議每 30–60 分鐘
