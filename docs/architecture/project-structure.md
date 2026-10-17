@@ -50,7 +50,7 @@ ncu-resilience-ai/
 │   │   │       ├── health.py                          # P0-T02
 │   │   │       ├── public/  events, alerts, dashboard, reports   # P3
 │   │   │       └── admin/   events, alerts, audit_logs, ingestion_runs, relations
-│   │   ├── ingestion/             # P1：base, registry, normalize, store, health, adapters/
+│   │   ├── ingestion/             # P1：base, registry, http, source_settings, normalize, store, health, adapters/
 │   │   ├── worker/                # P1-T07：celery_app, tasks/
 │   │   ├── ai/
 │   │   │   ├── llm/               # P2-T03：base, openai_provider, fake_provider, cost
@@ -89,7 +89,7 @@ ncu-resilience-ai/
 │   ├── trend-forecaster/          # S09  P5-T01
 │   └── scenario-simulator/        # S10  P5-T02
 │
-├── config/                        # risk-policy.yaml(P2-T11)、publishing-policy.yaml(P3-T07)
+├── config/                        # sources.yaml(P1-T03)、risk-policy.yaml(P2-T11)、publishing-policy.yaml(P3-T07)
 ├── scripts/                       # skills/validate_skill.py、eval/、labeling/、reports/、admin/
 ├── eval/reports/                  # 評測報告（依 skill/版本）
 ├── data/                          # labeling/ 規範進 git；labeled/ 資料不進 git
