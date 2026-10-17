@@ -17,6 +17,8 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 COPY app ./app
+# migration 腳本位於 repo 的 infra/migrations，由 compose 掛載到 /infra/migrations
+COPY alembic.ini ./
 
 RUN useradd --create-home --uid 10001 appuser
 USER appuser

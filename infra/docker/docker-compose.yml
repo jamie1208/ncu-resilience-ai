@@ -7,6 +7,13 @@ x-backend: &backend
   build:
     context: ../../backend
   env_file: ../../.env
+  environment:
+    # 容器內以服務名稱連線資料庫（主機上預設 localhost）
+    NCU_DB_HOST: db
+    NCU_DB_PORT: "5432"
+  volumes:
+    # alembic.ini 的 script_location 指向 /app/../infra/migrations
+    - ../migrations:/infra/migrations:ro
   depends_on:
     db:
       condition: service_healthy
