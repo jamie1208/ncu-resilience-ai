@@ -1,0 +1,35 @@
+{
+  "success": "true",
+  "result": {
+    "resource_id": "W-C0033-001",
+    "fields": [
+      {"id": "locationName", "type": "String"},
+      {"id": "geocode", "type": "Double"},
+      {"id": "language", "type": "String"},
+      {"id": "phenomena", "type": "String"},
+      {"id": "significance", "type": "String"},
+      {"id": "startTime", "type": "Timestamp"},
+      {"id": "endTime", "type": "Timestamp"}
+    ]
+  },
+  "records": {
+    "location": [
+      {
+        "locationName": "桃園市",
+        "geocode": 68.0,
+        "hazardConditions": {
+          "hazards": [
+            {
+              "info": {"language": "zh-TW", "phenomena": "大雨", "significance": "特報"},
+              "validTime": {"startTime": "2026-10-17 08:30:00", "endTime": "2026-10-17 20:00:00"}
+            },
+            {
+              "info": {"language": "zh-TW", "phenomena": "陸上強風", "significance": "特報"},
+              "validTime": {"startTime": "2026-10-17 05:10:00", "endTime": "2026-10-18 06:00:00"}
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

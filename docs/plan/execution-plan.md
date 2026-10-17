@@ -102,7 +102,7 @@ cd ../frontend && npm run lint && npm run build
 
 ## P1 採集與來源追溯
 
-目標：至少 3 個合法來源連續 7 天穩定擷取，重跑零重複，任一筆資料可反查原文與擷取時間。前置：G0 全部通過。
+目標：至少 3 個合法來源連續一晚（≥ 12 小時）穩定擷取，重跑零重複，任一筆資料可反查原文與擷取時間。前置：G0 全部通過。（ADR-0006：由規格 §13 的七天改為一晚）
 
 - **P1-T01 Source Adapter 介面**
   - 檔案：`backend/app/ingestion/base.py`（`SourceAdapter` Protocol：`fetch_since(cursor) -> list[RawItem]`）、`app/ingestion/registry.py`、`app/ingestion/types.py`
@@ -131,9 +131,9 @@ cd ../frontend && npm run lint && npm run build
 - **P1-T09 標記資料集啟動**（金標準需你確認）
   - 檔案：`data/labeling/guidelines.md`（分類法、真偽、同事件判準）、`data/labeling/label.schema.json`、`scripts/labeling/export_for_labeling.py`、`scripts/labeling/ai_prelabel.py`；資料存 `data/labeled/`（不進 git，含個資時加密）
   - 驗證：累積 ≥ 100 筆人工確認樣本，依事件／時間切分 dev／test
-- **P1-T10 七天穩定運行報告**
+- **P1-T10 一晚穩定運行報告**（ADR-0006：原為七天）
   - 檔案：`scripts/reports/ingestion_report.py`、`docs/progress/records/P1-stability.md`
-  - 驗證：報告顯示 7 天成功率、各來源筆數、重複寫入數 = 0
+  - 驗證：報告顯示連續 ≥ 12 小時的成功率、各來源筆數、重複寫入數 = 0
 - **P1-T11 氣象署開放資料 Adapter（cwa-alerts）**（ADR-0005 新增；P1-T02 查無可用的 RSS 來源）
   - 檔案：`app/ingestion/adapters/cwa_open_data.py`（httpx2，JSON API：天氣警特報 W-C0033-001、顯著有感地震報告 E-A0015-001，篩選桃園市）、`app/core/config.py`（`CWA_API_KEY`，SecretStr）、`tests/fixtures/cwa/*.json`（依官方欄位格式製作，不含授權碼）、`tests/unit/ingestion/test_cwa_open_data.py`
   - 內容：授權碼只從環境變數讀取，不得出現在日誌、錯誤訊息與 fixture；未設定授權碼時拋出不可重試的錯誤；依政府資料開放授權條款保留出處資訊（提供機關、資料名稱）；連線設定依 P1-T01 的決定登記在 `config/sources.yaml`
@@ -143,13 +143,13 @@ cd ../frontend && npm run lint && npm run build
 cd backend && uv run pytest tests/unit/ingestion tests/integration -q
 uv run python -m app.worker.tasks.ingest --source all --once   # 手動觸發一輪
 uv run python -m app.worker.tasks.ingest --source all --once   # 再跑一次，確認無新增重複
-uv run python ../scripts/reports/ingestion_report.py --days 7
+uv run python ../scripts/reports/ingestion_report.py --hours 12
 ```
 
 | 閘門 | 條件 | 驗證方式 |
 | --- | --- | --- |
 | G1-1 | ≥ 3 個來源上線 | sources 表 enabled 且核准 ≥ 3 |
-| G1-2 | 7 天成功率 ≥ 98% | ingestion_report.py |
+| G1-2 | 一晚（≥ 12 小時）成功率 ≥ 98%（ADR-0006） | ingestion_report.py |
 | G1-3 | 重跑零重複 | test_idempotent_ingest 通過且報告重複數 0 |
 | G1-4 | 可反查原文 | 隨機抽 20 筆皆有 url 與 fetched_at |
 | G1-5 | ≥ 100 筆標記樣本 | data/labeled 統計腳本 |

@@ -37,3 +37,10 @@ sources:
       list_urls:
         - https://pdc.adm.ncu.edu.tw/p/403-1019-495-1.php?Lang=zh-tw
         - https://pdc.adm.ncu.edu.tw/p/403-1019-498-1.php?Lang=zh-tw
+
+  cwa-alerts:  # 中央氣象署開放資料：天氣警特報（W-C0033-001）與顯著有感地震報告（E-A0015-001）
+    type: cwa_open_data
+    name: 中央氣象署天氣警特報與地震報告
+    poll_interval: 600  # 來源盤點建議：每 10 分鐘
+    options:
+      county: 桃園市  # 授權碼由環境變數 CWA_API_KEY 提供，不寫在這裡
