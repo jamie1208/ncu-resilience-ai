@@ -8,6 +8,7 @@ argument-hint: <任務ID>
 1. 重新執行 docs/plan/execution-plan.md 中 $ARGUMENTS 的驗證指令，確認仍全部通過；失敗就停止並回報。
 2. 確認 docs/progress/records/ 中 $ARGUMENTS 的驗收紀錄各段落都已填寫，判定欄為 PASS。
 3. 用 ncu-resilience-tracker 執行 `set $ARGUMENTS done --evidence <驗收紀錄路徑>`。若被拒絕，回報原因，不要加 --force。
+   - 若 $ARGUMENTS 是「需你決定」（`human: true`）的任務，tracker 會要求 `--confirmed-by-user`：先停下來，列出驗收紀錄中使用者的各項決定並請我明確確認可以結案；取得同意後才加此旗標重跑。不得因為我執行了 /finish 就視為已同意。
 4. 若 repo 已有 git：先確認 `git status` 中沒有 `.env`、金鑰檔或 `data/raw/`、`data/labeled/` 的內容，再 commit 本任務的變更（含 `docs/progress/state.yaml` 與驗收紀錄）（訊息格式 `feat($ARGUMENTS): <摘要>`）。
 5. Push 任務分支：執行 `git push -u origin <目前任務分支>`。
 6. 合併進 main 並推送：
