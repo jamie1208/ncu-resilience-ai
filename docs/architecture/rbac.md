@@ -69,6 +69,7 @@
 | POST | `/api/v1/admin/alerts/{id}/retract` | `alerts:retract` | `alert.retract`（含原因） |
 | POST | `/api/v1/admin/scenarios` | `scenarios:create` | `scenario.create` |
 | GET | `/api/v1/admin/ingestion-runs` | `ingestion_runs:read` | |
+| GET | `/api/v1/admin/ingestion-runs/health` | `ingestion_runs:read` | |
 | GET | `/api/v1/admin/audit-logs` | `audit_logs:read` | `audit_log.read`（敏感讀取） |
 
 未登入存取需要權限的路由回 `UNAUTHORIZED`；已登入但權限不足回 `FORBIDDEN`（規格 §10.1）。

@@ -10,7 +10,8 @@ from collections.abc import Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
 
-from app.api.v1 import health
+from app.api.errors import register_error_handlers
+from app.api.v1 import admin, health
 from app.core.config import get_settings
 from app.core.logging import configure_logging, request_id_var
 
@@ -59,7 +60,9 @@ def create_app() -> FastAPI:
         finally:
             request_id_var.reset(token)
 
+    register_error_handlers(app)
     app.include_router(health.router, prefix=settings.api_prefix)
+    app.include_router(admin.router, prefix=settings.api_prefix)
     return app
 
 

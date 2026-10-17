@@ -23,7 +23,6 @@ from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
-from enum import StrEnum
 from typing import Any
 
 from celery import Task
@@ -32,22 +31,20 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import NullPool
 
 from app.core.config import get_settings
-from app.core.security import Principal, Role
 from app.ingestion.base import AdapterError, SourceAdapter
+from app.ingestion.health import AUTO_DISABLE_AFTER, INGESTION_PRINCIPAL, auto_disable_failing
 from app.ingestion.normalize import NormalizedItem, normalize_item
 from app.ingestion.registry import registry
 from app.ingestion.source_settings import SourceSettings, build_config, load_source_settings
 from app.ingestion.store import store_items
 from app.ingestion.types import AccessPolicy, RawItem, SourceConfig
+from app.ingestion.types import RunStatus as RunStatus  # P1-T07 起由本模組公開
 from app.models.source import IngestionDeadLetter, IngestionRun, Source
 from app.services.audit import record_audit
 from app.worker.celery_app import DISPATCH_TASK, INGEST_TASK, celery_app
 
 importlib.import_module("app.ingestion.adapters")  # 匯入即註冊全部 Adapter 類型
 
-INGESTION_PRINCIPAL = Principal(
-    kind="service", subject="ingestion", roles=frozenset({Role.SERVICE_INGESTION})
-)
 MAX_RETRIES = 3
 BACKOFF_BASE_SECONDS = 60
 DEFAULT_POLL_INTERVAL = 3600
@@ -56,18 +53,6 @@ _ERROR_MESSAGE_LIMIT = 500
 
 Maker = async_sessionmaker[AsyncSession]
 AdapterFactory = Callable[[SourceConfig], SourceAdapter]
-
-
-class RunStatus(StrEnum):
-    """ingestion_runs.status 的值。"""
-
-    QUEUED = "queued"
-    RUNNING = "running"
-    RETRYING = "retrying"
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
-    SKIPPED = "skipped"
-    ABANDONED = "abandoned"
 
 
 IN_FLIGHT = frozenset({RunStatus.QUEUED, RunStatus.RUNNING, RunStatus.RETRYING})
@@ -106,6 +91,8 @@ async def dispatch_due(
     """為到期的來源建立 queued 的執行紀錄，回傳（來源代碼, run_id）。"""
     queued: list[tuple[str, uuid.UUID]] = []
     async with maker() as session, session.begin():
+        # 連續失敗的來源先停用，不再派工（P1-T08）
+        await auto_disable_failing(session, threshold=AUTO_DISABLE_AFTER)
         sources = (await session.execute(select(Source).order_by(Source.code))).scalars().all()
         for source in sources:
             config = settings.get(source.code)
