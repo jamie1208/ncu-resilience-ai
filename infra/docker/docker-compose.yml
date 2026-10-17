@@ -1,0 +1,75 @@
+# NCU Resilience AI 本機開發環境（P0-T04）。
+# 用法：在 repo 根目錄執行 make up／make down（見 Makefile）。
+# 所有對外埠號只綁定 127.0.0.1；設定與金鑰來自根目錄的 .env（範例見 .env.example）。
+name: ncu-resilience
+
+x-backend: &backend
+  build:
+    context: ../../backend
+  env_file: ../../.env
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?請在 .env 設定 POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?請在 .env 設定 POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?請在 .env 設定 POSTGRES_DB}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    <<: *backend
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+
+  # Celery worker：celery_app 於 P1-T07 建立，在那之前不隨 make up 啟動。
+  # 手動啟動：docker compose --profile worker up -d worker
+  worker:
+    <<: *backend
+    profiles: ["worker"]
+    command: ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=INFO"]
+    healthcheck:
+      disable: true
+
+  web:
+    build:
+      context: ../../frontend
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8088}:80"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
