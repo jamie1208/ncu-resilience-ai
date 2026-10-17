@@ -1,0 +1,9 @@
+{
+  "success": "true",
+  "result": {"resource_id": "W-C0033-001", "fields": []},
+  "records": {
+    "location": [
+      {"locationName": "桃園市", "geocode": 68.0, "hazardConditions": {"hazards": []}}
+    ]
+  }
+}

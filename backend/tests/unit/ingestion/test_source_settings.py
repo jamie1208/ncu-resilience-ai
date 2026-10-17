@@ -146,7 +146,11 @@ def test_poll_interval_must_be_at_least_one_minute(tmp_path: Path, interval: int
 
 
 def test_repo_sources_have_names_and_intervals() -> None:
+    # P1-T11（使用者 2026-10-17 同意）：1800 秒下限只適用校方網站；氣象署 API 依盤點建議為 10 分鐘
     for code, s in load_source_settings().items():
         assert s.name, code
         assert s.poll_interval is not None, code
-        assert s.poll_interval >= 1800, code  # 校方網站：來源盤點建議每 30–60 分鐘
+        if s.type == "rpage":
+            assert s.poll_interval >= 1800, code  # 校方網站：來源盤點建議每 30–60 分鐘
+        else:
+            assert s.poll_interval >= 600, code  # 開放資料 API：不低於 10 分鐘

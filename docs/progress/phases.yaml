@@ -6,7 +6,7 @@
 # - human：true 表示需要你親自決定，AI 只能準備資料。
 # - gates.command：可自動執行的驗證指令（--run-gates 時執行）；
 #   manual：true 表示需人工確認，tracker 只會提示。
-# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11），tracker 優先讀取本檔。
+# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚），tracker 優先讀取本檔。
 # 修改計畫時：只改這個檔案，再執行 `tracker.py sync` 讓 state.yaml 補上新任務。
 
 version: 1
@@ -79,7 +79,7 @@ phases:
 
   - id: P1
     name: 採集與來源追溯
-    goal: 3 個合法來源 7 天穩定擷取，重跑零重複，可反查原文
+    goal: 3 個合法來源一晚（≥ 12 小時）穩定擷取，重跑零重複，可反查原文
     tasks:
       - id: P1-T01
         title: Source Adapter 介面
@@ -119,7 +119,7 @@ phases:
         deps: [P1-T06]
         paths: [data/labeling/guidelines.md, data/labeling/label.schema.json, scripts/labeling/export_for_labeling.py]
       - id: P1-T10
-        title: 七天穩定運行報告
+        title: 一晚穩定運行報告
         deps: [P1-T08]
         paths: [scripts/reports/ingestion_report.py]
       - id: P1-T11
@@ -131,8 +131,8 @@ phases:
         title: ≥ 3 個來源上線
         manual: true
       - id: G1-2
-        title: 7 天擷取成功率 ≥ 98%
-        command: cd backend && uv run python ../scripts/reports/ingestion_report.py --days 7 --check-success 0.98
+        title: 一晚（≥ 12 小時）擷取成功率 ≥ 98%
+        command: cd backend && uv run python ../scripts/reports/ingestion_report.py --hours 12 --check-success 0.98
       - id: G1-3
         title: 重跑零重複
         command: cd backend && uv run pytest tests/integration/test_idempotent_ingest.py -q

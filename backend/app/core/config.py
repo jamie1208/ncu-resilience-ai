@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     # Celery broker（P1-T07）：容器內為 redis://redis:6379/0，見 .env.example
     redis_url: str = "redis://localhost:6379/0"
 
+    # 氣象資料開放平台授權碼（P1-T11）：只從環境變數讀取，範例值見 .env.example（空值）
+    cwa_api_key: SecretStr | None = Field(
+        None, validation_alias=AliasChoices("CWA_API_KEY", "NCU_CWA_API_KEY")
+    )
+
     @property
     def database_url(self) -> URL:
         """asyncpg 連線 URL；缺少帳密或資料庫名稱時拋出 ValueError。"""

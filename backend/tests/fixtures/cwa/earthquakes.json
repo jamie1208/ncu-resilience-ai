@@ -1,0 +1,70 @@
+{
+  "success": "true",
+  "result": {"resource_id": "E-A0015-001", "fields": []},
+  "records": {
+    "datasetDescription": "地震報告",
+    "Earthquake": [
+      {
+        "EarthquakeNo": 115902,
+        "ReportType": "地震報告",
+        "ReportColor": "黃色",
+        "ReportContent": "10/17-03:12宜蘭縣近海發生規模5.6有感地震，最大震度宜蘭縣南山4級。",
+        "ReportImageURI": "https://scweb.cwa.gov.tw/webdata/OLDEQ/202610/test_H.png",
+        "ReportRemark": "本報告係中央氣象署地震觀測網即時地震資料地震速報之結果。",
+        "Web": "https://scweb.cwa.gov.tw/zh-tw/earthquake/details/2026902",
+        "EarthquakeInfo": {
+          "OriginTime": "2026-10-17T03:12:45+08:00",
+          "Source": "中央氣象署",
+          "FocalDepth": 21.3,
+          "Epicenter": {"Location": "宜蘭縣政府東方 30.1 公里 (位於臺灣東部海域)", "EpicenterLatitude": 24.7, "EpicenterLongitude": 122.1},
+          "EarthquakeMagnitude": {"MagnitudeType": "芮氏規模", "MagnitudeValue": 5.6}
+        },
+        "Intensity": {
+          "ShakingArea": [
+            {"AreaDesc": "宜蘭縣地區", "CountyName": "宜蘭縣", "InfoStatus": "observe", "AreaIntensity": "4級", "EqStation": []},
+            {"AreaDesc": "桃園市地區", "CountyName": "桃園市", "InfoStatus": "observe", "AreaIntensity": "3級", "EqStation": []},
+            {"AreaDesc": "最大震度3級地區", "CountyName": "新北市、桃園市、臺北市", "AreaIntensity": "3級", "EqStation": []}
+          ]
+        }
+      },
+      {
+        "EarthquakeNo": 115901,
+        "ReportType": "地震報告",
+        "ReportColor": "綠色",
+        "ReportContent": "10/16-21:05花蓮縣近海發生規模4.8有感地震，最大震度花蓮縣3級。",
+        "Web": "https://scweb.cwa.gov.tw/zh-tw/earthquake/details/2026901",
+        "EarthquakeInfo": {
+          "OriginTime": "2026-10-16T21:05:10+08:00",
+          "Source": "中央氣象署",
+          "FocalDepth": 15.0,
+          "Epicenter": {"Location": "花蓮縣政府東方 25.0 公里 (位於臺灣東部海域)", "EpicenterLatitude": 23.9, "EpicenterLongitude": 121.9},
+          "EarthquakeMagnitude": {"MagnitudeType": "芮氏規模", "MagnitudeValue": 4.8}
+        },
+        "Intensity": {
+          "ShakingArea": [
+            {"AreaDesc": "最大震度1級地區", "CountyName": "臺東縣、桃園市、新竹縣", "AreaIntensity": "1級", "EqStation": []}
+          ]
+        }
+      },
+      {
+        "EarthquakeNo": 115900,
+        "ReportType": "地震報告",
+        "ReportColor": "綠色",
+        "ReportContent": "10/15-10:00屏東縣發生規模4.1有感地震，最大震度屏東縣2級。",
+        "Web": "https://scweb.cwa.gov.tw/zh-tw/earthquake/details/2026900",
+        "EarthquakeInfo": {
+          "OriginTime": "2026-10-15T10:00:00+08:00",
+          "Source": "中央氣象署",
+          "FocalDepth": 10.0,
+          "Epicenter": {"Location": "屏東縣政府東方 10.0 公里", "EpicenterLatitude": 22.6, "EpicenterLongitude": 120.6},
+          "EarthquakeMagnitude": {"MagnitudeType": "芮氏規模", "MagnitudeValue": 4.1}
+        },
+        "Intensity": {
+          "ShakingArea": [
+            {"AreaDesc": "屏東縣地區", "CountyName": "屏東縣", "InfoStatus": "observe", "AreaIntensity": "2級", "EqStation": []}
+          ]
+        }
+      }
+    ]
+  }
+}
