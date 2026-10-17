@@ -3,16 +3,17 @@
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime
 
 import pytest
-from sqlalchemy import delete, select, text, update
+from sqlalchemy import Executable, delete, func, select, text, update
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import request_id_var
-from app.core.security import ANONYMOUS, Principal, Role
+from app.core.security import ANONYMOUS, Permission, PermissionDeniedError, Principal, Role
 from app.models import AuditLog
-from app.services.audit import AuditMetadataError, record_audit
+from app.services.audit import AuditMetadataError, authorize, record_audit
 
 pytestmark = pytest.mark.anyio
 
@@ -32,9 +33,9 @@ async def make_log(session: AsyncSession) -> AuditLog:
     return log
 
 
-async def expect_append_only(session: AsyncSession, stmt: object) -> None:
+async def expect_append_only(session: AsyncSession, stmt: Executable) -> None:
     with pytest.raises(DBAPIError, match="append-only"):
-        await session.execute(stmt)  # type: ignore[call-overload]
+        await session.execute(stmt)
     await session.rollback()
 
 
@@ -127,3 +128,61 @@ async def test_metadata_rejects_sensitive_keys(
 async def test_action_format_is_validated(session: AsyncSession, action: str) -> None:
     with pytest.raises(ValueError):
         await record_audit(session, ADMIN, action)
+
+
+# --- P0-T12 -------------------------------------------------------------------------
+
+
+async def test_request_id_generated_without_request_context(session: AsyncSession) -> None:
+    assert request_id_var.get() is None
+    log = await record_audit(session, ADMIN, "source.update", target="sources/x")
+    await session.commit()
+    assert log.request_id is not None
+    uuid.UUID(log.request_id)
+
+
+async def test_uuid_and_datetime_metadata_are_persisted(session: AsyncSession) -> None:
+    eid = uuid.uuid4()
+    at = datetime(2026, 10, 17, 12, 0, tzinfo=UTC)
+    log = await record_audit(
+        session, ADMIN, "event.verify", target=f"events/{eid}", metadata={"event_id": eid, "at": at}
+    )
+    await session.commit()
+    await session.refresh(log)
+    assert log.meta == {"event_id": str(eid), "at": "2026-10-17T12:00:00+00:00"}
+
+
+async def _count(session: AsyncSession, rid: str) -> int:
+    stmt = select(func.count()).select_from(AuditLog).where(AuditLog.request_id == rid)
+    return (await session.execute(stmt)).scalar_one()
+
+
+async def test_authorize_audits_sensitive_reads(session: AsyncSession) -> None:
+    rid = f"req-{uuid.uuid4()}"
+    await authorize(session, ADMIN, Permission.AUDIT_LOGS_READ, target="audit_logs", request_id=rid)
+    await session.commit()
+    log = (await session.execute(select(AuditLog).where(AuditLog.request_id == rid))).scalar_one()
+    assert (log.actor, log.action, log.target) == ("admin:u-1", "audit_logs.read", "audit_logs")
+
+
+async def test_authorize_does_not_audit_ordinary_permissions(session: AsyncSession) -> None:
+    rid = f"req-{uuid.uuid4()}"
+    await authorize(session, ADMIN, Permission.EVENTS_READ_ALL, target="events", request_id=rid)
+    await session.commit()
+    assert await _count(session, rid) == 0
+
+
+async def test_authorize_denied_raises_without_writing(session: AsyncSession) -> None:
+    rid = f"req-{uuid.uuid4()}"
+    with pytest.raises(PermissionDeniedError):
+        await authorize(
+            session, ANONYMOUS, Permission.AUDIT_LOGS_READ, target="audit_logs", request_id=rid
+        )
+    await session.commit()
+    assert await _count(session, rid) == 0
+
+
+async def test_audit_logs_are_cleared_between_tests(session: AsyncSession) -> None:
+    # 其他測試寫入的稽核紀錄應已由 fixture 清空（只限測試資料庫）
+    total = (await session.execute(select(func.count()).select_from(AuditLog))).scalar_one()
+    assert total == 0

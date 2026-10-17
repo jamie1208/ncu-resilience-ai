@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections import deque
 from enum import StrEnum
+from typing import Any
 
 import pytest
 
@@ -160,11 +161,15 @@ def test_error_carries_states_and_message() -> None:
 
 def test_mixing_machines_is_rejected() -> None:
     # EventStatus.VERIFIED 與 VerificationStatus.VERIFIED 值相同，但屬於不同狀態機
+    # 型別上兩者都是 StrEnum，執行期才依狀態機類型拒絕
     with pytest.raises(StateTransitionError):
-        transition(E.UNVERIFIED, V.VERIFIED)  # type: ignore[arg-type]
-    assert can_transition(V.UNVERIFIED, E.VERIFIED) is False  # type: ignore[arg-type]
+        transition(E.UNVERIFIED, V.VERIFIED)
+    assert can_transition(V.UNVERIFIED, E.VERIFIED) is False
 
 
 def test_plain_strings_are_rejected() -> None:
+    # 刻意繞過型別檢查，模擬從資料庫讀出未轉換的字串
+    current: Any = "detected"
+    target: Any = "analyzing"
     with pytest.raises(StateTransitionError):
-        transition("detected", "analyzing")  # type: ignore[type-var]
+        transition(current, target)

@@ -20,6 +20,8 @@
 
 系統服務帳號依規格「最小權限」拆成三個：擷取程式不能改事件，AI 不能發布，通知服務不能查證。
 
+`Principal` 建立時會檢查身分種類與角色是否一致（`KIND_ROLES`）：anonymous 只能是 visitor、reporter 只能是 reporter、admin 只能是 admin、service 只能是三種服務角色，且至少要有一個角色。不一致時直接拋出 ValueError，避免出現「anonymous 卻有管理權限」這種無法追溯的身分。
+
 ## 權限矩陣
 
 | 權限 | visitor | reporter | admin | service_ingestion | service_ai | service_notifier |
@@ -77,7 +79,7 @@
 
 - 所有寫入操作（規格 §10.1：所有寫入建立 request_id），包括服務帳號的寫入。
 - 敏感讀取：`audit_logs:read`、`reports:read_internal`。
-- 權限遭拒（`FORBIDDEN`）的管理端請求：P3-T01 加入。
+- 權限遭拒（`FORBIDDEN`）的管理端請求：P3-T01 加入（`authorize()` 目前遭拒時不寫紀錄）。
 
 ### 欄位
 
@@ -86,13 +88,28 @@
 | `actor` | `Principal.actor`：`admin:<帳號ID>`、`service:<服務名稱>`、`anonymous`、`reporter`（投稿者不含收據碼或任何識別資訊） |
 | `action` | `<資源>.<動作>`，小寫，例如 `event.verify`、`alert.retract`；格式不符會被拒絕 |
 | `target` | 被操作的對象，例如 `events/<id>` |
-| `request_id` | 預設取自目前請求的 `X-Request-ID` |
-| `metadata` | 補充資訊（JSON，≤ 4 KB）；欄位名稱含 password、secret、token、api_key、cookie、session、email、phone、text、content、body 等字樣時一律拒絕 |
+| `request_id` | 參數 > 目前請求的 `X-Request-ID` > 新產生的 UUID（背景工作沒有請求上下文時也一定有值） |
+| `metadata` | 補充資訊（JSON，≤ 4 KB），規則見下方「metadata 規則」 |
 | `created_at` | 資料庫 `now()`，aware UTC（規格欄位 `timestamp`） |
+
+### metadata 規則（`prepare_metadata()`）
+
+audit_logs 寫入後無法刪除，所以 metadata 寫入前會先檢查與正規化，不合格時拋出 `AuditMetadataError`：
+
+- **欄位名稱**：拆成小寫分段（camelCase、底線、連字號都會拆開）後比對。
+  - 任何一段是 password、passwd、pwd、secret、token、apikey、authorization、cookie、credential(s)、email、phone → 拒絕；
+  - 出現連續的 api+key、private+key、national+id、session+id、session+key → 拒絕；
+  - **最後一段**是 text、content、body → 拒絕（例如 `report_text`、`raw_content`）；`content_hash`、`text_length`、`prompt_tokens`、`session_count` 則允許。
+- **字串值**：超過 200 字元（可能是原文）、或含 email、手機號碼（09xx-xxx-xxx）、身分證字號樣式 → 拒絕。
+- **型別**：UUID → 字串；aware datetime → UTC ISO 字串；Enum → 值；沒有時區的 datetime、bytes、set 等不支援的型別 → 拒絕。
+- 正規化後超過 4 KB → 拒絕。
+
+這些檢查是防止明顯的錯誤，不能取代呼叫端的判斷：只放必要的識別碼與摘要，不放原文。
 
 ### 寫入方式
 
-- 只能透過 `record_audit(session, principal, action, ...)`。它只 flush、不 commit，與業務寫入在同一個交易：業務寫入失敗，稽核紀錄一併回滾；稽核寫不進去，業務寫入也不成立。
+- 敏感權限一律用 `authorize(session, principal, permission, target=...)` 檢查：通過時自動寫入 `<資源>.<動作>`（例如 `audit_logs.read`）的稽核紀錄；不足時拋出 PermissionDeniedError，不寫入任何紀錄。一般權限也可以用它，只是不會寫紀錄。
+- 其他寫入透過 `record_audit(session, principal, action, ...)`。它只 flush、不 commit，與業務寫入在同一個交易：業務寫入失敗，稽核紀錄一併回滾；稽核寫不進去，業務寫入也不成立。
 - 日誌與稽核都不得包含個資、投稿原文或金鑰（AGENTS.md）。
 
 ### Append-only（資料庫層強制）

@@ -6,7 +6,7 @@
 # - human：true 表示需要你親自決定，AI 只能準備資料。
 # - gates.command：可自動執行的驗證指令（--run-gates 時執行）；
 #   manual：true 表示需人工確認，tracker 只會提示。
-# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11），tracker 優先讀取本檔。
+# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12），tracker 優先讀取本檔。
 # 修改計畫時：只改這個檔案，再執行 `tracker.py sync` 讓 state.yaml 補上新任務。
 
 version: 1
@@ -59,6 +59,10 @@ phases:
         title: tracker 人工閘門保護
         deps: [P0-T10]
         paths: [.claude/skills/ncu-resilience-tracker/scripts/tracker.py, .claude/skills/ncu-resilience-tracker/tests/test_tracker.py, docs/decisions/ADR-0002-tracker-human-gate.md]
+      - id: P0-T12
+        title: 稽核與權限強化（code review 修正）
+        deps: [P0-T07]
+        paths: [backend/app/services/audit.py, backend/app/core/security.py, backend/app/domain/states.py, docs/decisions/ADR-0004-audit-hardening.md]
     gates:
       - id: G0-1
         title: 乾淨 clone 一鍵啟動，health 回 200

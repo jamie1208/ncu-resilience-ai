@@ -81,6 +81,14 @@ SENSITIVE_PERMISSIONS: frozenset[Permission] = frozenset(
 
 PrincipalKind = Literal["anonymous", "reporter", "admin", "service"]
 
+# 每種身分可持有的角色；避免例如 anonymous 卻帶 ADMIN 角色，使稽核的行為者失真
+KIND_ROLES: Mapping[PrincipalKind, frozenset[Role]] = {
+    "anonymous": frozenset({Role.VISITOR}),
+    "reporter": frozenset({Role.REPORTER}),
+    "admin": frozenset({Role.ADMIN}),
+    "service": frozenset({Role.SERVICE_INGESTION, Role.SERVICE_AI, Role.SERVICE_NOTIFIER}),
+}
+
 
 @dataclass(frozen=True)
 class Principal:
@@ -89,10 +97,20 @@ class Principal:
     kind: PrincipalKind
     subject: str | None
     roles: frozenset[Role] = field(default_factory=frozenset)
+    _permissions: frozenset[Permission] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if self.kind in ("admin", "service") and not self.subject:
             raise ValueError(f"{self.kind} 身分必須有 subject")
+        if not self.roles:
+            raise ValueError(f"{self.kind} 身分至少需要一個角色")
+        extra = self.roles - KIND_ROLES[self.kind]
+        if extra:
+            names = ", ".join(sorted(extra))
+            raise ValueError(f"{self.kind} 身分不可持有角色：{names}")
+        # frozen dataclass：建立時算一次權限聯集
+        perms = frozenset().union(*(ROLE_PERMISSIONS[r] for r in self.roles))
+        object.__setattr__(self, "_permissions", perms)
 
     @property
     def actor(self) -> str:
@@ -103,8 +121,8 @@ class Principal:
 
     @property
     def permissions(self) -> frozenset[Permission]:
-        """此身分所有角色的權限聯集。"""
-        return frozenset().union(*(ROLE_PERMISSIONS[r] for r in self.roles))
+        """此身分所有角色的權限聯集（建立時計算）。"""
+        return self._permissions
 
 
 ANONYMOUS = Principal(kind="anonymous", subject=None, roles=frozenset({Role.VISITOR}))

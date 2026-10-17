@@ -7,7 +7,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from sqlalchemy import inspect, select
+from sqlalchemy import Connection, inspect, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -152,10 +152,10 @@ async def test_event_with_location(session: AsyncSession) -> None:
 
 
 async def test_core_indexes_exist(session: AsyncSession) -> None:
-    def indexes(conn: object) -> dict[str, set[tuple[str, ...]]]:
+    def indexes(conn: Connection) -> dict[str, set[tuple[str | None, ...]]]:
         insp = inspect(conn)
         return {
-            t: {tuple(i["column_names"]) for i in insp.get_indexes(t)}  # type: ignore[misc]
+            t: {tuple(i["column_names"]) for i in insp.get_indexes(t)}
             for t in ("events", "ingestion_runs")
         }
 
