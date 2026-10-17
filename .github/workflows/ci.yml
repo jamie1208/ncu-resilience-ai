@@ -1,0 +1,113 @@
+# NCU Resilience AI CI（P0-T08）
+# 任何分支 push 與 pull request 都會執行；任務分支 push 後全綠才可結案（2026-10-17 使用者決定）。
+# CI 不呼叫任何真實外部 API，也不需要 secrets。
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: 後端（ruff、mypy、migration 往返、pytest）
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          # CI 專用、隨 job 銷毀的臨時資料庫帳密，不是真實金鑰
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: ncu_resilience_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d ncu_resilience_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      POSTGRES_USER: ci
+      POSTGRES_PASSWORD: ci-only-password
+      POSTGRES_DB: ncu_resilience_ci
+      NCU_DB_HOST: localhost
+      NCU_DB_PORT: "5432"
+      NCU_ENVIRONMENT: test
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: 安裝依賴
+        run: uv sync --frozen
+      - name: ruff check
+        run: uv run ruff check . ../infra/migrations
+      - name: ruff format
+        run: uv run ruff format --check . ../infra/migrations
+      - name: mypy
+        run: uv run mypy app
+      - name: migration 往返（upgrade → downgrade → upgrade）
+        run: |
+          uv run alembic upgrade head
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+          uv run alembic current
+      - name: pytest（unit + integration）
+        run: uv run pytest -q
+
+  frontend:
+    name: 前端（lint、test、build）
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+
+  tooling:
+    name: 開發工具（tracker、來源盤點、skill 靜態驗證）
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: 安裝依賴
+        run: python -m pip install pyyaml pytest
+      - name: tracker 測試
+        run: python -m pytest .claude/skills/ncu-resilience-tracker/tests -q
+      - name: 來源盤點檢查腳本測試
+        run: python -m pytest scripts/governance/tests -q
+      - name: 來源核准數（G0-4：至少 3 個核准）
+        run: python scripts/governance/check_source_inventory.py
+      - name: 產品 Skill 靜態驗證（P2-T02 建立 validate_skill.py 後啟用）
+        run: |
+          if [ -f scripts/skills/validate_skill.py ]; then
+            python scripts/skills/validate_skill.py skills/
+          else
+            echo "::notice::scripts/skills/validate_skill.py 尚未建立（P2-T02），略過 skill 靜態驗證"
+          fi
