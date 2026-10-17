@@ -6,7 +6,7 @@ API_PORT ?= 8000
 WEB_PORT ?= 8088
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps logs smoke test migrate reset
+.PHONY: help up down ps logs smoke test migrate sources reset
 
 help: ## 列出可用指令
 	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  make %-8s %s\n", $$1, $$2}'
@@ -16,7 +16,7 @@ help: ## 列出可用指令
 	cp .env.example .env
 	@echo "已由 .env.example 建立 .env；正式環境請改掉預設密碼。"
 
-up: .env ## 建置並啟動 db、redis、api、web，等待健康檢查通過
+up: .env ## 建置並啟動 db、redis、api、web、worker、beat，等待健康檢查通過
 	$(COMPOSE) up -d --build --wait
 
 down: ## 停止並移除容器（保留資料庫資料）
@@ -41,6 +41,9 @@ test: ## 執行後端與前端測試（本機，不需要 Docker）
 migrate: .env ## 執行資料庫 migration（P0-T05 起可用）
 	@test -f backend/alembic.ini || { echo "尚無 backend/alembic.ini：migration 於 P0-T05 建立"; exit 1; }
 	$(COMPOSE) run --rm api alembic upgrade head
+
+sources: .env ## 依 config/sources.yaml 建立缺少的來源資料列（P1-T07；不改既有來源）
+	$(COMPOSE) run --rm api python -m app.ingestion.sync_sources
 
 reset: ## 刪除所有容器與資料（資料庫、Redis）；需加 CONFIRM=yes
 	@if [ "$(CONFIRM)" != "yes" ]; then \

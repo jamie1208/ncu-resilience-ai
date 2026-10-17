@@ -2,27 +2,37 @@
 #
 # - 只能登記 docs/governance/source-inventory.md 中「核准」的來源（測試會檢查）。
 # - 授權狀態與啟用與否以資料庫 sources 表為準，這裡只放 Adapter 類型與 options。
+# - name、poll_interval（秒）只在 `make sources`（sync_sources）建立資料列時使用；
+#   之後以資料庫為準，不會覆寫管理者的調整。
 # - 不得放金鑰：需要授權碼的來源由 Adapter 從環境變數讀取。
 # - 各類型的 options 見 backend/app/ingestion/adapters/ 中對應模組的說明。
 
 sources:
   ncu-announcements:  # 中央大學校園公告（RPage，表格版型）
     type: rpage
+    name: 中央大學校園公告
+    poll_interval: 1800  # 來源盤點建議：每 30 分鐘
     options:
       list_url: https://www.ncu.edu.tw/p/403-1000-15-1.php?Lang=zh-tw
 
   ncu-sec:  # 秘書室公告（RPage，listBS 版型）
     type: rpage
+    name: 中央大學秘書室公告
+    poll_interval: 3600  # 每 60 分鐘
     options:
       list_url: https://sec.ncu.edu.tw/p/403-1007-281-1.php?Lang=zh-tw
 
   ncu-oia:  # 國際事務處最新公告（RPage，表格版型、無欄位標籤）
     type: rpage
+    name: 中央大學國際事務處最新公告
+    poll_interval: 21600  # 每 6 小時
     options:
       list_url: https://oia.ncu.edu.tw/p/403-1026-342.php?Lang=zh-tw
 
   ncu-aa:  # 教務處：總公告（495）與課務組（498，停課、補課）；同站台共用文章編號
     type: rpage
+    name: 中央大學教務處最新消息
+    poll_interval: 3600  # 每 60 分鐘
     options:
       list_urls:
         - https://pdc.adm.ncu.edu.tw/p/403-1019-495-1.php?Lang=zh-tw

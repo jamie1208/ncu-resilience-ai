@@ -23,11 +23,17 @@ SourceCode = Annotated[str, StringConstraints(pattern=r"^[a-z0-9][a-z0-9-]*$")]
 
 
 class SourceSettings(BaseModel):
-    """單一來源的連線設定。"""
+    """單一來源的連線設定。
+
+    `name`、`poll_interval`（秒，≥ 60）只在 `sync_sources` 建立 sources 資料列時使用；
+    之後以資料庫為準，管理者可以直接調整。
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     type: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)] | None = None
+    poll_interval: int | None = Field(default=None, ge=60)
     options: dict[str, Any] = Field(default_factory=dict)
 
 

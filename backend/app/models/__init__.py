@@ -3,13 +3,20 @@
 from app.models.audit import AuditLog
 from app.models.base import Base
 from app.models.event import Event, EventEvidence, Location
-from app.models.source import IngestionRun, Source, SourceItem, SourceItemVersion
+from app.models.source import (
+    IngestionDeadLetter,
+    IngestionRun,
+    Source,
+    SourceItem,
+    SourceItemVersion,
+)
 
 __all__ = [
     "AuditLog",
     "Base",
     "Event",
     "EventEvidence",
+    "IngestionDeadLetter",
     "IngestionRun",
     "Location",
     "Source",

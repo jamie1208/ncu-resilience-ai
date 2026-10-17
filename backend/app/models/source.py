@@ -1,4 +1,5 @@
-"""來源與擷取：sources、ingestion_runs、source_items、source_item_versions（規格 §9）。
+"""來源與擷取：sources、ingestion_runs、source_items、source_item_versions（規格 §9），
+以及 P1-T07 新增的 ingestion_dead_letters 與 sources.cursor。
 
 來源與原文刪除採 RESTRICT：provenance 不可因誤刪來源而連帶消失。
 """
@@ -39,6 +40,9 @@ class Source(Base):
     access_policy: Mapped[str] = mapped_column(String(32))
     enabled: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
     poll_interval: Mapped[int | None] = mapped_column(Integer, comment="擷取間隔（秒）")
+    cursor: Mapped[str | None] = mapped_column(
+        Text, comment="增量擷取的 cursor（Adapter 自訂的不透明字串，P1-T07）"
+    )
     created_at: Mapped[datetime] = created_at_col()
     updated_at: Mapped[datetime] = updated_at_col()
 
@@ -102,3 +106,23 @@ class SourceItemVersion(Base):
     captured_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class IngestionDeadLetter(Base):
+    """重試用盡或不可重試的擷取失敗，等待人工處理（P1-T07）。
+
+    `error_message` 只記錄 Adapter 錯誤訊息（來源代碼與狀態碼），其他例外只記類型，避免原文外洩。
+    """
+
+    __tablename__ = "ingestion_dead_letters"
+    __table_args__ = (Index(None, "source_id", "created_at"),)
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    source_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sources.id", ondelete="RESTRICT"))
+    run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("ingestion_runs.id", ondelete="RESTRICT"))
+    error_type: Mapped[str] = mapped_column(String(100))
+    error_message: Mapped[str | None] = mapped_column(Text)
+    attempts: Mapped[int] = mapped_column(Integer)
+    cursor: Mapped[str | None] = mapped_column(Text, comment="失敗當時的 cursor")
+    created_at: Mapped[datetime] = created_at_col()
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

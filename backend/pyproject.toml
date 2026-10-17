@@ -7,6 +7,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "alembic>=1.20.0",
     "asyncpg>=0.32.0",
+    "celery[redis]>=5.6.3,<6",
     "fastapi>=0.143.3",
     "feedparser>=6.0.14",
     "httpx2>=2.13.1",
@@ -20,6 +21,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "celery-types>=0.26.0",
     "mypy>=2.4.0",
     "pytest>=9.1.1",
     "ruff>=0.17.1",
