@@ -23,7 +23,9 @@ tasks:
     updated_at: '2026-10-17T17:11:26+08:00'
     evidence: docs/progress/records/P0-T05-20261017.md
   P0-T06:
-    status: pending
+    status: done
+    updated_at: '2026-10-17T18:18:47+08:00'
+    evidence: docs/progress/records/P0-T06-20261017.md
   P0-T07:
     status: pending
   P0-T08:
@@ -285,4 +287,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-17T17:46:59+08:00'
+- at: '2026-10-17T18:12:43+08:00'
+  id: P0-T06
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-17T18:18:47+08:00'
+  id: P0-T06
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-17T18:18:47+08:00'
