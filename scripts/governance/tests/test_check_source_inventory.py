@@ -73,4 +73,4 @@ def test_missing_status_column_is_an_error(tmp_path: Path) -> None:
 def test_repo_inventory_is_parseable() -> None:
     res = run(REPO_INVENTORY, "--min", "0")
     assert res.returncode == 0, res.stdout + res.stderr
-    assert "來源 12" in res.stdout
+    assert "來源 27" in res.stdout
