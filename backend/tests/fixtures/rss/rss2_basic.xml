@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 虛構測試資料：RSS 2.0，含時區偏移、CDATA、content:encoded 與非連結型 guid -->
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel>
+<title>測試大學公告</title>
+<link>https://news.example.edu/</link>
+<description>虛構的校園公告 feed</description>
+<language>zh-tw</language>
+<item>
+  <title>宿舍區 10/18 停電通知</title>
+  <link>https://news.example.edu/posts/101</link>
+  <guid isPermaLink="false">post-101</guid>
+  <pubDate>Sat, 17 Oct 2026 20:00:00 +0800</pubDate>
+  <description><![CDATA[因電力設備檢修，宿舍區 10/18 08:00–12:00 停電。]]></description>
+</item>
+<item>
+  <title>圖書館閉館公告</title>
+  <link>https://news.example.edu/posts/102</link>
+  <guid>https://news.example.edu/posts/102</guid>
+  <pubDate>Sat, 17 Oct 2026 10:30:00 GMT</pubDate>
+  <description>摘要文字</description>
+  <content:encoded><![CDATA[<p>圖書館 <strong>10/19</strong> 全日閉館。</p>]]></content:encoded>
+</item>
+<item>
+  <title>校園網路維護</title>
+  <link>https://news.example.edu/posts/103</link>
+  <pubDate>Fri, 16 Oct 2026 01:00:00 GMT</pubDate>
+  <description>10/20 凌晨校園網路維護 30 分鐘。</description>
+</item>
+</channel>
+</rss>

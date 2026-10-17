@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 虛構測試資料：Atom 1.0 -->
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>測試大學電算中心</title>
+  <id>urn:uuid:7f3e0c55-0000-4000-8000-000000000001</id>
+  <updated>2026-10-17T09:00:00Z</updated>
+  <link href="https://cc.example.edu/"/>
+  <entry>
+    <title>郵件系統暫停服務</title>
+    <id>urn:uuid:7f3e0c55-0000-4000-8000-000000000011</id>
+    <link rel="alternate" href="https://cc.example.edu/news/11"/>
+    <published>2026-10-17T08:00:00+08:00</published>
+    <updated>2026-10-17T09:00:00Z</updated>
+    <content type="html">&lt;p&gt;郵件系統 10/18 暫停服務 2 小時。&lt;/p&gt;</content>
+  </entry>
+  <entry>
+    <title>VPN 憑證更新</title>
+    <id>urn:uuid:7f3e0c55-0000-4000-8000-000000000012</id>
+    <link rel="alternate" href="https://cc.example.edu/news/12"/>
+    <updated>2026-10-16T00:00:00Z</updated>
+    <summary type="text">請於 10/31 前更新 VPN 憑證。</summary>
+  </entry>
+</feed>

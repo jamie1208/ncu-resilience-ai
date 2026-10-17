@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 虛構測試資料：合法但沒有項目 -->
+<rss version="2.0">
+<channel>
+<title>沒有公告</title>
+<link>https://news.example.edu/</link>
+<description>目前沒有項目</description>
+</channel>
+</rss>

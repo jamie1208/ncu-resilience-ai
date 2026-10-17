@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 虛構測試資料：欄位缺漏。只有第 1、3、4 篇可用 -->
+<rss version="2.0">
+<channel>
+<title>欄位缺漏測試</title>
+<link>https://news.example.edu/</link>
+<description>測試</description>
+<item>
+  <title>完整的一篇</title>
+  <link>https://news.example.edu/posts/201</link>
+  <pubDate>Sat, 17 Oct 2026 01:00:00 GMT</pubDate>
+  <description>內容</description>
+</item>
+<item>
+  <title>沒有連結</title>
+  <pubDate>Sat, 17 Oct 2026 02:00:00 GMT</pubDate>
+  <description>這篇沒有 link，無法反查原文，必須略過</description>
+</item>
+<item>
+  <title>沒有發布時間</title>
+  <link>https://news.example.edu/posts/203</link>
+  <description>published_at 應為 None</description>
+</item>
+<item>
+  <title>只有標題的公告</title>
+  <link>https://news.example.edu/posts/204</link>
+  <pubDate>Sat, 17 Oct 2026 03:00:00 GMT</pubDate>
+</item>
+<item>
+  <link>https://news.example.edu/posts/205</link>
+  <pubDate>Sat, 17 Oct 2026 04:00:00 GMT</pubDate>
+  <description>   </description>
+</item>
+<item>
+  <title>非 http 連結</title>
+  <link>javascript:alert(1)</link>
+  <pubDate>Sat, 17 Oct 2026 05:00:00 GMT</pubDate>
+  <description>必須略過</description>
+</item>
+</channel>
+</rss>

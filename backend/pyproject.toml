@@ -8,6 +8,8 @@ dependencies = [
     "alembic>=1.20.0",
     "asyncpg>=0.32.0",
     "fastapi>=0.143.3",
+    "feedparser>=6.0.14",
+    "httpx2>=2.13.1",
     "pydantic>=2.14.1",
     "pydantic-settings>=2.16.0",
     "sqlalchemy[asyncio]>=2.1.5",
@@ -16,7 +18,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "httpx2>=2.13.1",
     "mypy>=2.4.0",
     "pytest>=9.1.1",
     "ruff>=0.17.1",
@@ -45,3 +46,4 @@ ignore = ["RUF001", "RUF002", "RUF003"]  # 允許中文全形標點
 python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
+mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"  # 第三方套件缺型別時的自寫 stub（stubs/）

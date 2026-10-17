@@ -7,7 +7,7 @@
 NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系統。研究專題，非校方官方系統。
 
 - 規格書：`docs/requirements/NCU_Resilience_AI_System_Plan_v1.pdf`（需求的最終依據）
-- 執行計畫：`docs/plan/execution-plan.md`（61 個任務的檔案清單、驗證方式與閘門）
+- 執行計畫：`docs/plan/execution-plan.md`（62 個任務的檔案清單、驗證方式與閘門）
 - 目標架構：`docs/architecture/project-structure.md`
 - 進度：`docs/progress/state.yaml`，透過 `ncu-resilience-tracker` skill 操作
 
