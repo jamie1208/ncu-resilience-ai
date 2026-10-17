@@ -1,6 +1,6 @@
 # 專案目標架構
 
-這是全部 59 個任務完成後的 repo 結構。目前骨架只建立了頂層資料夾與規範文件，其餘檔案由各任務建立；註解中的任務 ID 標示誰負責建立。
+這是全部 60 個任務完成後的 repo 結構。目前骨架只建立了頂層資料夾與規範文件，其餘檔案由各任務建立；註解中的任務 ID 標示誰負責建立。
 
 ## 系統分層
 
@@ -104,7 +104,7 @@ ncu-resilience-ai/
 │
 └── docs/
     ├── requirements/              # 規格書 v1.0 PDF、v1.1（P5-T09）
-    ├── plan/execution-plan.md     # 59 個任務的定義
+    ├── plan/execution-plan.md     # 60 個任務的定義
     ├── architecture/              # 本檔、state-machines、rbac、skill-standard
     ├── decisions/                 # ADR
     ├── governance/                # source-inventory、manual-import-format
