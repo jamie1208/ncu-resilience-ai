@@ -6,7 +6,7 @@ API_PORT ?= 8000
 WEB_PORT ?= 8088
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps logs smoke test migrate sources reset
+.PHONY: help up down ps logs smoke test migrate sources health reset
 
 help: ## 列出可用指令
 	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  make %-8s %s\n", $$1, $$2}'
@@ -44,6 +44,9 @@ migrate: .env ## 執行資料庫 migration（P0-T05 起可用）
 
 sources: .env ## 依 config/sources.yaml 建立缺少的來源資料列（P1-T07；不改既有來源）
 	$(COMPOSE) run --rm api python -m app.ingestion.sync_sources
+
+health: .env ## 顯示各來源擷取健康狀態（P1-T08；7 天成功率、連續失敗、死信）
+	$(COMPOSE) run --rm api python -m app.ingestion.health
 
 reset: ## 刪除所有容器與資料（資料庫、Redis）；需加 CONFIRM=yes
 	@if [ "$(CONFIRM)" != "yes" ]; then \

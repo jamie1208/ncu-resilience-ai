@@ -27,6 +27,18 @@ class AccessPolicy(StrEnum):
     REJECTED = "rejected"  # 不核准
 
 
+class RunStatus(StrEnum):
+    """ingestion_runs.status 的值（P1-T07）。"""
+
+    QUEUED = "queued"
+    RUNNING = "running"
+    RETRYING = "retrying"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+    ABANDONED = "abandoned"
+
+
 @dataclass(frozen=True)
 class SourceConfig:
     """建立 Adapter 所需的來源設定。`options` 為 Adapter 自訂參數（如 feed URL），唯讀。"""

@@ -5,27 +5,14 @@ P0 只回報應用程式本身；資料庫與 Redis 檢查於 P0-T04／P0-T05 �
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 
+from app.api.responses import envelope
 from app.core.config import Settings, get_settings
-from app.core.logging import request_id_var
 
 router = APIRouter(tags=["health"])
-
-
-def envelope(data: Any) -> dict[str, Any]:
-    """組成統一回應格式 `{data, meta, error}`。"""
-    return {
-        "data": data,
-        "meta": {
-            "request_id": request_id_var.get(),
-            "timestamp": datetime.now(UTC).isoformat(),
-        },
-        "error": None,
-    }
 
 
 @router.get("/health")
