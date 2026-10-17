@@ -1,6 +1,6 @@
 """事件、證據與地點：events、event_evidence、locations（規格 §9）。
 
-狀態欄位暫以字串儲存；合法值與轉移規則由 P0-T06 的 app/domain/states.py 定義。
+狀態欄位的合法值由 app/domain/states.py 定義；events.status 以 CHECK 約束強制（0002）。
 """
 
 from __future__ import annotations
@@ -8,10 +8,13 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Double, ForeignKey, String, Text
+from sqlalchemy import CheckConstraint, Double, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.domain.states import EventStatus
 from app.models.base import Base, created_at_col, updated_at_col, uuid_pk
+
+_EVENT_STATUS_VALUES = ", ".join(f"'{s.value}'" for s in EventStatus)
 
 
 class Location(Base):
@@ -30,6 +33,8 @@ class Event(Base):
     """由一或多篇來源文章彙整出的校園事件。"""
 
     __tablename__ = "events"
+    # 合法值與轉移由 app/domain/states.py 定義；新增狀態需同步 migration
+    __table_args__ = (CheckConstraint(f"status IN ({_EVENT_STATUS_VALUES})", name="status"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
     title: Mapped[str] = mapped_column(String(300))
