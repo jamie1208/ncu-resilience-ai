@@ -7,7 +7,7 @@
 >
 > 修改計畫時三處要一起改：本檔、phases.yaml（或其覆寫檔 `docs/progress/phases.yaml`）、ADR。
 
-全案 6 個階段、59 個任務、26 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
+全案 6 個階段、60 個任務、26 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
 
 ---
 
@@ -63,7 +63,7 @@ skills/<skill-name>/
   - 檔案：`docs/architecture/rbac.md`、`backend/app/core/security.py`（介面先行）、`backend/app/services/audit.py`、migration 內加入禁止 UPDATE／DELETE audit_logs 的 trigger
   - 驗證：`backend/tests/integration/test_audit_append_only.py`
 - **P0-T08 CI 流水線**
-  - 檔案：`.github/workflows/ci.yml`（ruff、mypy、pytest、migration 往返、前端 lint／build、skill 靜態驗證預留）
+  - 檔案：`.github/workflows/ci.yml`（ruff、mypy、pytest、migration 往返、前端 lint／build、skill 靜態驗證預留、tracker 測試 `python3 -m pytest .claude/skills/ncu-resilience-tracker/tests -q`）
   - 驗證：PR 上 CI 全綠
 - **P0-T09 來源授權盤點**（需你決定）
   - 檔案：`docs/governance/source-inventory.md`（來源、URL、類型、授權依據、robots.txt、條款連結、擷取頻率、核准狀態）
@@ -72,6 +72,10 @@ skills/<skill-name>/
   - 檔案：`.claude/skills/ncu-resilience-tracker/`、`docs/progress/state.yaml`、`docs/progress/records/`、`docs/progress/reviews/`
   - 驗證：`python .claude/skills/ncu-resilience-tracker/scripts/tracker.py status` 正常輸出
   - 備註：骨架已完成，只需確認並標記
+- **P0-T11 tracker 人工閘門保護**（ADR-0002 新增）
+  - 檔案：`.claude/skills/ncu-resilience-tracker/scripts/tracker.py`、`.claude/skills/ncu-resilience-tracker/tests/test_tracker.py`、`.claude/skills/ncu-resilience-tracker/SKILL.md`、`docs/progress/phases.yaml`、`docs/decisions/ADR-0002-tracker-human-gate.md`
+  - 驗證：`python3 -m pytest .claude/skills/ncu-resilience-tracker/tests -q`（系統 Python + pytest，不依賴 backend 環境）
+  - 備註：`manual: true` 閘門標記 pass、`human: true` 任務標記 done 須加 `--confirmed-by-user`，否則拒絕且不改動 state.yaml
 
 ```bash
 make up

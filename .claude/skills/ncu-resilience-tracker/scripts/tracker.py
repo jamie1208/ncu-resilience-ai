@@ -455,6 +455,17 @@ def cmd_set(args, root):
         if unmet or missing:
             sys.exit("拒絕標記 done：" + (f"前置未完成 {unmet} " if unmet else "")
                      + (f"缺檔案 {missing}" if missing else "") + "（確定要標記請加 --force）")
+    if key == "tasks":
+        item = next(t for _, t in all_tasks(plan) if t["id"] == args.id)
+        needs_user = bool(item.get("human")) and args.status == "done"
+        kind = "需你決定的任務"
+    else:
+        item = next(g for _, g in all_gates(plan) if g["id"] == args.id)
+        needs_user = bool(item.get("manual")) and args.status == "pass"
+        kind = "人工閘門"
+    if needs_user and not args.confirmed_by_user:
+        sys.exit(f"拒絕標記 {args.status}：{args.id} 是{kind}，必須由使用者本人確認。"
+                 "取得使用者明確同意後加 --confirmed-by-user（--force 不適用）")
     rec = state.setdefault(key, {}).setdefault(args.id, {})
     old = rec.get("status", "pending")
     rec.update({"status": args.status, "updated_at": now()})
@@ -462,8 +473,10 @@ def cmd_set(args, root):
         rec["note"] = args.note
     if args.evidence:
         rec["evidence"] = args.evidence
-    state.setdefault("history", []).append({"at": now(), "id": args.id, "from": old,
-                                            "to": args.status, "note": args.note or ""})
+    entry = {"at": now(), "id": args.id, "from": old, "to": args.status, "note": args.note or ""}
+    if needs_user:
+        entry["confirmed_by_user"] = True
+    state.setdefault("history", []).append(entry)
     save_state(root, state)
     print(f"{args.id}: {old} → {args.status}")
 
@@ -517,6 +530,8 @@ def main(argv=None):
     st.add_argument("id"); st.add_argument("status")
     st.add_argument("--note"); st.add_argument("--evidence")
     st.add_argument("--force", action="store_true")
+    st.add_argument("--confirmed-by-user", action="store_true",
+                    help="人工閘門標記 pass、human 任務標記 done 時必填，僅在使用者明確同意後使用")
     rc = sub.add_parser("record"); rc.add_argument("id"); rc.add_argument("--overwrite", action="store_true")
     args = ap.parse_args(argv)
     root = find_root(args.root)

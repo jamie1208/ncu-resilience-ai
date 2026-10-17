@@ -9,7 +9,7 @@
 | 文件 | 用途 |
 | --- | --- |
 | [規格書 v1.0](docs/requirements/NCU_Resilience_AI_System_Plan_v1.pdf) | 需求基線 |
-| [執行計畫](docs/plan/execution-plan.md) | 6 階段、59 任務的檔案清單與驗證方式 |
+| [執行計畫](docs/plan/execution-plan.md) | 6 階段、60 任務的檔案清單與驗證方式 |
 | [目標架構](docs/architecture/project-structure.md) | 完成後的目錄結構與分層 |
 | [AGENTS.md](AGENTS.md) | AI coding agent 的開發規範 |
 
