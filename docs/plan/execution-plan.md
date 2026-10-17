@@ -7,7 +7,7 @@
 >
 > 修改計畫時三處要一起改：本檔、phases.yaml（或其覆寫檔 `docs/progress/phases.yaml`）、ADR。
 
-全案 6 個階段、60 個任務、26 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
+全案 6 個階段、61 個任務、26 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
 
 ---
 
@@ -78,6 +78,10 @@ skills/<skill-name>/
   - 檔案：`.claude/skills/ncu-resilience-tracker/scripts/tracker.py`、`.claude/skills/ncu-resilience-tracker/tests/test_tracker.py`、`.claude/skills/ncu-resilience-tracker/SKILL.md`、`docs/progress/phases.yaml`、`docs/decisions/ADR-0002-tracker-human-gate.md`
   - 驗證：`python3 -m pytest .claude/skills/ncu-resilience-tracker/tests -q`（系統 Python + pytest，不依賴 backend 環境）
   - 備註：`manual: true` 閘門標記 pass、`human: true` 任務標記 done 須加 `--confirmed-by-user`，否則拒絕且不改動 state.yaml
+- **P0-T12 稽核與權限強化（code review 修正）**（ADR-0004 新增；進入 P1 前完成）
+  - 檔案：`backend/app/services/audit.py`、`backend/app/core/security.py`、`backend/app/domain/states.py`、`backend/tests/unit/test_security.py`、`backend/tests/unit/test_audit_metadata.py`、`backend/tests/integration/test_audit_append_only.py`、`backend/tests/integration/conftest.py`、`docs/architecture/rbac.md`、`docs/decisions/ADR-0004-audit-hardening.md`；移除既有測試中的 `type: ignore`
+  - 內容：稽核 metadata 檢查值（PII 樣式、字串長度）、UUID／datetime 正規化、欄位名稱改為分段比對；無請求上下文時產生 request_id；`Principal` 的 kind 與 roles 必須一致；敏感權限集中稽核（`authorize()`）；`permissions` 快取；測試資料庫可清空 audit_logs；移除所有 `type: ignore`
+  - 驗證：`cd backend && uv run pytest -q && uv run mypy app`，且 `grep -rn "type: ignore" backend/app backend/tests` 無結果
 
 ```bash
 make up

@@ -11,6 +11,7 @@ from app.core.security import (
     Permission,
     PermissionDeniedError,
     Principal,
+    PrincipalKind,
     Role,
     has_permission,
     require,
@@ -113,3 +114,44 @@ def test_admin_and_service_principals_need_subject() -> None:
         Principal(kind="admin", subject=None, roles=frozenset({Role.ADMIN}))
     with pytest.raises(ValueError):
         Principal(kind="service", subject="", roles=frozenset({Role.SERVICE_AI}))
+
+
+# --- P0-T12：身分種類與角色必須一致、權限快取 ------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("kind", "subject", "roles"),
+    [
+        ("anonymous", None, {Role.ADMIN}),
+        ("anonymous", None, {Role.VISITOR, Role.SERVICE_NOTIFIER}),
+        ("reporter", None, {Role.SERVICE_NOTIFIER}),
+        ("reporter", None, {Role.ADMIN}),
+        ("admin", "u-1", {Role.SERVICE_AI}),
+        ("service", "ai-worker", {Role.ADMIN}),
+        ("service", "ai-worker", {Role.VISITOR}),
+        ("admin", "u-1", set()),
+    ],
+)
+def test_kind_and_roles_must_be_consistent(
+    kind: PrincipalKind, subject: str | None, roles: set[Role]
+) -> None:
+    with pytest.raises(ValueError):
+        Principal(kind=kind, subject=subject, roles=frozenset(roles))
+
+
+def test_valid_kind_role_combinations() -> None:
+    Principal(kind="anonymous", subject=None, roles=frozenset({Role.VISITOR}))
+    Principal(kind="reporter", subject=None, roles=frozenset({Role.REPORTER}))
+    Principal(kind="admin", subject="u-1", roles=frozenset({Role.ADMIN}))
+    Principal(
+        kind="service",
+        subject="worker",
+        roles=frozenset({Role.SERVICE_INGESTION, Role.SERVICE_AI}),
+    )
+
+
+def test_permissions_are_computed_once() -> None:
+    a = admin()
+    assert a.permissions is a.permissions
+    assert a.permissions == ROLE_PERMISSIONS[Role.ADMIN]
+    assert "permissions" not in repr(a)

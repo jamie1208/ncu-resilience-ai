@@ -76,10 +76,9 @@ def anyio_backend() -> str:
 
 @pytest.fixture()
 async def session(test_db_url: URL, migrated: Config) -> AsyncIterator[AsyncSession]:
-    """每個測試一個 session；結束後清空所有業務資料表。
+    """每個測試一個 session；結束後清空所有資料表（含 audit_logs）。
 
-    audit_logs 為 append-only（trigger 禁止 TRUNCATE），不清空；測試請以唯一的
-    request_id 或 id 篩選，不要假設表是空的。
+    audit_logs 的 append-only trigger 只在同一個交易內、針對測試資料庫暫時停用。
     """
     engine = create_async_engine(test_db_url)
     maker = async_sessionmaker(engine, expire_on_commit=False)
@@ -90,11 +89,15 @@ async def session(test_db_url: URL, migrated: Config) -> AsyncIterator[AsyncSess
             await conn.execute(
                 text(
                     "SELECT tablename FROM pg_tables WHERE schemaname = 'public' "
-                    "AND tablename NOT IN ('alembic_version', 'audit_logs')"
+                    "AND tablename <> 'alembic_version'"
                 )
             )
         ).scalars()
         names = ", ".join(f'"{t}"' for t in tables)
         if names:
+            await conn.execute(
+                text("ALTER TABLE audit_logs DISABLE TRIGGER audit_logs_no_truncate")
+            )
             await conn.execute(text(f"TRUNCATE {names} RESTART IDENTITY CASCADE"))
+            await conn.execute(text("ALTER TABLE audit_logs ENABLE TRIGGER audit_logs_no_truncate"))
     await engine.dispose()

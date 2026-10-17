@@ -3,8 +3,15 @@
 from __future__ import annotations
 
 import pytest
+from pydantic_settings import SettingsConfigDict
 
 from app.core.config import Settings
+
+
+class IsolatedSettings(Settings):
+    """不讀任何 .env 檔，只看環境變數。"""
+
+    model_config = SettingsConfigDict(**{**Settings.model_config, "env_file": None})
 
 
 @pytest.fixture(autouse=True)
@@ -26,7 +33,7 @@ def _clean_db_env(monkeypatch: pytest.MonkeyPatch) -> None:
 def make(monkeypatch: pytest.MonkeyPatch, **env: str) -> Settings:
     for k, v in env.items():
         monkeypatch.setenv(k, v)
-    return Settings(_env_file=None)  # type: ignore[call-arg]
+    return IsolatedSettings()
 
 
 def test_url_built_from_postgres_vars_with_localhost_default(

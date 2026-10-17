@@ -144,15 +144,36 @@ tasks:
     status: done
     updated_at: '2026-10-17T11:14:05+08:00'
     evidence: docs/progress/records/P0-T11-20261017.md
+  P0-T12:
+    status: done
+    updated_at: '2026-10-17T21:04:54+08:00'
+    evidence: docs/progress/records/P0-T12-20261017.md
 gates:
   G0-1:
-    status: pending
+    status: pass
+    last_run: '2026-10-17T20:42:47+08:00'
+    last_output: '{"data":{"status":"ok","service":"ncu-resilience-ai","version":"0.1.0","environment":"development"},"meta":{"request_id":"8cee9ae4-b0e8-497d-ba91-fbb966d85ad3","timestamp":"2026-10-17T12:42:47.390248+00:00"},"error":null}'
   G0-2:
-    status: pending
+    status: pass
+    last_run: '2026-10-17T20:42:48+08:00'
+    last_output: 'INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+
+      INFO  [alembic.runtime.migration] Will assume transactional DDL.
+
+      INFO  [alembic.runtime.migration] Running upgrade  -> 0001_core, 核心資料表：sources、ingestion_runs、source_items、source_item_versions、
+
+      events、event_evidence、locations、audit_logs（規格 §9）。
+
+      INFO  [alembic.runtime.migration] Running upgrade 0001_core -> 0002_audit_append_only, audit_logs 只能新增（禁止 UPDATE／DELETE／TRUNCATE），events.status
+      加上 CHECK 約束。'
   G0-3:
-    status: pending
+    status: pass
+    updated_at: '2026-10-17T20:46:06+08:00'
+    note: 使用者 2026-10-17 確認：main 37f9e83 CI 全綠；P0-T08 起 main 合併後 CI 皆全綠
   G0-4:
-    status: pending
+    status: pass
+    updated_at: '2026-10-17T20:46:06+08:00'
+    note: 使用者 2026-10-17 確認：27 個來源中核准 12 個（check_source_inventory.py）
   G1-1:
     status: pending
   G1-2:
@@ -309,4 +330,26 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-17T18:31:51+08:00'
+- at: '2026-10-17T20:46:06+08:00'
+  id: G0-3
+  from: pending
+  to: pass
+  note: 使用者 2026-10-17 確認：main 37f9e83 CI 全綠；P0-T08 起 main 合併後 CI 皆全綠
+  confirmed_by_user: true
+- at: '2026-10-17T20:46:06+08:00'
+  id: G0-4
+  from: pending
+  to: pass
+  note: 使用者 2026-10-17 確認：27 個來源中核准 12 個（check_source_inventory.py）
+  confirmed_by_user: true
+- at: '2026-10-17T20:59:30+08:00'
+  id: P0-T12
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-17T21:04:54+08:00'
+  id: P0-T12
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-17T21:04:54+08:00'

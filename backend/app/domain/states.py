@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from enum import StrEnum
+from typing import overload
 
 
 class EventStatus(StrEnum):
@@ -83,11 +84,7 @@ ALERT_TRANSITIONS: Mapping[AlertState, frozenset[AlertState]] = {
     _A.EXPIRED: frozenset(),
 }
 
-_TABLES: Mapping[type[StrEnum], Mapping[StrEnum, frozenset[StrEnum]]] = {
-    EventStatus: EVENT_TRANSITIONS,  # type: ignore[dict-item]
-    VerificationStatus: VERIFICATION_TRANSITIONS,  # type: ignore[dict-item]
-    AlertState: ALERT_TRANSITIONS,  # type: ignore[dict-item]
-}
+MACHINES: tuple[type[StrEnum], ...] = (EventStatus, VerificationStatus, AlertState)
 
 INITIAL: Mapping[type[StrEnum], StrEnum] = {
     EventStatus: EventStatus.DETECTED,
@@ -106,17 +103,28 @@ class StateTransitionError(ValueError):
         super().__init__(f"{machine} 不允許從 {current!s} 轉移到 {target!s}")
 
 
-def allowed_targets[S: StrEnum](current: S) -> frozenset[S]:
+@overload
+def allowed_targets(current: EventStatus) -> frozenset[EventStatus]: ...
+@overload
+def allowed_targets(current: VerificationStatus) -> frozenset[VerificationStatus]: ...
+@overload
+def allowed_targets(current: AlertState) -> frozenset[AlertState]: ...
+@overload
+def allowed_targets(current: StrEnum) -> frozenset[StrEnum]: ...
+def allowed_targets(current: StrEnum) -> frozenset[StrEnum]:
     """回傳 `current` 可轉移到的狀態。"""
-    table = _TABLES.get(type(current))
-    if table is None:
-        raise TypeError(f"未知的狀態類型：{type(current).__name__}")
-    return table[current]  # type: ignore[return-value]
+    if isinstance(current, EventStatus):
+        return EVENT_TRANSITIONS[current]
+    if isinstance(current, VerificationStatus):
+        return VERIFICATION_TRANSITIONS[current]
+    if isinstance(current, AlertState):
+        return ALERT_TRANSITIONS[current]
+    raise TypeError(f"未知的狀態類型：{type(current).__name__}")
 
 
 def can_transition[S: StrEnum](current: S, target: S) -> bool:
     """`current → target` 是否合法；不同狀態機或非列舉值一律為 False。"""
-    if type(current) is not type(target) or type(current) not in _TABLES:
+    if type(current) is not type(target) or type(current) not in MACHINES:
         return False
     return target in allowed_targets(current)
 
