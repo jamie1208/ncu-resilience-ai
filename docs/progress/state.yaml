@@ -124,6 +124,10 @@ tasks:
     status: pending
   P5-T09:
     status: pending
+  P0-T11:
+    status: done
+    updated_at: '2026-10-17T11:14:05+08:00'
+    evidence: docs/progress/records/P0-T11-20261017.md
 gates:
   G0-1:
     status: pending
@@ -198,4 +202,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-17T00:47:04+08:00'
+- at: '2026-10-17T00:49:48+08:00'
+  id: P0-T11
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-17T11:14:05+08:00'
+  id: P0-T11
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-17T11:14:05+08:00'

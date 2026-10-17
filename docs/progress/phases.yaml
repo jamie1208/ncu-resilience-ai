@@ -1,0 +1,380 @@
+# NCU Resilience AI 任務與閘門定義（tracker 的單一事實來源）
+# - 任務 ID 與《NCU Resilience AI 分階段執行計畫》文件一致。
+# - paths：任務完成後「應存在」的代表性檔案或資料夾（相對 repo 根目錄）。
+#   tracker check 會用它比對 state.yaml 的標記是否可信。
+# - deps：前置任務；未完成前 tracker 不會推薦此任務。
+# - human：true 表示需要你親自決定，AI 只能準備資料。
+# - gates.command：可自動執行的驗證指令（--run-gates 時執行）；
+#   manual：true 表示需人工確認，tracker 只會提示。
+# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11），tracker 優先讀取本檔。
+# 修改計畫時：只改這個檔案，再執行 `tracker.py sync` 讓 state.yaml 補上新任務。
+
+version: 1
+spec: NCU_Resilience_AI_System_Plan_v1.pdf
+
+phases:
+  - id: P0
+    name: 基線建置
+    goal: 乾淨 clone 一鍵啟動，CI 能擋下壞掉的變更
+    tasks:
+      - id: P0-T01
+        title: Repo 與 AI 工作規範
+        paths: [README.md, AGENTS.md, CLAUDE.md, .gitignore, docs/decisions/ADR-0001-architecture.md]
+      - id: P0-T02
+        title: 後端骨架（FastAPI）
+        deps: [P0-T01]
+        paths: [backend/pyproject.toml, backend/app/main.py, backend/app/core/config.py, backend/app/api/v1/health.py, backend/tests/unit/test_health.py]
+      - id: P0-T03
+        title: 前端骨架（React + TS）
+        deps: [P0-T01]
+        paths: [frontend/package.json, frontend/src/public, frontend/src/admin, frontend/src/api/client.ts]
+      - id: P0-T04
+        title: Docker Compose 環境
+        deps: [P0-T02, P0-T03]
+        paths: [infra/docker/docker-compose.yml, backend/Dockerfile, frontend/Dockerfile, .env.example, Makefile]
+      - id: P0-T05
+        title: 資料庫 Migration 與核心模型
+        deps: [P0-T04]
+        paths: [backend/alembic.ini, infra/migrations/versions, backend/app/models, backend/app/db/session.py]
+      - id: P0-T06
+        title: 狀態機與列舉
+        deps: [P0-T02]
+        paths: [backend/app/domain/states.py, docs/architecture/state-machines.md, backend/tests/unit/test_state_machines.py]
+      - id: P0-T07
+        title: RBAC 與稽核規格
+        deps: [P0-T05]
+        paths: [docs/architecture/rbac.md, backend/app/core/security.py, backend/app/services/audit.py, backend/tests/integration/test_audit_append_only.py]
+      - id: P0-T08
+        title: CI 流水線
+        deps: [P0-T02, P0-T03, P0-T05]
+        paths: [.github/workflows/ci.yml]
+      - id: P0-T09
+        title: 來源授權盤點
+        human: true
+        paths: [docs/governance/source-inventory.md]
+      - id: P0-T10
+        title: 進度追蹤機制
+        paths: [docs/progress/state.yaml, docs/progress/records]
+      - id: P0-T11
+        title: tracker 人工閘門保護
+        deps: [P0-T10]
+        paths: [.claude/skills/ncu-resilience-tracker/scripts/tracker.py, .claude/skills/ncu-resilience-tracker/tests/test_tracker.py, docs/decisions/ADR-0002-tracker-human-gate.md]
+    gates:
+      - id: G0-1
+        title: 乾淨 clone 一鍵啟動，health 回 200
+        command: curl -fsS http://localhost:8000/api/v1/health
+      - id: G0-2
+        title: Migration 可往返
+        command: cd backend && uv run alembic upgrade head && uv run alembic downgrade base && uv run alembic upgrade head
+      - id: G0-3
+        title: CI 全綠
+        manual: true
+      - id: G0-4
+        title: 至少 3 個合法來源核准
+        manual: true
+
+  - id: P1
+    name: 採集與來源追溯
+    goal: 3 個合法來源 7 天穩定擷取，重跑零重複，可反查原文
+    tasks:
+      - id: P1-T01
+        title: Source Adapter 介面
+        deps: [P0-T05]
+        paths: [backend/app/ingestion/base.py, backend/app/ingestion/registry.py]
+      - id: P1-T02
+        title: RSS Adapter
+        deps: [P1-T01]
+        paths: [backend/app/ingestion/adapters/rss.py, backend/tests/unit/ingestion/test_rss.py]
+      - id: P1-T03
+        title: 校內公告 HTML Adapter
+        deps: [P1-T01, P0-T09]
+        paths: [backend/app/ingestion/adapters/ncu_announcements.py, backend/tests/unit/ingestion/test_ncu_announcements.py]
+      - id: P1-T04
+        title: 人工匯入 Adapter（社群備援）
+        deps: [P1-T01]
+        paths: [backend/app/ingestion/adapters/manual_import.py, docs/governance/manual-import-format.md]
+      - id: P1-T05
+        title: 標準化
+        deps: [P1-T01]
+        paths: [backend/app/ingestion/normalize.py, backend/tests/unit/ingestion/test_normalize.py]
+      - id: P1-T06
+        title: 冪等寫入與版本
+        deps: [P1-T05]
+        paths: [backend/app/ingestion/store.py, backend/tests/integration/test_idempotent_ingest.py]
+      - id: P1-T07
+        title: 排程、重試與死信
+        deps: [P1-T06]
+        paths: [backend/app/worker/celery_app.py, backend/app/worker/tasks/ingest.py]
+      - id: P1-T08
+        title: 來源健康與管理 API
+        deps: [P1-T07]
+        paths: [backend/app/ingestion/health.py, backend/app/api/v1/admin/ingestion_runs.py]
+      - id: P1-T09
+        title: 標記資料集啟動
+        human: true
+        deps: [P1-T06]
+        paths: [data/labeling/guidelines.md, data/labeling/label.schema.json, scripts/labeling/export_for_labeling.py]
+      - id: P1-T10
+        title: 七天穩定運行報告
+        deps: [P1-T08]
+        paths: [scripts/reports/ingestion_report.py]
+    gates:
+      - id: G1-1
+        title: ≥ 3 個來源上線
+        manual: true
+      - id: G1-2
+        title: 7 天擷取成功率 ≥ 98%
+        command: cd backend && uv run python ../scripts/reports/ingestion_report.py --days 7 --check-success 0.98
+      - id: G1-3
+        title: 重跑零重複
+        command: cd backend && uv run pytest tests/integration/test_idempotent_ingest.py -q
+      - id: G1-4
+        title: 隨機 20 筆皆可反查原文
+        manual: true
+      - id: G1-5
+        title: ≥ 100 筆人工確認標記樣本
+        manual: true
+
+  - id: P2
+    name: AI 核心
+    goal: 可替換模型、可驗證輸出、可回溯證據；S01–S08 達標
+    tasks:
+      - id: P2-T01
+        title: Skill 規格與模板
+        deps: [P1-T06]
+        paths: [skills/_template/SKILL.md, docs/architecture/skill-standard.md]
+      - id: P2-T02
+        title: Skill 靜態驗證工具
+        deps: [P2-T01]
+        paths: [scripts/skills/validate_skill.py]
+      - id: P2-T03
+        title: LLM Adapter
+        deps: [P0-T02]
+        paths: [backend/app/ai/llm/base.py, backend/app/ai/llm/openai_provider.py, backend/app/ai/llm/fake_provider.py]
+      - id: P2-T04
+        title: Skill Runner
+        deps: [P2-T02, P2-T03]
+        paths: [backend/app/ai/runner/loader.py, backend/app/ai/runner/prompt.py, backend/app/ai/runner/validate.py, backend/app/ai/runner/run.py]
+      - id: P2-T05
+        title: 評測框架
+        deps: [P2-T04]
+        paths: [scripts/eval/run_eval.py, backend/app/ai/eval/metrics.py, backend/tests/golden]
+      - id: P2-T06
+        title: S01 relevance-filter
+        skill: relevance-filter
+        deps: [P2-T05, P1-T09]
+        paths: [skills/relevance-filter/SKILL.md, skills/relevance-filter/tests/cases.jsonl]
+      - id: P2-T07
+        title: S02 event-extractor
+        skill: event-extractor
+        deps: [P2-T06]
+        paths: [skills/event-extractor/SKILL.md, skills/event-extractor/tests/cases.jsonl]
+      - id: P2-T08
+        title: S03 event-classifier
+        skill: event-classifier
+        deps: [P2-T07]
+        paths: [skills/event-classifier/SKILL.md, skills/event-classifier/references/taxonomy.md]
+      - id: P2-T09
+        title: S04 event-linker
+        skill: event-linker
+        deps: [P2-T07]
+        paths: [skills/event-linker/SKILL.md, backend/app/ai/embeddings.py]
+      - id: P2-T10
+        title: S05 evidence-verifier
+        skill: evidence-verifier
+        deps: [P2-T09]
+        paths: [skills/evidence-verifier/SKILL.md, backend/app/verification/rules.py]
+      - id: P2-T11
+        title: 風險引擎 + S06 risk-assessor
+        skill: risk-assessor
+        human: true
+        deps: [P2-T10]
+        paths: [backend/app/risk/engine.py, config/risk-policy.yaml, skills/risk-assessor/scripts/calculate_risk.py]
+      - id: P2-T12
+        title: S07 root-cause-analyst + S08 solution-planner
+        skill: root-cause-analyst,solution-planner
+        deps: [P2-T11]
+        paths: [skills/root-cause-analyst/SKILL.md, skills/solution-planner/SKILL.md]
+      - id: P2-T13
+        title: 分析管線
+        deps: [P2-T11]
+        paths: [backend/app/pipeline/analyze_item.py, backend/tests/integration/test_pipeline.py]
+      - id: P2-T14
+        title: 提示注入與 PII 測試
+        deps: [P2-T04]
+        paths: [backend/tests/security/test_prompt_injection.py, backend/tests/fixtures/adversarial]
+    gates:
+      - id: G2-1
+        title: S01–S08 達到評測門檻
+        command: cd backend && uv run python ../scripts/eval/run_eval.py --all --split test --summary eval/reports/P2-summary.json --check-thresholds
+      - id: G2-2
+        title: 事實性結論 100% 可追溯或 abstain
+        manual: true
+      - id: G2-3
+        title: 更換模型只需改設定
+        command: cd backend && uv run pytest tests/golden -q
+      - id: G2-4
+        title: 對抗測試全過
+        command: cd backend && uv run pytest tests/security -q
+
+  - id: P3
+    name: 產品與安全發布（MVP）
+    goal: §13.1 最小端到端版本；未核實具體指控錯誤公開 0 次
+    tasks:
+      - id: P3-T01
+        title: 管理者驗證與 RBAC
+        deps: [P0-T07]
+        paths: [backend/app/api/deps.py, backend/tests/integration/test_auth.py, scripts/admin/create_admin.py]
+      - id: P3-T02
+        title: 公開 API
+        deps: [P2-T13]
+        paths: [backend/app/api/v1/public/events.py, backend/app/api/schemas/public.py, backend/app/api/pagination.py, backend/app/api/errors.py]
+      - id: P3-T03
+        title: 管理 API
+        deps: [P3-T01, P2-T13]
+        paths: [backend/app/api/v1/admin/events.py, backend/app/api/v1/admin/alerts.py, backend/app/api/v1/admin/audit_logs.py]
+      - id: P3-T04
+        title: 公開前端
+        deps: [P3-T02]
+        paths: [frontend/src/public/pages]
+      - id: P3-T05
+        title: 管理前端
+        deps: [P3-T03]
+        paths: [frontend/src/admin/pages]
+      - id: P3-T06
+        title: 匿名通報
+        deps: [P3-T02]
+        paths: [backend/app/api/v1/public/reports.py, backend/app/reports/crypto.py, backend/app/reports/abuse.py, backend/tests/integration/test_reports.py]
+      - id: P3-T07
+        title: 發布規則引擎
+        human: true
+        deps: [P2-T11]
+        paths: [backend/app/alerts/policy.py, backend/app/alerts/pii.py, config/publishing-policy.yaml]
+      - id: P3-T08
+        title: 警示狀態機與遞送
+        deps: [P3-T07]
+        paths: [backend/app/alerts/service.py, backend/app/alerts/delivery.py, backend/tests/integration/test_alert_idempotency.py]
+      - id: P3-T09
+        title: 發布對抗測試集（開啟自動發布）
+        human: true
+        deps: [P3-T08]
+        paths: [backend/tests/security/publishing/cases.jsonl, backend/tests/security/publishing/test_publishing.py]
+      - id: P3-T10
+        title: 端到端測試
+        deps: [P3-T04, P3-T05, P3-T06, P3-T09]
+        paths: [tests/e2e]
+    gates:
+      - id: G3-1
+        title: 未核實具體指控錯誤公開 0 次
+        command: cd backend && uv run pytest tests/security/publishing -q
+      - id: G3-2
+        title: 同版本警報無重複外送
+        command: cd backend && uv run pytest tests/integration/test_alert_idempotency.py -q
+      - id: G3-3
+        title: 公開／管理資料隔離
+        command: cd backend && uv run pytest tests/integration/test_public_api.py -q
+      - id: G3-4
+        title: 附錄 A 的 A01–A08 全過
+        command: cd frontend && npx playwright test
+      - id: G3-5
+        title: MVP 展示路徑可運作
+        manual: true
+
+  - id: P4
+    name: 關聯、趨勢與韌性追蹤
+    goal: 關聯可用、回測無洩漏、韌性指標不假精確
+    tasks:
+      - id: P4-T01
+        title: 關聯圖資料與 API
+        deps: [P3-T03]
+        paths: [backend/app/relations/service.py, backend/app/api/v1/admin/relations.py]
+      - id: P4-T02
+        title: 關聯圖介面
+        deps: [P4-T01, P3-T05]
+        paths: [frontend/src/admin/pages/RelationGraph.tsx]
+      - id: P4-T03
+        title: 時序統計與異常偵測
+        deps: [P3-T02]
+        paths: [backend/app/analytics/timeseries.py, backend/tests/unit/analytics/test_timeseries.py]
+      - id: P4-T04
+        title: 趨勢回測
+        deps: [P4-T03]
+        paths: [scripts/eval/backtest_trends.py, backend/tests/unit/analytics/test_no_leakage.py]
+      - id: P4-T05
+        title: 改善措施追蹤（F10）
+        deps: [P3-T03]
+        paths: [backend/app/resilience/actions.py, backend/tests/integration/test_response_actions.py]
+      - id: P4-T06
+        title: 校園韌性指數 CRI 與公開報告
+        deps: [P4-T05, P4-T03]
+        paths: [backend/app/resilience/cri.py, backend/tests/unit/resilience/test_cri.py]
+    gates:
+      - id: G4-1
+        title: 抽 50 組關聯人工審閱正確率 ≥ 0.85
+        manual: true
+      - id: G4-2
+        title: 回測無未來資料
+        command: cd backend && uv run pytest tests/unit/analytics/test_no_leakage.py -q
+      - id: G4-3
+        title: 韌性指標不假精確
+        command: cd backend && uv run pytest tests/unit/resilience/test_cri.py -q
+      - id: G4-4
+        title: 改善生命週期完整
+        command: cd backend && uv run pytest tests/integration/test_response_actions.py -q
+
+  - id: P5
+    name: 情境模擬與部署維運
+    goal: S09–S10 與 What-if 完成；可監控、可還原、Skills 可攜
+    tasks:
+      - id: P5-T01
+        title: S09 trend-forecaster
+        skill: trend-forecaster
+        deps: [P4-T04]
+        paths: [skills/trend-forecaster/SKILL.md, skills/trend-forecaster/tests/cases.jsonl]
+      - id: P5-T02
+        title: What-if 引擎 + S10 scenario-simulator
+        skill: scenario-simulator
+        deps: [P4-T06]
+        paths: [backend/app/simulations/engine.py, skills/scenario-simulator/SKILL.md, backend/tests/unit/simulations/test_engine.py]
+      - id: P5-T03
+        title: What-if 介面
+        deps: [P5-T02]
+        paths: [frontend/src/admin/pages/Scenario.tsx]
+      - id: P5-T04
+        title: 可觀測性
+        deps: [P3-T10]
+        paths: [backend/app/core/metrics.py, infra/monitoring]
+      - id: P5-T05
+        title: 備份與還原
+        deps: [P3-T10]
+        paths: [infra/scripts/backup.sh, infra/scripts/restore.sh, docs/runbooks/restore.md]
+      - id: P5-T06
+        title: 正式部署設定
+        human: true
+        deps: [P5-T04, P5-T05]
+        paths: [infra/docker/docker-compose.prod.yml, docs/runbooks/deploy.md]
+      - id: P5-T07
+        title: 負載測試
+        deps: [P5-T06]
+        paths: [tests/load/public_events.js]
+      - id: P5-T08
+        title: Skills 可攜性驗證
+        deps: [P5-T01, P5-T02]
+        paths: [docs/portability-report.md]
+      - id: P5-T09
+        title: 規格書 v1.1 更新
+        deps: [P5-T08]
+        paths: [docs/requirements/spec-v1.1.md]
+    gates:
+      - id: G5-1
+        title: 模擬結果可重現
+        command: cd backend && uv run pytest tests/unit/simulations -q
+      - id: G5-2
+        title: 備份可完整還原
+        manual: true
+      - id: G5-3
+        title: 公開事件列表 p95 < 1.5 秒
+        manual: true
+      - id: G5-4
+        title: Skills 可攜性報告完成
+        manual: true
