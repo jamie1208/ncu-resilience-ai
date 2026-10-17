@@ -49,7 +49,9 @@ skills/<skill-name>/
   - 驗證：`cd backend && uv run pytest tests/unit/test_health.py`
 - **P0-T03 前端骨架（React + TS）**
   - 檔案：`frontend/`（Vite react-ts）、`src/public/`、`src/admin/`、`src/components/`、`src/api/client.ts`
-  - 驗證：`cd frontend && npm run lint && npm run build`
+  - 樣式基礎（ADR-0003，設計規範見 `ncu-frontend-design` skill）：`vite.config.ts`（`@tailwindcss/vite`）、`src/styles/index.css`（Tailwind 匯入、`@theme` 設計 token、含繁中 fallback 的字體堆疊、`prefers-reduced-motion` 基礎規則）、`index.html`（Google Fonts：Inter、Calistoga、JetBrains Mono、Noto Sans TC、Noto Serif TC）、`src/lib/cn.ts`（`clsx` + `tailwind-merge`）、`src/lib/cn.test.ts`
+  - 套件：`tailwindcss`、`@tailwindcss/vite`、`framer-motion`、`class-variance-authority`、`tailwind-merge`、`clsx`、`vitest`
+  - 驗證：`cd frontend && npm run lint && npm run test && npm run build`
 - **P0-T04 Docker Compose 環境**
   - 檔案：`infra/docker/docker-compose.yml`（pgvector/pgvector:pg16、redis、api、worker、web）、`backend/Dockerfile`、`frontend/Dockerfile`、`.env.example`、`Makefile`（up／down／test／migrate／reset）
   - 驗證：`make up` 後 `curl localhost:8000/api/v1/health` 回 200

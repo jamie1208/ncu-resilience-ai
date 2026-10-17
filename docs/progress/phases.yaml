@@ -27,7 +27,7 @@ phases:
       - id: P0-T03
         title: 前端骨架（React + TS）
         deps: [P0-T01]
-        paths: [frontend/package.json, frontend/src/public, frontend/src/admin, frontend/src/api/client.ts]
+        paths: [frontend/package.json, frontend/src/public, frontend/src/admin, frontend/src/api/client.ts, frontend/vite.config.ts, frontend/src/styles/index.css, frontend/src/lib/cn.ts, frontend/src/lib/cn.test.ts]
       - id: P0-T04
         title: Docker Compose 環境
         deps: [P0-T02, P0-T03]
