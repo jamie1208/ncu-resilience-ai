@@ -23,13 +23,12 @@ import httpx2
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from app.ingestion.base import AdapterError, LayoutChangedError, SourceUnavailableError
+from app.ingestion.http import USER_AGENT
 from app.ingestion.registry import registry
 from app.ingestion.types import RawItem, SourceConfig
 
-USER_AGENT = (
-    "NCU-Resilience-AI/0.1 (campus resilience research project; "
-    "+https://github.com/jamie1208/ncu-resilience-ai)"
-)
+__all__ = ["USER_AGENT", "RssAdapter", "RssOptions"]
+
 _ACCEPT = "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.9"
 _RETRYABLE_STATUS = frozenset({408, 425, 429})
 _HTML_TYPES = frozenset({"text/html", "application/xhtml+xml"})
