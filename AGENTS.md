@@ -19,7 +19,7 @@ NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系�
 | 工作佇列 | Celery + Redis |
 | 資料庫 | PostgreSQL 16 + pgvector |
 | AI | OpenAI API（經 `app/ai/llm/` Adapter）、自建 Skill Runner、Agent Skills 格式 |
-| 前端 | React + TypeScript + Vite、Vitest、Playwright |
+| 前端 | React + TypeScript + Vite、Tailwind CSS、Framer Motion、Vitest、Playwright（ADR-0003；設計規範見 `ncu-frontend-design` skill） |
 | 品質 | ruff（lint + format）、mypy、pytest、ESLint |
 | 環境 | Docker Compose、GitHub Actions |
 
