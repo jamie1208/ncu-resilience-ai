@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 虛構測試資料：有項目但全部缺連結（版型改變的徵兆） -->
+<rss version="2.0">
+<channel>
+<title>全部無效</title>
+<link>https://news.example.edu/</link>
+<description>測試</description>
+<item><title>A</title><description>沒有連結</description></item>
+<item><title>B</title><description>沒有連結</description></item>
+</channel>
+</rss>

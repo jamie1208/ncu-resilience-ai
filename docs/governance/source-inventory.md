@@ -26,6 +26,7 @@
 | ncu-cc            | 中央大學電子計算機中心公告                                         | https://www.cc.ncu.edu.tw/                             | 官方公告（HTML）         | 同上；網路與系統中斷公告                                                                                                     | `User-agent: * / Allow: /`                                       | 同上                                                                                                                     | 每 60 分鐘       | 核准                                      | 核准     |
 | ncu-news          | 中央大學新聞網                                                     | https://ncusec.ncu.edu.tw/news/index.php               | 校方新聞（HTML）         | 同上；頁面 `meta robots = index,follow`                                                                                      | 不存在（回傳 HTML 頁面，無規則）                                 | 同上                                                                                                                     | 每 6 小時        | 核准（次要，事件性較低）                  | 核准     |
 | cwa-alerts        | 中央氣象署開放資料（天氣警特報 W-C0033-001、地震報告 E-A0015-001） | https://opendata.cwa.gov.tw/dist/opendata-swagger.html | 政府開放資料 API（JSON） | [政府資料開放授權條款－第1版](https://data.gov.tw/license)：不限目的、免授權金、不需另行申請，須依格式標示出處；需會員授權碼 | 不適用（API；opendata 站的 robots.txt 回傳 HTML，無規則）        | [氣象署網站資訊使用聲明](https://www.cwa.gov.tw/V8/C/information.html)                                                   | 每 10 分鐘       | 核准                                      | 核准     |
+| cwa-rss           | 中央氣象署 RSS（警報、特報）                                       | https://www.cwa.gov.tw/rss/Data/cwa_warning.xml        | RSS（XML）               | RSS 內附使用聲明：限個人或非營利、非商業用途呈現標題；不得解析 RSS 製作衍生產品                                              | 不存在（HTTP 404，無限制）                                       | [RSS 服務頁](https://www.cwa.gov.tw/V8/C/S/eservice/rss.html)                                                            | 每 10 分鐘       | 不核准（改用 cwa-alerts API）             | 不核准   |
 | ncu-osa           | 中央大學學生事務處                                                 | https://osa.ncu.edu.tw/                                | 官方公告（SPA）          | 同 ncu-announcements                                                                                                         | 不存在（回傳 SPA 頁面）                                          | 同上                                                                                                                     | —                | 暫緩：前端渲染，需另查資料 API，P1 再評估 | 待決定   |
 | ncu-aa            | 中央大學教務處最新消息                                             | https://pdc.adm.ncu.edu.tw/p/426-1019-4.php?Lang=zh-tw | 官方公告（HTML，RPage）  | 同 ncu-announcements；停課、補課、考試異動                                                                                   | `User-agent: * / Allow: /`                                       | 同上                                                                                                                     | 每 60 分鐘       | 核准                                      | 核准     |
 | ncu-sec           | 中央大學秘書室公告                                                 | https://sec.ncu.edu.tw/p/403-1007-281-1.php?Lang=zh-tw | 官方公告（HTML，RPage）  | 同 ncu-announcements；校級公告、緊急應變                                                                                     | `User-agent: * / Allow: /`                                       | 同上                                                                                                                     | 每 60 分鐘       | 核准                                      | 核准     |
@@ -87,6 +88,17 @@
 - **存取**：需要註冊氣象資料開放平台會員並取得授權碼。授權碼只能放在環境變數（建議名稱 `CWA_API_KEY`），不得寫進程式碼或提交。
 - **適用範圍**：桃園市中壢區的天氣警特報與有感地震，用於「颱風、豪雨、地震」類校園韌性事件。
 
+### cwa-rss（中央氣象署 RSS；2026-10-17 於 P1-T02 新增候選）
+
+- **背景**：已核准的校方來源都沒有提供 RSS（校園公告頁面原始碼中的 RSS 選項被註解掉），唯一找到的公開 feed 是氣象署 RSS（[服務頁](https://www.cwa.gov.tw/V8/C/S/eservice/rss.html)）。
+- **使用聲明**（feed 本身的 `<copyright>` 欄位，2026-10-17 抓取）：
+  - 授權個人以 RSS reader 方式使用；
+  - 個人與非營利網站、Blog 只能在私人、非商業用途內呈現**標題**，詳細內容須連回氣象署，並標明來源；
+  - 不得更改 RSS 內容，也不得解析 RSS 相關資訊用以製作衍生產品。
+- **robots.txt**：`www.cwa.gov.tw/robots.txt` 回 404，沒有限制。
+- **AI 建議：不核准**。本系統會解析內文並產生事件分析，屬於聲明禁止的衍生用途。同樣的警特報資料可以從已核准的 `cwa-alerts`（開放資料平台，適用政府資料開放授權條款，允許改作）取得。
+- **使用者決定**（2026-10-17）：不核准；改由新增的 P1-T11 實作 `cwa-alerts` 開放資料 Adapter（ADR-0005）。
+
 ### 不核准或暫緩的理由
 
 - **dcard、facebook**：符合規格 §16「社群資料無合法機器存取管道」的風險判斷。社群內容改由 P1-T04 人工匯入格式處理；取得平台授權後，再新增來源並重新核准。
@@ -97,9 +109,10 @@
 
 由使用者決定後填寫（AI 只能依使用者在對話中的明確指示代為填入，並註明日期）。
 
-| 日期       | 代碼                                                                      | 決定 | 決定者          | 備註                                                                           |
-| ---------- | ------------------------------------------------------------------------- | ---- | --------------- | ------------------------------------------------------------------------------ |
-| 2026-10-17 | cwa-alerts                                                                | 核准 | 使用者（Jamie） | 使用者已取得氣象資料開放平台授權碼，存放於本機 `.env` 的 `CWA_API_KEY`，不提交 |
-| 2026-10-17 | ncu-rd、ncu-acc、ncu-audit、ncu-ir、ncu-sdusr、ncu-cha、ncu-hesp、ncu-ori | 暫緩 | 使用者（Jamie） | 低關聯處室先標暫緩                                                             |
-| 2026-10-17 | ncu-aa、ncu-sec、ncu-lib、ncu-epsc、ncu-osa-life、ncu-oia、ncu-personnel  | 核准 | 使用者（Jamie） | 依 AI 建議核准；生輔組與人事室的公告列表網址於 P1 確認                         |
-| 2026-10-17 | ncu-announcements、ncu-oga-news、ncu-cc、ncu-news                         | 核准 | 使用者（Jamie） | 依 AI 建議核准；計中公告列表網址於 P1 確認                                     |
+| 日期       | 代碼                                                                      | 決定   | 決定者          | 備註                                                                           |
+| ---------- | ------------------------------------------------------------------------- | ------ | --------------- | ------------------------------------------------------------------------------ |
+| 2026-10-17 | cwa-alerts                                                                | 核准   | 使用者（Jamie） | 使用者已取得氣象資料開放平台授權碼，存放於本機 `.env` 的 `CWA_API_KEY`，不提交 |
+| 2026-10-17 | ncu-rd、ncu-acc、ncu-audit、ncu-ir、ncu-sdusr、ncu-cha、ncu-hesp、ncu-ori | 暫緩   | 使用者（Jamie） | 低關聯處室先標暫緩                                                             |
+| 2026-10-17 | ncu-aa、ncu-sec、ncu-lib、ncu-epsc、ncu-osa-life、ncu-oia、ncu-personnel  | 核准   | 使用者（Jamie） | 依 AI 建議核准；生輔組與人事室的公告列表網址於 P1 確認                         |
+| 2026-10-17 | ncu-announcements、ncu-oga-news、ncu-cc、ncu-news                         | 核准   | 使用者（Jamie） | 依 AI 建議核准；計中公告列表網址於 P1 確認                                     |
+| 2026-10-17 | cwa-rss                                                                   | 不核准 | 使用者（Jamie） | 使用聲明禁止解析製作衍生產品；改用 cwa-alerts（ADR-0005）                      |

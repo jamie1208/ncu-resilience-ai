@@ -7,7 +7,7 @@
 >
 > 修改計畫時三處要一起改：本檔、phases.yaml（或其覆寫檔 `docs/progress/phases.yaml`）、ADR。
 
-全案 6 個階段、61 個任務、26 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
+全案 6 個階段、62 個任務、26 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
 
 ---
 
@@ -134,6 +134,10 @@ cd ../frontend && npm run lint && npm run build
 - **P1-T10 七天穩定運行報告**
   - 檔案：`scripts/reports/ingestion_report.py`、`docs/progress/records/P1-stability.md`
   - 驗證：報告顯示 7 天成功率、各來源筆數、重複寫入數 = 0
+- **P1-T11 氣象署開放資料 Adapter（cwa-alerts）**（ADR-0005 新增；P1-T02 查無可用的 RSS 來源）
+  - 檔案：`app/ingestion/adapters/cwa_open_data.py`（httpx2，JSON API：天氣警特報 W-C0033-001、顯著有感地震報告 E-A0015-001，篩選桃園市）、`app/core/config.py`（`CWA_API_KEY`，SecretStr）、`tests/fixtures/cwa/*.json`（依官方欄位格式製作，不含授權碼）、`tests/unit/ingestion/test_cwa_open_data.py`
+  - 內容：授權碼只從環境變數讀取，不得出現在日誌、錯誤訊息與 fixture；未設定授權碼時拋出不可重試的錯誤；依政府資料開放授權條款保留出處資訊（提供機關、資料名稱）；連線設定依 P1-T01 的決定登記在 `config/sources.yaml`
+  - 驗證：`cd backend && uv run pytest tests/unit/ingestion/test_cwa_open_data.py`（CI 不呼叫真實 API）
 
 ```bash
 cd backend && uv run pytest tests/unit/ingestion tests/integration -q

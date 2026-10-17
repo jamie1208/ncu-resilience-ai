@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 虛構測試資料：外部實體不得被展開 -->
+<!DOCTYPE rss [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>
+<rss version="2.0">
+<channel>
+<title>XXE 測試</title>
+<link>https://news.example.edu/</link>
+<description>測試</description>
+<item>
+  <title>注入測試</title>
+  <link>https://news.example.edu/posts/301</link>
+  <pubDate>Sat, 17 Oct 2026 01:00:00 GMT</pubDate>
+  <description>前&xxe;後</description>
+</item>
+</channel>
+</rss>
