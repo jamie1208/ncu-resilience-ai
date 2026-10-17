@@ -76,7 +76,11 @@ def anyio_backend() -> str:
 
 @pytest.fixture()
 async def session(test_db_url: URL, migrated: Config) -> AsyncIterator[AsyncSession]:
-    """每個測試一個 session；結束後清空所有業務資料表。"""
+    """每個測試一個 session；結束後清空所有業務資料表。
+
+    audit_logs 為 append-only（trigger 禁止 TRUNCATE），不清空；測試請以唯一的
+    request_id 或 id 篩選，不要假設表是空的。
+    """
     engine = create_async_engine(test_db_url)
     maker = async_sessionmaker(engine, expire_on_commit=False)
     async with maker() as s:
@@ -86,7 +90,7 @@ async def session(test_db_url: URL, migrated: Config) -> AsyncIterator[AsyncSess
             await conn.execute(
                 text(
                     "SELECT tablename FROM pg_tables WHERE schemaname = 'public' "
-                    "AND tablename <> 'alembic_version'"
+                    "AND tablename NOT IN ('alembic_version', 'audit_logs')"
                 )
             )
         ).scalars()
