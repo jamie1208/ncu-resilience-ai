@@ -25,25 +25,23 @@
 
 from __future__ import annotations
 
-import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime
 from typing import Self
 from urllib.parse import parse_qs, urljoin, urlsplit
 
 import httpx2
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from selectolax.lexbor import LexborHTMLParser, LexborNode
+from selectolax.lexbor import LexborHTMLParser
 
 from app.ingestion.base import AdapterError, LayoutChangedError
+from app.ingestion.html import clean, find_date, first, taipei_midnight
 from app.ingestion.http import MIN_REQUEST_INTERVAL, HostRateLimiter, PageFetcher, shared_limiter
 from app.ingestion.registry import registry
 from app.ingestion.types import RawItem, SourceConfig
 
-TAIPEI = timezone(timedelta(hours=8))  # 台灣沒有日光節約時間
 _DETAIL_FILE = "headlines_content.php"
-_DATE = re.compile(r"(\d{4})-(\d{2})-(\d{2})")
 
 
 class NcuNewsOptions(BaseModel):
@@ -94,25 +92,6 @@ class NewsDetail:
     content_html: str | None
 
 
-def _first(node: LexborHTMLParser | LexborNode, selector: str) -> LexborNode | None:
-    found = node.css(selector)
-    return found[0] if found else None
-
-
-def _clean(text: str) -> str:
-    return " ".join(text.split())
-
-
-def _find_date(text: str) -> date | None:
-    found = _DATE.search(text)
-    if found is None:
-        return None
-    try:
-        return date(int(found[1]), int(found[2]), int(found[3]))
-    except ValueError:
-        return None
-
-
 def _detail_id(url: str, list_url: str) -> int | None:
     """同網域內頁網址的 H_ID；不是內頁或在他站時回傳 None。"""
     parts, base = urlsplit(url), urlsplit(list_url)
@@ -136,22 +115,22 @@ def parse_list(html: str, list_url: str) -> list[NewsEntry]:
     """
     entries: dict[int, NewsEntry] = {}
     for anchor in LexborHTMLParser(html).css("a[href]"):
-        heading = _first(anchor, "h3")
-        title = _clean(heading.text()) if heading is not None else ""
+        heading = first(anchor, "h3")
+        title = clean(heading.text()) if heading is not None else ""
         if not title:
             continue  # 選單、分頁、輪播圖等沒有標題的連結
         url = urljoin(list_url, (anchor.attributes.get("href") or "").strip())
         news_id = _detail_id(url, list_url)
         if news_id is None or news_id in entries:
             continue
-        tab = _first(anchor, ".tab-box")
-        day = _first(anchor, ".date-box")
+        tab = first(anchor, ".tab-box")
+        day = first(anchor, ".date-box")
         entries[news_id] = NewsEntry(
             news_id=news_id,
             url=_canonical(url, news_id),
             title=title,
-            published=_find_date(day.text()) if day is not None else None,
-            category=(_clean(tab.text()) or None) if tab is not None else None,
+            published=find_date(day.text()) if day is not None else None,
+            category=(clean(tab.text()) or None) if tab is not None else None,
         )
     if not entries:
         raise LayoutChangedError("列表頁沒有任何新聞卡片（headlines_content.php 連結）")
@@ -160,16 +139,16 @@ def parse_list(html: str, list_url: str) -> list[NewsEntry]:
 
 def parse_detail(html: str) -> NewsDetail:
     """解析內頁；缺內頁區塊或標題時拋出 LayoutChangedError。"""
-    box = _first(LexborHTMLParser(html), "section.main-detail-box")
+    box = first(LexborHTMLParser(html), "section.main-detail-box")
     if box is None:
         raise LayoutChangedError("內頁找不到 section.main-detail-box")
-    heading = _first(box, "h3.main-title")
-    title = _clean(heading.text()) if heading is not None else ""
+    heading = first(box, "h3.main-title")
+    title = clean(heading.text()) if heading is not None else ""
     if not title:
         raise LayoutChangedError("內頁缺少標題 h3.main-title")
-    header = _first(box, ".related-box")
-    published = _find_date(header.text()) if header is not None else None
-    body = _first(box, ".main-detail-content-box")
+    header = first(box, ".related-box")
+    published = find_date(header.text()) if header is not None else None
+    body = first(box, ".main-detail-content-box")
     content = body.html if body is not None and body.text().strip() else None
     return NewsDetail(title, published, content)
 
@@ -274,9 +253,7 @@ class NcuNewsAdapter:
             return None  # 已刪除，或轉址到其他網站
         detail = parse_detail(page.text)
         day = detail.published or entry.published
-        published = (
-            datetime.combine(day, datetime.min.time(), tzinfo=TAIPEI) if day is not None else None
-        )
+        published = taipei_midnight(day)
         return RawItem(
             source_code=self.code,
             external_id=str(entry.news_id),

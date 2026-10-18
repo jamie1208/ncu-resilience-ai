@@ -64,7 +64,8 @@ def test_repo_sources_have_registered_types_and_valid_options() -> None:
 
 def test_repo_registers_rpage_sources() -> None:
     rpage = {c for c, s in load_source_settings().items() if s.type == "rpage"}
-    assert rpage == {"ncu-announcements", "ncu-oia", "ncu-sec", "ncu-aa"}
+    # P1-T16（使用者 2026-10-18 同意）：新增 ncu-cc
+    assert rpage == {"ncu-announcements", "ncu-oia", "ncu-sec", "ncu-aa", "ncu-cc"}
 
 
 # --- 載入器 ----------------------------------------------------------------------------

@@ -25,6 +25,15 @@
 5. **P1-T10 依賴 P1-T16**：一晚穩定運行報告要涵蓋這些來源。
 6. 任務總數 61 → 62。
 
+## 實作時的調整（2026-10-18，P1-T16）
+
+1. **總務處暫緩**（使用者決定）：網站改版為 Nuxt 前端程式，頁面本身沒有內容，消息只能經未公開的 JSON API（`POST /api/document/v0/list`）取得。這跟盤點核准的「HTML 公告頁」存取方式不同；使用者決定先暫緩，來源盤點改為「暫緩」。
+2. **電算中心以 `rpage` 登記 9 個分類**：公告由 AJAX 模組載入，程式取不到列表網址；使用者在瀏覽器找到 `403-1033-15-1.php` 後，確認模組 14–22 對應 9 個分類列表（行政公告、系統維護、宿舍網路、資安訊息、授權軟體、虛擬桌面、徵才公告、最新消息、課程／活動），依使用者要求全部擷取。不需要新的 Adapter。
+3. **新增共用模組**（使用者同意）：
+   - `app/ingestion/html.py`：`first`、`clean`、`find_date`、`taipei_midnight`、`TAIPEI`，兩個既有 Adapter 也改用它；
+   - `app/ingestion/adapters/list_detail.py`：列表＋內頁型 Adapter 的基底類別，三個新 Adapter 共用。既有的兩個 Adapter 這次不改用它。
+4. 上線：`ncu-cc`、`ncu-epsc`、`ncu-lib`、`ncu-osa-life`。既有測試 `test_repo_registers_rpage_sources` 的預期集合經使用者同意加上 `ncu-cc`（仍為完全比對）。環安中心的文章編號是 hex 字串，cursor 改用「最新列表日期｜當日已擷取的編號」。
+
 ## 考慮過的替代方案
 
 - **等 P1-T10 跑完再補**：穩定運行報告就不會涵蓋這些來源，之後還要再跑一次。
