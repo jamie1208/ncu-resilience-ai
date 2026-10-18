@@ -6,7 +6,7 @@
 # - human：true 表示需要你親自決定，AI 只能準備資料。
 # - gates.command：可自動執行的驗證指令（--run-gates 時執行）；
 #   manual：true 表示需人工確認，tracker 只會提示。
-# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚），tracker 優先讀取本檔。
+# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12），tracker 優先讀取本檔。
 # 修改計畫時：只改這個檔案，再執行 `tracker.py sync` 讓 state.yaml 補上新任務。
 
 version: 1
@@ -126,6 +126,10 @@ phases:
         title: 氣象署開放資料 Adapter（cwa-alerts）
         deps: [P1-T02]
         paths: [backend/app/ingestion/adapters/cwa_open_data.py, backend/tests/unit/ingestion/test_cwa_open_data.py, backend/tests/fixtures/cwa, docs/decisions/ADR-0005-cwa-open-data-adapter.md]
+      - id: P1-T12
+        title: 中央大學新聞網 Adapter（ncu-news）
+        deps: [P1-T03]
+        paths: [backend/app/ingestion/adapters/ncu_news.py, backend/tests/unit/ingestion/test_ncu_news.py, backend/tests/fixtures/html/ncu_news, docs/decisions/ADR-0007-ncu-news-adapter.md]
     gates:
       - id: G1-1
         title: ≥ 3 個來源上線

@@ -7,7 +7,7 @@
 >
 > 修改計畫時三處要一起改：本檔、phases.yaml（或其覆寫檔 `docs/progress/phases.yaml`）、ADR。
 
-全案 6 個階段、62 個任務、26 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
+全案 6 個階段、63 個任務、26 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
 
 ---
 
@@ -138,6 +138,10 @@ cd ../frontend && npm run lint && npm run build
   - 檔案：`app/ingestion/adapters/cwa_open_data.py`（httpx2，JSON API：天氣警特報 W-C0033-001、顯著有感地震報告 E-A0015-001，篩選桃園市）、`app/core/config.py`（`CWA_API_KEY`，SecretStr）、`tests/fixtures/cwa/*.json`（依官方欄位格式製作，不含授權碼）、`tests/unit/ingestion/test_cwa_open_data.py`
   - 內容：授權碼只從環境變數讀取，不得出現在日誌、錯誤訊息與 fixture；未設定授權碼時拋出不可重試的錯誤；依政府資料開放授權條款保留出處資訊（提供機關、資料名稱）；連線設定依 P1-T01 的決定登記在 `config/sources.yaml`
   - 驗證：`cd backend && uv run pytest tests/unit/ingestion/test_cwa_open_data.py`（CI 不呼叫真實 API）
+- **P1-T12 中央大學新聞網 Adapter（ncu-news）**（ADR-0007 新增；新聞網改為主要新聞來源）
+  - 檔案：`app/ingestion/adapters/ncu_news.py`（httpx2 + selectolax，沿用 `app/ingestion/http.py`）、`config/sources.yaml`（登記 `ncu-news`，options 列出三個列表網址）、`tests/fixtures/html/ncu_news/` 頁面快照（中大新聞、焦點新聞、學術新聞列表與一篇詳細頁）、`tests/unit/ingestion/test_ncu_news.py`
+  - 內容：擷取 `https://ncusec.ncu.edu.tw/news/` 的中大新聞 `headlines.php`、焦點新聞 `focus-news.php`、學術新聞 `academic-news.php`；從詳細頁 `headlines_content.php?H_ID=<id>` 取得內文；以 `H_ID` 為 `external_id`，同一篇出現在多個列表只產出一筆並保留分類標籤；首次擷取只取各列表第一頁；遵守速率限制與 User-Agent 標示；必要欄位抽不到時拋出 `LayoutChangedError`
+  - 驗證：`cd backend && uv run pytest tests/unit/ingestion/test_ncu_news.py`（快照解析、跨列表去重、版型變動錯誤；CI 不連外）
 
 ```bash
 cd backend && uv run pytest tests/unit/ingestion tests/integration -q
