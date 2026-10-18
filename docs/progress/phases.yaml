@@ -6,7 +6,7 @@
 # - human：true 表示需要你親自決定，AI 只能準備資料。
 # - gates.command：可自動執行的驗證指令（--run-gates 時執行）；
 #   manual：true 表示需人工確認，tracker 只會提示。
-# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12），tracker 優先讀取本檔。
+# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12、ADR-0008 個人使用：新增 P1-T13／P1-T14／P1-T15，刪除 P3-T02／P3-T04／P3-T06／P3-T09／P5-T07 與 G3-1／G5-3，ID 不重複使用），tracker 優先讀取本檔。
 # 修改計畫時：只改這個檔案，再執行 `tracker.py sync` 讓 state.yaml 補上新任務。
 
 version: 1
@@ -130,6 +130,18 @@ phases:
         title: 中央大學新聞網 Adapter（ncu-news）
         deps: [P1-T03]
         paths: [backend/app/ingestion/adapters/ncu_news.py, backend/tests/unit/ingestion/test_ncu_news.py, backend/tests/fixtures/html/ncu_news, docs/decisions/ADR-0007-ncu-news-adapter.md]
+      - id: P1-T13
+        title: Facebook 社團每日擷取
+        deps: [P1-T04]
+        paths: [.claude/skills/ncu-fb-capture/SKILL.md, infra/launchd/tw.ncu-resilience.fb-capture.plist.template, scripts/facebook/install_schedule.sh, backend/tests/unit/ingestion/test_facebook_capture_format.py, docs/decisions/ADR-0008-personal-use.md]
+      - id: P1-T14
+        title: HTML Adapter 共用 HTTP 模組
+        deps: [P1-T12]
+        paths: [backend/app/ingestion/http.py, backend/tests/unit/ingestion/test_http.py]
+      - id: P1-T15
+        title: 來源分類標籤寫入資料庫
+        deps: [P1-T12]
+        paths: [backend/tests/integration/test_source_item_tags.py]
     gates:
       - id: G1-1
         title: ≥ 3 個來源上線
@@ -230,63 +242,43 @@ phases:
         command: cd backend && uv run pytest tests/security -q
 
   - id: P3
-    name: 產品與安全發布（MVP）
-    goal: §13.1 最小端到端版本；未核實具體指控錯誤公開 0 次
+    name: 產品與個人通知（MVP）
+    goal: §13.1 個人版最小端到端版本；不提供任何對外發布管道（ADR-0008）
     tasks:
       - id: P3-T01
-        title: 管理者驗證與 RBAC
+        title: 使用者驗證（單一使用者）
         deps: [P0-T07]
         paths: [backend/app/api/deps.py, backend/tests/integration/test_auth.py, scripts/admin/create_admin.py]
-      - id: P3-T02
-        title: 公開 API
-        deps: [P2-T13]
-        paths: [backend/app/api/v1/public/events.py, backend/app/api/schemas/public.py, backend/app/api/pagination.py, backend/app/api/errors.py]
       - id: P3-T03
         title: 管理 API
         deps: [P3-T01, P2-T13]
-        paths: [backend/app/api/v1/admin/events.py, backend/app/api/v1/admin/alerts.py, backend/app/api/v1/admin/audit_logs.py]
-      - id: P3-T04
-        title: 公開前端
-        deps: [P3-T02]
-        paths: [frontend/src/public/pages]
+        paths: [backend/app/api/v1/admin/events.py, backend/app/api/v1/admin/alerts.py, backend/app/api/v1/admin/audit_logs.py, backend/app/api/pagination.py, backend/app/api/errors.py]
       - id: P3-T05
         title: 管理前端
         deps: [P3-T03]
         paths: [frontend/src/admin/pages]
-      - id: P3-T06
-        title: 匿名通報
-        deps: [P3-T02]
-        paths: [backend/app/api/v1/public/reports.py, backend/app/reports/crypto.py, backend/app/reports/abuse.py, backend/tests/integration/test_reports.py]
       - id: P3-T07
-        title: 發布規則引擎
+        title: 個人通知規則
         human: true
         deps: [P2-T11]
-        paths: [backend/app/alerts/policy.py, backend/app/alerts/pii.py, config/publishing-policy.yaml]
+        paths: [backend/app/alerts/policy.py, backend/app/alerts/pii.py, config/notification-policy.yaml]
       - id: P3-T08
-        title: 警示狀態機與遞送
+        title: 警示狀態機與個人遞送
         deps: [P3-T07]
         paths: [backend/app/alerts/service.py, backend/app/alerts/delivery.py, backend/tests/integration/test_alert_idempotency.py]
-      - id: P3-T09
-        title: 發布對抗測試集（開啟自動發布）
-        human: true
-        deps: [P3-T08]
-        paths: [backend/tests/security/publishing/cases.jsonl, backend/tests/security/publishing/test_publishing.py]
       - id: P3-T10
         title: 端到端測試
-        deps: [P3-T04, P3-T05, P3-T06, P3-T09]
+        deps: [P3-T05, P3-T08]
         paths: [tests/e2e]
     gates:
-      - id: G3-1
-        title: 未核實具體指控錯誤公開 0 次
-        command: cd backend && uv run pytest tests/security/publishing -q
       - id: G3-2
-        title: 同版本警報無重複外送
+        title: 同版本通知無重複遞送
         command: cd backend && uv run pytest tests/integration/test_alert_idempotency.py -q
       - id: G3-3
-        title: 公開／管理資料隔離
-        command: cd backend && uv run pytest tests/integration/test_public_api.py -q
+        title: 未登入無法存取任何事件資料
+        command: cd backend && uv run pytest tests/integration/test_auth.py -q
       - id: G3-4
-        title: 附錄 A 的 A01–A08 全過
+        title: 附錄 A 的 A01–A08（個人版）全過
         command: cd frontend && npx playwright test
       - id: G3-5
         title: MVP 展示路徑可運作
@@ -306,7 +298,7 @@ phases:
         paths: [frontend/src/admin/pages/RelationGraph.tsx]
       - id: P4-T03
         title: 時序統計與異常偵測
-        deps: [P3-T02]
+        deps: [P3-T03]
         paths: [backend/app/analytics/timeseries.py, backend/tests/unit/analytics/test_timeseries.py]
       - id: P4-T04
         title: 趨勢回測
@@ -317,7 +309,7 @@ phases:
         deps: [P3-T03]
         paths: [backend/app/resilience/actions.py, backend/tests/integration/test_response_actions.py]
       - id: P4-T06
-        title: 校園韌性指數 CRI 與公開報告
+        title: 校園韌性指數 CRI 與報告頁
         deps: [P4-T05, P4-T03]
         paths: [backend/app/resilience/cri.py, backend/tests/unit/resilience/test_cri.py]
     gates:
@@ -336,7 +328,7 @@ phases:
 
   - id: P5
     name: 情境模擬與部署維運
-    goal: S09–S10 與 What-if 完成；可監控、可還原、Skills 可攜
+    goal: S09–S10 與 What-if 完成；可監控、可還原、本機常駐、Skills 可攜
     tasks:
       - id: P5-T01
         title: S09 trend-forecaster
@@ -361,14 +353,9 @@ phases:
         deps: [P3-T10]
         paths: [infra/scripts/backup.sh, infra/scripts/restore.sh, docs/runbooks/restore.md]
       - id: P5-T06
-        title: 正式部署設定
-        human: true
+        title: 本機常駐運行
         deps: [P5-T04, P5-T05]
-        paths: [infra/docker/docker-compose.prod.yml, docs/runbooks/deploy.md]
-      - id: P5-T07
-        title: 負載測試
-        deps: [P5-T06]
-        paths: [tests/load/public_events.js]
+        paths: [infra/docker/docker-compose.local.yml, docs/runbooks/local-operation.md]
       - id: P5-T08
         title: Skills 可攜性驗證
         deps: [P5-T01, P5-T02]
@@ -383,9 +370,6 @@ phases:
         command: cd backend && uv run pytest tests/unit/simulations -q
       - id: G5-2
         title: 備份可完整還原
-        manual: true
-      - id: G5-3
-        title: 公開事件列表 p95 < 1.5 秒
         manual: true
       - id: G5-4
         title: Skills 可攜性報告完成
