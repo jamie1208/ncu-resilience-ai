@@ -7,7 +7,9 @@
 >
 > 修改計畫時三處要一起改：本檔、phases.yaml（或其覆寫檔 `docs/progress/phases.yaml`）、ADR。
 
-全案 6 個階段、63 個任務、26 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
+全案 6 個階段、61 個任務、24 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
+
+**個人使用（ADR-0008）**：本系統只給使用者本人使用，不提供公開網站、公開 API、匿名通報或任何對外發布管道。已刪除的任務與閘門（P3-T02、P3-T04、P3-T06、P3-T09、P5-T07、G3-1、G5-3）不重新編號，ID 也不重複使用。
 
 ---
 
@@ -115,6 +117,7 @@ cd ../frontend && npm run lint && npm run build
   - 驗證：快照解析測試；抽取欄位缺漏時拋出 `LayoutChangedError`
 - **P1-T04 人工匯入 Adapter（社群備援）**
   - 檔案：`app/ingestion/adapters/manual_import.py`（CSV／JSON）、`docs/governance/manual-import-format.md`
+  - 內容（ADR-0008）：格式要能承接 P1-T13 的 Facebook 擷取結果：每筆有來源代碼、貼文網址（作為 `external_id`）、貼文時間、內文、擷取時間；不設發文者姓名、帳號欄位，含這類欄位時拒絕匯入
   - 驗證：`tests/unit/ingestion/test_manual_import.py`
 - **P1-T05 標準化**
   - 檔案：`app/ingestion/normalize.py`（時間轉 aware UTC、文字清洗、語系偵測、`content_hash = sha256(normalized_text)`）
@@ -142,6 +145,17 @@ cd ../frontend && npm run lint && npm run build
   - 檔案：`app/ingestion/adapters/ncu_news.py`（httpx2 + selectolax，沿用 `app/ingestion/http.py`）、`config/sources.yaml`（登記 `ncu-news`，options 列出三個列表網址）、`tests/fixtures/html/ncu_news/` 頁面快照（中大新聞、焦點新聞、學術新聞列表與一篇詳細頁）、`tests/unit/ingestion/test_ncu_news.py`
   - 內容：擷取 `https://ncusec.ncu.edu.tw/news/` 的中大新聞 `headlines.php`、焦點新聞 `focus-news.php`、學術新聞 `academic-news.php`；從詳細頁 `headlines_content.php?H_ID=<id>` 取得內文；以 `H_ID` 為 `external_id`，同一篇出現在多個列表只產出一筆並保留分類標籤；首次擷取只取各列表第一頁；遵守速率限制與 User-Agent 標示；必要欄位抽不到時拋出 `LayoutChangedError`
   - 驗證：`cd backend && uv run pytest tests/unit/ingestion/test_ncu_news.py`（快照解析、跨列表去重、版型變動錯誤；CI 不連外）
+- **P1-T13 Facebook 社團每日擷取**（ADR-0008 新增）
+  - 檔案：`.claude/skills/ncu-fb-capture/SKILL.md`（在已登入的 Chrome 讀取社團過去 24 小時的貼文，只讀不互動，輸出 P1-T04 匯入格式）、`infra/launchd/tw.ncu-resilience.fb-capture.plist.template`（每天 08:00 以 `claude -p` 執行）、`scripts/facebook/install_schedule.sh`（安裝與移除排程）、`config/sources.yaml`（登記 `facebook`，類型 `manual_import`）、`infra/docker/docker-compose.yml`（worker 唯讀掛載 `../../data:/data:ro`，P1-T04 驗收時決定）、`backend/tests/unit/ingestion/test_facebook_capture_format.py`
+  - 內容：社團網址登記在 `config/sources.yaml`；輸出到 `data/raw/facebook/<YYYY-MM-DD>.json`（不進 git）；不保存發文者姓名、帳號、頭像、留言者資訊；後端不保存 Facebook 帳號、密碼或 cookie；首次執行前先實測 `claude -p` 能否連上 Claude in Chrome，不行就改為每天 08:00 發出提醒，由使用者手動觸發
+  - 驗證：`cd backend && uv run pytest tests/unit/ingestion/test_facebook_capture_format.py`（範例輸出通過匯入格式驗證、含發文者欄位時被拒絕）；手動執行一次擷取並以 `manual_import` 匯入，重跑零重複
+- **P1-T14 HTML Adapter 共用 HTTP 模組**（ADR-0008 新增；P1-T12 驗收時發現的重複程式）
+  - 檔案：`app/ingestion/http.py`（既有 `HostRateLimiter` 之外，新增 robots 檢查、串流讀取、錯誤分類）、`app/ingestion/adapters/ncu_announcements.py`、`app/ingestion/adapters/ncu_news.py`、`tests/unit/ingestion/test_http.py`（共用函式的新測試，先寫）
+  - 內容：兩個 Adapter 的行為不變；不修改既有測試
+  - 驗證：`cd backend && uv run pytest tests/unit/ingestion -q` 全部通過，且 `test_ncu_announcements.py`、`test_ncu_news.py` 沒有修改
+- **P1-T15 來源分類標籤寫入資料庫**（ADR-0008 新增；使用者決定保留 P1-T12 的分類）
+  - 檔案：`app/ingestion/types.py`（`RawItem.tags: frozenset[str]`，預設空集合）、`app/ingestion/store.py`（寫入時與既有標籤取聯集；只有標籤改變時不新增內容版本）、`app/models/`（`source_items.tags`）、`infra/migrations/versions/<下一個編號>_source_item_tags.py`（text[]，預設空陣列，可 downgrade）、`app/ingestion/adapters/ncu_news.py`（分類改放進 `tags`，移除 `categories` 屬性）、`tests/integration/test_source_item_tags.py`
+  - 驗證：`cd backend && uv run pytest tests/integration/test_source_item_tags.py tests/integration/test_idempotent_ingest.py tests/unit/ingestion -q`；migration up → down → up 往返無錯
 
 ```bash
 cd backend && uv run pytest tests/unit/ingestion tests/integration -q
@@ -226,62 +240,47 @@ uv run python ../scripts/eval/run_eval.py --all --split test --live --summary ev
 
 ---
 
-## P3 產品與安全發布（MVP）
+## P3 產品與個人通知（MVP）
 
-目標：完成規格 §13.1 的最小可展示端到端版本，且「未核實具體指控錯誤公開」為 0 次。分 P3a 唯讀產品（T01–T05）、P3b 匿名通報（T06）、P3c 自動警報（T07–T10）。**自動公開必須在 T09 對抗測試全過、由使用者確認後才開啟。** 前置：G2 通過。
+目標：完成個人版的最小可展示端到端版本（規格 §13.1 去除公開與通報部分，ADR-0008）。分 P3a 個人管理介面（T01、T03、T05）、P3c 個人通知（T07、T08、T10）；原 P3-T02、P3-T04、P3-T06、P3-T09 已刪除。系統不提供任何對外發布管道。前置：G2 通過。
 
-### P3a 唯讀產品
+### P3a 個人管理介面
 
-- **P3-T01 管理者驗證與 RBAC**
-  - 檔案：`app/core/security.py`（argon2 密碼、HttpOnly Secure Cookie session、CSRF）、`app/api/deps.py`、`infra/migrations/versions/0004_users_roles.py`、`scripts/admin/create_admin.py`
-  - 驗證：`tests/integration/test_auth.py`（未登入 401、非管理者 403、CSRF 缺失拒絕）
-- **P3-T02 公開 API**
-  - 檔案：`app/api/v1/public/events.py`、`alerts.py`、`dashboard.py`、`app/api/schemas/public.py`（欄位白名單）、`app/api/pagination.py`（cursor）、`app/api/errors.py`（{data,meta,error} 與錯誤碼）
-  - 驗證：`tests/integration/test_public_api.py`；斷言公開回應絕不含原文、投稿資訊、內部風險欄位
+- **P3-T01 使用者驗證**（ADR-0008：改為單一使用者）
+  - 檔案：`app/core/security.py`（argon2 密碼、HttpOnly Secure Cookie session、CSRF；移除匿名投稿者與公開閱讀角色）、`app/api/deps.py`、`infra/migrations/versions/0004_users_roles.py`、`scripts/admin/create_admin.py`、`docs/architecture/rbac.md`（移除公開端點）
+  - 驗證：`tests/integration/test_auth.py`（未登入 401、CSRF 缺失拒絕；除 health 外沒有任何免登入的端點）
 - **P3-T03 管理 API**
-  - 檔案：`app/api/v1/admin/events.py`（列表、verify、analyze）、`alerts.py`（retract）、`audit_logs.py`；所有寫入帶 request_id 並寫稽核
+  - 檔案：`app/api/v1/admin/events.py`（列表、verify、analyze）、`alerts.py`（retract）、`dashboard.py`、`audit_logs.py`、`app/api/pagination.py`（cursor）、`app/api/errors.py`（{data,meta,error} 與錯誤碼）；所有寫入帶 request_id 並寫稽核
   - 驗證：`tests/integration/test_admin_api.py`
-- **P3-T04 公開前端**
-  - 檔案：`frontend/src/public/pages/`（Home、EventList、EventDetail、Report、About 含非官方免責）
-  - 驗證：`npm run test`（Vitest）＋ Playwright 冒煙測試
-- **P3-T05 管理前端**
-  - 檔案：`frontend/src/admin/pages/`（EventWorkbench：來源對照、風險分項、證據；AlertCenter；SkillsDashboard：版本、費用、失敗率、評測結果；Ops）
+- **P3-T05 管理前端**（唯一的前端）
+  - 檔案：`frontend/src/admin/pages/`（EventWorkbench：來源對照、風險分項、證據；AlertCenter：個人通知中心；SkillsDashboard：版本、費用、失敗率、評測結果；Ops）；移除 P0-T03 的 `frontend/src/public/` 骨架與「回公開網站」連結，根路徑改為登入頁
   - 驗證：Playwright 管理流程測試
 
-### P3b 匿名通報
+### P3c 個人通知
 
-- **P3-T06 匿名通報**
-  - 檔案：`app/api/v1/public/reports.py`（`POST /reports`、`POST /reports/{token}/followups`）、`app/reports/crypto.py`（原文加密，金鑰取自環境）、`app/reports/abuse.py`（Redis 限流、CAPTCHA 驗證、同文偵測）、`app/reports/attachments.py`（類型白名單、大小上限、惡意檔掃描介面）、`infra/migrations/versions/0005_reports.py`、前端通報頁（含 110／119 緊急提示、IP 保留揭露）
-  - 驗證：`tests/integration/test_reports.py`（只存 receipt token 雜湊、超量回 RATE_LIMITED、資料庫看不到明文）
-
-### P3c 自動警報
-
-- **P3-T07 發布規則引擎**（規則內容需你決定）
-  - 檔案：`app/alerts/policy.py`（將規格 §6.4 五種情境寫成確定性規則）、`app/alerts/pii.py`、`app/alerts/templates/`（中性安全提醒模板）、`config/publishing-policy.yaml`
-  - 驗證：`tests/unit/alerts/test_policy.py`；規格附錄 A 的 A02、A05 必須被阻擋具體指控
-- **P3-T08 警示狀態機與遞送**
-  - 檔案：`app/alerts/service.py`（candidate→policy_checked→eligible→published→updated／retracted／expired）、`app/alerts/delivery.py`（先做公開頁面頻道，Email／LINE 留介面）；idempotency_key ＝ hash(event_id, alert_version, audience)
+- **P3-T07 個人通知規則**（規則內容需你決定）
+  - 檔案：`app/alerts/policy.py`（確定性規則：哪些事件、哪個風險等級要通知使用者本人）、`app/alerts/pii.py`、`app/alerts/templates/`（通知模板）、`config/notification-policy.yaml`；移除 `.env.example` 的 `AUTO_PUBLISH_ENABLED`
+  - 內容：未核實的具體指控不得呈現為已核實；通知內容先經 PII 遮蔽
+  - 驗證：`tests/unit/alerts/test_policy.py`；附錄 A 的 A02、A05 不得把指控寫成事實
+- **P3-T08 警示狀態機與個人遞送**
+  - 檔案：`app/alerts/service.py`（candidate→policy_checked→eligible→published→updated／retracted／expired；published 表示已通知使用者本人）、`app/alerts/delivery.py`（先做管理介面通知中心，Email 留介面）；idempotency_key ＝ hash(event_id, alert_version, audience)
   - 驗證：`tests/integration/test_alert_idempotency.py`（重送不重複、撤回後停止）
-- **P3-T09 發布對抗測試集**（開啟自動發布前需你確認）
-  - 檔案：`tests/security/publishing/cases.jsonl`（≥ 50 筆：惡意誣指、個資、虛構事件、矛盾來源、惡作劇）、`tests/security/publishing/test_publishing.py`
-  - 驗證：錯誤公開 0 筆後，才可設定 `AUTO_PUBLISH_ENABLED=true`
 - **P3-T10 端到端測試**
-  - 檔案：`tests/e2e/`（Playwright），涵蓋附錄 A 的 A01–A08
+  - 檔案：`tests/e2e/`（Playwright），涵蓋附錄 A 的 A01–A08，期望結果依個人版改寫（A05 改為社群貼文惡意誣指個人：通知不呈現指控，管理端標記異常）
   - 驗證：`npx playwright test` 全過
 
 ```bash
-cd backend && uv run pytest tests/integration tests/unit/alerts tests/security/publishing -q
+cd backend && uv run pytest tests/integration tests/unit/alerts -q
 cd ../frontend && npm run test && npx playwright test
 make e2e   # 啟動完整環境並跑附錄 A 案例
 ```
 
 | 閘門 | 條件 | 驗證方式 |
 | --- | --- | --- |
-| G3-1 | 未核實具體指控錯誤公開 0 次 | publishing 對抗測試 |
-| G3-2 | 同版本警報無重複外送 | test_alert_idempotency |
-| G3-3 | 公開／管理資料隔離 | test_public_api 欄位斷言 |
-| G3-4 | 附錄 A 的 A01–A08 全過 | Playwright e2e |
-| G3-5 | MVP 展示路徑可運作 | 依 §13.1 錄一段展示並附在驗收紀錄 |
+| G3-2 | 同版本通知無重複遞送 | test_alert_idempotency |
+| G3-3 | 未登入無法存取任何事件資料 | test_auth（除 health 外沒有免登入端點） |
+| G3-4 | 附錄 A 的 A01–A08（個人版）全過 | Playwright e2e |
+| G3-5 | MVP 展示路徑可運作 | 依 §13.1（個人版）錄一段展示並附在驗收紀錄 |
 
 ---
 
@@ -304,8 +303,8 @@ make e2e   # 啟動完整環境並跑附錄 A 案例
 - **P4-T05 改善措施追蹤（F10）**
   - 檔案：`app/resilience/actions.py`、`infra/migrations/versions/0007_response_actions.py`（含狀態變更歷史）、管理端改善追蹤頁
   - 驗證：`tests/integration/test_response_actions.py`（發現→處理→恢復→改進完整紀錄）
-- **P4-T06 校園韌性指數 CRI 與公開報告**
-  - 檔案：`app/resilience/cri.py`（四構面標準化，資料不足回傳 None）；公開報告頁加入資料覆蓋率、時間窗、樣本量、來源限制
+- **P4-T06 校園韌性指數 CRI 與報告頁**（ADR-0008：原為公開報告）
+  - 檔案：`app/resilience/cri.py`（四構面標準化，資料不足回傳 None）；管理端報告頁加入資料覆蓋率、時間窗、樣本量、來源限制
   - 驗證：`tests/unit/resilience/test_cri.py`（缺資料顯示 N/A，不產生假精確分數）
 
 ```bash
@@ -324,7 +323,7 @@ uv run python ../scripts/eval/backtest_trends.py --start 2026-01-01 --step week
 
 ## P5 情境模擬與部署維運
 
-目標：完成 S09–S10 與 What-if，系統可監控、可備份還原，並驗證 Skills 能在其他 AI 客戶端運作。前置：G4 通過。
+目標：完成 S09–S10 與 What-if，系統可監控、可備份還原、可在本機常駐運行，並驗證 Skills 能在其他 AI 客戶端運作。前置：G4 通過。
 
 - **P5-T01 S09 trend-forecaster**：`skills/trend-forecaster/`；輸入 P4 的統計結果，只產生「異常解釋與前瞻訊號」，必須標註聲量≠事件數、資料覆蓋率
 - **P5-T02 What-if 引擎 + S10 scenario-simulator**
@@ -339,31 +338,26 @@ uv run python ../scripts/eval/backtest_trends.py --start 2026-01-01 --step week
 - **P5-T05 備份與還原**
   - 檔案：`infra/scripts/backup.sh`（pg_dump + 物件儲存）、`infra/scripts/restore.sh`、`docs/runbooks/restore.md`
   - 驗證：還原演練紀錄 `docs/progress/records/P5-restore-drill.md`
-- **P5-T06 正式部署設定**（正式上線需你決定）
-  - 檔案：`infra/docker/docker-compose.prod.yml`、`infra/caddy/Caddyfile`（TLS）、`docs/runbooks/deploy.md`；金鑰改由 secrets 管理
-  - 驗證：staging 環境部署成功
-- **P5-T07 負載測試**
-  - 檔案：`tests/load/public_events.js`（k6）、`docs/progress/records/P5-load.md`（寫明測試環境與負載）
-  - 驗證：公開事件列表 p95 < 1.5 秒
+- **P5-T06 本機常駐運行**（ADR-0008：原為正式部署設定）
+  - 檔案：`infra/docker/docker-compose.local.yml`（restart 策略、只綁定 127.0.0.1）、`docs/runbooks/local-operation.md`（開機自動啟動、P1-T13 排程檢查、資料只存本機）
+  - 驗證：重新開機後服務自動恢復，所有服務只監聽 127.0.0.1；原 P5-T07 負載測試已刪除
 - **P5-T08 Skills 可攜性驗證**
   - 檔案：`docs/portability-report.md`；將 S01–S10 放進另一個支援 Agent Skills 的客戶端（例如 Claude Code）跑 golden cases，比較與 Runner 結果
   - 驗證：記錄各 skill 在不同平台的通過率與需調整之處
 - **P5-T09 規格書 v1.1 更新**
-  - 檔案：`docs/requirements/spec-v1.1.md`（實際來源、schema、門檻、部署規格的變更）
+  - 檔案：`docs/requirements/spec-v1.1.md`（實際來源、schema、門檻、部署規格的變更；含 ADR-0008 個人使用的刪減）
   - 驗證：與 v1.0 差異清單完整
 
 ```bash
 cd backend && uv run pytest tests/unit/simulations -q
 uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scenario-simulator --live
-k6 run tests/load/public_events.js
-bash infra/scripts/backup.sh && bash infra/scripts/restore.sh --target staging
+bash infra/scripts/backup.sh && bash infra/scripts/restore.sh --target local
 ```
 
 | 閘門 | 條件 | 驗證方式 |
 | --- | --- | --- |
 | G5-1 | 模擬結果可重現 | test_engine |
 | G5-2 | 備份可完整還原 | 還原演練紀錄 |
-| G5-3 | 效能達標 | k6 報告 p95 < 1.5 秒 |
 | G5-4 | Skills 可攜 | portability-report.md |
 
 ---

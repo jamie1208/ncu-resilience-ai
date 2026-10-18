@@ -4,10 +4,10 @@
 
 ## 專案
 
-NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系統。研究專題，非校方官方系統。
+NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系統。個人使用的專題，非校方官方系統；只供使用者本人使用，不提供給學校，也不對外公開（ADR-0008）。
 
 - 規格書：`docs/requirements/NCU_Resilience_AI_System_Plan_v1.pdf`（需求的最終依據）
-- 執行計畫：`docs/plan/execution-plan.md`（63 個任務的檔案清單、驗證方式與閘門）
+- 執行計畫：`docs/plan/execution-plan.md`（61 個任務的檔案清單、驗證方式與閘門）
 - 目標架構：`docs/architecture/project-structure.md`
 - 進度：`docs/progress/state.yaml`，透過 `ncu-resilience-tracker` skill 操作
 
@@ -38,9 +38,9 @@ NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系�
 1. **先寫測試**：新功能必須先有失敗的測試。
 2. **不改測試遷就實作**：不得刪除、跳過（skip／xfail）或放寬既有測試與評測門檻；若測試本身有誤，說明理由並請使用者同意。
 3. **不寫入金鑰**：金鑰、密碼、token 只從環境變數讀取；`.env` 永不提交；範例值放 `.env.example`。
-4. **產品 skills 與開發 skills 分離**：系統執行的產品 Skills（S01–S10）只放在 `skills/`；協助開發的 skills 只放在 `.claude/skills/`。Skill Runner 只能載入 `skills/`。
+4. **產品 skills 與 Claude Code skills 分離**：系統執行的產品 Skills（S01–S10）只放在 `skills/`；協助開發與資料擷取作業的 Claude Code skills（例如 `ncu-fb-capture`）只放在 `.claude/skills/`（ADR-0008）。Skill Runner 只能載入 `skills/`。
 5. **需人工決定的事不代做**：計畫中標記「需你決定」的任務與人工閘門，只能準備資料與選項。
-6. **不可逆操作先問**：刪除資料、改寫 git 歷史、正式部署、開啟 `AUTO_PUBLISH_ENABLED` 前必須取得使用者明確同意。
+6. **不可逆操作先問**：刪除資料、改寫 git 歷史、新增任何對外公開的端點或發布管道前，必須取得使用者明確同意。
 
 ## 程式規範
 
@@ -67,7 +67,8 @@ NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系�
 - 數值計算（風險加權、What-if）由程式完成，模型只提供分項判斷與解釋。
 - 每個產品 Skill 依執行計畫的「Skill 開發標準循環」開發；SKILL.md 改動後必須重跑評測並升版本。
 - CI 使用 fake provider 與錄製回應，不呼叫真實 API。
-- 自動發布只能經 `app/alerts/policy.py` 的確定性規則；未核實的具體指控永遠不得公開。
+- 系統不對外發布；通知只送給使用者本人，且只能經 `app/alerts/policy.py` 的確定性規則。未核實的具體指控不得呈現為已核實。
+- Facebook 擷取只讀不互動、每天最多一次，不保存發文者資訊與 Facebook 登入資料（`docs/governance/source-inventory.md`）。
 
 ## 常用指令
 
