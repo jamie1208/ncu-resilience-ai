@@ -35,8 +35,10 @@ sources:
     poll_interval: 3600  # 每 60 分鐘
     options:
       list_urls:
-        - https://pdc.adm.ncu.edu.tw/p/403-1019-495-1.php?Lang=zh-tw
-        - https://pdc.adm.ncu.edu.tw/p/403-1019-498-1.php?Lang=zh-tw
+        - url: https://pdc.adm.ncu.edu.tw/p/403-1019-495-1.php?Lang=zh-tw
+          tag: 教務處
+        - url: https://pdc.adm.ncu.edu.tw/p/403-1019-498-1.php?Lang=zh-tw
+          tag: 課務組
 
   ncu-news:  # 中央大學新聞網：中大新聞、焦點新聞、學術新聞（主要新聞來源，ADR-0007）
     type: ncu_news
@@ -48,21 +50,30 @@ sources:
         - https://ncusec.ncu.edu.tw/news/focus-news.php
         - https://ncusec.ncu.edu.tw/news/academic-news.php
 
-  ncu-cc:  # 電子計算機中心公告（RPage，9 個分類共用文章編號；使用者要求全部擷取，ADR-0010）
+  ncu-cc:  # 電子計算機中心公告（RPage，9 個分類共用文章編號；使用者要求全部擷取，ADR-0010；tag 寫入 tags，P1-T15）
     type: rpage
     name: 中央大學電子計算機中心公告
     poll_interval: 3600  # 來源盤點建議：每 60 分鐘
     options:
       list_urls:
-        - https://www.cc.ncu.edu.tw/p/403-1033-14-1.php?Lang=zh-tw  # 行政公告
-        - https://www.cc.ncu.edu.tw/p/403-1033-15-1.php?Lang=zh-tw  # 系統維護
-        - https://www.cc.ncu.edu.tw/p/403-1033-16-1.php?Lang=zh-tw  # 宿舍網路
-        - https://www.cc.ncu.edu.tw/p/403-1033-17-1.php?Lang=zh-tw  # 資安訊息
-        - https://www.cc.ncu.edu.tw/p/403-1033-18-1.php?Lang=zh-tw  # 授權軟體
-        - https://www.cc.ncu.edu.tw/p/403-1033-19-1.php?Lang=zh-tw  # 虛擬桌面
-        - https://www.cc.ncu.edu.tw/p/403-1033-20-1.php?Lang=zh-tw  # 徵才公告
-        - https://www.cc.ncu.edu.tw/p/403-1033-21-1.php?Lang=zh-tw  # 最新消息
-        - https://www.cc.ncu.edu.tw/p/403-1033-22-1.php?Lang=zh-tw  # 課程／活動
+        - url: https://www.cc.ncu.edu.tw/p/403-1033-14-1.php?Lang=zh-tw
+          tag: 行政公告
+        - url: https://www.cc.ncu.edu.tw/p/403-1033-15-1.php?Lang=zh-tw
+          tag: 系統維護
+        - url: https://www.cc.ncu.edu.tw/p/403-1033-16-1.php?Lang=zh-tw
+          tag: 宿舍網路
+        - url: https://www.cc.ncu.edu.tw/p/403-1033-17-1.php?Lang=zh-tw
+          tag: 資安訊息
+        - url: https://www.cc.ncu.edu.tw/p/403-1033-18-1.php?Lang=zh-tw
+          tag: 授權軟體
+        - url: https://www.cc.ncu.edu.tw/p/403-1033-19-1.php?Lang=zh-tw
+          tag: 虛擬桌面
+        - url: https://www.cc.ncu.edu.tw/p/403-1033-20-1.php?Lang=zh-tw
+          tag: 徵才公告
+        - url: https://www.cc.ncu.edu.tw/p/403-1033-21-1.php?Lang=zh-tw
+          tag: 最新消息
+        - url: https://www.cc.ncu.edu.tw/p/403-1033-22-1.php?Lang=zh-tw
+          tag: 課程／活動
 
   ncu-epsc:  # 環境保護暨安全衛生中心最新消息（實驗室、化學品、消防安全；ADR-0010）
     type: ncu_epsc

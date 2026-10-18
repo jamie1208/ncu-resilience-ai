@@ -3,6 +3,8 @@
 - `source_items`：以 `INSERT ... ON CONFLICT DO UPDATE` 寫入。唯一鍵為 (source_id, external_id)；
   沒有 external_id 時改以 (source_id, url)，對應 0001_core 的兩個部分唯一索引。
   已存在的文章會更新網址、補上發布時間（不以空值覆寫）、把擷取時間推到最新（不倒退）。
+- `source_items.tags`（P1-T15）：與既有標籤取聯集、排序、去重，標籤不會被移除；
+  標籤不影響內容雜湊，只有標籤改變時不新增版本，計入 `unchanged`。
 - `source_item_versions`：以 (item_id, content_hash) 唯一鍵 `ON CONFLICT DO NOTHING`，
   內容雜湊沒變就不新增版本；`captured_at` 為該次擷取時間。
 - 交易：只 flush、不 commit（與 `record_audit` 相同）。呼叫端以 `async with session.begin():`
@@ -16,7 +18,7 @@ import uuid
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 
-from sqlalchemy import Boolean, func, literal_column, select
+from sqlalchemy import Boolean, func, literal_column, select, text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,6 +30,10 @@ from app.models.source import Source, SourceItem, SourceItemVersion
 from app.services.audit import record_audit
 
 AUDIT_ACTION = "source_items.ingest"
+_MERGE_TAGS = (
+    "ARRAY(SELECT DISTINCT t FROM unnest(source_items.tags || excluded.tags) AS t ORDER BY t)"
+)
+"""ON CONFLICT 時把既有標籤與新標籤取聯集、排序、去重。"""
 
 
 class UnknownSourceError(LookupError):
@@ -129,8 +135,10 @@ async def _upsert_item(
         url=item.url,
         published_at=item.published_at,
         fetched_at=item.fetched_at,
+        tags=sorted(item.tags),
     )
     updates = {
+        "tags": text(_MERGE_TAGS),
         "published_at": func.coalesce(stmt.excluded.published_at, SourceItem.published_at),
         "fetched_at": func.greatest(stmt.excluded.fetched_at, SourceItem.fetched_at),
     }

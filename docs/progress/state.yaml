@@ -171,7 +171,9 @@ tasks:
     updated_at: '2026-10-18T15:39:20+08:00'
     evidence: docs/progress/records/P1-T14-20261018.md
   P1-T15:
-    status: pending
+    status: done
+    updated_at: '2026-10-18T16:44:42+08:00'
+    evidence: docs/progress/records/P1-T15-20261018.md
   P1-T16:
     status: done
     updated_at: '2026-10-18T16:22:24+08:00'
@@ -507,4 +509,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-18T16:22:24+08:00'
+- at: '2026-10-18T16:25:46+08:00'
+  id: P1-T15
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-18T16:44:42+08:00'
+  id: P1-T15
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-18T16:44:42+08:00'

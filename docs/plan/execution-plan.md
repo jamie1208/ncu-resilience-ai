@@ -156,6 +156,7 @@ cd ../frontend && npm run lint && npm run build
   - 驗證：`cd backend && uv run pytest tests/unit/ingestion -q` 全部通過，且 `test_ncu_announcements.py`、`test_ncu_news.py` 沒有修改
 - **P1-T15 來源分類標籤寫入資料庫**（ADR-0008 新增；使用者決定保留 P1-T12 的分類）
   - 檔案：`app/ingestion/types.py`（`RawItem.tags: frozenset[str]`，預設空集合）、`app/ingestion/store.py`（寫入時與既有標籤取聯集；只有標籤改變時不新增內容版本）、`app/models/`（`source_items.tags`）、`infra/migrations/versions/<下一個編號>_source_item_tags.py`（text[]，預設空陣列，可 downgrade）、`app/ingestion/adapters/ncu_news.py`（分類改放進 `tags`，移除 `categories` 屬性）、`tests/integration/test_source_item_tags.py`
+  - 實作調整（使用者 2026-10-18 決定）：A. `ncu_news` **保留** `categories` 屬性（改由 tags 推算），不移除，避免修改 P1-T12 的既有測試；C. 範圍擴大到 RPage（`list_urls` 每項可寫成 `{url, tag}`，`ncu-cc` 9 個分類、`ncu-aa` 2 個分類）與生輔組（公告類別）。額外修改 `app/ingestion/normalize.py`（標籤要經 `NormalizedItem` 傳到 store）、`ncu_announcements.py`、`ncu_osa_life.py`、`list_detail.py`、`config/sources.yaml`，新增 `tests/unit/ingestion/test_source_tags.py`；migration 為 `0004_source_item_tags.py`
   - 驗證：`cd backend && uv run pytest tests/integration/test_source_item_tags.py tests/integration/test_idempotent_ingest.py tests/unit/ingestion -q`；migration up → down → up 往返無錯
 - **P1-T16 處室來源補齊（總務處、電算中心、圖書館、環安中心、生輔組）**（ADR-0010 新增）
   - 檔案：`config/sources.yaml`（登記 `ncu-oga-news`、`ncu-cc`、`ncu-lib`、`ncu-epsc`、`ncu-osa-life`）；不是 RPage 的網站各一個 `app/ingestion/adapters/<來源>.py`、`tests/fixtures/html/<來源>/` 頁面快照、`tests/unit/ingestion/test_<來源>.py`；`app/ingestion/adapters/__init__.py`；網址有變動時更新 `docs/governance/source-inventory.md`

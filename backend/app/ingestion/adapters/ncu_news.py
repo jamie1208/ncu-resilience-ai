@@ -12,8 +12,9 @@
 實際回傳一般 HTML 頁面（2026-10-18），解析後沒有規則，視為允許。
 
 去重與 cursor：`H_ID` 是三個列表共用的流水號，作為 `external_id`。同一篇出現在多個列表時
-只抓一次內頁，分類取各列表標籤的聯集，放在 `categories`（`RawItem` 沒有分類欄位，
-目前不寫入資料庫）。cursor 是已擷取的最大 `H_ID`；每輪由舊到新最多 `max_items` 篇。
+只抓一次內頁，分類取各列表標籤的聯集，寫入 `RawItem.tags`（P1-T15）；`categories` 屬性
+保留為舊介面，內容與各項目的 tags 相同。
+cursor 是已擷取的最大 `H_ID`；每輪由舊到新最多 `max_items` 篇。
 只讀各列表第一頁，不跟隨分頁、不回溯歷史新聞。
 
 來源設定（`SourceConfig.options`）：
@@ -162,7 +163,8 @@ class NcuNewsAdapter:
     """中央大學新聞網 Adapter。
 
     `last_skipped` 為上一輪略過的內頁數（已刪除、robots 禁止、轉址到他站）；
-    `categories` 為上一輪產出項目的分類（external_id → 分類標籤）。
+    `categories` 為上一輪產出項目的分類（external_id → 分類標籤）；P1-T15 起分類寫入
+    `RawItem.tags`，這個屬性保留為舊介面（使用者 2026-10-18 決定），內容由 tags 推算。
     """
 
     code: str
@@ -225,12 +227,13 @@ class NcuNewsAdapter:
         categories: dict[str, frozenset[str]] = {}
         skipped = 0
         for entry in new:
-            item = await self._fetch_detail(client, entry, fetched_at)
+            tags = frozenset(labels.get(entry.news_id, ()))
+            item = await self._fetch_detail(client, entry, fetched_at, tags)
             if item is None:
                 skipped += 1
                 continue
             items.append(item)
-            categories[str(entry.news_id)] = frozenset(labels.get(entry.news_id, ()))
+            categories[str(entry.news_id)] = item.tags
         self.last_skipped = skipped
         self.categories = categories
         return items
@@ -244,7 +247,11 @@ class NcuNewsAdapter:
         return parse_list(page.text, list_url)
 
     async def _fetch_detail(
-        self, client: httpx2.AsyncClient, entry: NewsEntry, fetched_at: datetime
+        self,
+        client: httpx2.AsyncClient,
+        entry: NewsEntry,
+        fetched_at: datetime,
+        tags: frozenset[str],
     ) -> RawItem | None:
         if not await self._fetcher.allowed(client, entry.url):
             return None
@@ -263,6 +270,7 @@ class NcuNewsAdapter:
             content_type="text/html" if detail.content_html else "text/plain",
             published_at=published,
             fetched_at=fetched_at,
+            tags=tags,
         )
 
     def _parse_cursor(self, cursor: str | None) -> int | None:
