@@ -38,6 +38,16 @@ sources:
         - https://pdc.adm.ncu.edu.tw/p/403-1019-495-1.php?Lang=zh-tw
         - https://pdc.adm.ncu.edu.tw/p/403-1019-498-1.php?Lang=zh-tw
 
+  ncu-news:  # 中央大學新聞網：中大新聞、焦點新聞、學術新聞（主要新聞來源，ADR-0007）
+    type: ncu_news
+    name: 中央大學新聞網
+    poll_interval: 21600  # 來源盤點建議：每 6 小時
+    options:
+      list_urls:  # 三個列表共用文章編號 H_ID，跨列表去重
+        - https://ncusec.ncu.edu.tw/news/headlines.php
+        - https://ncusec.ncu.edu.tw/news/focus-news.php
+        - https://ncusec.ncu.edu.tw/news/academic-news.php
+
   cwa-alerts:  # 中央氣象署開放資料：天氣警特報（W-C0033-001）與顯著有感地震報告（E-A0015-001）
     type: cwa_open_data
     name: 中央氣象署天氣警特報與地震報告

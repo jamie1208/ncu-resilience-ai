@@ -167,7 +167,9 @@ tasks:
     updated_at: '2026-10-17T23:56:08+08:00'
     evidence: docs/progress/records/P1-T11-20261017.md
   P1-T12:
-    status: pending
+    status: done
+    updated_at: '2026-10-18T11:58:46+08:00'
+    evidence: docs/progress/records/P1-T12-20261018.md
 gates:
   G0-1:
     status: pass
@@ -452,4 +454,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-18T11:40:14+08:00'
+- at: '2026-10-18T11:42:24+08:00'
+  id: P1-T12
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-18T11:58:46+08:00'
+  id: P1-T12
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-18T11:58:46+08:00'
