@@ -29,21 +29,19 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta, timezone
 from typing import Self
 from urllib.parse import urljoin, urlsplit
-from urllib.robotparser import RobotFileParser
 
 import httpx2
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from selectolax.lexbor import LexborHTMLParser, LexborNode
 
-from app.ingestion.base import AdapterError, LayoutChangedError, SourceUnavailableError
-from app.ingestion.http import MIN_REQUEST_INTERVAL, USER_AGENT, HostRateLimiter, shared_limiter
+from app.ingestion.base import AdapterError, LayoutChangedError
+from app.ingestion.http import MIN_REQUEST_INTERVAL, HostRateLimiter, PageFetcher, shared_limiter
 from app.ingestion.registry import registry
 from app.ingestion.types import RawItem, SourceConfig
 
 TAIPEI = timezone(timedelta(hours=8))  # 台灣沒有日光節約時間
 _DETAIL_PATH = re.compile(r"^/p/406-\d+-(?P<post>\d+),r\d+\.php$")
 _DATE = re.compile(r"(\d{4})-(\d{2})-(\d{2})")
-_RETRYABLE_STATUS = frozenset({408, 425, 429})
 
 
 class RPageOptions(BaseModel):
@@ -188,13 +186,6 @@ def _utc_now() -> datetime:
     return datetime.now(UTC)
 
 
-@dataclass(frozen=True)
-class _Page:
-    status: int
-    url: str
-    text: str
-
-
 @registry.register("rpage")
 class RPageAdapter:
     """RPage 公告 Adapter。
@@ -215,9 +206,14 @@ class RPageAdapter:
         self.code = config.code
         self._options = RPageOptions.model_validate(dict(config.options))
         self._client = client
-        self._limiter = limiter
         self._clock = clock
-        self._robots: dict[str, RobotFileParser] = {}
+        self._fetcher = PageFetcher(
+            config.code,
+            limiter=limiter,
+            min_interval=self._options.min_interval,
+            timeout=self._options.timeout,
+            max_bytes=self._options.max_bytes,
+        )
         self.last_skipped = 0
 
     async def fetch_since(self, cursor: str | None) -> list[RawItem]:
@@ -261,9 +257,9 @@ class RPageAdapter:
         return items
 
     async def _fetch_list(self, client: httpx2.AsyncClient, list_url: str) -> list[ListEntry]:
-        if not await self._allowed(client, list_url):
+        if not await self._fetcher.allowed(client, list_url):
             raise AdapterError(f"來源 {self.code} 的列表頁被 robots.txt 禁止")
-        page = await self._get(client, list_url)
+        page = await self._fetcher.get(client, list_url)
         if page.status >= 400:
             raise AdapterError(f"來源 {self.code} 的列表頁回應 HTTP {page.status}")
         return parse_list(page.text, list_url)
@@ -271,9 +267,9 @@ class RPageAdapter:
     async def _fetch_detail(
         self, client: httpx2.AsyncClient, entry: ListEntry, fetched_at: datetime
     ) -> RawItem | None:
-        if not await self._allowed(client, entry.url):
+        if not await self._fetcher.allowed(client, entry.url):
             return None
-        page = await self._get(client, entry.url)
+        page = await self._fetcher.get(client, entry.url)
         if page.status >= 400 or urlsplit(page.url).netloc != urlsplit(entry.url).netloc:
             return None  # 已刪除，或轉址到其他網站
         detail = parse_detail(page.text)
@@ -291,48 +287,6 @@ class RPageAdapter:
             published_at=published,
             fetched_at=fetched_at,
         )
-
-    async def _allowed(self, client: httpx2.AsyncClient, url: str) -> bool:
-        parts = urlsplit(url)
-        origin = f"{parts.scheme}://{parts.netloc}"
-        rules = self._robots.get(origin)
-        if rules is None:
-            page = await self._get(client, f"{origin}/robots.txt")
-            rules = RobotFileParser()
-            # 4xx（沒有 robots.txt）視為全部允許；5xx 已在 _get 拋出可重試錯誤
-            rules.parse(page.text.splitlines() if page.status < 400 else [])
-            self._robots[origin] = rules
-        return rules.can_fetch(USER_AGENT, url)
-
-    async def _get(self, client: httpx2.AsyncClient, url: str) -> _Page:
-        opts = self._options
-        await self._limiter.wait(urlsplit(url).netloc, opts.min_interval)
-        try:
-            async with client.stream(
-                "GET",
-                url,
-                headers={"User-Agent": USER_AGENT},
-                timeout=opts.timeout,
-                follow_redirects=True,
-            ) as response:
-                status = response.status_code
-                if status >= 500 or status in _RETRYABLE_STATUS:
-                    raise SourceUnavailableError(f"來源 {self.code} 回應 HTTP {status}")
-                chunks: list[bytes] = []
-                size = 0
-                async for chunk in response.aiter_bytes():
-                    size += len(chunk)
-                    if size > opts.max_bytes:
-                        raise AdapterError(f"來源 {self.code} 的頁面超過 {opts.max_bytes} bytes")
-                    chunks.append(chunk)
-                text = b"".join(chunks).decode(response.encoding or "utf-8", errors="replace")
-                return _Page(status, str(response.url), text)
-        except httpx2.TransportError as exc:
-            raise SourceUnavailableError(
-                f"來源 {self.code} 連線失敗（{type(exc).__name__}）"
-            ) from exc
-        except httpx2.HTTPError as exc:
-            raise AdapterError(f"來源 {self.code} 請求失敗（{type(exc).__name__}）") from exc
 
     def _parse_cursor(self, cursor: str | None) -> int | None:
         if cursor is None:

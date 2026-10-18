@@ -167,7 +167,9 @@ tasks:
   P1-T13:
     status: pending
   P1-T14:
-    status: pending
+    status: done
+    updated_at: '2026-10-18T15:39:20+08:00'
+    evidence: docs/progress/records/P1-T14-20261018.md
   P1-T15:
     status: pending
   P1-T16:
@@ -483,4 +485,14 @@ history:
   to: done
   note: ''
   confirmed_by_user: true
-updated_at: '2026-10-18T15:25:41+08:00'
+- at: '2026-10-18T15:28:23+08:00'
+  id: P1-T14
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-18T15:39:20+08:00'
+  id: P1-T14
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-18T15:39:20+08:00'
