@@ -134,7 +134,7 @@ cd ../frontend && npm run lint && npm run build
 - **P1-T09 標記資料集啟動**（金標準需你確認；ADR-0009）
   - 檔案：`data/labeling/guidelines.md`（分類法、真偽、同事件判準）、`data/labeling/label.schema.json`（由 `app/labeling/models.py` 產生）、`backend/app/labeling/`（標記模型、規則式預標、匯出、匯入、切分與統計）、`scripts/labeling/export_for_labeling.py`、`scripts/labeling/import_labels.py`、`scripts/labeling/dataset_stats.py`、`backend/tests/unit/labeling/`、`backend/tests/integration/test_export_for_labeling.py`
   - 內容：匯出 CSV 給使用者在試算表標記（含規則式預標），匯入時驗證後寫入 `data/labeled/labels.jsonl`；**標記檔只存文章 ID、內容雜湊與標記，不存內文**，因此不需加密；含內文的工作檔放 `data/raw/labeling/`（不進 git）。AI 預標（原 `scripts/labeling/ai_prelabel.py`）延到 S01–S03（P2-T08）完成後再補
-  - 驗證：`cd backend && uv run pytest tests/unit/labeling tests/integration/test_export_for_labeling.py -q`；累積 ≥ 100 筆人工確認樣本（`dataset_stats.py --check-min 100`），依事件／時間切分 dev／test
+  - 驗證：`cd backend && uv run pytest tests/unit/labeling tests/integration/test_export_for_labeling.py -q`；依事件／時間切分 dev／test。「累積 ≥ 100 筆人工確認樣本」改由閘門 G1-5 管控（`dataset_stats.py --check-min 100`），不是本任務的結案條件（使用者 2026-10-18 決定，ADR-0009）
 - **P1-T10 一晚穩定運行報告**（ADR-0006：原為七天；ADR-0010：在 P1-T16 之後執行，涵蓋處室來源）
   - 檔案：`scripts/reports/ingestion_report.py`、`docs/progress/records/P1-stability.md`
   - 驗證：報告顯示連續 ≥ 12 小時的成功率、各來源筆數、重複寫入數 = 0

@@ -1,0 +1,173 @@
+{
+  "$defs": {
+    "Category": {
+      "description": "事件類別（S03 event-classifier；使用者 2026-10-18 決定的 9 類）。",
+      "enum": [
+        "facility",
+        "weather",
+        "security",
+        "traffic",
+        "health",
+        "fire",
+        "academic",
+        "infosec",
+        "none"
+      ],
+      "title": "Category",
+      "type": "string"
+    },
+    "ClaimType": {
+      "description": "文章的陳述性質（S05 證據強度的依據）。",
+      "enum": [
+        "official",
+        "first_hand",
+        "hearsay",
+        "rumor"
+      ],
+      "title": "ClaimType",
+      "type": "string"
+    },
+    "VerificationStatus": {
+      "description": "查證結果（S05 evidence-verifier 的輸出；`confirmed` 統一為 `verified`）。",
+      "enum": [
+        "unverified",
+        "verified",
+        "disputed",
+        "false"
+      ],
+      "title": "VerificationStatus",
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一篇文章的人工確認標記；存於 `data/labeled/labels.jsonl`，每行一筆。",
+  "properties": {
+    "category": {
+      "$ref": "#/$defs/Category"
+    },
+    "claim_type": {
+      "$ref": "#/$defs/ClaimType"
+    },
+    "content_hash": {
+      "description": "標記時的內容版本（source_item_versions.content_hash）",
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "event_group": {
+      "anyOf": [
+        {
+          "pattern": "^[a-z0-9][a-z0-9-]{0,63}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "同一事件的文章使用同一個代號；非事件為 null",
+      "title": "Event Group"
+    },
+    "high_risk": {
+      "default": false,
+      "title": "High Risk",
+      "type": "boolean"
+    },
+    "is_campus_relevant": {
+      "title": "Is Campus Relevant",
+      "type": "boolean"
+    },
+    "item_id": {
+      "description": "source_items.id",
+      "format": "uuid",
+      "title": "Item Id",
+      "type": "string"
+    },
+    "labeled_at": {
+      "format": "date-time",
+      "title": "Labeled At",
+      "type": "string"
+    },
+    "labeler": {
+      "const": "human",
+      "default": "human",
+      "title": "Labeler",
+      "type": "string"
+    },
+    "mentions_person": {
+      "default": false,
+      "description": "是否點名可辨識的個人或店家",
+      "title": "Mentions Person",
+      "type": "boolean"
+    },
+    "published_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "原文發布時間，用於依時間切分",
+      "title": "Published At"
+    },
+    "related_groups": {
+      "description": "相關但不確定是同一件事的事件代號",
+      "items": {
+        "pattern": "^[a-z0-9][a-z0-9-]{0,63}$",
+        "type": "string"
+      },
+      "title": "Related Groups",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_code": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Source Code",
+      "type": "string"
+    },
+    "tags": {
+      "items": {
+        "maxLength": 20,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 10,
+      "title": "Tags",
+      "type": "array"
+    },
+    "verification": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/VerificationStatus"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "依目前蒐集到的全部證據判斷；非事件為 null"
+    }
+  },
+  "required": [
+    "item_id",
+    "source_code",
+    "content_hash",
+    "published_at",
+    "is_campus_relevant",
+    "category",
+    "claim_type",
+    "verification",
+    "event_group",
+    "labeled_at"
+  ],
+  "title": "LabelRecord",
+  "type": "object"
+}
