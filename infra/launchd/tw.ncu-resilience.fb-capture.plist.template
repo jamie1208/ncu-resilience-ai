@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Facebook NCU 社團每日擷取（P1-T13，ADR-0008）。
+  不要直接載入這個範本：用 scripts/facebook/install_schedule.sh install 安裝，
+  腳本會把 __REPO__ 換成 repo 路徑、__CLAUDE__ 換成 claude 執行檔路徑，複製到 ~/Library/LaunchAgents/。
+  只允許 Claude in Chrome 工具、讀檔與寫入 data/raw/facebook/；禁止 WebFetch、WebSearch、Bash。
+  日誌在 data/raw/facebook/logs/（不進 git）；skill 的最後回報不含貼文內容。
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>tw.ncu-resilience.fb-capture</string>
+  <key>WorkingDirectory</key>
+  <string>__REPO__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__CLAUDE__</string>
+    <string>-p</string>
+    <string>--chrome</string>
+    <string>--model</string>
+    <string>sonnet</string>
+    <string>--allowedTools</string>
+    <string>mcp__claude-in-chrome</string>
+    <string>Read</string>
+    <string>Edit(data/raw/facebook/**)</string>
+    <string>--disallowedTools</string>
+    <string>WebFetch</string>
+    <string>WebSearch</string>
+    <string>Bash</string>
+    <string>--</string>
+    <string>/ncu-fb-capture</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>8</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>__REPO__/data/raw/facebook/logs/capture.log</string>
+  <key>StandardErrorPath</key>
+  <string>__REPO__/data/raw/facebook/logs/capture.err.log</string>
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>

@@ -96,6 +96,15 @@ sources:
     options:
       list_url: https://military.ncu.edu.tw/
 
+  facebook:  # Facebook NCU 社團（ADR-0008、P1-T13）：每天 08:00 由 Claude Code 透過 Chrome 擷取，經人工匯入格式進入系統
+    type: manual_import
+    name: Facebook NCU 社團
+    poll_interval: 3600  # 每 60 分鐘檢查一次資料夾；擷取本身每天一次
+    options:
+      directory: raw/facebook  # data/raw/facebook/，不進 git
+      source_url: https://www.facebook.com/groups/NCUgroup  # 擷取 skill 讀取；不帶 locale 等參數
+      derive_external_id: true  # ADR-0011：取不到單篇網址，以內文雜湊識別
+
   cwa-alerts:  # 中央氣象署開放資料：天氣警特報（W-C0033-001）與顯著有感地震報告（E-A0015-001）
     type: cwa_open_data
     name: 中央氣象署天氣警特報與地震報告

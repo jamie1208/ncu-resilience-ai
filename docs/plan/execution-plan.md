@@ -149,6 +149,7 @@ cd ../frontend && npm run lint && npm run build
 - **P1-T13 Facebook 社團每日擷取**（ADR-0008 新增）
   - 檔案：`.claude/skills/ncu-fb-capture/SKILL.md`（在已登入的 Chrome 讀取社團過去 24 小時的貼文，只讀不互動，輸出 P1-T04 匯入格式）、`infra/launchd/tw.ncu-resilience.fb-capture.plist.template`（每天 08:00 以 `claude -p` 執行）、`scripts/facebook/install_schedule.sh`（安裝與移除排程）、`config/sources.yaml`（登記 `facebook`，類型 `manual_import`）、`infra/docker/docker-compose.yml`（worker 唯讀掛載 `../../data:/data:ro`，P1-T04 驗收時決定）、`backend/tests/unit/ingestion/test_facebook_capture_format.py`
   - 內容：社團網址登記在 `config/sources.yaml`；輸出到 `data/raw/facebook/<YYYY-MM-DD>.json`（不進 git）；不保存發文者姓名、帳號、頭像、留言者資訊；後端不保存 Facebook 帳號、密碼或 cookie；首次執行前先實測 `claude -p` 能否連上 Claude in Chrome，不行就改為每天 08:00 發出提醒，由使用者手動觸發
+  - 實作調整（ADR-0011，試行）：實測取不到單篇貼文網址，擷取端不讀連結，`url` 填社團網址，`manual_import` 以 `derive_external_id` 用內文雜湊識別；另外修改 `app/ingestion/adapters/manual_import.py`（`source_url`、`derive_external_id` 選項）與 `docs/governance/manual-import-format.md`；新增 `backend/tests/fixtures/facebook/sample_capture.json`；G1-4 抽樣排除 facebook
   - 驗證：`cd backend && uv run pytest tests/unit/ingestion/test_facebook_capture_format.py`（範例輸出通過匯入格式驗證、含發文者欄位時被拒絕）；手動執行一次擷取並以 `manual_import` 匯入，重跑零重複
 - **P1-T14 HTML Adapter 共用 HTTP 模組**（ADR-0008 新增；P1-T12 驗收時發現的重複程式）
   - 檔案：`app/ingestion/http.py`（既有 `HostRateLimiter` 之外，新增 robots 檢查、串流讀取、錯誤分類）、`app/ingestion/adapters/ncu_announcements.py`、`app/ingestion/adapters/ncu_news.py`、`tests/unit/ingestion/test_http.py`（共用函式的新測試，先寫）

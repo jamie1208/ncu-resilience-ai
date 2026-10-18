@@ -21,7 +21,18 @@ sources:
     options:
       directory: raw/facebook   # 相對於 data/，不可用絕對路徑或 ..
       max_files: 31             # 每輪最多讀幾個新檔案（1–366，預設 31）
+      source_url: https://www.facebook.com/groups/NCUgroup  # 選填：擷取端讀取的網址，Adapter 不使用
+      derive_external_id: true  # 選填（預設 false）：沒有 external_id 時以內文雜湊識別（ADR-0011）
 ```
+
+### 取不到單篇網址的來源（`derive_external_id`，ADR-0011）
+
+有些來源取不到每篇的固定網址，例如 Facebook 社團：Claude in Chrome 會擋下貼文連結。這時每筆的 `url` 填來源首頁（例如社團網址），不填 `external_id`，並在設定中開啟 `derive_external_id`。匯入時會以「內文前 300 字（連續空白合併為一個）」的 SHA-256 作為識別碼（`content-<40 位 hex>`）：
+
+- 同一篇在不同天的檔案中出現時，識別碼相同，不會重複寫入；時間有誤差也不影響；
+- 同一檔案中內文相同的項目只保留第一筆，不會整檔拒絕；
+- 內文前 300 字被修改時，會變成新的一筆；
+- 只能追溯到來源首頁與發文時間，無法連到單篇原文。
 
 ## 檔案規則
 
@@ -70,7 +81,7 @@ sources:
 | `published_at` | ✅ | 原文發布時間 |
 | `fetched_at` | ✅ | 擷取時間 |
 | `title` | | 標題；社群貼文通常沒有 |
-| `external_id` | | 來源內的唯一識別碼；省略時以 `url` 代替 |
+| `external_id` | | 來源內的唯一識別碼；省略時以 `url` 代替（開啟 `derive_external_id` 時改以內文雜湊代替） |
 
 ## CSV 格式
 
