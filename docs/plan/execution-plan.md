@@ -159,6 +159,7 @@ cd ../frontend && npm run lint && npm run build
   - 驗證：`cd backend && uv run pytest tests/integration/test_source_item_tags.py tests/integration/test_idempotent_ingest.py tests/unit/ingestion -q`；migration up → down → up 往返無錯
 - **P1-T16 處室來源補齊（總務處、電算中心、圖書館、環安中心、生輔組）**（ADR-0010 新增）
   - 檔案：`config/sources.yaml`（登記 `ncu-oga-news`、`ncu-cc`、`ncu-lib`、`ncu-epsc`、`ncu-osa-life`）；不是 RPage 的網站各一個 `app/ingestion/adapters/<來源>.py`、`tests/fixtures/html/<來源>/` 頁面快照、`tests/unit/ingestion/test_<來源>.py`；`app/ingestion/adapters/__init__.py`；網址有變動時更新 `docs/governance/source-inventory.md`
+  - 實作結果（ADR-0010「實作時的調整」）：計中（9 個分類）、環安中心、圖書館、生輔組上線；總務處由使用者決定暫緩；新增共用模組 `app/ingestion/html.py`、`app/ingestion/adapters/list_detail.py`
   - 內容：開工時先逐一確認列表網址與版型（2026-10-18：計中是 RPage；總務處 `/news` 已改版、被導向錯誤頁），列出確定的檔案清單再實作；新 Adapter 沿用 P1-T14 的共用 HTTP 模組；遵守 robots、速率限制與專案 User-Agent；擷取頻率依盤點建議（總務處 30 分鐘，其他 60 分鐘）；網域或 robots 有變動時請使用者重新核准
   - 驗證：`cd backend && uv run pytest tests/unit/ingestion -q`（CI 不連外）；`uv run pytest tests/unit/ingestion/test_source_settings.py` 確認五個來源已核准、類型已註冊；本機手動擷取一輪，每個來源至少取得 1 篇
 

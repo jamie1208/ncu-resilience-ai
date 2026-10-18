@@ -48,6 +48,43 @@ sources:
         - https://ncusec.ncu.edu.tw/news/focus-news.php
         - https://ncusec.ncu.edu.tw/news/academic-news.php
 
+  ncu-cc:  # 電子計算機中心公告（RPage，9 個分類共用文章編號；使用者要求全部擷取，ADR-0010）
+    type: rpage
+    name: 中央大學電子計算機中心公告
+    poll_interval: 3600  # 來源盤點建議：每 60 分鐘
+    options:
+      list_urls:
+        - https://www.cc.ncu.edu.tw/p/403-1033-14-1.php?Lang=zh-tw  # 行政公告
+        - https://www.cc.ncu.edu.tw/p/403-1033-15-1.php?Lang=zh-tw  # 系統維護
+        - https://www.cc.ncu.edu.tw/p/403-1033-16-1.php?Lang=zh-tw  # 宿舍網路
+        - https://www.cc.ncu.edu.tw/p/403-1033-17-1.php?Lang=zh-tw  # 資安訊息
+        - https://www.cc.ncu.edu.tw/p/403-1033-18-1.php?Lang=zh-tw  # 授權軟體
+        - https://www.cc.ncu.edu.tw/p/403-1033-19-1.php?Lang=zh-tw  # 虛擬桌面
+        - https://www.cc.ncu.edu.tw/p/403-1033-20-1.php?Lang=zh-tw  # 徵才公告
+        - https://www.cc.ncu.edu.tw/p/403-1033-21-1.php?Lang=zh-tw  # 最新消息
+        - https://www.cc.ncu.edu.tw/p/403-1033-22-1.php?Lang=zh-tw  # 課程／活動
+
+  ncu-epsc:  # 環境保護暨安全衛生中心最新消息（實驗室、化學品、消防安全；ADR-0010）
+    type: ncu_epsc
+    name: 中央大學環境保護暨安全衛生中心最新消息
+    poll_interval: 3600  # 來源盤點建議：每 60 分鐘
+    options:
+      list_url: https://ncu.edu.tw/epsc/index.php/index/News.html
+
+  ncu-lib:  # 圖書館最新消息（閉館、設施維修；ADR-0010）
+    type: ncu_lib
+    name: 中央大學圖書館最新消息
+    poll_interval: 3600  # 每 60 分鐘
+    options:
+      list_url: https://www.lib.ncu.edu.tw/libboard/board_all.php
+
+  ncu-osa-life:  # 學務處生活輔導組公告（校園安全、交通安全、宿舍；ADR-0010）
+    type: ncu_osa_life
+    name: 中央大學學務處生活輔導組公告
+    poll_interval: 3600  # 每 60 分鐘
+    options:
+      list_url: https://military.ncu.edu.tw/
+
   cwa-alerts:  # 中央氣象署開放資料：天氣警特報（W-C0033-001）與顯著有感地震報告（E-A0015-001）
     type: cwa_open_data
     name: 中央氣象署天氣警特報與地震報告

@@ -26,7 +26,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime
 from typing import Self
 from urllib.parse import urljoin, urlsplit
 
@@ -35,13 +35,12 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from selectolax.lexbor import LexborHTMLParser, LexborNode
 
 from app.ingestion.base import AdapterError, LayoutChangedError
+from app.ingestion.html import clean, find_date, first, taipei_midnight
 from app.ingestion.http import MIN_REQUEST_INTERVAL, HostRateLimiter, PageFetcher, shared_limiter
 from app.ingestion.registry import registry
 from app.ingestion.types import RawItem, SourceConfig
 
-TAIPEI = timezone(timedelta(hours=8))  # 台灣沒有日光節約時間
 _DETAIL_PATH = re.compile(r"^/p/406-\d+-(?P<post>\d+),r\d+\.php$")
-_DATE = re.compile(r"(\d{4})-(\d{2})-(\d{2})")
 
 
 class RPageOptions(BaseModel):
@@ -101,25 +100,6 @@ class DetailPage:
     content_html: str | None
 
 
-def _first(node: LexborHTMLParser | LexborNode, selector: str) -> LexborNode | None:
-    found = node.css(selector)
-    return found[0] if found else None
-
-
-def _clean(text: str) -> str:
-    return " ".join(text.split())
-
-
-def _find_date(text: str) -> date | None:
-    found = _DATE.search(text)
-    if found is None:
-        return None
-    try:
-        return date(int(found[1]), int(found[2]), int(found[3]))
-    except ValueError:
-        return None
-
-
 def _row_of(anchor: LexborNode) -> LexborNode:
     """公告連結所在的「一列」：表格的 tr，或 listBS 的 .d-item；都沒有時用 .mtitle。"""
     node: LexborNode | None = anchor.parent
@@ -156,8 +136,8 @@ def parse_list(html: str, list_url: str) -> list[ListEntry]:
                 continue
             post_id = int(match["post"])
             if post_id not in entries:
-                row_date = _find_date(_row_of(anchor).text())
-                entries[post_id] = ListEntry(post_id, url, _clean(anchor.text()), row_date)
+                row_date = find_date(_row_of(anchor).text())
+                entries[post_id] = ListEntry(post_id, url, clean(anchor.text()), row_date)
     if not entries:
         raise LayoutChangedError("列表頁沒有任何公告內頁連結")
     return list(entries.values())
@@ -168,16 +148,16 @@ def parse_detail(html: str) -> DetailPage:
 
     發布日期可能不存在（國際處等網站的內頁不顯示），由呼叫端改用列表頁的日期。
     """
-    module = _first(LexborHTMLParser(html), ".module-detail")
+    module = first(LexborHTMLParser(html), ".module-detail")
     if module is None:
         raise LayoutChangedError("內頁找不到 .module-detail")
-    heading = _first(module, "h2.hdline")
-    title = _clean(heading.text()) if heading is not None else ""
+    heading = first(module, "h2.hdline")
+    title = clean(heading.text()) if heading is not None else ""
     if not title:
         raise LayoutChangedError("內頁缺少標題 h2.hdline")
-    date_node = _first(module, ".ptinfoproperty_date")
-    published = _find_date(date_node.text()) if date_node is not None else None
-    body = _first(module, ".meditor")
+    date_node = first(module, ".ptinfoproperty_date")
+    published = find_date(date_node.text()) if date_node is not None else None
+    body = first(module, ".meditor")
     content = body.html if body is not None and body.text().strip() else None
     return DetailPage(title, published, content)
 
@@ -274,9 +254,7 @@ class RPageAdapter:
             return None  # 已刪除，或轉址到其他網站
         detail = parse_detail(page.text)
         day = detail.published or entry.published
-        published = (
-            datetime.combine(day, datetime.min.time(), tzinfo=TAIPEI) if day is not None else None
-        )
+        published = taipei_midnight(day)
         return RawItem(
             source_code=self.code,
             external_id=str(entry.post_id),
