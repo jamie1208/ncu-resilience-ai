@@ -145,7 +145,7 @@ phases:
       - id: P1-T16
         title: 處室來源補齊（總務處、電算中心、圖書館、環安中心、生輔組）
         deps: [P1-T03, P1-T14]
-        paths: [docs/decisions/ADR-0010-office-sources.md]
+        paths: [backend/tests/fixtures/html/ncu_lib, backend/tests/fixtures/html/ncu_epsc, backend/tests/fixtures/html/ncu_osa_life, docs/decisions/ADR-0010-office-sources.md]
     gates:
       - id: G1-1
         title: ≥ 3 個來源上線
