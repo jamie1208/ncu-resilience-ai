@@ -146,7 +146,7 @@ cd ../frontend && npm run lint && npm run build
   - 內容：擷取 `https://ncusec.ncu.edu.tw/news/` 的中大新聞 `headlines.php`、焦點新聞 `focus-news.php`、學術新聞 `academic-news.php`；從詳細頁 `headlines_content.php?H_ID=<id>` 取得內文；以 `H_ID` 為 `external_id`，同一篇出現在多個列表只產出一筆並保留分類標籤；首次擷取只取各列表第一頁；遵守速率限制與 User-Agent 標示；必要欄位抽不到時拋出 `LayoutChangedError`
   - 驗證：`cd backend && uv run pytest tests/unit/ingestion/test_ncu_news.py`（快照解析、跨列表去重、版型變動錯誤；CI 不連外）
 - **P1-T13 Facebook 社團每日擷取**（ADR-0008 新增）
-  - 檔案：`.claude/skills/ncu-fb-capture/SKILL.md`（在已登入的 Chrome 讀取社團過去 24 小時的貼文，只讀不互動，輸出 P1-T04 匯入格式）、`infra/launchd/tw.ncu-resilience.fb-capture.plist.template`（每天 08:00 以 `claude -p` 執行）、`scripts/facebook/install_schedule.sh`（安裝與移除排程）、`config/sources.yaml`（登記 `facebook`，類型 `manual_import`）、`backend/tests/unit/ingestion/test_facebook_capture_format.py`
+  - 檔案：`.claude/skills/ncu-fb-capture/SKILL.md`（在已登入的 Chrome 讀取社團過去 24 小時的貼文，只讀不互動，輸出 P1-T04 匯入格式）、`infra/launchd/tw.ncu-resilience.fb-capture.plist.template`（每天 08:00 以 `claude -p` 執行）、`scripts/facebook/install_schedule.sh`（安裝與移除排程）、`config/sources.yaml`（登記 `facebook`，類型 `manual_import`）、`infra/docker/docker-compose.yml`（worker 唯讀掛載 `../../data:/data:ro`，P1-T04 驗收時決定）、`backend/tests/unit/ingestion/test_facebook_capture_format.py`
   - 內容：社團網址登記在 `config/sources.yaml`；輸出到 `data/raw/facebook/<YYYY-MM-DD>.json`（不進 git）；不保存發文者姓名、帳號、頭像、留言者資訊；後端不保存 Facebook 帳號、密碼或 cookie；首次執行前先實測 `claude -p` 能否連上 Claude in Chrome，不行就改為每天 08:00 發出提醒，由使用者手動觸發
   - 驗證：`cd backend && uv run pytest tests/unit/ingestion/test_facebook_capture_format.py`（範例輸出通過匯入格式驗證、含發文者欄位時被拒絕）；手動執行一次擷取並以 `manual_import` 匯入，重跑零重複
 - **P1-T14 HTML Adapter 共用 HTTP 模組**（ADR-0008 新增；P1-T12 驗收時發現的重複程式）
