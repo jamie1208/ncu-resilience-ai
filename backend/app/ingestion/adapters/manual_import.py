@@ -13,11 +13,16 @@
 來源設定（`SourceConfig.options`）：
 - `directory`（必填）：相對於 `data/` 的資料夾，例如 `raw/facebook`
 - `max_files`：每輪最多讀幾個新檔案（1–366，預設 31）
+- `source_url`：擷取端讀取的來源網址（例如 P1-T13 的 Facebook 社團），Adapter 本身不使用
+- `derive_external_id`（預設 false）：項目沒有 `external_id` 時，改用內文前 300 字的雜湊
+  （`content_external_id`），而不是 url。用於取不到單篇網址的來源（ADR-0011）；
+  此時同一檔案中內文相同的項目視為同一篇，只保留第一筆
 """
 
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import json
 from collections.abc import Callable, Sequence
@@ -43,6 +48,8 @@ MAX_CONTENT_CHARS = 50_000
 MAX_TITLE_CHARS = 300
 MAX_EXTERNAL_ID_CHARS = 255  # source_items.external_id 的欄位長度
 CLOCK_SKEW = timedelta(minutes=5)
+CONTENT_ID_CHARS = 300
+CONTENT_ID_PREFIX = "content-"
 
 PERSONAL_FIELDS = frozenset(
     {
@@ -75,6 +82,12 @@ PERSONAL_FIELDS = frozenset(
 """ADR-0008 核准條件：與人有關的欄位一律不收；出現時給出明確的錯誤原因。"""
 
 
+def content_external_id(content: str) -> str:
+    """以內文前 300 字（連續空白合併）計算的識別碼，例如 `content-3f9a…`（ADR-0011）。"""
+    head = " ".join(content.split())[:CONTENT_ID_CHARS]
+    return CONTENT_ID_PREFIX + hashlib.sha256(head.encode("utf-8")).hexdigest()[:40]
+
+
 class ImportFormatError(AdapterError):
     """匯入檔案不符合格式；重試無效，需要人工修正或移走檔案。"""
 
@@ -88,6 +101,8 @@ class ManualImportOptions(BaseModel):
 
     directory: str = Field(min_length=1)
     max_files: int = Field(default=31, ge=1, le=366)
+    source_url: str | None = None
+    derive_external_id: bool = False
 
     @field_validator("directory")
     @classmethod
@@ -95,6 +110,15 @@ class ManualImportOptions(BaseModel):
         path = PurePosixPath(value)
         if path.is_absolute() or ".." in path.parts or not value.strip():
             raise ValueError("directory 必須是 data/ 底下的相對路徑")
+        return value
+
+    @field_validator("source_url")
+    @classmethod
+    def _http_source(cls, value: str | None) -> str | None:
+        if value is not None:
+            parts = urlsplit(value)
+            if parts.scheme not in ("http", "https") or not parts.netloc:
+                raise ValueError("source_url 必須是 http(s) 絕對網址")
         return value
 
 
@@ -227,9 +251,11 @@ class ManualImportAdapter:
         items: list[RawItem] = []
         seen: set[str] = set()
         for index, row in enumerate(rows, start=1):
-            raw = self._item(name, index, row, now)
+            raw, derived = self._item(name, index, row, now)
             key = raw.external_id or raw.url
             if key in seen:
+                if derived:
+                    continue  # 內文相同視為同一篇（ADR-0011）
                 raise ImportFormatError(f"{name}：第 {index} 筆與前面的項目重複（external_id）")
             seen.add(key)
             items.append(raw)
@@ -282,7 +308,8 @@ class ManualImportAdapter:
             where = f"第 {index} 筆的 " if index is not None else ""
             raise ImportFormatError(f"{name}：{where}source_code 與來源 {self.code} 不符")
 
-    def _item(self, name: str, index: int, row: object, now: datetime) -> RawItem:
+    def _item(self, name: str, index: int, row: object, now: datetime) -> tuple[RawItem, bool]:
+        """回傳（項目, external_id 是否由內文推算）。"""
         where = f"{name}：第 {index} 筆"
         if not isinstance(row, dict):
             raise ImportFormatError(f"{where}不是物件")
@@ -296,7 +323,11 @@ class ManualImportAdapter:
             parsed = ImportedItem.model_validate(row)
         except ValidationError as exc:
             raise ImportFormatError(f"{where}：{_describe(exc)}") from None
-        if parsed.external_id is None and len(parsed.url) > MAX_EXTERNAL_ID_CHARS:
+        derived = parsed.external_id is None and self._options.derive_external_id
+        external_id = (
+            content_external_id(parsed.content) if derived else parsed.external_id or parsed.url
+        )
+        if not derived and parsed.external_id is None and len(parsed.url) > MAX_EXTERNAL_ID_CHARS:
             raise ImportFormatError(
                 f"{where}：url 超過 {MAX_EXTERNAL_ID_CHARS} 字元，需要另外提供 external_id"
             )
@@ -304,15 +335,16 @@ class ManualImportAdapter:
             raise ImportFormatError(f"{where}：fetched_at 晚於現在")
         if parsed.published_at > parsed.fetched_at + CLOCK_SKEW:
             raise ImportFormatError(f"{where}：published_at 晚於 fetched_at")
-        return RawItem(
+        item = RawItem(
             source_code=self.code,
-            external_id=parsed.external_id or parsed.url,
+            external_id=external_id,
             url=parsed.url,
             title=parsed.title,
             content=parsed.content,
             published_at=parsed.published_at,
             fetched_at=parsed.fetched_at,
         )
+        return item, derived
 
 
 def _describe(exc: ValidationError) -> str:
