@@ -6,7 +6,7 @@
 # - human：true 表示需要你親自決定，AI 只能準備資料。
 # - gates.command：可自動執行的驗證指令（--run-gates 時執行）；
 #   manual：true 表示需人工確認，tracker 只會提示。
-# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12、ADR-0008 個人使用：新增 P1-T13／P1-T14／P1-T15，刪除 P3-T02／P3-T04／P3-T06／P3-T09／P5-T07 與 G3-1／G5-3，ID 不重複使用），tracker 優先讀取本檔。
+# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12、ADR-0010 新增 P1-T16、ADR-0009 P1-T09 檔案調整、ADR-0008 個人使用：新增 P1-T13／P1-T14／P1-T15，刪除 P3-T02／P3-T04／P3-T06／P3-T09／P5-T07 與 G3-1／G5-3，ID 不重複使用），tracker 優先讀取本檔。
 # 修改計畫時：只改這個檔案，再執行 `tracker.py sync` 讓 state.yaml 補上新任務。
 
 version: 1
@@ -117,10 +117,10 @@ phases:
         title: 標記資料集啟動
         human: true
         deps: [P1-T06]
-        paths: [data/labeling/guidelines.md, data/labeling/label.schema.json, scripts/labeling/export_for_labeling.py]
+        paths: [data/labeling/guidelines.md, data/labeling/label.schema.json, scripts/labeling/export_for_labeling.py, scripts/labeling/import_labels.py, scripts/labeling/dataset_stats.py, backend/app/labeling]
       - id: P1-T10
         title: 一晚穩定運行報告
-        deps: [P1-T08]
+        deps: [P1-T08, P1-T16]
         paths: [scripts/reports/ingestion_report.py]
       - id: P1-T11
         title: 氣象署開放資料 Adapter（cwa-alerts）
@@ -142,6 +142,10 @@ phases:
         title: 來源分類標籤寫入資料庫
         deps: [P1-T12]
         paths: [backend/tests/integration/test_source_item_tags.py]
+      - id: P1-T16
+        title: 處室來源補齊（總務處、電算中心、圖書館、環安中心、生輔組）
+        deps: [P1-T03, P1-T14]
+        paths: [backend/tests/fixtures/html/ncu_lib, backend/tests/fixtures/html/ncu_epsc, backend/tests/fixtures/html/ncu_osa_life, docs/decisions/ADR-0010-office-sources.md]
     gates:
       - id: G1-1
         title: ≥ 3 個來源上線
@@ -156,7 +160,7 @@ phases:
         title: 隨機 20 筆皆可反查原文
         manual: true
       - id: G1-5
-        title: ≥ 100 筆人工確認標記樣本
+        title: ≥ 100 筆人工確認標記樣本（以 dataset_stats.py 統計，仍需人工確認）
         manual: true
 
   - id: P2

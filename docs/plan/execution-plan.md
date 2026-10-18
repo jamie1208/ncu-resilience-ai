@@ -7,7 +7,7 @@
 >
 > 修改計畫時三處要一起改：本檔、phases.yaml（或其覆寫檔 `docs/progress/phases.yaml`）、ADR。
 
-全案 6 個階段、61 個任務、24 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
+全案 6 個階段、62 個任務、24 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。Migration 檔名以實際的下一個可用編號為準（ADR-0009），計畫中寫成 `<下一個編號>_<名稱>.py`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
 
 **個人使用（ADR-0008）**：本系統只給使用者本人使用，不提供公開網站、公開 API、匿名通報或任何對外發布管道。已刪除的任務與閘門（P3-T02、P3-T04、P3-T06、P3-T09、P5-T07、G3-1、G5-3）不重新編號，ID 也不重複使用。
 
@@ -126,15 +126,16 @@ cd ../frontend && npm run lint && npm run build
   - 檔案：`app/ingestion/store.py`（單一交易：upsert source_items `ON CONFLICT`、版本 unique(item_id, content_hash)）
   - 驗證：`tests/integration/test_idempotent_ingest.py`：同批資料寫入 3 次筆數不變；內容改變才新增版本
 - **P1-T07 排程、重試與死信**
-  - 檔案：`app/worker/celery_app.py`、`app/worker/tasks/ingest.py`、beat 排程設定、`infra/migrations/versions/0002_ingestion_dead_letters.py`
+  - 檔案：`app/worker/celery_app.py`、`app/worker/tasks/ingest.py`、beat 排程設定、`infra/migrations/versions/0003_ingestion_dead_letters.py`（ADR-0009：實際編號）
   - 驗證：模擬來源失敗 → 指數退避重試 3 次 → 進死信表；ingestion_runs 記錄 counts 與 status
 - **P1-T08 來源健康與管理 API**
   - 檔案：`app/ingestion/health.py`、`app/api/v1/admin/ingestion_runs.py`（`GET /api/v1/admin/ingestion-runs`）
   - 驗證：`tests/integration/test_ingestion_runs_api.py`
-- **P1-T09 標記資料集啟動**（金標準需你確認）
-  - 檔案：`data/labeling/guidelines.md`（分類法、真偽、同事件判準）、`data/labeling/label.schema.json`、`scripts/labeling/export_for_labeling.py`、`scripts/labeling/ai_prelabel.py`；資料存 `data/labeled/`（不進 git，含個資時加密）
-  - 驗證：累積 ≥ 100 筆人工確認樣本，依事件／時間切分 dev／test
-- **P1-T10 一晚穩定運行報告**（ADR-0006：原為七天）
+- **P1-T09 標記資料集啟動**（金標準需你確認；ADR-0009）
+  - 檔案：`data/labeling/guidelines.md`（分類法、真偽、同事件判準）、`data/labeling/label.schema.json`（由 `app/labeling/models.py` 產生）、`backend/app/labeling/`（標記模型、規則式預標、匯出、匯入、切分與統計）、`scripts/labeling/export_for_labeling.py`、`scripts/labeling/import_labels.py`、`scripts/labeling/dataset_stats.py`、`backend/tests/unit/labeling/`、`backend/tests/integration/test_export_for_labeling.py`
+  - 內容：匯出 CSV 給使用者在試算表標記（含規則式預標），匯入時驗證後寫入 `data/labeled/labels.jsonl`；**標記檔只存文章 ID、內容雜湊與標記，不存內文**，因此不需加密；含內文的工作檔放 `data/raw/labeling/`（不進 git）。AI 預標（原 `scripts/labeling/ai_prelabel.py`）延到 S01–S03（P2-T08）完成後再補
+  - 驗證：`cd backend && uv run pytest tests/unit/labeling tests/integration/test_export_for_labeling.py -q`；依事件／時間切分 dev／test。「累積 ≥ 100 筆人工確認樣本」改由閘門 G1-5 管控（`dataset_stats.py --check-min 100`），不是本任務的結案條件（使用者 2026-10-18 決定，ADR-0009）
+- **P1-T10 一晚穩定運行報告**（ADR-0006：原為七天；ADR-0010：在 P1-T16 之後執行，涵蓋處室來源）
   - 檔案：`scripts/reports/ingestion_report.py`、`docs/progress/records/P1-stability.md`
   - 驗證：報告顯示連續 ≥ 12 小時的成功率、各來源筆數、重複寫入數 = 0
 - **P1-T11 氣象署開放資料 Adapter（cwa-alerts）**（ADR-0005 新增；P1-T02 查無可用的 RSS 來源）
@@ -156,6 +157,10 @@ cd ../frontend && npm run lint && npm run build
 - **P1-T15 來源分類標籤寫入資料庫**（ADR-0008 新增；使用者決定保留 P1-T12 的分類）
   - 檔案：`app/ingestion/types.py`（`RawItem.tags: frozenset[str]`，預設空集合）、`app/ingestion/store.py`（寫入時與既有標籤取聯集；只有標籤改變時不新增內容版本）、`app/models/`（`source_items.tags`）、`infra/migrations/versions/<下一個編號>_source_item_tags.py`（text[]，預設空陣列，可 downgrade）、`app/ingestion/adapters/ncu_news.py`（分類改放進 `tags`，移除 `categories` 屬性）、`tests/integration/test_source_item_tags.py`
   - 驗證：`cd backend && uv run pytest tests/integration/test_source_item_tags.py tests/integration/test_idempotent_ingest.py tests/unit/ingestion -q`；migration up → down → up 往返無錯
+- **P1-T16 處室來源補齊（總務處、電算中心、圖書館、環安中心、生輔組）**（ADR-0010 新增）
+  - 檔案：`config/sources.yaml`（登記 `ncu-oga-news`、`ncu-cc`、`ncu-lib`、`ncu-epsc`、`ncu-osa-life`）；不是 RPage 的網站各一個 `app/ingestion/adapters/<來源>.py`、`tests/fixtures/html/<來源>/` 頁面快照、`tests/unit/ingestion/test_<來源>.py`；`app/ingestion/adapters/__init__.py`；網址有變動時更新 `docs/governance/source-inventory.md`
+  - 內容：開工時先逐一確認列表網址與版型（2026-10-18：計中是 RPage；總務處 `/news` 已改版、被導向錯誤頁），列出確定的檔案清單再實作；新 Adapter 沿用 P1-T14 的共用 HTTP 模組；遵守 robots、速率限制與專案 User-Agent；擷取頻率依盤點建議（總務處 30 分鐘，其他 60 分鐘）；網域或 robots 有變動時請使用者重新核准
+  - 驗證：`cd backend && uv run pytest tests/unit/ingestion -q`（CI 不連外）；`uv run pytest tests/unit/ingestion/test_source_settings.py` 確認五個來源已核准、類型已註冊；本機手動擷取一輪，每個來源至少取得 1 篇
 
 ```bash
 cd backend && uv run pytest tests/unit/ingestion tests/integration -q
@@ -170,7 +175,7 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
 | G1-2 | 一晚（≥ 12 小時）成功率 ≥ 98%（ADR-0006） | ingestion_report.py |
 | G1-3 | 重跑零重複 | test_idempotent_ingest 通過且報告重複數 0 |
 | G1-4 | 可反查原文 | 隨機抽 20 筆皆有 url 與 fetched_at |
-| G1-5 | ≥ 100 筆標記樣本 | data/labeled 統計腳本 |
+| G1-5 | ≥ 100 筆標記樣本 | `scripts/labeling/dataset_stats.py --check-min 100` |
 
 ---
 
@@ -190,7 +195,7 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
   - 檔案：`app/ai/llm/base.py`（`LLMProvider.generate_structured(messages, json_schema, model, timeout, max_output_tokens)`）、`app/ai/llm/openai_provider.py`（Structured Outputs，strict JSON schema）、`app/ai/llm/fake_provider.py`（讀錄製回應，CI 不打 API）、`app/ai/llm/cost.py`（token 與費用記帳）
   - 驗證：`tests/unit/ai/test_llm_adapter.py`；模型名稱只出現在設定檔
 - **P2-T04 Skill Runner**
-  - 檔案：`app/ai/runner/loader.py`（掃描 `skills/`、解析 frontmatter、載入 references）、`app/ai/runner/prompt.py`（系統指令＝SKILL.md；來源內容一律包在 `<untrusted_source id=…>` 中）、`app/ai/runner/validate.py`（schema、列舉、範圍、evidence_id 存在、PII）、`app/ai/runner/run.py`（無效輸出重試 ≤ 2 次 → abstain、費用上限、逾時、寫入 ai_analysis_runs）、`infra/migrations/versions/0003_ai_runs.py`（ai_analysis_runs、risk_assessments、event_relations）
+  - 檔案：`app/ai/runner/loader.py`（掃描 `skills/`、解析 frontmatter、載入 references）、`app/ai/runner/prompt.py`（系統指令＝SKILL.md；來源內容一律包在 `<untrusted_source id=…>` 中）、`app/ai/runner/validate.py`（schema、列舉、範圍、evidence_id 存在、PII）、`app/ai/runner/run.py`（無效輸出重試 ≤ 2 次 → abstain、費用上限、逾時、寫入 ai_analysis_runs）、`infra/migrations/versions/<下一個編號>_ai_runs.py`（ai_analysis_runs、risk_assessments、event_relations）
   - 驗證：`tests/unit/ai/test_runner.py`（無效 JSON、不存在的 evidence_id、超支皆正確處理）
 - **P2-T05 評測框架**
   - 檔案：`scripts/eval/run_eval.py`、`app/ai/eval/metrics.py`（Macro-F1、Precision／Recall、配對式合併指標）、`tests/golden/test_skills.py`（錄製模式）、`eval/reports/`
@@ -247,7 +252,7 @@ uv run python ../scripts/eval/run_eval.py --all --split test --live --summary ev
 ### P3a 個人管理介面
 
 - **P3-T01 使用者驗證**（ADR-0008：改為單一使用者）
-  - 檔案：`app/core/security.py`（argon2 密碼、HttpOnly Secure Cookie session、CSRF；移除匿名投稿者與公開閱讀角色）、`app/api/deps.py`、`infra/migrations/versions/0004_users_roles.py`、`scripts/admin/create_admin.py`、`docs/architecture/rbac.md`（移除公開端點）
+  - 檔案：`app/core/security.py`（argon2 密碼、HttpOnly Secure Cookie session、CSRF；移除匿名投稿者與公開閱讀角色）、`app/api/deps.py`、`infra/migrations/versions/<下一個編號>_users_roles.py`、`scripts/admin/create_admin.py`、`docs/architecture/rbac.md`（移除公開端點）
   - 驗證：`tests/integration/test_auth.py`（未登入 401、CSRF 缺失拒絕；除 health 外沒有任何免登入的端點）
 - **P3-T03 管理 API**
   - 檔案：`app/api/v1/admin/events.py`（列表、verify、analyze）、`alerts.py`（retract）、`dashboard.py`、`audit_logs.py`、`app/api/pagination.py`（cursor）、`app/api/errors.py`（{data,meta,error} 與錯誤碼）；所有寫入帶 request_id 並寫稽核
@@ -295,13 +300,13 @@ make e2e   # 啟動完整環境並跑附錄 A 案例
   - 檔案：`frontend/src/admin/pages/RelationGraph.tsx`（Cytoscape.js）
   - 驗證：Playwright 確認／駁回流程
 - **P4-T03 時序統計與異常偵測**
-  - 檔案：`app/analytics/timeseries.py`（週／月頻率、地點分布、EWMA、Poisson 變化偵測）、`infra/migrations/versions/0006_analytics_views.py`（materialized views）
+  - 檔案：`app/analytics/timeseries.py`（週／月頻率、地點分布、EWMA、Poisson 變化偵測）、`infra/migrations/versions/<下一個編號>_analytics_views.py`（materialized views）
   - 驗證：`tests/unit/analytics/test_timeseries.py`（合成資料注入突增可被偵測）
 - **P4-T04 趨勢回測**
   - 檔案：`scripts/eval/backtest_trends.py`（滾動切點，只用切點前資料）、`tests/unit/analytics/test_no_leakage.py`
   - 驗證：洩漏測試通過；回測報告寫入 `eval/reports/trends/`
 - **P4-T05 改善措施追蹤（F10）**
-  - 檔案：`app/resilience/actions.py`、`infra/migrations/versions/0007_response_actions.py`（含狀態變更歷史）、管理端改善追蹤頁
+  - 檔案：`app/resilience/actions.py`、`infra/migrations/versions/<下一個編號>_response_actions.py`（含狀態變更歷史）、管理端改善追蹤頁
   - 驗證：`tests/integration/test_response_actions.py`（發現→處理→恢復→改進完整紀錄）
 - **P4-T06 校園韌性指數 CRI 與報告頁**（ADR-0008：原為公開報告）
   - 檔案：`app/resilience/cri.py`（四構面標準化，資料不足回傳 None）；管理端報告頁加入資料覆蓋率、時間窗、樣本量、來源限制
@@ -327,7 +332,7 @@ uv run python ../scripts/eval/backtest_trends.py --start 2026-01-01 --step week
 
 - **P5-T01 S09 trend-forecaster**：`skills/trend-forecaster/`；輸入 P4 的統計結果，只產生「異常解釋與前瞻訊號」，必須標註聲量≠事件數、資料覆蓋率
 - **P5-T02 What-if 引擎 + S10 scenario-simulator**
-  - 檔案：`app/simulations/engine.py`（baseline × Π(1 − effect_i)、效果區間、敏感度、固定隨機種子）、`skills/scenario-simulator/`（只負責解釋假設與限制，數值由引擎計算）、`infra/migrations/versions/0008_scenario_runs.py`
+  - 檔案：`app/simulations/engine.py`（baseline × Π(1 − effect_i)、效果區間、敏感度、固定隨機種子）、`skills/scenario-simulator/`（只負責解釋假設與限制，數值由引擎計算）、`infra/migrations/versions/<下一個編號>_scenario_runs.py`
   - 驗證：`tests/unit/simulations/test_engine.py`（同輸入同種子結果一致；效果值未知時回傳「無法估計」）
 - **P5-T03 What-if 介面**
   - 檔案：`frontend/src/admin/pages/Scenario.tsx`（參數表單、龍捲風敏感度圖、明顯的「假設情境，非成效預測」標示）
