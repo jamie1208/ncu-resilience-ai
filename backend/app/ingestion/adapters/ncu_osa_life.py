@@ -6,7 +6,7 @@
 附加檔案不算內文。
 
 cursor 為已擷取的最大公告編號（`ListDetailAdapter` 的預設行為）。設定見 `list_detail` 模組。
-公告類別目前沒有欄位可存（P1-T15 之後再寫入 tags）。
+列表上的公告類別寫入 `RawItem.tags`（P1-T15）。
 """
 
 from __future__ import annotations
@@ -37,9 +37,16 @@ def parse_list(html: str, list_url: str, now: datetime) -> list[ListEntry]:
         url = urljoin(list_url, (anchor.attributes.get("href") or "").strip())
         number = parse_qs(urlsplit(url).query).get("no", [""])[0]
         title = clean(anchor.attributes.get("title") or anchor.text())
+        category = clean(cells[1].text())
         if number.isdigit() and title:
             entries.append(
-                ListEntry(key=number, url=url, title=title, published=find_date(cells[0].text()))
+                ListEntry(
+                    key=number,
+                    url=url,
+                    title=title,
+                    published=find_date(cells[0].text()),
+                    tags=frozenset({category}) if category else frozenset(),
+                )
             )
     if not entries:
         raise LayoutChangedError("生輔組列表頁找不到任何公告")

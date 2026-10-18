@@ -60,12 +60,15 @@ class ListDetailOptions(BaseModel):
 
 @dataclass(frozen=True)
 class ListEntry:
-    """列表頁上的一篇；`key` 是來源內的編號（作為 external_id），`published` 是列表日期。"""
+    """列表頁上的一篇；`key` 是來源內的編號（作為 external_id），`published` 是列表日期，
+    `tags` 是列表上的分類標籤（P1-T15）。
+    """
 
     key: str
     url: str
     title: str
     published: date | None
+    tags: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)
@@ -198,4 +201,5 @@ class ListDetailAdapter(ABC):
             content_type="text/html" if detail.content_html else "text/plain",
             published_at=detail.published or taipei_midnight(entry.published),
             fetched_at=fetched_at,
+            tags=entry.tags,
         )

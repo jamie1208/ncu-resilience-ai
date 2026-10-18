@@ -22,7 +22,7 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, created_at_col, updated_at_col, uuid_pk
@@ -91,6 +91,11 @@ class SourceItem(Base):
     url: Mapped[str] = mapped_column(Text)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    tags: Mapped[list[str]] = mapped_column(
+        ARRAY(Text),
+        server_default=text("'{}'"),
+        comment="來源分類標籤（P1-T15），依字母排序、不重複",
+    )
 
 
 class SourceItemVersion(Base):

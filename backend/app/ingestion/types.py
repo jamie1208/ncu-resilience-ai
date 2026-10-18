@@ -13,9 +13,11 @@ from types import MappingProxyType
 from typing import Annotated, Any, Literal
 from urllib.parse import urlsplit
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, StringConstraints, field_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 NonEmpty = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+Tag = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
+"""來源分類標籤（P1-T15），例如「宿舍網路」「焦點新聞」。"""
 
 
 class AccessPolicy(StrEnum):
@@ -68,6 +70,8 @@ class RawItem(BaseModel):
     content_type: Literal["text/plain", "text/html"] = "text/plain"
     published_at: AwareDatetime | None = None
     fetched_at: AwareDatetime
+    tags: frozenset[Tag] = Field(default_factory=frozenset, max_length=20)
+    """來源給的分類標籤（P1-T15）；寫入時與既有標籤取聯集，不影響內容雜湊。"""
 
     @field_validator("url")
     @classmethod

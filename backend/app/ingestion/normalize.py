@@ -220,6 +220,7 @@ class NormalizedItem(BaseModel):
     content_hash: str
     published_at: AwareDatetime | None
     fetched_at: AwareDatetime
+    tags: frozenset[str] = frozenset()
 
 
 def normalize_item(raw: RawItem) -> NormalizedItem:
@@ -242,4 +243,5 @@ def normalize_item(raw: RawItem) -> NormalizedItem:
         content_hash=content_hash(text),
         published_at=to_utc(raw.published_at) if raw.published_at is not None else None,
         fetched_at=to_utc(raw.fetched_at),
+        tags=frozenset(t for t in (clean_text(tag) for tag in raw.tags) if t),
     )

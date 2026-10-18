@@ -15,7 +15,9 @@ cursor 是已擷取的最大文章編號。每輪只抓編號更大的內頁，�
 
 來源設定（`SourceConfig.options`）：
 - `list_url` 或 `list_urls`（擇一必填）：列表頁 http(s) 網址；同一網站的多個公告分類用
-  `list_urls`，必須在同一網域（文章編號是站台內共用的流水號，才能共用 cursor）
+  `list_urls`，必須在同一網域（文章編號是站台內共用的流水號，才能共用 cursor）。
+  `list_urls` 的每一項可以是網址字串，或 `{url, tag}`：`tag` 是該分類的名稱，寫入
+  `RawItem.tags`（P1-T15）；同一篇出現在多個分類時取標籤聯集
 - `max_items`：每輪最多抓幾篇內頁（1–50，預設 20）
 - `min_interval`：同網域請求間隔秒數（≥ 5，預設 5）
 - `timeout`：單次請求秒數（預設 15）；`max_bytes`：單頁大小上限（預設 2 MB）
@@ -38,9 +40,18 @@ from app.ingestion.base import AdapterError, LayoutChangedError
 from app.ingestion.html import clean, find_date, first, taipei_midnight
 from app.ingestion.http import MIN_REQUEST_INTERVAL, HostRateLimiter, PageFetcher, shared_limiter
 from app.ingestion.registry import registry
-from app.ingestion.types import RawItem, SourceConfig
+from app.ingestion.types import RawItem, SourceConfig, Tag
 
 _DETAIL_PATH = re.compile(r"^/p/406-\d+-(?P<post>\d+),r\d+\.php$")
+
+
+class ListSpec(BaseModel):
+    """`list_urls` 中帶分類標籤的一項。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    url: str
+    tag: Tag
 
 
 class RPageOptions(BaseModel):
@@ -49,7 +60,7 @@ class RPageOptions(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     list_url: str | None = None
-    list_urls: tuple[str, ...] | None = None
+    list_urls: tuple[str | ListSpec, ...] | None = None
     max_items: int = Field(default=20, ge=1, le=50)
     min_interval: float = Field(default=MIN_REQUEST_INTERVAL, ge=MIN_REQUEST_INTERVAL)
     timeout: float = Field(default=15.0, gt=0, le=60)
@@ -73,9 +84,16 @@ class RPageOptions(BaseModel):
     @property
     def lists(self) -> tuple[str, ...]:
         """要擷取的列表頁網址。"""
+        return tuple(url for url, _ in self.tagged_lists)
+
+    @property
+    def tagged_lists(self) -> tuple[tuple[str, str | None], ...]:
+        """（列表頁網址, 分類標籤或 None）。"""
         if self.list_urls is not None:
-            return self.list_urls
-        return (self.list_url,) if self.list_url is not None else ()
+            return tuple(
+                (e.url, e.tag) if isinstance(e, ListSpec) else (e, None) for e in self.list_urls
+            )
+        return ((self.list_url, None),) if self.list_url is not None else ()
 
 
 @dataclass(frozen=True)
@@ -216,9 +234,12 @@ class RPageAdapter:
 
     async def _fetch(self, client: httpx2.AsyncClient, since: int | None) -> list[RawItem]:
         entries: dict[int, ListEntry] = {}
-        for list_url in self._options.lists:
+        labels: dict[int, set[str]] = {}
+        for list_url, tag in self._options.tagged_lists:
             for entry in await self._fetch_list(client, list_url):
                 entries.setdefault(entry.post_id, entry)  # 多個分類都有時，取先出現的
+                if tag is not None:
+                    labels.setdefault(entry.post_id, set()).add(tag)
 
         new = sorted(
             (e for e in entries.values() if since is None or e.post_id > since),
@@ -228,7 +249,9 @@ class RPageAdapter:
         items: list[RawItem] = []
         skipped = 0
         for entry in new:
-            item = await self._fetch_detail(client, entry, fetched_at)
+            item = await self._fetch_detail(
+                client, entry, fetched_at, frozenset(labels.get(entry.post_id, ()))
+            )
             if item is None:
                 skipped += 1
             else:
@@ -245,7 +268,11 @@ class RPageAdapter:
         return parse_list(page.text, list_url)
 
     async def _fetch_detail(
-        self, client: httpx2.AsyncClient, entry: ListEntry, fetched_at: datetime
+        self,
+        client: httpx2.AsyncClient,
+        entry: ListEntry,
+        fetched_at: datetime,
+        tags: frozenset[str],
     ) -> RawItem | None:
         if not await self._fetcher.allowed(client, entry.url):
             return None
@@ -264,6 +291,7 @@ class RPageAdapter:
             content_type="text/html" if detail.content_html else "text/plain",
             published_at=published,
             fetched_at=fetched_at,
+            tags=tags,
         )
 
     def _parse_cursor(self, cursor: str | None) -> int | None:
