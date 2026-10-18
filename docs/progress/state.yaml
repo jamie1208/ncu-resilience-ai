@@ -169,6 +169,8 @@ tasks:
     status: pending
   P1-T15:
     status: pending
+  P1-T16:
+    status: pending
 gates:
   G0-1:
     status: pass
@@ -474,4 +476,4 @@ history:
   from: pending
   to: in_progress
   note: ''
-updated_at: '2026-10-18T12:58:52+08:00'
+updated_at: '2026-10-18T15:21:39+08:00'
