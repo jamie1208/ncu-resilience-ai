@@ -4,4 +4,4 @@
 
 - `risk-policy.yaml`：五維風險權重、分級、critical_override（P2-T11）
 - `publishing-policy.yaml`：自動發布規則（P3-T07）
-- 模型名稱與費用上限也放在設定中，不寫進程式。
+- `llm.yaml`：模型名稱、價格、逾時與費用上限（P2-T03）。模型名稱與費用上限只放在設定中，不寫進程式。

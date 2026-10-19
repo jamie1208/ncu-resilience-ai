@@ -52,6 +52,11 @@ class Settings(BaseSettings):
         None, validation_alias=AliasChoices("CWA_API_KEY", "NCU_CWA_API_KEY")
     )
 
+    # OpenAI API 金鑰（P2-T03）：只從環境變數讀取；CI 使用 fake provider，不需要
+    openai_api_key: SecretStr | None = Field(
+        None, validation_alias=AliasChoices("OPENAI_API_KEY", "NCU_OPENAI_API_KEY")
+    )
+
     @property
     def database_url(self) -> URL:
         """asyncpg 連線 URL；缺少帳密或資料庫名稱時拋出 ValueError。"""

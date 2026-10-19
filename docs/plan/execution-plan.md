@@ -199,6 +199,7 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
   - 驗證：`python3 -m pytest scripts/skills/tests -q`（壞掉的範例皆被擋下）；`skills/_template` 通過 validate_skill（ADR-0013，自 P2-T01 移入）
 - **P2-T03 LLM Adapter**
   - 檔案：`app/ai/llm/base.py`（`LLMProvider.generate_structured(messages, json_schema, model, timeout, max_output_tokens)`）、`app/ai/llm/openai_provider.py`（Structured Outputs，strict JSON schema）、`app/ai/llm/fake_provider.py`（讀錄製回應，CI 不打 API）、`app/ai/llm/cost.py`（token 與費用記帳）
+  - 實作調整（使用者 2026-10-19 決定）：維持 OpenAI；以 httpx2 直接呼叫 Responses API（不加 openai SDK）；設定放在 `config/llm.yaml`（gpt-5-mini、每次 US$0.05、每日 US$1），由 `app/ai/llm/config.py` 讀取與建立 Provider；`app/core/config.py` 新增 `openai_api_key`；以使用者金鑰實測一次
   - 驗證：`tests/unit/ai/test_llm_adapter.py`；模型名稱只出現在設定檔
 - **P2-T04 Skill Runner**
   - 檔案：`app/ai/runner/loader.py`（掃描 `skills/`、解析 frontmatter、載入 references）、`app/ai/runner/prompt.py`（系統指令＝SKILL.md；來源內容一律包在 `<untrusted_source id=…>` 中）、`app/ai/runner/validate.py`（schema、列舉、範圍、evidence_id 存在、PII）、`app/ai/runner/run.py`（無效輸出重試 ≤ 2 次 → abstain、費用上限、逾時、寫入 ai_analysis_runs）、`infra/migrations/versions/<下一個編號>_ai_runs.py`（ai_analysis_runs、risk_assessments、event_relations）
