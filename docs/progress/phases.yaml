@@ -6,7 +6,7 @@
 # - human：true 表示需要你親自決定，AI 只能準備資料。
 # - gates.command：可自動執行的驗證指令（--run-gates 時執行）；
 #   manual：true 表示需人工確認，tracker 只會提示。
-# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12、ADR-0010 新增 P1-T16、ADR-0009 P1-T09 檔案調整、ADR-0008 個人使用：新增 P1-T13／P1-T14／P1-T15，刪除 P3-T02／P3-T04／P3-T06／P3-T09／P5-T07 與 G3-1／G5-3，ID 不重複使用），tracker 優先讀取本檔。
+# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12、ADR-0012 G1-2 改為人工閘門、ADR-0010 新增 P1-T16、ADR-0009 P1-T09 檔案調整、ADR-0008 個人使用：新增 P1-T13／P1-T14／P1-T15，刪除 P3-T02／P3-T04／P3-T06／P3-T09／P5-T07 與 G3-1／G5-3，ID 不重複使用），tracker 優先讀取本檔。
 # 修改計畫時：只改這個檔案，再執行 `tracker.py sync` 讓 state.yaml 補上新任務。
 
 version: 1
@@ -151,8 +151,8 @@ phases:
         title: ≥ 3 個來源上線
         manual: true
       - id: G1-2
-        title: 一晚（≥ 12 小時）擷取成功率 ≥ 98%
-        command: cd backend && uv run python ../scripts/reports/ingestion_report.py --hours 12 --check-success 0.98
+        title: 一晚（≥ 12 小時）網路正常時段擷取成功率 ≥ 98%（ADR-0012；依 P1-stability.md 人工確認）
+        manual: true
       - id: G1-3
         title: 重跑零重複
         command: cd backend && uv run pytest tests/integration/test_idempotent_ingest.py -q

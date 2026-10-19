@@ -9,6 +9,8 @@
    - 可重試的錯誤（逾時、5xx）：標記 retrying，依 60、120、240 秒指數退避重試，最多 3 次；
    - 重試用盡或不可重試（版型改變、4xx、其他例外）：標記 failed，寫入死信與稽核紀錄。
 3. 執行中超過 2 小時（例如 worker 當機）視為逾期：標記 abandoned，並重新派工。
+4. 手動執行一輪（P1-T10）：`python -m app.worker.tasks.ingest --source <代碼|all> --once`。
+   不經 beat、不受 poll_interval 限制、不重試（失敗直接進死信）；已有執行中工作的來源略過。
 
 ingestion_runs 是擷取的作業紀錄：狀態變更不另寫稽核；寫入資料（source_items.ingest）與
 死信（ingestion.dead_letter）各寫一筆稽核紀錄，request_id 都是 run_id。
@@ -16,12 +18,14 @@ ingestion_runs 是擷取的作業紀錄：狀態變更不另寫稽核；寫入�
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import importlib
+import sys
 import uuid
-from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
+from collections.abc import AsyncIterator, Awaitable, Callable, Mapping, Sequence
 from contextlib import asynccontextmanager
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -279,6 +283,121 @@ def _run[T](work: Callable[[Maker], Awaitable[T]]) -> T:
     return asyncio.run(main())
 
 
+# --- 手動執行一輪（P1-T10） -------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class OnceResult:
+    """手動執行一輪的結果；`counts` 與 ingestion_runs.counts 相同，`reason` 說明略過原因。"""
+
+    code: str
+    status: RunStatus
+    counts: Mapping[str, Any] = field(default_factory=dict)
+    reason: str = ""
+
+
+async def run_once(
+    maker: Maker,
+    codes: Sequence[str] | None,
+    *,
+    settings: Mapping[str, SourceSettings],
+    create_adapter: AdapterFactory = registry.create,
+    clock: Callable[[], datetime] = _utc_now,
+) -> list[OnceResult]:
+    """不經 beat 為指定來源各執行一次擷取（`codes` 為 None 表示全部）。
+
+    不受 poll_interval 限制、不重試（失敗直接進死信）。
+
+    來源代碼不存在時拋出 ValueError；沒有連線設定、未核准或停用、已有執行中工作的來源略過，
+    不建立執行紀錄。
+    """
+    now = clock()
+    results: list[OnceResult] = []
+    planned: list[tuple[str, uuid.UUID]] = []
+    async with maker() as session, session.begin():
+        sources = (await session.execute(select(Source).order_by(Source.code))).scalars().all()
+        by_code = {source.code: source for source in sources}
+        if codes is not None:
+            unknown = [code for code in codes if code not in by_code]
+            if unknown:
+                raise ValueError(f"sources 表中沒有來源：{', '.join(unknown)}")
+        targets = [by_code[code] for code in codes] if codes is not None else list(sources)
+        for source in targets:
+            reason = ""
+            if settings.get(source.code) is None:
+                reason = "config/sources.yaml 沒有連線設定"
+            elif not _is_approved(source):
+                reason = "未核准或已停用"
+            else:
+                latest = (
+                    await session.execute(
+                        select(IngestionRun)
+                        .where(IngestionRun.source_id == source.id)
+                        .order_by(IngestionRun.started_at.desc())
+                        .limit(1)
+                    )
+                ).scalar_one_or_none()
+                if (
+                    latest is not None
+                    and latest.status in IN_FLIGHT
+                    and now - latest.started_at < STALE_AFTER
+                ):
+                    reason = "已有執行中的工作"
+            if reason:
+                results.append(OnceResult(source.code, RunStatus.SKIPPED, reason=reason))
+                continue
+            run = IngestionRun(
+                source_id=source.id, started_at=now, status=RunStatus.QUEUED, counts={}
+            )
+            session.add(run)
+            await session.flush()
+            planned.append((source.code, run.id))
+    for code, run_id in planned:
+        outcome = await run_attempt(
+            maker,
+            run_id,
+            attempt=0,
+            settings=settings,
+            create_adapter=create_adapter,
+            clock=clock,
+            max_retries=0,
+        )
+        async with maker() as session:
+            finished = await session.get(IngestionRun, run_id)
+            counts = dict(finished.counts) if finished is not None else {}
+        results.append(OnceResult(code, outcome.status, counts))
+    return sorted(results, key=lambda r: r.code)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """`python -m app.worker.tasks.ingest` 的參數。"""
+    parser = argparse.ArgumentParser(
+        prog="python -m app.worker.tasks.ingest",
+        description="手動執行一輪擷取（不經 beat、不重試）",
+    )
+    parser.add_argument(
+        "--source", action="append", required=True, help="來源代碼，可重複；all 表示全部"
+    )
+    parser.add_argument("--once", action="store_true", required=True, help="執行一輪後結束")
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """命令列入口；有任何來源失敗時回傳 1。輸出只有來源代碼、狀態與筆數。"""
+    args = build_parser().parse_args(argv)
+    codes = None if "all" in args.source else list(args.source)
+    settings = load_source_settings()
+    try:
+        results = _run(lambda maker: run_once(maker, codes, settings=settings))
+    except ValueError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    for result in results:
+        detail = result.reason or ", ".join(f"{k}={v}" for k, v in sorted(result.counts.items()))
+        print(f"{result.code}\t{result.status.value}\t{detail}")
+    return 1 if any(r.status is RunStatus.FAILED for r in results) else 0
+
+
 @celery_app.task(name=DISPATCH_TASK)
 def dispatch_due_sources() -> int:
     """beat 每 60 秒呼叫：派工給到期的來源，回傳派工數。"""
@@ -300,3 +419,7 @@ def ingest_source(self: Task[Any, Any], run_id: str) -> str:
     if outcome.retry:
         raise self.retry(countdown=backoff_seconds(attempt))
     return outcome.status.value
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

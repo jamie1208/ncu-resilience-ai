@@ -137,6 +137,7 @@ cd ../frontend && npm run lint && npm run build
   - 驗證：`cd backend && uv run pytest tests/unit/labeling tests/integration/test_export_for_labeling.py -q`；依事件／時間切分 dev／test。「累積 ≥ 100 筆人工確認樣本」改由閘門 G1-5 管控（`dataset_stats.py --check-min 100`），不是本任務的結案條件（使用者 2026-10-18 決定，ADR-0009）
 - **P1-T10 一晚穩定運行報告**（ADR-0006：原為七天；ADR-0010：在 P1-T16 之後執行，涵蓋處室來源）
   - 檔案：`scripts/reports/ingestion_report.py`、`docs/progress/records/P1-stability.md`
+  - 實作調整（使用者 2026-10-18～19 決定）：報告邏輯放在 `backend/app/ingestion/report.py`；補上手動執行指令 `python -m app.worker.tasks.ingest --source <代碼|all> --once`（`app/worker/tasks/ingest.py`）；`PageFetcher` 改為 `Connection: close`（`app/ingestion/http.py`，修正 keep-alive 競態）；自動停用不計入可重試的失敗（`app/ingestion/health.py`）
   - 驗證：報告顯示連續 ≥ 12 小時的成功率、各來源筆數、重複寫入數 = 0
 - **P1-T11 氣象署開放資料 Adapter（cwa-alerts）**（ADR-0005 新增；P1-T02 查無可用的 RSS 來源）
   - 檔案：`app/ingestion/adapters/cwa_open_data.py`（httpx2，JSON API：天氣警特報 W-C0033-001、顯著有感地震報告 E-A0015-001，篩選桃園市）、`app/core/config.py`（`CWA_API_KEY`，SecretStr）、`tests/fixtures/cwa/*.json`（依官方欄位格式製作，不含授權碼）、`tests/unit/ingestion/test_cwa_open_data.py`
@@ -175,7 +176,7 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
 | 閘門 | 條件 | 驗證方式 |
 | --- | --- | --- |
 | G1-1 | ≥ 3 個來源上線 | sources 表 enabled 且核准 ≥ 3 |
-| G1-2 | 一晚（≥ 12 小時）成功率 ≥ 98%（ADR-0006） | ingestion_report.py |
+| G1-2 | 一晚（≥ 12 小時）網路正常時段成功率 ≥ 98%（ADR-0006、ADR-0012） | 人工確認 `P1-stability.md`；`ingestion_report.py --hours 12 --check-success 0.98` 用於重跑查證 |
 | G1-3 | 重跑零重複 | test_idempotent_ingest 通過且報告重複數 0 |
 | G1-4 | 可反查原文 | 隨機抽 20 筆皆有 url 與 fetched_at |
 | G1-5 | ≥ 100 筆標記樣本 | `scripts/labeling/dataset_stats.py --check-min 100` |

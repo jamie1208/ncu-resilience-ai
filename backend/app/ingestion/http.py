@@ -3,6 +3,7 @@
 - `USER_AGENT`、`HostRateLimiter`：專案 User-Agent 與每網域限速。
 - `PageFetcher`：HTML Adapter 共用的頁面讀取（P1-T14）：robots.txt 檢查（每個 origin 快取一次）、
   限速、串流讀取與大小上限、錯誤分類（5xx、408、425、429、連線失敗可重試；其他不可重試）。
+  每個請求都帶 `Connection: close`，不重用連線（P1-T10）。
 """
 
 from __future__ import annotations
@@ -116,7 +117,8 @@ class PageFetcher:
             async with client.stream(
                 "GET",
                 url,
-                headers={"User-Agent": USER_AGENT},
+                # 不重用連線：伺服器 Keep-Alive timeout=5 與 5 秒請求間隔會撞在一起（P1-T10）
+                headers={"User-Agent": USER_AGENT, "Connection": "close"},
                 timeout=self._timeout,
                 follow_redirects=True,
             ) as response:

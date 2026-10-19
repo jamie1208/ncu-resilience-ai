@@ -179,11 +179,22 @@ async def _source_health(
     )
 
 
+_RETRYABLE_ERROR_TYPES = frozenset({"SourceUnavailableError"})
+"""可重試的錯誤類型（`AdapterError.retryable` 為 True：連線失敗、逾時、5xx、408／425／429）。"""
+_SCAN_LIMIT = 200
+
+
+def _is_retryable_failure(run: IngestionRun) -> bool:
+    return run.status == RunStatus.FAILED and run.counts.get("error_type") in _RETRYABLE_ERROR_TYPES
+
+
 async def auto_disable_failing(
     session: AsyncSession, *, threshold: int = AUTO_DISABLE_AFTER
 ) -> list[str]:
     """停用最近 `threshold` 次有結果的執行全部失敗的來源；回傳停用的來源代碼。
 
+    可重試的失敗（連線失敗、逾時、5xx；P1-T10 使用者決定）在判斷中略過，既不計入也不中斷，
+    所以網路中斷不會讓來源被停用；它們仍然寫入死信、計入失敗率。
     只 flush 不 commit，由呼叫端（派工）的交易一併提交。
     """
     disabled: list[str] = []
@@ -193,21 +204,22 @@ async def auto_disable_failing(
         .all()
     )
     for source in sources:
-        statuses = (
+        runs = (
             (
                 await session.execute(
-                    select(IngestionRun.status)
+                    select(IngestionRun)
                     .where(
                         IngestionRun.source_id == source.id,
                         IngestionRun.status.in_((RunStatus.SUCCEEDED, RunStatus.FAILED)),
                     )
                     .order_by(IngestionRun.started_at.desc(), IngestionRun.id.desc())
-                    .limit(threshold)
+                    .limit(_SCAN_LIMIT)
                 )
             )
             .scalars()
             .all()
         )
+        statuses = [r.status for r in runs if not _is_retryable_failure(r)][:threshold]
         if len(statuses) < threshold or any(s != RunStatus.FAILED for s in statuses):
             continue
         source.enabled = False
