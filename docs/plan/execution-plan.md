@@ -203,6 +203,7 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
   - 驗證：`tests/unit/ai/test_llm_adapter.py`；模型名稱只出現在設定檔
 - **P2-T04 Skill Runner**
   - 檔案：`app/ai/runner/loader.py`（掃描 `skills/`、解析 frontmatter、載入 references）、`app/ai/runner/prompt.py`（系統指令＝SKILL.md；來源內容一律包在 `<untrusted_source id=…>` 中）、`app/ai/runner/validate.py`（schema、列舉、範圍、evidence_id 存在、PII）、`app/ai/runner/run.py`（無效輸出重試 ≤ 2 次 → abstain、費用上限、逾時、寫入 ai_analysis_runs）、`infra/migrations/versions/<下一個編號>_ai_runs.py`（ai_analysis_runs、risk_assessments、event_relations）
+  - 實作調整（使用者 2026-10-19 決定）：migration 為 `0005_ai_runs.py`；`ai_analysis_runs.event_id` 可空（S01、S02 在事件產生前執行），不存提示詞、來源原文與無效的原始輸出，另記 evidence_ids、validation_issues（代碼）、token 與 cost_usd；個資檢查電話、email、學號、身分證號；暫時性失敗重試 ≤ 2 次（2、4 秒或 Retry-After）後 failed，與無效輸出共用最多 3 次呼叫；每日上限依台北日加總 cost_usd。額外檔案：`app/models/ai.py`、`app/ai/runner/__init__.py`、`tests/integration/test_ai_runs.py`、`backend/pyproject.toml`（jsonschema、types-jsonschema）
   - 驗證：`tests/unit/ai/test_runner.py`（無效 JSON、不存在的 evidence_id、超支皆正確處理）
 - **P2-T05 評測框架**
   - 檔案：`scripts/eval/run_eval.py`、`app/ai/eval/metrics.py`（Macro-F1、Precision／Recall、配對式合併指標）、`tests/golden/test_skills.py`（錄製模式）、`eval/reports/`
