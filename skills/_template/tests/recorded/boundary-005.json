@@ -1,0 +1,13 @@
+{
+  "case_id": "boundary-005",
+  "skill_version": "0.1.0",
+  "model": "hand-written",
+  "output": {
+    "status": "abstain",
+    "announcement_type": null,
+    "evidence_ids": [],
+    "reason": "兩則社群貼文說法矛盾，且沒有官方來源可依循。",
+    "confidence": 0.0,
+    "abstain_reason": "conflicting_evidence"
+  }
+}

@@ -191,10 +191,11 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
 
 - **P2-T01 Skill 規格與模板**
   - 檔案：`skills/_template/`（完整 7 件套）、`docs/architecture/skill-standard.md`（frontmatter 欄位、章節、命名、版本規則）
-  - 驗證：模板本身通過 validate_skill
+  - 實作調整（ADR-0013，使用者 2026-10-19 決定）：資料夾保留 `_template`，frontmatter `name: template`（底線開頭的資料夾是模板，Runner 不載入）；示範任務為公告類型分類，附 20 筆 golden cases 與手寫錄製回應
+  - 驗證：逐項核對 7 件套；用 jsonschema 確認兩份 schema 合法，以及每筆 case 的輸入與錄製輸出都通過 schema（「模板通過 validate_skill」移到 P2-T02，ADR-0013）
 - **P2-T02 Skill 靜態驗證工具**
-  - 檔案：`scripts/skills/validate_skill.py`（名稱＝資料夾、小寫連字號、description ≤ 1024 字元、schema 合法、cases ≥ 20、必含對抗案例）；CI 加入 `validate_skill.py skills/*`
-  - 驗證：`tests/unit/test_validate_skill.py`（壞掉的範例皆被擋下）
+  - 檔案：`scripts/skills/validate_skill.py`（名稱＝資料夾（模板去掉開頭底線，ADR-0013）、小寫連字號、description ≤ 1024 字元、schema 合法、cases ≥ 20、必含對抗案例）；CI 加入 `validate_skill.py skills/*`
+  - 驗證：`tests/unit/test_validate_skill.py`（壞掉的範例皆被擋下）；`skills/_template` 通過 validate_skill（ADR-0013，自 P2-T01 移入）
 - **P2-T03 LLM Adapter**
   - 檔案：`app/ai/llm/base.py`（`LLMProvider.generate_structured(messages, json_schema, model, timeout, max_output_tokens)`）、`app/ai/llm/openai_provider.py`（Structured Outputs，strict JSON schema）、`app/ai/llm/fake_provider.py`（讀錄製回應，CI 不打 API）、`app/ai/llm/cost.py`（token 與費用記帳）
   - 驗證：`tests/unit/ai/test_llm_adapter.py`；模型名稱只出現在設定檔

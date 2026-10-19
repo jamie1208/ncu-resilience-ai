@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "template 輸出",
+  "description": "公告類型分類結果。符合 OpenAI Structured Outputs strict 子集（docs/architecture/skill-standard.md）；status 與其他欄位的對應關係是業務驗證，由 Skill Runner 檢查。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "announcement_type",
+    "evidence_ids",
+    "reason",
+    "confidence",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已判斷；abstain：證據不足或互相矛盾，不給結論",
+      "type": "string",
+      "enum": ["ok", "abstain"]
+    },
+    "announcement_type": {
+      "description": "公告類型（references/announcement-types.md）；abstain 時為 null",
+      "type": ["string", "null"],
+      "enum": ["event", "class_suspension", "maintenance", "other", null]
+    },
+    "evidence_ids": {
+      "description": "支持判斷的證據；ok 時至少 1 個，且必須存在於輸入",
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "string"
+      }
+    },
+    "reason": {
+      "description": "一兩句判斷理由；不得包含個資（電話、email、學號）",
+      "type": "string",
+      "maxLength": 300
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": ["string", "null"],
+      "enum": ["insufficient_evidence", "conflicting_evidence", null]
+    }
+  }
+}

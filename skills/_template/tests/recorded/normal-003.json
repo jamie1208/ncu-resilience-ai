@@ -1,0 +1,15 @@
+{
+  "case_id": "normal-003",
+  "skill_version": "0.1.0",
+  "model": "hand-written",
+  "output": {
+    "status": "ok",
+    "announcement_type": "class_suspension",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "公告宣布全日停止上班上課。",
+    "confidence": 0.98,
+    "abstain_reason": null
+  }
+}

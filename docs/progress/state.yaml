@@ -83,7 +83,9 @@ tasks:
     updated_at: '2026-10-19T20:06:38+08:00'
     evidence: docs/progress/records/P1-T10-20261019.md
   P2-T01:
-    status: pending
+    status: done
+    updated_at: '2026-10-19T23:14:58+08:00'
+    evidence: docs/progress/records/P2-T01-20261019.md
   P2-T02:
     status: pending
   P2-T03:
@@ -209,17 +211,30 @@ gates:
     updated_at: '2026-10-17T20:46:06+08:00'
     note: 使用者 2026-10-17 確認：27 個來源中核准 12 個（check_source_inventory.py）
   G1-1:
-    status: pending
+    status: pass
+    updated_at: '2026-10-19T23:12:27+08:00'
+    note: 11 個來源 approved 且 enabled（2026-10-19）
   G1-2:
     status: pass
     updated_at: '2026-10-19T13:39:19+08:00'
     note: ADR-0012：網路正常時段成功率 100%；不連續由已修正的自動停用造成；使用者 2026-10-19 豁免
   G1-3:
-    status: pending
+    status: pass
+    last_run: '2026-10-19T23:09:19+08:00'
+    last_output: '................                                                         [100%]
+
+      16 passed in 1.74s'
+    updated_at: '2026-10-19T23:12:27+08:00'
+    note: test_idempotent_ingest 通過；ingestion_report 12h 重複寫入 0/0（2026-10-19）
   G1-4:
-    status: pending
+    status: pass
+    updated_at: '2026-10-19T23:12:27+08:00'
+    note: 201 篇非 facebook 隨機抽 20 篇：url、fetched_at 皆有；20 個網址 HTTP 200 且有內容；使用者確認（2026-10-19）
   G1-5:
-    status: pending
+    status: pass
+    updated_at: '2026-10-19T23:08:25+08:00'
+    note: 111 筆（dev 78、test 33），dataset_stats --check-min 100 通過；類別不平衡（none 94、facility 11、weather 6），P2 S01/S03 前補標；第二批 46
+      筆為 AI 預標、使用者逐列確認（2026-10-19）
   G2-1:
     status: pending
   G2-2:
@@ -551,4 +566,38 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-19T20:06:38+08:00'
+- at: '2026-10-19T20:17:32+08:00'
+  id: P2-T01
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-19T23:08:25+08:00'
+  id: G1-5
+  from: pending
+  to: pass
+  note: 111 筆（dev 78、test 33），dataset_stats --check-min 100 通過；類別不平衡（none 94、facility 11、weather 6），P2 S01/S03 前補標；第二批 46
+    筆為 AI 預標、使用者逐列確認（2026-10-19）
+  confirmed_by_user: true
+- at: '2026-10-19T23:12:27+08:00'
+  id: G1-1
+  from: pending
+  to: pass
+  note: 11 個來源 approved 且 enabled（2026-10-19）
+  confirmed_by_user: true
+- at: '2026-10-19T23:12:27+08:00'
+  id: G1-4
+  from: pending
+  to: pass
+  note: 201 篇非 facebook 隨機抽 20 篇：url、fetched_at 皆有；20 個網址 HTTP 200 且有內容；使用者確認（2026-10-19）
+  confirmed_by_user: true
+- at: '2026-10-19T23:12:27+08:00'
+  id: G1-3
+  from: pass
+  to: pass
+  note: test_idempotent_ingest 通過；ingestion_report 12h 重複寫入 0/0（2026-10-19）
+- at: '2026-10-19T23:14:58+08:00'
+  id: P2-T01
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-19T23:14:58+08:00'
