@@ -79,7 +79,9 @@ tasks:
     updated_at: '2026-10-18T15:25:41+08:00'
     evidence: docs/progress/records/P1-T09-20261018.md
   P1-T10:
-    status: pending
+    status: done
+    updated_at: '2026-10-19T20:06:38+08:00'
+    evidence: docs/progress/records/P1-T10-20261019.md
   P2-T01:
     status: pending
   P2-T02:
@@ -209,7 +211,9 @@ gates:
   G1-1:
     status: pending
   G1-2:
-    status: pending
+    status: pass
+    updated_at: '2026-10-19T13:39:19+08:00'
+    note: ADR-0012：網路正常時段成功率 100%；不連續由已修正的自動停用造成；使用者 2026-10-19 豁免
   G1-3:
     status: pending
   G1-4:
@@ -531,4 +535,20 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-18T22:19:28+08:00'
+- at: '2026-10-18T22:28:49+08:00'
+  id: P1-T10
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-19T13:39:19+08:00'
+  id: G1-2
+  from: pending
+  to: pass
+  note: ADR-0012：網路正常時段成功率 100%；不連續由已修正的自動停用造成；使用者 2026-10-19 豁免
+  confirmed_by_user: true
+- at: '2026-10-19T20:06:38+08:00'
+  id: P1-T10
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-19T20:06:38+08:00'
