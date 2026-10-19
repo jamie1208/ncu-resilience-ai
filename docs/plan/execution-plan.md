@@ -195,7 +195,8 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
   - 驗證：逐項核對 7 件套；用 jsonschema 確認兩份 schema 合法，以及每筆 case 的輸入與錄製輸出都通過 schema（「模板通過 validate_skill」移到 P2-T02，ADR-0013）
 - **P2-T02 Skill 靜態驗證工具**
   - 檔案：`scripts/skills/validate_skill.py`（名稱＝資料夾（模板去掉開頭底線，ADR-0013）、小寫連字號、description ≤ 1024 字元、schema 合法、cases ≥ 20、必含對抗案例）；CI 加入 `validate_skill.py skills/*`
-  - 驗證：`tests/unit/test_validate_skill.py`（壞掉的範例皆被擋下）；`skills/_template` 通過 validate_skill（ADR-0013，自 P2-T01 移入）
+  - 實作調整（使用者 2026-10-19 決定）：測試放在 `scripts/skills/tests/test_validate_skill.py`（比照 `scripts/governance/tests/`，在 CI 開發工具 job 執行）；jsonschema 只加裝在 CI 開發工具 job；除了上列項目，也檢查 `docs/architecture/skill-standard.md` 的靜態規則（7 件套、版本格式、章節、輸出 strict 子集與共同欄位、輸入 evidence、case 欄位與 must_not 格式、錄製回應），輸出是否符合 expected／must_not 留給 P2-T05
+  - 驗證：`python3 -m pytest scripts/skills/tests -q`（壞掉的範例皆被擋下）；`skills/_template` 通過 validate_skill（ADR-0013，自 P2-T01 移入）
 - **P2-T03 LLM Adapter**
   - 檔案：`app/ai/llm/base.py`（`LLMProvider.generate_structured(messages, json_schema, model, timeout, max_output_tokens)`）、`app/ai/llm/openai_provider.py`（Structured Outputs，strict JSON schema）、`app/ai/llm/fake_provider.py`（讀錄製回應，CI 不打 API）、`app/ai/llm/cost.py`（token 與費用記帳）
   - 驗證：`tests/unit/ai/test_llm_adapter.py`；模型名稱只出現在設定檔

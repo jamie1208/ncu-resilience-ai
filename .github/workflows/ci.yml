@@ -98,17 +98,14 @@ jobs:
         with:
           python-version: "3.12"
       - name: 安裝依賴
-        run: python -m pip install pyyaml pytest
+        run: python -m pip install pyyaml pytest jsonschema
       - name: tracker 測試
         run: python -m pytest .claude/skills/ncu-resilience-tracker/tests -q
       - name: 來源盤點檢查腳本測試
         run: python -m pytest scripts/governance/tests -q
       - name: 來源核准數（G0-4：至少 3 個核准）
         run: python scripts/governance/check_source_inventory.py
-      - name: 產品 Skill 靜態驗證（P2-T02 建立 validate_skill.py 後啟用）
-        run: |
-          if [ -f scripts/skills/validate_skill.py ]; then
-            python scripts/skills/validate_skill.py skills/
-          else
-            echo "::notice::scripts/skills/validate_skill.py 尚未建立（P2-T02），略過 skill 靜態驗證"
-          fi
+      - name: Skill 靜態驗證工具測試
+        run: python -m pytest scripts/skills/tests -q
+      - name: 產品 Skill 靜態驗證（P2-T02）
+        run: python scripts/skills/validate_skill.py skills/*
