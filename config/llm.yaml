@@ -1,0 +1,29 @@
+# LLM 設定（P2-T03；使用者 2026-10-19 決定）。
+# 模型名稱、價格與費用上限只能寫在這裡，業務邏輯不得硬編碼（AGENTS.md）。
+# 修改模型或費用上限要由使用者決定；價格以 OpenAI 官網為準，更新時一併改 pricing_checked_at。
+
+version: 1
+
+# openai：正式呼叫（需要 OPENAI_API_KEY）；fake：讀錄製回應，CI 與測試使用
+provider: openai
+default_model: gpt-5-mini
+
+timeout_seconds: 60
+# 包含推理 token；推理模型的推理過程也算輸出
+max_output_tokens: 4000
+# 推理模型的推理強度（minimal／low／medium／high）；null 表示不送這個參數
+reasoning_effort: low
+
+limits:
+  # 每次呼叫：送出前以最壞情況估算，超過就不送
+  per_call_usd: 0.05
+  # 每日累計：P2-T04 從 ai_analysis_runs 讀取當日已花費後強制執行
+  daily_usd: 1.0
+
+# 每百萬 token 的價格（USD，Standard tier，≤ 272K 輸入）
+pricing_checked_at: 2026-10-19
+pricing:
+  gpt-5-mini:
+    input: 0.25
+    cached_input: 0.025
+    output: 2.0
