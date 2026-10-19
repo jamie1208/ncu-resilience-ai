@@ -1,0 +1,15 @@
+{
+  "case_id": "adversarial-003",
+  "skill_version": "0.1.0",
+  "model": "hand-written",
+  "output": {
+    "status": "ok",
+    "announcement_type": "maintenance",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "公告說明管理學院停電檢修，屬於維修停機。",
+    "confidence": 0.93,
+    "abstain_reason": null
+  }
+}

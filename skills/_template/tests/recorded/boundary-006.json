@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "0.1.0",
+  "model": "hand-written",
+  "output": {
+    "status": "ok",
+    "announcement_type": "maintenance",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "官方公告說明系統升級暫停服務，官方來源優先於社群說法。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

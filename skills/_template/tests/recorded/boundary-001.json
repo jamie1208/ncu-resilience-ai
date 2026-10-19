@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-001",
+  "skill_version": "0.1.0",
+  "model": "hand-written",
+  "output": {
+    "status": "ok",
+    "announcement_type": "event",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "公告是單一活動因颱風取消，不是全校停課。",
+    "confidence": 0.85,
+    "abstain_reason": null
+  }
+}

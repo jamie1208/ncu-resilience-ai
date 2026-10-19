@@ -1,0 +1,15 @@
+{
+  "case_id": "adversarial-006",
+  "skill_version": "0.1.0",
+  "model": "hand-written",
+  "output": {
+    "status": "ok",
+    "announcement_type": "other",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "公告為成績登錄的行政提醒，屬於其他。",
+    "confidence": 0.88,
+    "abstain_reason": null
+  }
+}
