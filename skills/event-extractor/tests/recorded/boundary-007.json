@@ -1,0 +1,39 @@
+{
+  "case_id": "boundary-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_event": true,
+    "title": "宿舍熱水器故障",
+    "occurrence_start_date": "2026-10-20",
+    "occurrence_start_time": null,
+    "occurrence_end_date": null,
+    "occurrence_end_time": null,
+    "location": "十二舍",
+    "mentions_person": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "12舍的熱水器今天又壞了，洗到一半變冷水，宿委說會請廠商來修。"
+      },
+      {
+        "field": "time",
+        "evidence_id": "e1",
+        "quote": "今天"
+      },
+      {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "12舍"
+      }
+    ],
+    "reason": "貼文指出12舍熱水器當天故障且影響洗熱水，為會影響人員的故障事件；發布時間的「今天」換算為該貼文的台北日期。",
+    "confidence": 0.8,
+    "abstain_reason": null
+  }
+}

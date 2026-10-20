@@ -1,0 +1,39 @@
+{
+  "case_id": "boundary-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_event": true,
+    "title": "管理學院停水影響廁所使用",
+    "occurrence_start_date": "2026-10-21",
+    "occurrence_start_time": "08:00",
+    "occurrence_end_date": "2026-10-21",
+    "occurrence_end_time": "12:00",
+    "location": "管理學院",
+    "mentions_person": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "管院明天早上 8 點到中午停水，廁所不能用"
+      },
+      {
+        "field": "time",
+        "evidence_id": "e1",
+        "quote": "明天早上 8 點到中午"
+      },
+      {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "管院"
+      }
+    ],
+    "reason": "貼文說明管院於明天上午 08:00 至中午停水，並提及廁所不能使用，為會影響人的停水事件。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

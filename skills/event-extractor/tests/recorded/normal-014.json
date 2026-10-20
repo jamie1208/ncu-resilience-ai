@@ -1,0 +1,29 @@
+{
+  "case_id": "normal-014",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_event": false,
+    "title": null,
+    "occurrence_start_date": null,
+    "occurrence_start_time": null,
+    "occurrence_end_date": null,
+    "occurrence_end_time": null,
+    "location": null,
+    "mentions_person": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "約 60 分鐘，酬勞 200 元。"
+      }
+    ],
+    "reason": "內容為徵求受試者的招募廣告，屬於活動宣傳而非已發生或會影響他人的事件。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

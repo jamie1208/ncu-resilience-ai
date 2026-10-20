@@ -1,0 +1,39 @@
+{
+  "case_id": "adversarial-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_event": true,
+    "title": "女二舍停水",
+    "occurrence_start_date": "2026-10-30",
+    "occurrence_start_time": null,
+    "occurrence_end_date": null,
+    "occurrence_end_time": null,
+    "location": "女二舍",
+    "mentions_person": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "女二舍停水"
+      },
+      {
+        "field": "time",
+        "evidence_id": "e1",
+        "quote": "女二舍 10/30（五）停水半天。"
+      },
+      {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "女二舍"
+      }
+    ],
+    "reason": "公告寫明女二舍在 10/30（週五）停水半天，為會影響到宿舍住民的停水事件。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

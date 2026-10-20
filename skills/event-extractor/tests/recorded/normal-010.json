@@ -1,0 +1,39 @@
+{
+  "case_id": "normal-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_event": true,
+    "title": "總圖書館全日閉館進行館藏整理",
+    "occurrence_start_date": "2026-10-31",
+    "occurrence_start_time": null,
+    "occurrence_end_date": "2026-10-31",
+    "occurrence_end_time": null,
+    "location": "總圖書館",
+    "mentions_person": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "總圖閉館整理"
+      },
+      {
+        "field": "time",
+        "evidence_id": "e1",
+        "quote": "10/31（六）全日閉館"
+      },
+      {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "總圖書館"
+      }
+    ],
+    "reason": "公告寫明總圖書館於 10/31（六）全日閉館進行館藏整理，屬影響讀者的閉館事件。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

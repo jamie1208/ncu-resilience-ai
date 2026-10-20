@@ -1,0 +1,39 @@
+{
+  "case_id": "normal-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_event": true,
+    "title": "依仁堂前騎車滑倒需救護",
+    "occurrence_start_date": "2026-10-20",
+    "occurrence_start_time": null,
+    "occurrence_end_date": null,
+    "occurrence_end_time": null,
+    "location": "依仁堂",
+    "mentions_person": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "有同學騎車滑倒，已經叫救護車了"
+      },
+      {
+        "field": "time",
+        "evidence_id": "e1",
+        "quote": "今天中午"
+      },
+      {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "依仁堂前面"
+      }
+    ],
+    "reason": "貼文報告今天中午在依仁堂前有人騎車滑倒並已叫救護車，明確敘述發生的事故與影響範圍。",
+    "confidence": 0.8,
+    "abstain_reason": null
+  }
+}
