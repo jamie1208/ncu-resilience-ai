@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "我的腳踏車昨晚停在男九舍門口，今天早上就不見了，是灰色的捷安特，有看到的人拜託告訴我。"
+      }
+    ],
+    "reason": "貼文明確寫出停在「男九舍」門口的遺失物，男九舍為校內宿舍，屬中央大學校園範圍，會影響校內師生。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

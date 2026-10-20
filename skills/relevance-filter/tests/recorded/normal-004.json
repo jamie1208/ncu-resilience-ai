@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "寒假期間總圖書館開館時間調整為 09:00–17:00，週日休館。"
+      }
+    ],
+    "reason": "公告明確說明「總圖書館」開館時間調整，屬於影響本校師生的校內設施公告。",
+    "confidence": 0.98,
+    "abstain_reason": null
+  }
+}

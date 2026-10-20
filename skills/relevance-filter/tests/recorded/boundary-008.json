@@ -1,0 +1,21 @@
+{
+  "case_id": "boundary-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "剛剛中大路跟雙連坡路口有機車擦撞，騎車經過的同學小心。"
+      }
+    ],
+    "reason": "貼文明確提到校內地點「中大路」與「雙連坡」，並提醒中大同學注意，屬於發生在校園周邊的事件。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

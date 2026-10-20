@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "後門宵夜街那間滷味今天老闆身體不舒服公休一天，明天照常營業喔！"
+      }
+    ],
+    "reason": "貼文明確提到「後門宵夜街」，此地為中央大學周邊生活圈，屬於校園相關。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

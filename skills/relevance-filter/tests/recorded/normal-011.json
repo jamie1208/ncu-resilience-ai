@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-011",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "多益保證班開課囉！名師授課三個月保證 800 分，前 20 名報名享八折優惠。"
+      }
+    ],
+    "reason": "內容為補習／課程廣告，沒有提到中央大學、校內地點或桃園市，屬於校外廣告性質，與本校無關。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

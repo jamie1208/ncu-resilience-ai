@@ -1,14 +1,17 @@
-"""驗證模型輸出（P2-T04）：JSON、schema、業務規則、evidence_id 存在、個資。
+"""驗證模型輸出（P2-T04）：JSON、schema、業務規則、evidence_id 存在、證據原句、個資。
 
 問題（`Issue`）只記錄代碼與位置，不含輸出內容，所以可以安全地寫進 ai_analysis_runs 與日誌。
 個資規則（使用者 2026-10-19 決定）：電話、email、學號（9 位數字）、身分證號；不檢查人名。
+證據原句（P2-T06，使用者 2026-10-20 決定）：
+輸出的 `evidence_spans` 只抄錄原句（{evidence_id, quote}），
+原句必須出現在該證據中（連續空白視為一個空格）；字元位置由 `locate_quote` 計算，不由模型給。
 """
 
 from __future__ import annotations
 
 import json
 import re
-from collections.abc import Collection, Iterator
+from collections.abc import Collection, Iterator, Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -19,7 +22,7 @@ from app.ai.runner.loader import Skill
 
 @dataclass(frozen=True)
 class Issue:
-    """一個驗證問題。`code`：json、schema、business、evidence、pii；`detail` 不含輸出內容。"""
+    """一個驗證問題。`code`：json、schema、business、evidence、span、pii；`detail` 不含輸出內容。"""
 
     code: str
     detail: str
@@ -61,6 +64,47 @@ def parse_output(text: str) -> tuple[dict[str, Any] | None, list[Issue]]:
     return data, []
 
 
+def locate_quote(text: str, quote: str) -> tuple[int, int] | None:
+    """原句在原文中的字元位置 [start, end)；比對時把連續空白視為一個空格。找不到時回傳 None。"""
+    target = " ".join(quote.split())
+    if not target:
+        return None
+    normalized: list[str] = []
+    origin: list[int] = []  # normalized 第 i 個字元對應的原文位置
+    previous_space = False
+    for i, ch in enumerate(text):
+        if ch.isspace():
+            if previous_space or not normalized:
+                continue
+            normalized.append(" ")
+            previous_space = True
+        else:
+            normalized.append(ch)
+            previous_space = False
+        origin.append(i)
+    found = "".join(normalized).find(target)
+    if found < 0:
+        return None
+    return origin[found], origin[found + len(target) - 1] + 1
+
+
+def _check_spans(
+    output: Mapping[str, Any], evidence_texts: Mapping[str, str], issues: list[Issue]
+) -> None:
+    spans = output.get("evidence_spans")
+    if not isinstance(spans, list):
+        return
+    for i, span in enumerate(spans):
+        if not isinstance(span, Mapping):
+            continue
+        evidence_id = span.get("evidence_id")
+        quote = str(span.get("quote") or "")
+        if evidence_id not in evidence_texts:
+            issues.append(Issue("evidence", f"/evidence_spans/{i}：evidence_id 不存在於輸入"))
+        elif locate_quote(evidence_texts[str(evidence_id)], quote) is None:
+            issues.append(Issue("span", f"/evidence_spans/{i}：原句沒有出現在該證據中"))
+
+
 def _strings(node: Any, path: str = "") -> Iterator[tuple[str, str]]:
     if isinstance(node, str):
         yield path or "/", node
@@ -75,9 +119,16 @@ def _strings(node: Any, path: str = "") -> Iterator[tuple[str, str]]:
 
 
 def validate_output(
-    output: dict[str, Any], skill: Skill, evidence_ids: Collection[str]
+    output: dict[str, Any],
+    skill: Skill,
+    evidence_ids: Collection[str],
+    *,
+    evidence_texts: Mapping[str, str] | None = None,
 ) -> list[Issue]:
-    """檢查已解析的輸出；回傳問題清單（空清單表示可以使用）。"""
+    """檢查已解析的輸出；回傳問題清單（空清單表示可以使用）。
+
+    `evidence_texts`（evidence_id → 標題與內文）有傳入時，才檢查 evidence_spans 的原句。
+    """
     schema_issues = [
         Issue("schema", f"/{'/'.join(str(p) for p in e.absolute_path)}：{e.validator}")
         for e in Draft202012Validator(skill.output_schema).iter_errors(output)
@@ -99,6 +150,9 @@ def validate_output(
     unknown = [e for e in cited if e not in set(evidence_ids)]
     if unknown:
         issues.append(Issue("evidence", f"引用了 {len(unknown)} 個不存在於輸入的 evidence_id"))
+
+    if evidence_texts is not None:
+        _check_spans(output, evidence_texts, issues)
 
     for path, text in _strings(output):
         for match in find_pii(text):

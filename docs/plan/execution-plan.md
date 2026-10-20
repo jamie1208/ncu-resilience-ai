@@ -213,6 +213,7 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
 ### P2b 事件理解
 
 - **P2-T06 S01 relevance-filter**：`skills/relevance-filter/`；輸出 is_campus_relevant、reason、evidence_spans
+  - 實作調整（使用者 2026-10-20 決定）：校內單位的徵才與徵求受試者算相關、校外不算（同步修正 `data/labeling/guidelines.md`）；evidence_spans 由模型逐字抄錄原句（{evidence_id, quote}），Runner 比對原句確實存在、字元位置由程式計算（修改 `app/ai/runner/validate.py`、`run.py`，新增 `tests/unit/ai/test_validate_spans.py`）；golden cases 30 筆；門檻寫入 `eval/thresholds.yaml`；本任務 API 費用上限 US$0.5
 - **P2-T07 S02 event-extractor**：`skills/event-extractor/`；輸出事件、時間、地點、證據字元位置；同時標記涉及可識別人物／店家（供 P3 發布規則使用）
 - **P2-T08 S03 event-classifier**：`skills/event-classifier/` + `references/taxonomy.md`；輸出類別、標籤、classification_confidence
 - **P2-T09 S04 event-linker**：`skills/event-linker/` + `app/ai/embeddings.py`（pgvector 候選召回＋時間地點視窗）；輸出 same_event／related_event／none 與信心

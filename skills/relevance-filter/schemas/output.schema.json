@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "relevance-filter 輸出",
+  "description": "文章是否與中央大學校園相關。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）；status 與其他欄位的對應關係由 Skill Runner 驗證。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "is_campus_relevant",
+    "evidence_ids",
+    "evidence_spans",
+    "reason",
+    "confidence",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已判斷；abstain：內容不足，無法判斷",
+      "type": "string",
+      "enum": ["ok", "abstain"]
+    },
+    "is_campus_relevant": {
+      "description": "是否與中央大學校園相關（references/relevance-criteria.md）；abstain 時為 null",
+      "type": ["boolean", "null"]
+    },
+    "evidence_ids": {
+      "description": "支持判斷的證據；ok 時至少 1 個，且必須存在於輸入",
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_spans": {
+      "description": "支持判斷的原句：從該證據逐字抄錄的連續片段，Runner 會比對原句確實存在",
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "quote"],
+        "properties": {
+          "evidence_id": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 120
+          }
+        }
+      }
+    },
+    "reason": {
+      "description": "一兩句判斷理由；不得包含個資（電話、email、學號、身分證號）",
+      "type": "string",
+      "maxLength": 300
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": ["string", "null"],
+      "enum": ["insufficient_evidence", null]
+    }
+  }
+}

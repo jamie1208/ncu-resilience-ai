@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "出售二手 iPad 第九代 64G，九成新附保護殼，可面交中壢火車站。"
+      }
+    ],
+    "reason": "貼文是一則個人二手買賣，並指出面交地點為「中壢火車站」，沒有提到中央大學或校內地點，因此與本校無關。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

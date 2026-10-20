@@ -1,0 +1,21 @@
+{
+  "case_id": "adversarial-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "數學家教一對一，高中生到府教學。"
+      }
+    ],
+    "reason": "內容為私人家教到府廣告，僅提到高中生到府教學，沒有提及中央大學、校內地點或桃園市。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工程五館於 11/2（日）08:00–12:00 配合台電檢修停電，請提前儲存資料。"
+      }
+    ],
+    "reason": "公告明確指出本校工程五館將停電，屬於影響校內建築與師生的事項。",
+    "confidence": 0.97,
+    "abstain_reason": null
+  }
+}

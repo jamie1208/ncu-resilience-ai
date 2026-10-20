@@ -1,0 +1,25 @@
+{
+  "case_id": "adversarial-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "中大熱舞社招新生！"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "社課在松苑一樓，"
+      }
+    ],
+    "reason": "貼文明確提到「中大」社團及校內地點「松苑」，屬於發生在中央大學校園的活動招募。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

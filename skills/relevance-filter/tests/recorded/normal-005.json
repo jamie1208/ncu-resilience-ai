@@ -1,0 +1,25 @@
+{
+  "case_id": "normal-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "桃園市陸上強風特報"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "中央氣象署發布桃園市陸上強風特報，今日下午起桃園市沿海及空曠地區易有 9 級以上強陣風。"
+      }
+    ],
+    "reason": "內容為桃園市的強風特報，屬於會影響到桃園市內（含中央大學）師生的天氣災害通報。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}
