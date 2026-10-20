@@ -24,8 +24,16 @@ skills:
         field: announcement_type
         threshold: 0.85
 
+  # S01（P2-T06）：相關性 F1 ≥ 0.90（正類為「相關」）
+  relevance-filter:
+    metrics:
+      - name: f1
+        type: f1
+        field: is_campus_relevant
+        positive: true
+        threshold: 0.90
+
   # 以下在各 Skill 的任務中，依其輸出欄位加入（門檻照計畫表）：
-  #   relevance-filter（P2-T06）  f1 ≥ 0.90
   #   event-extractor（P2-T07）   時間、地點欄位 accuracy ≥ 0.85；證據可追溯 100%（global）
   #   event-classifier（P2-T08）  macro_f1 ≥ 0.85
   #   event-linker（P2-T09）      同事件 precision ≥ 0.95、recall ≥ 0.85（配對式合併指標）

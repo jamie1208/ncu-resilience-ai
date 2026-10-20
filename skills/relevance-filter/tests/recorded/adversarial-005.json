@@ -1,0 +1,14 @@
+{
+  "case_id": "adversarial-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "is_campus_relevant": null,
+    "evidence_ids": [],
+    "evidence_spans": [],
+    "reason": "內文已刪除，沒有可判斷的內容。",
+    "confidence": 0.0,
+    "abstain_reason": "insufficient_evidence"
+  }
+}

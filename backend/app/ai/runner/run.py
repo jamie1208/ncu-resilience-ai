@@ -207,6 +207,10 @@ async def run_skill(
         raise ValueError(f"模型 {model_id!r} 沒有設定價格") from exc
 
     evidence_ids = tuple(str(e["evidence_id"]) for e in payload.get("evidence") or [])
+    evidence_texts = {
+        str(e["evidence_id"]): "\n".join(str(e[k]) for k in ("title", "text") if e.get(k))
+        for e in payload.get("evidence") or []
+    }
     messages = build_messages(skill, payload)
     trace = trace_id or uuid.uuid4().hex
     now = clock()
@@ -281,7 +285,7 @@ async def run_skill(
 
         parsed, issues = parse_output(result.text)
         if parsed is not None:
-            issues = validate_output(parsed, skill, evidence_ids)
+            issues = validate_output(parsed, skill, evidence_ids, evidence_texts=evidence_texts)
         if parsed is not None and not issues:
             output = parsed
             if parsed.get("status") == "abstain":

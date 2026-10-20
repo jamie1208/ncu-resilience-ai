@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-014",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "新創軟體公司誠徵後端工程師，工作地點台北內湖，月薪 6 萬起，歡迎投遞履歷。"
+      }
+    ],
+    "reason": "內容是一則公司徵才廣告，明確寫出工作地點為台北內湖，未提及中央大學、校內地點或桃園市，故與本校無關。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

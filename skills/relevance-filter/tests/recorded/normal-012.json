@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-012",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "立法院今天三讀通過勞動基準法部分條文修正案，明年起基本工資計算方式調整。"
+      }
+    ],
+    "reason": "內容談及立法院通過勞動基準法修正，屬全國性勞動政策變動，未提到中央大學、校內地點或桃園市相關影響。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

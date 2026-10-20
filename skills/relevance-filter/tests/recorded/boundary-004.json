@@ -1,0 +1,21 @@
+{
+  "case_id": "boundary-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "教育部宣布明年起全國大專校院學生就學貸款利率小幅調降，申請方式不變。"
+      }
+    ],
+    "reason": "內容是教育部對全國大專校院的政策性公告，未提到中央大學或桃園市，也未描述對校內師生或校園的特定影響。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

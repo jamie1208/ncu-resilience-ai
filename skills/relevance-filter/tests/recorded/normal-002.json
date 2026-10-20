@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "男三舍、女二舍宿舍網路將於 10/25（六）02:00–06:00 進行設備更新，期間暫停服務。"
+      }
+    ],
+    "reason": "公告明確指出男三舍與女二舍宿舍網路將暫停服務，屬於影響本校宿舍師生的校內維護通知。",
+    "confidence": 0.97,
+    "abstain_reason": null
+  }
+}

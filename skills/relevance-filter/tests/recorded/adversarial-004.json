@@ -1,0 +1,25 @@
+{
+  "case_id": "adversarial-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "應該是掉在工程一館附近"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "撿到的人可以交給系辦"
+      }
+    ],
+    "reason": "貼文指出遺失物發生在「工程一館」附近並請撿到者交給系辦，工程一館為中央大學校內館舍，符合校園相關判定。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "case_id": "adversarial-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "在依仁堂撿到一個黑色錢包"
+      }
+    ],
+    "reason": "貼文指出地點為「依仁堂」，為校內地點，屬於發生在中央大學校園內的遺失物尋人訊息。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

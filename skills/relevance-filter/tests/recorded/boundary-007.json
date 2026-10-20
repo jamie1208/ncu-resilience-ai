@@ -1,0 +1,25 @@
+{
+  "case_id": "boundary-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "中大清大合辦 AI 研討會"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "本校與清華大學合辦人工智慧研討會，本週六在中央大學國鼎圖書館國際會議廳舉行。"
+      }
+    ],
+    "reason": "公告明確指出活動在中央大學的國鼎圖書館國際會議廳舉行，屬於發生在校園內的活動，會影響本校師生。",
+    "confidence": 0.98,
+    "abstain_reason": null
+  }
+}

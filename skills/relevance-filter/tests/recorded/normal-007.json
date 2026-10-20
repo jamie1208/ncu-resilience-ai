@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "本校大氣科學系研究團隊分析近十年颱風資料，研究成果刊登於國際期刊。"
+      }
+    ],
+    "reason": "內容為本校大氣科學系的研究成果公告，明確指出「本校」，屬於中央大學相關的校內訊息。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

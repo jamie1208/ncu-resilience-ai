@@ -1,0 +1,307 @@
+{
+  "skill": "relevance-filter",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "mode": "live",
+  "provider": "openai",
+  "model": "gpt-5-mini",
+  "split": "test",
+  "generated_at": "2026-10-20T08:44:25.161564+00:00",
+  "max_cost_usd": 0.1,
+  "summary": {
+    "cases": 15,
+    "passed": 15,
+    "pass_rate": 1.0,
+    "schema_pass_rate": 1.0,
+    "traceability": 1.0,
+    "abstain_rate": 0.06666666666666667,
+    "failed_runs": 0,
+    "no_recording": 0,
+    "skipped_budget": 0,
+    "by_type": {
+      "normal": {
+        "cases": 7,
+        "passed": 7
+      },
+      "boundary": {
+        "cases": 4,
+        "passed": 4
+      },
+      "adversarial": {
+        "cases": 4,
+        "passed": 4
+      }
+    },
+    "attempts": 15,
+    "input_tokens": 49039,
+    "output_tokens": 4615,
+    "cost_usd": 0.011439,
+    "latency_ms": 67599
+  },
+  "metrics": [
+    {
+      "name": "f1",
+      "type": "f1",
+      "field": "is_campus_relevant",
+      "value": 1.0,
+      "threshold": 0.9,
+      "passed": true
+    }
+  ],
+  "gates": {
+    "schema_pass_rate": {
+      "value": 1.0,
+      "threshold": 0.99,
+      "passed": true
+    },
+    "traceability": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "passed": true
+    }
+  },
+  "incomplete": false,
+  "passed": true,
+  "cases": [
+    {
+      "id": "normal-002",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": true
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": true
+      }
+    },
+    {
+      "id": "normal-004",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": true
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": true
+      }
+    },
+    {
+      "id": "normal-006",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": true
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": true
+      }
+    },
+    {
+      "id": "normal-008",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": true
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": true
+      }
+    },
+    {
+      "id": "normal-009",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": false
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": false
+      }
+    },
+    {
+      "id": "normal-011",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": false
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": false
+      }
+    },
+    {
+      "id": "normal-013",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": false
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": false
+      }
+    },
+    {
+      "id": "boundary-001",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": true
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": true
+      }
+    },
+    {
+      "id": "boundary-003",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": false
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": false
+      }
+    },
+    {
+      "id": "boundary-005",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": true
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": true
+      }
+    },
+    {
+      "id": "boundary-007",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": true
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": true
+      }
+    },
+    {
+      "id": "adversarial-001",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": false
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": false
+      }
+    },
+    {
+      "id": "adversarial-003",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": true
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": true
+      }
+    },
+    {
+      "id": "adversarial-005",
+      "type": "adversarial",
+      "split": "test",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence"
+      },
+      "predicted": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence"
+      }
+    },
+    {
+      "id": "adversarial-007",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_campus_relevant": false
+      },
+      "predicted": {
+        "status": "ok",
+        "is_campus_relevant": false
+      }
+    }
+  ]
+}

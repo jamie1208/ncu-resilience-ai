@@ -1,0 +1,21 @@
+{
+  "case_id": "adversarial-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "男一舍 10/28 09:00–15:00 水塔清洗，暫停供水。"
+      }
+    ],
+    "reason": "公告明確指出男一舍（校內宿舍）於特定時段停水，屬於影響中央大學師生的校內設施維護。",
+    "confidence": 0.98,
+    "abstain_reason": null
+  }
+}

@@ -101,6 +101,8 @@ frontmatter 之後依序放以下二級標題，名稱必須完全相同：
 - `evidence_ids` 都必須存在於輸入；
 - `reason` 等自由文字欄位不得包含個資（電話、email、學號、身分證號）。
 
+需要指出證據位置時，用 `evidence_spans` 陣列，每項為 `{evidence_id, quote}`（P2-T06）：模型逐字抄錄證據中的連續片段，Runner 檢查原句確實出現在該證據中（連續空白視為一個空格），字元位置由程式（`locate_quote`）計算，不由模型給。
+
 數值計算（風險加權、What-if）由 `scripts/` 或後端程式完成，模型只輸出分項判斷。
 
 ## 7. Golden cases（`tests/cases.jsonl`）

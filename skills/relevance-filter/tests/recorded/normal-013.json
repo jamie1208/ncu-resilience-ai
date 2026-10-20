@@ -1,0 +1,25 @@
+{
+  "case_id": "normal-013",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "花蓮縣大雨特報"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "中央氣象署發布花蓮縣大雨特報，花蓮縣山區今晚有局部大雨發生的機率。"
+      }
+    ],
+    "reason": "內容明確是花蓮縣的大雨特報，沒有提到中央大學或桃園市，與本校無關。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}
