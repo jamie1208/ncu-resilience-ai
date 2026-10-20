@@ -33,8 +33,19 @@ skills:
         positive: true
         threshold: 0.90
 
+  # S02（P2-T07）：時間（開始日期）、地點欄位正確率 ≥ 0.85；證據可追溯 100% 由 global 檢查
+  event-extractor:
+    metrics:
+      - name: start_date_accuracy
+        type: accuracy
+        field: occurrence_start_date
+        threshold: 0.85
+      - name: location_accuracy
+        type: accuracy
+        field: location
+        threshold: 0.85
+
   # 以下在各 Skill 的任務中，依其輸出欄位加入（門檻照計畫表）：
-  #   event-extractor（P2-T07）   時間、地點欄位 accuracy ≥ 0.85；證據可追溯 100%（global）
   #   event-classifier（P2-T08）  macro_f1 ≥ 0.85
   #   event-linker（P2-T09）      同事件 precision ≥ 0.95、recall ≥ 0.85（配對式合併指標）
   #   evidence-verifier（P2-T10） 無 evidence_ids 被標 verified 的次數 = 0

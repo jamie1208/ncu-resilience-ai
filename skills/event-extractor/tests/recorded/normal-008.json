@@ -1,0 +1,39 @@
+{
+  "case_id": "normal-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_event": true,
+    "title": "Portal 系統升級停機",
+    "occurrence_start_date": "2026-11-01",
+    "occurrence_start_time": "00:00",
+    "occurrence_end_date": "2026-11-01",
+    "occurrence_end_time": "04:00",
+    "location": "全校",
+    "mentions_person": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "校務系統 Portal 於 11/1（日）00:00–04:00 進行系統升級，期間暫停服務。"
+      },
+      {
+        "field": "time",
+        "evidence_id": "e1",
+        "quote": "11/1（日）00:00–04:00"
+      },
+      {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "校務系統 Portal"
+      }
+    ],
+    "reason": "公告寫明校務系統 Portal 將於指定時段升級並暫停服務，影響整體校務系統。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

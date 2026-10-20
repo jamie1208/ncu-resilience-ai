@@ -1,0 +1,39 @@
+{
+  "case_id": "normal-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_event": true,
+    "title": "桃園市陸上強風特報",
+    "occurrence_start_date": "2026-10-20",
+    "occurrence_start_time": null,
+    "occurrence_end_date": null,
+    "occurrence_end_time": null,
+    "location": "全校",
+    "mentions_person": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "桃園市陸上強風特報"
+      },
+      {
+        "field": "time",
+        "evidence_id": "e1",
+        "quote": "今日下午起"
+      },
+      {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "桃園市沿海及空曠地區"
+      }
+    ],
+    "reason": "中央氣象署發布桃園市陸上強風特報，指出今日下午起桃園沿海及空曠地區有強陣風，為影響校園的市級天氣特報。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

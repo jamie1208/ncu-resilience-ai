@@ -1,0 +1,39 @@
+{
+  "case_id": "boundary-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_event": true,
+    "title": "臺灣東部海域規模5.8地震，桃園有感",
+    "occurrence_start_date": "2026-10-20",
+    "occurrence_start_time": "02:20",
+    "occurrence_end_date": null,
+    "occurrence_end_time": null,
+    "location": "全校",
+    "mentions_person": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "臺灣東部海域發生規模 5.8 地震"
+      },
+      {
+        "field": "time",
+        "evidence_id": "e1",
+        "quote": "10/20 02:20"
+      },
+      {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "桃園市震度 3 級"
+      }
+    ],
+    "reason": "公告報告 10/20 02:20 發生規模5.8地震，並註明桃園市有感，屬影響校園的地震事件。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "case_id": "normal-013",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_event": false,
+    "title": null,
+    "occurrence_start_date": null,
+    "occurrence_start_time": null,
+    "occurrence_end_date": null,
+    "occurrence_end_time": null,
+    "location": null,
+    "mentions_person": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "115 學年度清寒獎學金即日起受理申請，請於 11/20 前繳交申請書與成績單。"
+      }
+    ],
+    "reason": "內容為獎學金申請之行政公告，說明受理期間與繳交期限，並非會影響他人的突發事件。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

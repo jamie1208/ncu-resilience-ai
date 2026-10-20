@@ -1,0 +1,39 @@
+{
+  "case_id": "normal-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_event": true,
+    "title": "男一舍水塔清洗停水",
+    "occurrence_start_date": "2026-10-28",
+    "occurrence_start_time": "09:00",
+    "occurrence_end_date": "2026-10-28",
+    "occurrence_end_time": "15:00",
+    "location": "男一舍",
+    "mentions_person": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "進行水塔清洗，暫停供水。"
+      },
+      {
+        "field": "time",
+        "evidence_id": "e1",
+        "quote": "115 年 10 月 28 日（星期三）09:00 至 15:00"
+      },
+      {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "男一舍"
+      }
+    ],
+    "reason": "公告寫明男一舍因水塔清洗將在特定日期與時段暫停供水，包含日期、時間與受影響地點。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}
