@@ -207,6 +207,7 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
   - 驗證：`tests/unit/ai/test_runner.py`（無效 JSON、不存在的 evidence_id、超支皆正確處理）
 - **P2-T05 評測框架**
   - 檔案：`scripts/eval/run_eval.py`、`app/ai/eval/metrics.py`（Macro-F1、Precision／Recall、配對式合併指標）、`tests/golden/test_skills.py`（錄製模式）、`eval/reports/`
+  - 實作調整（使用者 2026-10-20 決定）：指標與門檻集中在 `eval/thresholds.yaml`；評測不寫資料庫，費用記在報告，`--max-cost` 限制一次執行的總費用；報告只放統計與每筆的判定，完整輸出放 `eval/runs/`。評測流程在 `backend/app/ai/eval/runner.py`（`run_eval.py` 只是入口）；golden 測試在 `backend/tests/golden/test_skills.py`；另新增 `tests/unit/ai/test_eval_metrics.py`、`test_eval_runner.py`
   - 驗證：用模板 skill 跑出一份完整報告
 
 ### P2b 事件理解

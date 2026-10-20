@@ -1,0 +1,34 @@
+# 評測指標與門檻（P2-T05；使用者 2026-10-20 決定集中在這個檔案）。
+# 門檻數字依 docs/plan/execution-plan.md 的 P2 門檻表；修改門檻要由使用者決定並寫 ADR，
+# 不得為了通過評測而調低（AGENTS.md 不可違反的規則 2）。
+#
+# 指標類型（app/ai/eval/metrics.py）：
+#   macro_f1        各類別 F1 的平均（field 為類別欄位，null 也算一類）
+#   f1／precision／recall  以 positive 為正類（field 的值等於 positive）
+#   accuracy        field 完全相等的比例
+# gold 取自 golden case 的 expected[field]；沒有該欄位的 case 不計入。
+
+version: 1
+
+# 全部 Skill 共用（計畫：Schema 合格率 ≥ 99%；G2-2 事實性結論 100% 可追溯或 abstain）
+global:
+  schema_pass_rate: 0.99
+  traceability: 1.0
+
+skills:
+  # 模板（ADR-0013）：示範用，門檻比照 S03
+  template:
+    metrics:
+      - name: macro_f1
+        type: macro_f1
+        field: announcement_type
+        threshold: 0.85
+
+  # 以下在各 Skill 的任務中，依其輸出欄位加入（門檻照計畫表）：
+  #   relevance-filter（P2-T06）  f1 ≥ 0.90
+  #   event-extractor（P2-T07）   時間、地點欄位 accuracy ≥ 0.85；證據可追溯 100%（global）
+  #   event-classifier（P2-T08）  macro_f1 ≥ 0.85
+  #   event-linker（P2-T09）      同事件 precision ≥ 0.95、recall ≥ 0.85（配對式合併指標）
+  #   evidence-verifier（P2-T10） 無 evidence_ids 被標 verified 的次數 = 0
+  #   risk-assessor（P2-T11）     高風險 recall ≥ 0.95；同輸入結果重現 100%
+  #   root-cause-analyst／solution-planner（P2-T12）  人工審閱：假設與事實區分正確率 ≥ 0.90
