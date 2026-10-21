@@ -434,6 +434,32 @@ def test_case_expected_unknown_field(tmp_path: Path) -> None:
     assert_blocked(skill, "severity")
 
 
+def declare_derived(skill: Path, value: str) -> None:
+    edit_text(skill / "SKILL.md", '  schema_version: "1"\n', f'  schema_version: "1"\n  derived_fields: "{value}"\n')
+
+
+def test_case_expected_may_use_declared_derived_field(tmp_path: Path) -> None:
+    # P2-T11：程式由輸出計算的欄位（例如風險分級），在 metadata.derived_fields 宣告後可用於 expected
+    skill = copy_template(tmp_path)
+    declare_derived(skill, "severity, risk_level")
+    cases = read_cases(skill)
+    cases[0]["expected"]["severity"] = "high"
+    write_cases(skill, cases)
+    assert errors(skill) == []
+
+
+def test_derived_field_must_not_shadow_output_field(tmp_path: Path) -> None:
+    skill = copy_template(tmp_path)
+    declare_derived(skill, "announcement_type")
+    assert_blocked(skill, "derived_fields")
+
+
+def test_derived_fields_must_be_names(tmp_path: Path) -> None:
+    skill = copy_template(tmp_path)
+    declare_derived(skill, "risk level")
+    assert_blocked(skill, "derived_fields")
+
+
 # --- 錄製回應 ------------------------------------------------------------------------------
 
 

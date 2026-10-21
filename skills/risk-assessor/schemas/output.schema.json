@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "risk-assessor 輸出",
+  "description": "假設事件屬實，評估五個面向的影響分數（0–100）與不確定性。加權、critical_override、保底與分級由 app/risk/engine.py 依 config/risk-policy.yaml 計算。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "dimensions",
+    "evidence_ids",
+    "evidence_spans",
+    "reason",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已評估；abstain：內容不足，無法評估",
+      "type": "string",
+      "enum": [
+        "ok",
+        "abstain"
+      ]
+    },
+    "dimensions": {
+      "description": "五個面向的分數；abstain 時為 null。加權總分與分級由 app/risk/engine.py 計算，不由模型給",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "personal_safety",
+        "operations",
+        "property",
+        "reputation",
+        "scope"
+      ],
+      "properties": {
+        "personal_safety": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "score",
+            "uncertainty",
+            "reason"
+          ],
+          "properties": {
+            "score": {
+              "description": "0–100，依 references/scoring-rubric.md",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "uncertainty": {
+              "description": "0–1；證據越少、越需要推測時越高",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "reason": {
+              "description": "一句評分依據；不得包含個資與人名、店名",
+              "type": "string",
+              "maxLength": 150
+            }
+          },
+          "description": "人身安全"
+        },
+        "operations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "score",
+            "uncertainty",
+            "reason"
+          ],
+          "properties": {
+            "score": {
+              "description": "0–100，依 references/scoring-rubric.md",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "uncertainty": {
+              "description": "0–1；證據越少、越需要推測時越高",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "reason": {
+              "description": "一句評分依據；不得包含個資與人名、店名",
+              "type": "string",
+              "maxLength": 150
+            }
+          },
+          "description": "營運（教學、住宿、服務中斷）"
+        },
+        "property": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "score",
+            "uncertainty",
+            "reason"
+          ],
+          "properties": {
+            "score": {
+              "description": "0–100，依 references/scoring-rubric.md",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "uncertainty": {
+              "description": "0–1；證據越少、越需要推測時越高",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "reason": {
+              "description": "一句評分依據；不得包含個資與人名、店名",
+              "type": "string",
+              "maxLength": 150
+            }
+          },
+          "description": "財產"
+        },
+        "reputation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "score",
+            "uncertainty",
+            "reason"
+          ],
+          "properties": {
+            "score": {
+              "description": "0–100，依 references/scoring-rubric.md",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "uncertainty": {
+              "description": "0–1；證據越少、越需要推測時越高",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "reason": {
+              "description": "一句評分依據；不得包含個資與人名、店名",
+              "type": "string",
+              "maxLength": 150
+            }
+          },
+          "description": "聲譽"
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "score",
+            "uncertainty",
+            "reason"
+          ],
+          "properties": {
+            "score": {
+              "description": "0–100，依 references/scoring-rubric.md",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "uncertainty": {
+              "description": "0–1；證據越少、越需要推測時越高",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "reason": {
+              "description": "一句評分依據；不得包含個資與人名、店名",
+              "type": "string",
+              "maxLength": 150
+            }
+          },
+          "description": "影響範圍（人數、區域）"
+        }
+      }
+    },
+    "evidence_ids": {
+      "description": "評分所依據的證據；ok 時至少 1 個，且必須存在於輸入",
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_spans": {
+      "description": "逐字抄錄的關鍵原句；Runner 會比對原句確實存在",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "quote"
+        ],
+        "properties": {
+          "evidence_id": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 120
+          }
+        }
+      }
+    },
+    "reason": {
+      "description": "一兩句整體說明；不得包含個資與人名、店名，也不得把未經查證的指控寫成事實",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "insufficient_evidence",
+        null
+      ]
+    }
+  }
+}

@@ -48,6 +48,7 @@ metadata:
 | `description` | ✓ | 1～1024 字元；寫清楚輸入、輸出與使用時機 |
 | `metadata.version` | ✓ | 字串，`MAJOR.MINOR.PATCH`（見「版本」） |
 | `metadata.schema_version` | ✓ | 字串，正整數；input／output schema 任何改動都加 1 |
+| `metadata.derived_fields` | | 逗號分隔的欄位名稱（小寫英數字與底線），不可與輸出欄位同名。這些欄位不是模型輸出，而是程式由輸出計算的結果（例如 S06 的 `risk_level`、`high_risk`，由 `app/risk/engine.py` 計算），可用在 `expected` 與評測指標；計算函式登記在 `app/ai/eval/runner.py` 的 `DERIVERS`（P2-T11） |
 
 - `metadata` 的值一律寫成字串（Agent Skills 規格的 metadata 是字串對照表），所以版本號要加引號。
 - 不使用 `allowed-tools`：產品 Skill 不呼叫工具，只輸出結構化 JSON。
@@ -122,7 +123,7 @@ frontmatter 之後依序放以下二級標題，名稱必須完全相同：
 | `type` | `normal`、`boundary`、`adversarial`，三類都要有 |
 | `split` | `dev`（開發時調整用）或 `test`（評測門檻只看 test），兩種都要有 |
 | `input` | 必須通過 `schemas/input.schema.json` |
-| `expected` | 輸出中必須相等的欄位（部分比對）；不列出的欄位不比對 |
+| `expected` | 輸出中必須相等的欄位（部分比對）；不列出的欄位不比對；也可以使用 `metadata.derived_fields` 宣告的衍生欄位 |
 | `must_not` | 至少 1 條；任何一條成立就算失敗 |
 
 `must_not` 的規則：

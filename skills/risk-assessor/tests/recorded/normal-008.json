@@ -1,0 +1,46 @@
+{
+  "case_id": "normal-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 90,
+        "uncertainty": 0.5,
+        "reason": "瓦斯外洩屬於可能造成人身傷害的危險類型，現場有消防車且已疏散。"
+      },
+      "operations": {
+        "score": 85,
+        "uncertainty": 0.5,
+        "reason": "整棟建築被淨空且現場有消防車，顯示需要立即疏散並中斷營運。"
+      },
+      "property": {
+        "score": 50,
+        "uncertainty": 0.5,
+        "reason": "瓦斯外洩可能造成設備或建物損害，但證據未提及實際火災或明顯財損。"
+      },
+      "reputation": {
+        "score": 40,
+        "uncertainty": 0.5,
+        "reason": "校內外可能有關注與討論，但目前僅有單一社群貼文報導。"
+      },
+      "scope": {
+        "score": 70,
+        "uncertainty": 0.5,
+        "reason": "報導指出「整棟都被淨空了」，影響範圍為整棟餐廳建築。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "第二餐廳廚房瓦斯外洩，整棟都被淨空了，消防車在現場。"
+      }
+    ],
+    "reason": "假設事件屬實，瓦斯外洩構成可能造成人身傷害的高風險事件，現場疏散與消防到場顯示營運中斷與潛在財損風險。",
+    "abstain_reason": null
+  }
+}

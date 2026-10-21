@@ -1,0 +1,46 @@
+{
+  "case_id": "normal-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 20,
+        "uncertainty": 0.1,
+        "reason": "停電導致電梯停止，增加行動不便但未明示有人受傷，故人身風險偏低。"
+      },
+      "operations": {
+        "score": 85,
+        "uncertainty": 0.1,
+        "reason": "公告指出 08:00–17:00 全館停電，實驗室與網路全部停止，屬於重要服務中斷半天以上。"
+      },
+      "property": {
+        "score": 40,
+        "uncertainty": 0.2,
+        "reason": "實驗室與網路停止可能造成未存檔資料或設備運作中斷的損失，但未指明重大燒毀或設備毀損。"
+      },
+      "reputation": {
+        "score": 15,
+        "uncertainty": 0.2,
+        "reason": "由官方公告公布的例行停電通知，對外形象影響有限。"
+      },
+      "scope": {
+        "score": 65,
+        "uncertainty": 0.1,
+        "reason": "影響整棟工程五館的師生與設施，屬於單一建築範圍的廣泛影響。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工程五館於 11/2（一）08:00–17:00 全館停電，館內實驗室、電梯與網路全部停止。"
+      }
+    ],
+    "reason": "公告指出工程五館在 08:00–17:00 全館停電，實驗室、電梯與網路全部停止，對營運與建物內多項服務造成半日以上中斷。",
+    "abstain_reason": null
+  }
+}

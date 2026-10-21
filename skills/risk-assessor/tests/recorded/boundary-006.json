@@ -1,0 +1,50 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 90,
+        "uncertainty": 0.3,
+        "reason": "游泳池溺水且需要 CPR 並送醫，屬於可能造成重傷或死亡的高風險類型。"
+      },
+      "operations": {
+        "score": 40,
+        "uncertainty": 0.3,
+        "reason": "事件發生於體育館游泳池，可能導致游泳活動暫停或場館短暫關閉，影響局部營運。"
+      },
+      "property": {
+        "score": 10,
+        "uncertainty": 0.3,
+        "reason": "事件描述為溺水與救護，未提及財產或設備損壞，財產風險低。"
+      },
+      "reputation": {
+        "score": 30,
+        "uncertainty": 0.3,
+        "reason": "校內發生溺水並需急救，可能引起校內外關注與負面討論。"
+      },
+      "scope": {
+        "score": 20,
+        "uncertainty": 0.3,
+        "reason": "事件影響主要為當事人及在場人員，範圍屬於少數人。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "體育館游泳池剛剛有同學溺水"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "救生員 CPR 之後送醫，現在還在急救。"
+      }
+    ],
+    "reason": "假設貼文內容屬實，為體育館游泳池發生需 CPR 與送醫的溺水事故，對人身安全具高度風險，對場館營運與校方聲譽造成中等影響。",
+    "abstain_reason": null
+  }
+}

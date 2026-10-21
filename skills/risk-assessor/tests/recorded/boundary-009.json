@@ -1,0 +1,50 @@
+{
+  "case_id": "boundary-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 5,
+        "uncertainty": 0.4,
+        "reason": "描述為輕微擦撞且明確寫出「人沒事」，人身風險低。"
+      },
+      "operations": {
+        "score": 0,
+        "uncertainty": 0.4,
+        "reason": "事件為個別交通擦撞，不影響教學或設施營運。"
+      },
+      "property": {
+        "score": 10,
+        "uncertainty": 0.4,
+        "reason": "沒有提到財物或車輛重大損壞，僅為輕微擦撞。"
+      },
+      "reputation": {
+        "score": 10,
+        "uncertainty": 0.4,
+        "reason": "屬於個人經驗分享，對機構聲譽影響有限。"
+      },
+      "scope": {
+        "score": 10,
+        "uncertainty": 0.4,
+        "reason": "只影響貼文者及可能的少數當事人，範圍小。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "剛剛在宵夜街被機車輕輕擦到"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "人沒事，對方也有停下來道歉。"
+      }
+    ],
+    "reason": "根據貼文描述為宵夜街的一起機車輕微擦撞，當事人表示無人受傷且對方停下道歉，整體影響輕微。",
+    "abstain_reason": null
+  }
+}

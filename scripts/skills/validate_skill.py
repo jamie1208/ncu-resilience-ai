@@ -245,12 +245,36 @@ def load_cases(skill: Path, errs: list[str]) -> list[dict[str, Any]]:
     return cases
 
 
+DERIVED_NAME = re.compile(r"^[a-z_][a-z0-9_]*$")
+
+
+def derived_fields(
+    meta: dict[str, Any], output_schema: dict[str, Any] | None, errs: list[str]
+) -> set[str]:
+    """`metadata.derived_fields`：程式由輸出計算的欄位（逗號分隔），可用於 expected（P2-T11）。"""
+    raw = meta.get("derived_fields")
+    if raw is None:
+        return set()
+    if not isinstance(raw, str):
+        errs.append("metadata.derived_fields 必須是逗號分隔的字串")
+        return set()
+    names = {n.strip() for n in raw.split(",") if n.strip()}
+    bad = sorted(n for n in names if not DERIVED_NAME.match(n))
+    if bad:
+        errs.append("metadata.derived_fields 的名稱只能用小寫英數字與底線：" + "、".join(bad))
+    shadow = sorted(names & set((output_schema or {}).get("properties", {})))
+    if shadow:
+        errs.append("metadata.derived_fields 不可與輸出欄位同名：" + "、".join(shadow))
+    return names - set(bad) - set(shadow)
+
+
 def check_cases(
     skill: Path,
     cases: list[dict[str, Any]],
     input_schema: dict[str, Any] | None,
     output_schema: dict[str, Any] | None,
     errs: list[str],
+    derived: set[str] | None = None,
 ) -> None:
     if len(cases) < MIN_CASES:
         errs.append(f"golden cases 只有 {len(cases)} 筆，至少需要 {MIN_CASES} 筆")
@@ -269,7 +293,7 @@ def check_cases(
         errs.append("case id 重複：" + "、".join(dup))
 
     validator = Draft202012Validator(input_schema) if input_schema else None
-    out_props = set((output_schema or {}).get("properties", {}))
+    out_props = set((output_schema or {}).get("properties", {})) | (derived or set())
     for n, case in enumerate(cases, 1):
         cid = str(case.get("id", f"第 {n} 筆"))
         missing = [f for f in CASE_FIELDS if f not in case]
@@ -380,7 +404,8 @@ def validate_skill(skill: Path) -> list[str]:
 
     if (skill / "tests" / "cases.jsonl").is_file():
         cases = load_cases(skill, errs)
-        check_cases(skill, cases, input_schema, output_schema, errs)
+        derived = derived_fields(meta, output_schema, errs)
+        check_cases(skill, cases, input_schema, output_schema, errs, derived)
         if (skill / "tests" / "recorded").is_dir():
             check_recorded(skill, cases, meta.get("version"), output_schema, errs)
     return errs

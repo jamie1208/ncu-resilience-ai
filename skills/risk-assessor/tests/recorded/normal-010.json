@@ -1,0 +1,46 @@
+{
+  "case_id": "normal-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 5,
+        "uncertainty": 0.4,
+        "reason": "只是個人財物被竊，沒有跡象顯示有人受傷或遭受暴力。"
+      },
+      "operations": {
+        "score": 0,
+        "uncertainty": 0.4,
+        "reason": "不影響教學、住宿或校方重要服務。"
+      },
+      "property": {
+        "score": 25,
+        "uncertainty": 0.4,
+        "reason": "單一輛腳踏車被竊，屬於個人財物損失。"
+      },
+      "reputation": {
+        "score": 15,
+        "uncertainty": 0.4,
+        "reason": "可能在校內引起治安討論，但影響範圍有限。"
+      },
+      "scope": {
+        "score": 10,
+        "uncertainty": 0.4,
+        "reason": "事件發生於單一宿舍門口，主要影響當事人。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "我的腳踏車昨晚停在男九舍門口，今天早上就不見了"
+      }
+    ],
+    "reason": "根據貼文，為單一名義下停放在宿舍門口的腳踏車被偷，屬個人財物失竊，影響有限且無人身傷害跡象。",
+    "abstain_reason": null
+  }
+}

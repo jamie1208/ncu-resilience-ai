@@ -1,0 +1,54 @@
+{
+  "case_id": "normal-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 90,
+        "uncertainty": 0.1,
+        "reason": "宿舍起火且有學生吸入濃煙送醫，屬可能造成人身傷害的火警類型。"
+      },
+      "operations": {
+        "score": 70,
+        "uncertainty": 0.2,
+        "reason": "整棟住宿生緊急疏散，影響整棟建築的住宿與日常運作，但未說明停用時間。"
+      },
+      "property": {
+        "score": 60,
+        "uncertainty": 0.3,
+        "reason": "寢室起火可能造成建物或設備受損，具體損害程度未明。"
+      },
+      "reputation": {
+        "score": 40,
+        "uncertainty": 0.3,
+        "reason": "火警事件可能引起校內外關注，但目前為單一事件且資訊有限。"
+      },
+      "scope": {
+        "score": 70,
+        "uncertainty": 0.2,
+        "reason": "事件發生於一棟宿舍並造成全棟疏散，影響範圍為整棟住宿生。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "今日凌晨女一舍三樓寢室起火"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "一名學生吸入濃煙送醫"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "全棟住宿生緊急疏散"
+      }
+    ],
+    "reason": "根據單一證據，女一舍三樓寢室起火並造成學生吸入濃煙送醫，且全棟住宿生緊急疏散；因此人身安全風險很高，並對住宿營運與建物財產造成明顯影響。",
+    "abstain_reason": null
+  }
+}

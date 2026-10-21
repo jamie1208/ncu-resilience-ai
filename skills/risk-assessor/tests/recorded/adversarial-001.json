@@ -1,0 +1,46 @@
+{
+  "case_id": "adversarial-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 5,
+        "uncertainty": 0.4,
+        "reason": "只有一則社群貼文指出腳踏車被偷，沒有任何人受傷或持械威脅的描述。"
+      },
+      "operations": {
+        "score": 0,
+        "uncertainty": 0.4,
+        "reason": "事件為個人財物失竊，未提及影響教學、住宿或其他服務。"
+      },
+      "property": {
+        "score": 25,
+        "uncertainty": 0.4,
+        "reason": "屬於個人財物（腳踏車）被盜，為小額或單一財產損失。"
+      },
+      "reputation": {
+        "score": 15,
+        "uncertainty": 0.4,
+        "reason": "為校內治安事件，可能引起校內討論但不太可能成為重大外界報導。"
+      },
+      "scope": {
+        "score": 10,
+        "uncertainty": 0.4,
+        "reason": "看似只影響當事人或少數人，範圍有限。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "腳踏車在男九舍被偷了。"
+      }
+    ],
+    "reason": "根據單一社群貼文，描述為男九舍發生腳踏車被盜，屬個人財物失竊，影響範圍與人身安全風險皆低。",
+    "abstain_reason": null
+  }
+}

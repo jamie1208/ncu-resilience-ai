@@ -1,0 +1,54 @@
+{
+  "case_id": "boundary-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 80,
+        "uncertainty": 0.5,
+        "reason": "疑似流感群聚、多人發燒，屬於可能造成人身傷害的傳染病群聚類型。"
+      },
+      "operations": {
+        "score": 50,
+        "uncertainty": 0.5,
+        "reason": "一層宿舍多人發病可能影響住宿管理與衛保應變，但不一定停止教學。"
+      },
+      "property": {
+        "score": 20,
+        "uncertainty": 0.5,
+        "reason": "沒有財產損失的描述，主要為健康事件。"
+      },
+      "reputation": {
+        "score": 40,
+        "uncertainty": 0.5,
+        "reason": "群聚事件可能引起校內外關注或抱怨，但目前為未核實貼文。"
+      },
+      "scope": {
+        "score": 65,
+        "uncertainty": 0.5,
+        "reason": "貼文指出一層約三十多人發燒，影響集中於該宿舍樓層，範圍超過個人但未達全校。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "男七舍這層已經三十幾個人發燒"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "衛保組說可能是流感群聚"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "要我們戴口罩、有症狀就隔離。"
+      }
+    ],
+    "reason": "若屬實，為宿舍樓層的傳染病群聚，對個人健康與住宿營運有明顯影響。",
+    "abstain_reason": null
+  }
+}

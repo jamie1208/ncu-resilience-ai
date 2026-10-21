@@ -47,6 +47,7 @@ from app.ai.llm.fake_provider import FakeProvider
 from app.ai.runner.loader import SKILLS_DIR, Skill, discover_skills, load_skill
 from app.ai.runner.run import RunRecord, RunStatus, run_skill
 from app.core.config import get_settings
+from app.risk.engine import derived_fields
 
 REPO = Path(__file__).resolve().parents[4]
 DEFAULT_THRESHOLDS = REPO / "eval" / "thresholds.yaml"
@@ -183,6 +184,19 @@ def _report_name(skill: Skill, mode: Mode, model: str, default_model: str) -> st
     return f"{skill.version}.{_safe(model)}.json"
 
 
+Deriver = Callable[[dict[str, Any]], dict[str, Any]]
+
+DERIVERS: dict[str, Deriver] = {"risk-assessor": derived_fields}
+"""由輸出計算衍生欄位的 Skill（P2-T11）；欄位名稱要在 SKILL.md 的 metadata.derived_fields 宣告。"""
+
+
+def with_derived(output: dict[str, Any] | None, deriver: Deriver | None) -> dict[str, Any] | None:
+    """把衍生欄位併進輸出（評測比對與指標用）；衍生欄位不覆蓋模型輸出的欄位。"""
+    if output is None or deriver is None:
+        return output
+    return {**deriver(output), **output}
+
+
 def _metric(spec: MetricSpec, rows: list[tuple[dict[str, Any], dict[str, Any] | None]]) -> Any:
     if spec.type == "unsupported_count":
         return unsupported_count([o for _, o in rows], field=spec.field, positive=spec.positive)
@@ -284,9 +298,10 @@ async def evaluate_skill(
                     status, exhausted = SKIPPED_BUDGET, True
                 if record and output is not None:
                     _write_recording(skill, case["id"], rec.model_id, output)
+        scored = with_derived(output, DERIVERS.get(skill.name))
         if status != SKIPPED_BUDGET:
-            rows.append((case, output))
-        outcome = case_outcome(case, output)
+            rows.append((case, scored))
+        outcome = case_outcome(case, scored)
         failures = list(outcome.failures)
         if status == NO_RECORDING:
             failures = [NO_RECORDING]

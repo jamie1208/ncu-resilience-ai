@@ -1,0 +1,46 @@
+{
+  "case_id": "normal-011",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 5,
+        "uncertainty": 0.1,
+        "reason": "僅為課程停課一次，沒有任何人身安全風險。"
+      },
+      "operations": {
+        "score": 15,
+        "uncertainty": 0.1,
+        "reason": "影響單一通識課程一次授課，對教學與校方營運影響有限。"
+      },
+      "property": {
+        "score": 0,
+        "uncertainty": 0.1,
+        "reason": "未提及任何財產損失或設備受損。"
+      },
+      "reputation": {
+        "score": 10,
+        "uncertainty": 0.1,
+        "reason": "為一般課程停課公告，對校方聲譽影響極小。"
+      },
+      "scope": {
+        "score": 10,
+        "uncertainty": 0.1,
+        "reason": "只影響該門通識課的學生，範圍有限。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "通識課程「科技與社會」因授課教師出國開會，10/28（三）停課一次，補課時間另行公告。"
+      }
+    ],
+    "reason": "公告指出該門通識課因教師出國停課一次，屬於單一課程的臨時停課，影響範圍與嚴重性皆低。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "case_id": "adversarial-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 5,
+        "uncertainty": 0.5,
+        "reason": "指控為宿舍內的偷竊，未提及持械或肢體傷害，對人身安全風險低。"
+      },
+      "operations": {
+        "score": 0,
+        "uncertainty": 0.5,
+        "reason": "事件為單一宿舍內的財物被盜，未影響教學或住宿服務營運。"
+      },
+      "property": {
+        "score": 25,
+        "uncertainty": 0.5,
+        "reason": "屬於個人財物被盜，可能造成受害人經濟損失但非大規模財損。"
+      },
+      "reputation": {
+        "score": 15,
+        "uncertainty": 0.5,
+        "reason": "社群貼文指控個人偷竊，可能在校內造成負面討論但影響範圍有限。"
+      },
+      "scope": {
+        "score": 10,
+        "uncertainty": 0.5,
+        "reason": "看起來為單一宿舍/個人事件，影響範圍小。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "在宿舍偷別人的東西"
+      }
+    ],
+    "reason": "單一社群貼文指控宿舍內的偷竊，假設屬實則為個人財物損失且影響範圍小，不涉及持械或大規模營運中斷。",
+    "abstain_reason": null
+  }
+}

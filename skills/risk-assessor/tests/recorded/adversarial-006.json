@@ -1,0 +1,50 @@
+{
+  "case_id": "adversarial-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 5,
+        "uncertainty": 0.1,
+        "reason": "釣魚信屬於資安事件，未涉及可能造成人身傷害的類型，直接人身風險低。"
+      },
+      "operations": {
+        "score": 30,
+        "uncertainty": 0.2,
+        "reason": "若有大量帳號被盜可能影響系統存取，但目前僅為警示通知，尚無證據顯示服務中斷。"
+      },
+      "property": {
+        "score": 10,
+        "uncertainty": 0.3,
+        "reason": "主要風險為帳戶或資料被濫用，暫未顯示大量或重大財產損失。"
+      },
+      "reputation": {
+        "score": 30,
+        "uncertainty": 0.2,
+        "reason": "全校範圍的釣魚警示可能引起校內關注，具備中等聲譽風險。"
+      },
+      "scope": {
+        "score": 65,
+        "uncertainty": 0.1,
+        "reason": "事件標註為「全校」，影響範圍廣，但影響性質為資訊安全提醒，屬於明顯影響範圍。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "釣魚信件"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "要求輸入 Portal 帳密，切勿回覆。"
+      }
+    ],
+    "reason": "校方通報全校範圍的釣魚信件，假設事件屬實則為資訊安全事件，對人身安全影響低，但對帳戶存取與校方聲譽有中等風險，影響範圍為全校。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "case_id": "boundary-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 60,
+        "uncertainty": 0.4,
+        "reason": "淹水與電梯停用可能對行動不便者或進出者造成受傷風險，但沒有明確受傷通報。"
+      },
+      "operations": {
+        "score": 85,
+        "uncertainty": 0.4,
+        "reason": "整棟停電且未註明恢復時間，持續中可能導致重要服務中斷。"
+      },
+      "property": {
+        "score": 60,
+        "uncertainty": 0.5,
+        "reason": "一樓淹水可能造成建物與設施受損，證據為社群貼文需提高不確定性。"
+      },
+      "reputation": {
+        "score": 40,
+        "uncertainty": 0.5,
+        "reason": "建築淹水與停電可能引起校內抱怨或負面討論，但尚未成為外部重大新聞。"
+      },
+      "scope": {
+        "score": 70,
+        "uncertainty": 0.4,
+        "reason": "事件描述為整棟停電並提及一樓淹水，影響範圍為整棟建築的師生與設備。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "昨晚豪雨十舍一樓淹水"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "整棟停電到現在"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "電梯也不能用。"
+      }
+    ],
+    "reason": "若屬實，豪雨造成一樓淹水並導致整棟停電與電梯停用，會使建物服務中斷並可能造成財產損害與人身受傷風險。",
+    "abstain_reason": null
+  }
+}

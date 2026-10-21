@@ -81,6 +81,16 @@ skills:
         positive: verified
         max: 0
 
+  # S06（P2-T11）：高風險 recall ≥ 0.95。high_risk 是衍生欄位：app/risk/engine.py 依模型的五維分數
+  # 與 config/risk-policy.yaml 計算（分級為高或極高）；SKILL.md 的 metadata.derived_fields 宣告。
+  # 「同輸入結果重現 100%」由引擎的單元測試保證（tests/unit/risk/test_engine.py），不在這裡量測。
+  risk-assessor:
+    metrics:
+      - name: high_risk_recall
+        type: recall
+        field: high_risk
+        positive: true
+        threshold: 0.95
+
   # 以下在各 Skill 的任務中，依其輸出欄位加入（門檻照計畫表）：
-  #   risk-assessor（P2-T11）     高風險 recall ≥ 0.95；同輸入結果重現 100%
   #   root-cause-analyst／solution-planner（P2-T12）  人工審閱：假設與事實區分正確率 ≥ 0.90

@@ -1,0 +1,50 @@
+{
+  "case_id": "boundary-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 90,
+        "uncertainty": 0.4,
+        "reason": "機車騎士「倒在地上沒有意識，救護車送醫了」，屬可能造成重傷的人身安全事件。"
+      },
+      "operations": {
+        "score": 20,
+        "uncertainty": 0.4,
+        "reason": "為單一交通事故，未顯示對教學或校內服務的廣泛中斷。"
+      },
+      "property": {
+        "score": 40,
+        "uncertainty": 0.4,
+        "reason": "機車遭砂石車撞擊，屬於車輛損失但未描述建物或大量設備受損。"
+      },
+      "reputation": {
+        "score": 35,
+        "uncertainty": 0.4,
+        "reason": "事故涉及本校學生，可能在校內引起關注但未顯示會成為重大外部新聞。"
+      },
+      "scope": {
+        "score": 10,
+        "uncertainty": 0.4,
+        "reason": "事件看似影響單一騎士與相關車輛，範圍偏向個別事件。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "中大路剛剛一台機車被砂石車撞"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "騎士是我們學校的學生，倒在地上沒有意識，救護車送醫了"
+      }
+    ],
+    "reason": "根據社群貼文，機車被砂石車撞擊且騎士失去意識並送醫，若屬實對人身安全構成嚴重風險；事件似乎只影響個別人及其車輛，對校內營運影響有限。",
+    "abstain_reason": null
+  }
+}

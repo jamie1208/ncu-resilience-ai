@@ -1,0 +1,46 @@
+{
+  "case_id": "boundary-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 10,
+        "uncertainty": 0.1,
+        "reason": "為預定維修停用，沒有指出火警、外洩或持械等會造成直接人身傷害的情況。"
+      },
+      "operations": {
+        "score": 65,
+        "uncertainty": 0.1,
+        "reason": "工程一館東側電梯停用一週，可能影響行動不便者與教學/辦公動線，屬於一棟建築的持續中斷。"
+      },
+      "property": {
+        "score": 10,
+        "uncertainty": 0.1,
+        "reason": "公告為例行維修，未提及財物或設備受損。"
+      },
+      "reputation": {
+        "score": 10,
+        "uncertainty": 0.1,
+        "reason": "例行性設施維修公告，對校方形象影響有限。"
+      },
+      "scope": {
+        "score": 60,
+        "uncertainty": 0.1,
+        "reason": "影響範圍限定工程一館，涉及建築內師生與工作人員，但非全校性。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工程一館東側電梯自 10/26 起停用維修一週，西側電梯與樓梯照常使用。"
+      }
+    ],
+    "reason": "官方公告指出工程一館東側電梯自 10/26 起停用維修一週，為預定性設施維修，主要影響建築內的通行與行動不便者，無直接人身傷害或財損報告。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "case_id": "normal-014",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 10,
+        "uncertainty": 0.2,
+        "reason": "沒有提到人員受傷或危險，僅為冷氣故障。"
+      },
+      "operations": {
+        "score": 30,
+        "uncertainty": 0.1,
+        "reason": "三樓自修室冷氣故障，圖書館提供二樓替代區，對整體營運影響有限。"
+      },
+      "property": {
+        "score": 5,
+        "uncertainty": 0.2,
+        "reason": "沒有提及設備損毀或財產損失，僅為故障維修。"
+      },
+      "reputation": {
+        "score": 10,
+        "uncertainty": 0.2,
+        "reason": "屬於設施臨時故障並有替代方案，對校方聲譽影響小。"
+      },
+      "scope": {
+        "score": 30,
+        "uncertainty": 0.1,
+        "reason": "影響限定於總圖書館三樓自修室，建議至二樓自修區。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "自修室冷氣故障"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "總圖書館三樓自修室冷氣故障，維修期間請改至二樓自修區。"
+      }
+    ],
+    "reason": "總圖書館三樓自修室冷氣故障，已公告以二樓自修區替代，屬於局部設施故障且無人身傷害報告，影響範圍與營運皆屬輕至中等。",
+    "abstain_reason": null
+  }
+}
