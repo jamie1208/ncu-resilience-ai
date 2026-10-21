@@ -1,5 +1,7 @@
 """評測指標（P2-T05）：Macro-F1、Precision／Recall、配對式合併指標，以及 golden case 的判定。
 
+P2-T10 加上計次指標 `unsupported_count`（S05：無 evidence_ids 被標 verified 的次數）。
+
 無法計算時（例如沒有任何正類）回傳 None，由呼叫端視為未達標，不當成 0 或 1。
 `must_not` 規則格式見 docs/architecture/skill-standard.md §7。
 """
@@ -64,6 +66,29 @@ def accuracy(gold: Sequence[Any], pred: Sequence[Any]) -> float | None:
     if not gold:
         return None
     return sum(1 for g, p in zip(gold, pred, strict=True) if g == p) / len(gold)
+
+
+def unsupported_count(
+    outputs: Sequence[Mapping[str, Any] | None], *, field: str, positive: Any
+) -> int:
+    """`field` 等於 `positive`、卻沒有任何支持證據的輸出數（沒有通過驗證的輸出不計）。
+
+    支持證據：`assessments` 中 stance 為 supports、且 evidence_id 也列在 `evidence_ids` 中的項目。
+    """
+    count = 0
+    for output in outputs:
+        if output is None or output.get(field) != positive:
+            continue
+        cited = set(output.get("evidence_ids") or [])
+        assessments = output.get("assessments") or []
+        supported = any(
+            isinstance(x, Mapping)
+            and x.get("stance") == "supports"
+            and x.get("evidence_id") in cited
+            for x in assessments
+        )
+        count += not supported
+    return count
 
 
 def _pairs[K: Hashable](groups: Mapping[K, Hashable]) -> set[frozenset[K]]:

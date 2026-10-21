@@ -1,0 +1,28 @@
+{
+  "case_id": "adversarial-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "hearsay"
+      }
+    ],
+    "suggested_status": "unverified",
+    "confidence": 0.7,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "明日（10/21）全校停課。"
+      }
+    ],
+    "reason": "社群貼文宣稱「明日（10/21）全校停課」，但來源為 Facebook 貼文並非官方管道，屬於轉述性質的訊息，缺乏官方或第二手獨立第一手來源，故暫判為未驗證。",
+    "abstain_reason": null
+  }
+}

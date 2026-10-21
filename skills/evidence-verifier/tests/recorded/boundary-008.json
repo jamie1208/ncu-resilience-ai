@@ -1,0 +1,28 @@
+{
+  "case_id": "boundary-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "hearsay"
+      }
+    ],
+    "suggested_status": "unverified",
+    "confidence": 0.6,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "據說總圖電梯壞了好幾天了，也不知道真的假的。"
+      }
+    ],
+    "reason": "只有一則以「據說」開頭的社群貼文轉述電梯故障，屬於傳聞性（hearsay），沒有官方或第一手來源可印證。",
+    "abstain_reason": null
+  }
+}

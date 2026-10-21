@@ -221,6 +221,7 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
 - **P2-T09 S04 event-linker**：`skills/event-linker/` + `app/ai/embeddings.py`（pgvector 候選召回＋時間地點視窗）；輸出 same_event／related_event／none 與信心
   - 實作調整（使用者 2026-10-21 決定：範圍 A、text-embedding-3-small）：另外修改 `app/ai/llm/`（base、openai_provider、fake_provider、config 加上 embedding）、`config/llm.yaml`（embedding 模型、維度與價格）、`app/models/event.py`（`occurrence_start_date`、`embedding vector(1536)`），新增 migration `0006_event_embeddings.py`、`pgvector` 依賴、`tests/unit/ai/test_embeddings.py`、`tests/integration/test_event_candidates.py`；候選召回依類別、事件日期 ±7 天、cosine 距離排序，地點不過濾；S04 每次判斷一對（新文章, 候選事件），以 relation = same_event 為正類計算 precision／recall；golden cases 41 筆；本任務 API 費用上限 US$0.8
 - **P2-T10 S05 evidence-verifier**：`skills/evidence-verifier/` + `app/verification/rules.py`；規則優先（官方來源→confirmed），模型只提供建議，狀態變更一律經規則與狀態機
+  - 實作調整（AI 自行決定，2026-10-21）：S05 逐份輸出立場（supports／contradicts／refutes／unrelated）與陳述性質，另給 suggested_status；最終狀態由 `rules.py` 依標記規範第 4 節決定（官方以最新一份為準；非官方：支持與反對並存 → disputed、兩份以上第一手 → verified），`confirmed` 統一為 `verified`；門檻以新的計次指標 `unsupported_count`（max 0）表示，另外修改 `app/ai/eval/metrics.py`、`app/ai/eval/runner.py`，新增 `tests/unit/ai/test_eval_unsupported.py`、`tests/unit/verification/test_rules.py`；golden cases 28 筆；本任務 API 費用上限 US$0.8
 
 ### P2c 風險與決策
 

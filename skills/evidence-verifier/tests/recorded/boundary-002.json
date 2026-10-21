@@ -1,0 +1,48 @@
+{
+  "case_id": "boundary-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "first_hand"
+      },
+      {
+        "evidence_id": "e2",
+        "stance": "contradicts",
+        "claim_type": "first_hand"
+      },
+      {
+        "evidence_id": "e3",
+        "stance": "supports",
+        "claim_type": "first_hand"
+      }
+    ],
+    "suggested_status": "disputed",
+    "confidence": 0.8,
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "女二舍從早上就沒水，洗不了澡。"
+      },
+      {
+        "evidence_id": "e2",
+        "quote": "我住女二舍四樓，剛剛水龍頭都正常，有水喔。"
+      },
+      {
+        "evidence_id": "e3",
+        "quote": "女二舍二樓也沒水，廁所沒辦法沖。"
+      }
+    ],
+    "reason": "兩則同地點的第一手貼文（e1、e3）陳述無水情形支持事件，另一則第一手貼文（e2）指出該處有水，互相矛盾，故建議狀態為 disputed。",
+    "abstain_reason": null
+  }
+}

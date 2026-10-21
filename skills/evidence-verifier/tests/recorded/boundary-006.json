@@ -1,0 +1,34 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "first_hand"
+      },
+      {
+        "evidence_id": "e2",
+        "stance": "unrelated",
+        "claim_type": "official"
+      }
+    ],
+    "suggested_status": "unverified",
+    "confidence": 0.7,
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "這兩天晚上女二舍後面一直有一個戴帽子的男生在徘徊，還會往窗戶裡看。"
+      }
+    ],
+    "reason": "社群貼文為當事人目擊陳述，描述有可疑人士在女二舍後方徘徊，支持事件；另一則校方新聞為研究報導，內容與事件無關，因此無足夠獨立來源驗證該說法。",
+    "abstain_reason": null
+  }
+}

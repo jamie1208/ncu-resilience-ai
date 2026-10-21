@@ -1,0 +1,28 @@
+{
+  "case_id": "normal-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "official"
+      }
+    ],
+    "suggested_status": "verified",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "中央氣象署發布桃園市陸上強風特報，今日下午起沿海及空曠地區易有 9 級以上強陣風。"
+      }
+    ],
+    "reason": "中央氣象署以正式管道發布強風特報，明確指出今日午後沿海及空曠地區易有 9 級以上強陣風，為官方表態且支持該事件。",
+    "abstain_reason": null
+  }
+}

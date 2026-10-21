@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "evidence-verifier 輸出",
+  "description": "逐份判斷證據對事件的立場與陳述性質，並給出建議的查證狀態。最終查證狀態由 app/verification/rules.py 依逐份判斷決定，建議狀態只做比對。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "assessments",
+    "suggested_status",
+    "confidence",
+    "evidence_ids",
+    "evidence_spans",
+    "reason",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已判斷；abstain：內容不足，無法判斷",
+      "type": "string",
+      "enum": [
+        "ok",
+        "abstain"
+      ]
+    },
+    "assessments": {
+      "description": "每份證據各一項：立場與陳述性質",
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "stance",
+          "claim_type"
+        ],
+        "properties": {
+          "evidence_id": {
+            "type": "string"
+          },
+          "stance": {
+            "description": "supports：說明事件發生；contradicts：說法不一致；refutes：明確否認這件事發生；unrelated：無關",
+            "type": "string",
+            "enum": [
+              "supports",
+              "contradicts",
+              "refutes",
+              "unrelated"
+            ]
+          },
+          "claim_type": {
+            "description": "official：官方單位正式發布；first_hand：親身經歷或親眼所見；hearsay：轉述、轉貼；rumor：沒有依據的傳聞或玩笑",
+            "type": "string",
+            "enum": [
+              "official",
+              "first_hand",
+              "hearsay",
+              "rumor"
+            ]
+          }
+        }
+      }
+    },
+    "suggested_status": {
+      "description": "依 references/verification-rules.md 推出的建議狀態；abstain 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "verified",
+        "unverified",
+        "disputed",
+        "false",
+        null
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "evidence_ids": {
+      "description": "判斷所依據的證據；ok 時至少 1 個，且必須存在於輸入；verified 時必須包含支持的證據",
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_spans": {
+      "description": "逐字抄錄的關鍵原句；Runner 會比對原句確實存在",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "quote"
+        ],
+        "properties": {
+          "evidence_id": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 120
+          }
+        }
+      }
+    },
+    "reason": {
+      "description": "一兩句判斷理由；不得包含個資與人名、店名",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "insufficient_evidence",
+        null
+      ]
+    }
+  }
+}

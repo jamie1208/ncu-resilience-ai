@@ -1,0 +1,28 @@
+{
+  "case_id": "normal-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "official"
+      }
+    ],
+    "suggested_status": "verified",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工程五館於 11/2（一）08:00–12:00 配合台電檢修停電，請提前儲存資料。"
+      }
+    ],
+    "reason": "官方公告明確指出工程五館於 11/2 08:00–12:00 配合台電檢修停電，為官方正式表態，故建議為 verified。",
+    "abstain_reason": null
+  }
+}
