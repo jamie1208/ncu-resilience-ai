@@ -1,0 +1,127 @@
+{
+  "all_passed": true,
+  "skills": [
+    {
+      "skill": "event-classifier",
+      "version": "1.0.0",
+      "mode": "recorded",
+      "model": "gpt-5-mini-2025-08-07",
+      "split": "test",
+      "passed": true,
+      "pass_rate": 1.0,
+      "schema_pass_rate": 1.0,
+      "traceability": 1.0,
+      "metrics": {
+        "macro_f1": 1.0
+      },
+      "cost_usd": 0.0
+    },
+    {
+      "skill": "event-extractor",
+      "version": "1.0.0",
+      "mode": "recorded",
+      "model": "gpt-5-mini-2025-08-07",
+      "split": "test",
+      "passed": true,
+      "pass_rate": 1.0,
+      "schema_pass_rate": 1.0,
+      "traceability": 1.0,
+      "metrics": {
+        "start_date_accuracy": 1.0,
+        "location_accuracy": 1.0
+      },
+      "cost_usd": 0.0
+    },
+    {
+      "skill": "event-linker",
+      "version": "1.0.0",
+      "mode": "recorded",
+      "model": "gpt-5-mini-2025-08-07",
+      "split": "test",
+      "passed": true,
+      "pass_rate": 1.0,
+      "schema_pass_rate": 1.0,
+      "traceability": 1.0,
+      "metrics": {
+        "same_event_precision": 1.0,
+        "same_event_recall": 1.0
+      },
+      "cost_usd": 0.0
+    },
+    {
+      "skill": "evidence-verifier",
+      "version": "1.0.0",
+      "mode": "recorded",
+      "model": "gpt-5-mini-2025-08-07",
+      "split": "test",
+      "passed": true,
+      "pass_rate": 1.0,
+      "schema_pass_rate": 1.0,
+      "traceability": 1.0,
+      "metrics": {
+        "verified_without_evidence": 0
+      },
+      "cost_usd": 0.0
+    },
+    {
+      "skill": "relevance-filter",
+      "version": "1.0.0",
+      "mode": "recorded",
+      "model": "gpt-5-mini-2025-08-07",
+      "split": "test",
+      "passed": true,
+      "pass_rate": 1.0,
+      "schema_pass_rate": 1.0,
+      "traceability": 1.0,
+      "metrics": {
+        "f1": 1.0
+      },
+      "cost_usd": 0.0
+    },
+    {
+      "skill": "risk-assessor",
+      "version": "1.0.0",
+      "mode": "recorded",
+      "model": "gpt-5-mini-2025-08-07",
+      "split": "test",
+      "passed": true,
+      "pass_rate": 1.0,
+      "schema_pass_rate": 1.0,
+      "traceability": 1.0,
+      "metrics": {
+        "high_risk_recall": 1.0
+      },
+      "cost_usd": 0.0
+    },
+    {
+      "skill": "root-cause-analyst",
+      "version": "1.0.0",
+      "mode": "recorded",
+      "model": "gpt-5-mini-2025-08-07",
+      "split": "test",
+      "passed": true,
+      "pass_rate": 1.0,
+      "schema_pass_rate": 1.0,
+      "traceability": 1.0,
+      "metrics": {
+        "fact_hypothesis_accuracy": 1.0
+      },
+      "cost_usd": 0.0
+    },
+    {
+      "skill": "solution-planner",
+      "version": "1.0.0",
+      "mode": "recorded",
+      "model": "gpt-5-mini-2025-08-07",
+      "split": "test",
+      "passed": true,
+      "pass_rate": 1.0,
+      "schema_pass_rate": 1.0,
+      "traceability": 1.0,
+      "metrics": {
+        "fact_hypothesis_accuracy": 1.0
+      },
+      "cost_usd": 0.0
+    }
+  ]
+}
