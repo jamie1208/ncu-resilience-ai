@@ -374,6 +374,7 @@ async def evaluate_skill(
 def _write_recording(skill: Skill, case_id: str, model: str, output: dict[str, Any]) -> None:
     data = {"case_id": case_id, "skill_version": skill.version, "model": model, "output": output}
     path = skill.root / "tests" / "recorded" / f"{case_id}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 

@@ -283,6 +283,20 @@ async def test_record_writes_recordings(
     }
 
 
+async def test_record_creates_missing_recorded_dir(
+    config: LLMConfig, thresholds: Thresholds, tmp_path: Path
+) -> None:
+    # 新 Skill 第一次錄製時還沒有 tests/recorded/（P2-T08 遇到的問題）
+    dst = tmp_path / "_template"
+    shutil.copytree(TEMPLATE, dst)
+    shutil.rmtree(dst / "tests" / "recorded")
+    skill = load_skill(dst)
+    provider = FakeProvider(recorded_outputs("test"))
+    await evaluate(skill, config, thresholds, mode="live", provider=provider, record=True)
+    recorded = sorted(p.stem for p in (dst / "tests" / "recorded").glob("*.json"))
+    assert recorded == sorted(c["id"] for c in cases("test"))
+
+
 async def test_record_requires_live(
     skill: Skill, config: LLMConfig, thresholds: Thresholds
 ) -> None:
