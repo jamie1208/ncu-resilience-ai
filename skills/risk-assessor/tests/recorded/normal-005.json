@@ -1,0 +1,50 @@
+{
+  "case_id": "normal-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 50,
+        "uncertainty": 0.1,
+        "reason": "颱風可能造成危險但目前證據僅為停課公告，未提及傷亡或受困。"
+      },
+      "operations": {
+        "score": 85,
+        "uncertainty": 0.1,
+        "reason": "公告指出「本校全日停課」，屬需要師生立即應變的全校性停課措施。"
+      },
+      "property": {
+        "score": 40,
+        "uncertainty": 0.2,
+        "reason": "颱風可能對建物與設備造成損害，但目前證據未提及實際財產損失。"
+      },
+      "reputation": {
+        "score": 20,
+        "uncertainty": 0.1,
+        "reason": "為官方例行防災公告，短期內對校方聲譽影響有限。"
+      },
+      "scope": {
+        "score": 85,
+        "uncertainty": 0.1,
+        "reason": "公告明確寫到「本校全日停課」，影響範圍為全校師生。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "因颱風來襲，桃園市政府宣布明日停止上班上課"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "本校全日停課，宿舍生請做好防颱準備。"
+      }
+    ],
+    "reason": "官方公告指出因颱風影響校方宣布全日停課，需師生立即採取防颱準備，故營運與影響範圍評為高風險；未有傷亡或財損報告，其他面向評為中等或偏低。",
+    "abstain_reason": null
+  }
+}

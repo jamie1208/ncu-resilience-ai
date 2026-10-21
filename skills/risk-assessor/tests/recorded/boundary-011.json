@@ -1,0 +1,46 @@
+{
+  "case_id": "boundary-011",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 10,
+        "uncertainty": 0.4,
+        "reason": "貼文指出財物被竊，沒有提到有人受傷或持械威脅。"
+      },
+      "operations": {
+        "score": 10,
+        "uncertainty": 0.4,
+        "reason": "為個人財物失竊事件，對教學或住宿整體營運影響有限。"
+      },
+      "property": {
+        "score": 35,
+        "uncertainty": 0.4,
+        "reason": "多位住民報告錢包不見，屬於多人財物損失但非大規模毀損。"
+      },
+      "reputation": {
+        "score": 25,
+        "uncertainty": 0.4,
+        "reason": "宿舍安全事件可能引起校內關注與抱怨，但尚未成為重大負面新聞。"
+      },
+      "scope": {
+        "score": 30,
+        "uncertainty": 0.4,
+        "reason": "事件發生在男七舍交誼廳，影響到「好幾個人」，屬於小群體範圍。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "男七舍交誼廳最近好幾個人的錢包不見，大家東西收好。"
+      }
+    ],
+    "reason": "多位宿舍住民在交誼廳發生錢包失竊，主要為多人財物損失，無證據顯示有人身受傷或建物重大損壞。",
+    "abstain_reason": null
+  }
+}

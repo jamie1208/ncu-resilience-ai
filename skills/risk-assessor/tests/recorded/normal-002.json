@@ -1,0 +1,50 @@
+{
+  "case_id": "normal-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 90,
+        "uncertainty": 0.1,
+        "reason": "化學品外洩屬於可能造成人身傷害的事件，已疏散顯示有即時風險。"
+      },
+      "operations": {
+        "score": 80,
+        "uncertainty": 0.15,
+        "reason": "整棟人員已疏散，建築使用中斷並需要立即處置，屬於需要師生立即行動的情形。"
+      },
+      "property": {
+        "score": 50,
+        "uncertainty": 0.2,
+        "reason": "化學品外洩可能造成設備或設施污染或損壞，但缺乏具體損害描述。"
+      },
+      "reputation": {
+        "score": 35,
+        "uncertainty": 0.2,
+        "reason": "校內安全事故可能引起關注與抱怨，但目前為單一事件且資訊有限。"
+      },
+      "scope": {
+        "score": 70,
+        "uncertainty": 0.15,
+        "reason": "已疏散全館人員，影響範圍為整棟建築。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "科學二館化學品外洩"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "今日上午科學二館三樓實驗室發生化學品外洩，已疏散全館人員，請勿靠近。"
+      }
+    ],
+    "reason": "若事件屬實，化學品外洩已造成整棟疏散並具有立即的人身風險與建築使用中斷，評估因此在個人安全與營運面向屬高風險。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "case_id": "boundary-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 10,
+        "uncertainty": 0.4,
+        "reason": "寢室天花板漏水可能造成滑倒等輕微風險，但目前沒有提到有人受傷。"
+      },
+      "operations": {
+        "score": 5,
+        "uncertainty": 0.4,
+        "reason": "僅為單一寢室漏水，對教學或住宿整體營運影響很小。"
+      },
+      "property": {
+        "score": 25,
+        "uncertainty": 0.4,
+        "reason": "有個人書籍受潮，屬於個人財物的輕度損失。"
+      },
+      "reputation": {
+        "score": 15,
+        "uncertainty": 0.4,
+        "reason": "校內宿舍維修問題可能引起抱怨，但不太可能成為重大負面新聞。"
+      },
+      "scope": {
+        "score": 10,
+        "uncertainty": 0.4,
+        "reason": "事件描述僅限於單一寢室（男三舍），影響範圍有限。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "我們寢室天花板一直滴水，已經報修了，室友的書有點濕掉。"
+      }
+    ],
+    "reason": "寢室天花板持續滴水造成個人書籍受潮，屬於單一寢室的維修事件，對人身安全與校方營運影響均小，但會造成個人財物損害並可能引發校內抱怨。",
+    "abstain_reason": null
+  }
+}

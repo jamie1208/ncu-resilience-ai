@@ -1,0 +1,39 @@
+# 風險政策（P2-T11；使用者 2026-10-21 決定，照建議）。
+# 加權、分級與覆寫規則只能寫在這裡；由 backend/app/risk/engine.py 讀取並計算。
+# 模型（S06 risk-assessor）只給五個面向的分數（0–100）與不確定性，不計算總分與分級。
+# 修改任何數字都要由使用者決定，並更新 policy_version（每筆 risk_assessments 都會記錄版本）。
+
+policy_version: "2026-10-21.1"
+
+# 規格 §6.1：Risk = 0.30 × 人身安全 + 0.20 × 營運 + 0.15 × 財產 + 0.15 × 聲譽 + 0.20 × 影響範圍
+# 權重是試行假設，不是經驗校正的結果；總和必須為 1。
+weights:
+  personal_safety: 0.30  # 人身安全
+  operations: 0.20       # 營運（教學、住宿、服務中斷）
+  property: 0.15         # 財產
+  reputation: 0.15       # 聲譽
+  scope: 0.20            # 影響範圍（人數、區域）
+
+# 分級：加權分數 ≥ min 的最高一級（規格 §6.1 建議的初始分級）
+levels:
+  - {name: low, min: 0}        # 低
+  - {name: medium, min: 30}    # 中
+  - {name: high, min: 60}      # 高
+  - {name: critical, min: 80}  # 極高
+
+# 重大人身危害不受加權平均稀釋（規格 §6.1）：人身安全 ≥ 80 → 極高。
+# 不看查證狀態：風險是「若事件成立」的影響（規格 §6.2）；能不能對外發布由 P3 的通知規則決定。
+critical_override:
+  dimension: personal_safety
+  min: 80
+  level: critical
+
+# 保底：任一面向 ≥ 80 → 至少為高。
+# 讓整棟停電半天、全校網路中斷等營運或範圍面向嚴重的事件，不會因加權平均只落在「中」
+# （對應標記規範第 6 節的高風險定義）。
+floor:
+  min: 80
+  level: high
+
+# 評測與通知時視為「高風險」的分級（標記檔的 high_risk = y；門檻：高風險 Recall ≥ 0.95）
+high_risk_levels: [high, critical]

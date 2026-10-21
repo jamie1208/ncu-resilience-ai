@@ -1,0 +1,50 @@
+{
+  "case_id": "boundary-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 10,
+        "uncertainty": 0.1,
+        "reason": "停電本身未提及有人受傷或危險，屬於人身風險低的情況。"
+      },
+      "operations": {
+        "score": 85,
+        "uncertainty": 0.1,
+        "reason": "全校停電且今日下午所有課程停課，屬於整校重要服務中斷半天以上的情況。"
+      },
+      "property": {
+        "score": 25,
+        "uncertainty": 0.2,
+        "reason": "證據僅提及停電與停課，未提及設備或建物受損，財產風險較低。"
+      },
+      "reputation": {
+        "score": 30,
+        "uncertainty": 0.2,
+        "reason": "全校停電並停課可能引起校內外關注，但目前為一次性公告，影響屬於中低程度。"
+      },
+      "scope": {
+        "score": 80,
+        "uncertainty": 0.1,
+        "reason": "事件影響範圍為全校，且中斷教學活動（今日下午停課），符合全校影響的高範圍評估。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "全校停電停課"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "因台電輸電線路故障，全校停電，今日下午所有課程停課，恢復供電時間另行通知。"
+      }
+    ],
+    "reason": "官方公告指出因輸電線路故障導致全校停電並宣布今日下午所有課程停課，對教學與校內重要服務造成顯著中斷。",
+    "abstain_reason": null
+  }
+}

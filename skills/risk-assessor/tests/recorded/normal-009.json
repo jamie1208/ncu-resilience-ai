@@ -1,0 +1,46 @@
+{
+  "case_id": "normal-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 85,
+        "uncertainty": 0.2,
+        "reason": "實驗室爆炸並有一人手部灼傷送醫，屬可能造成人身傷害的事件，個人安全風險高。"
+      },
+      "operations": {
+        "score": 50,
+        "uncertainty": 0.2,
+        "reason": "該樓層暫時封閉，造成局部營運中斷（單一樓層）。"
+      },
+      "property": {
+        "score": 40,
+        "uncertainty": 0.3,
+        "reason": "發生小型爆炸，可能造成實驗設備或設施的局部損壞，但未報重大財損。"
+      },
+      "reputation": {
+        "score": 40,
+        "uncertainty": 0.3,
+        "reason": "實驗室爆炸與送醫事件可能引起校內外關注與負面報導，但資訊有限。"
+      },
+      "scope": {
+        "score": 30,
+        "uncertainty": 0.2,
+        "reason": "事件發生於化學館二樓，主要影響該樓層及相關師生，影響範圍屬於一層樓或少數人。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "化學館二樓實驗室今日下午發生小型爆炸，一名研究生手部灼傷送醫，該樓層暫時封閉。"
+      }
+    ],
+    "reason": "假設報導屬實：實驗室發生小型爆炸並有一人受傷送醫，導致該樓層暫時封閉，對個人安全構成較高風險且造成局部營運與設備影響。",
+    "abstain_reason": null
+  }
+}

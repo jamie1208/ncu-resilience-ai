@@ -1,0 +1,46 @@
+{
+  "case_id": "normal-015",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 0,
+        "uncertainty": 0.1,
+        "reason": "只是考試時間異動，未牽涉人身安全。"
+      },
+      "operations": {
+        "score": 10,
+        "uncertainty": 0.1,
+        "reason": "僅影響單一課程的考試排程，對整體教學營運影響有限。"
+      },
+      "property": {
+        "score": 0,
+        "uncertainty": 0.1,
+        "reason": "沒有財產損失的描述。"
+      },
+      "reputation": {
+        "score": 10,
+        "uncertainty": 0.1,
+        "reason": "屬內部考試行程調整，對校方整體聲譽影響很小。"
+      },
+      "scope": {
+        "score": 20,
+        "uncertainty": 0.1,
+        "reason": "僅影響選修或修讀該科目的學生，範圍有限。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "原訂 11/4（三）舉行之微積分期中考，改至 11/6（五）同一時段舉行。"
+      }
+    ],
+    "reason": "微積分期中考由 11/4 調整到 11/6，僅為單一課程的考試時間變動，影響範圍與嚴重性皆有限。",
+    "abstain_reason": null
+  }
+}

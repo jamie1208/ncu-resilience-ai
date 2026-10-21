@@ -1,0 +1,46 @@
+{
+  "case_id": "boundary-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 25,
+        "uncertainty": 0.1,
+        "reason": "停水會影響盥洗與衛生但不屬於會直接造成人身重傷的類型。"
+      },
+      "operations": {
+        "score": 85,
+        "uncertainty": 0.1,
+        "reason": "全棟宿舍停水且預計持續兩天，屬於重要服務中斷半天以上。"
+      },
+      "property": {
+        "score": 20,
+        "uncertainty": 0.2,
+        "reason": "停水短期內較可能造成不便，未見證據顯示重大財產損失。"
+      },
+      "reputation": {
+        "score": 25,
+        "uncertainty": 0.2,
+        "reason": "校內住宿停水可能引起抱怨與不滿，但屬校內服務中斷層級。"
+      },
+      "scope": {
+        "score": 70,
+        "uncertainty": 0.1,
+        "reason": "影響整棟男一舍的住宿生，屬於一棟建築範圍的影響。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "男一舍因主管線破裂，自今日起全棟停水，預計 10/22 修復，請住宿生至其他宿舍盥洗。"
+      }
+    ],
+    "reason": "官方公告指出男一舍因主管線破裂自今日起全棟停水並預計 10/22 修復，若屬實會造成宿舍生活與服務中斷，營運影響嚴重。",
+    "abstain_reason": null
+  }
+}

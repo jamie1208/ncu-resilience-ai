@@ -1,0 +1,46 @@
+{
+  "case_id": "normal-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 10,
+        "uncertainty": 0.1,
+        "reason": "網路中斷未造成直接人身危險。"
+      },
+      "operations": {
+        "score": 85,
+        "uncertainty": 0.1,
+        "reason": "全校對外網路線路故障，Portal、選課與信箱均無法使用且恢復時間未定，屬於整校重要服務中斷半天以上的情況。"
+      },
+      "property": {
+        "score": 20,
+        "uncertainty": 0.2,
+        "reason": "主要為服務中斷，沒有明確證據顯示有大量設備或建物損壞。"
+      },
+      "reputation": {
+        "score": 50,
+        "uncertainty": 0.2,
+        "reason": "全校性服務中斷可能引起校內外關注與抱怨，並影響學校運作形象。"
+      },
+      "scope": {
+        "score": 80,
+        "uncertainty": 0.1,
+        "reason": "影響範圍為全校，且多項關鍵校務系統不可用。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "本校對外網路線路故障，全校網路自今日上午起中斷，Portal、選課與信箱均無法使用，搶修中，恢復時間未定。"
+      }
+    ],
+    "reason": "根據官方通報，對外網路線路故障導致全校多項校務系統當機且恢復時間未定，屬於整校重要服務中斷，對營運與全校師生影響顯著。",
+    "abstain_reason": null
+  }
+}

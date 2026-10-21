@@ -1,0 +1,50 @@
+{
+  "case_id": "boundary-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 85,
+        "uncertainty": 0.2,
+        "reason": "地震造成建物牆面龜裂並指示疏散，屬於可能造成人身傷害的情況。"
+      },
+      "operations": {
+        "score": 65,
+        "uncertainty": 0.2,
+        "reason": "部分建物暫停使用會影響校內教學與服務，但並非全校整體中斷半天以上的描述。"
+      },
+      "property": {
+        "score": 60,
+        "uncertainty": 0.2,
+        "reason": "有建物牆面龜裂，顯示建物受損，屬於明顯的財產損害。"
+      },
+      "reputation": {
+        "score": 50,
+        "uncertainty": 0.3,
+        "reason": "建物受損與疏散指示可能引起校內外關注，具中等聲譽風險。"
+      },
+      "scope": {
+        "score": 75,
+        "uncertainty": 0.2,
+        "reason": "事件發生於全校所在城市且提到本校部分建物受損，影響範圍超過個人或單一教室，接近一棟建築或數百人層級。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "顯著有感地震報告"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "桃園市震度 5 強，本校部分建物牆面龜裂，請師生依指示疏散並暫停使用受損建物。"
+      }
+    ],
+    "reason": "若屬實，地震造成建物龜裂並需疏散，對人身安全與校內營運有明顯影響，故評估為中高風險情況。",
+    "abstain_reason": null
+  }
+}

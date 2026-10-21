@@ -226,6 +226,7 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
 ### P2c 風險與決策
 
 - **P2-T11 風險引擎 + S06 risk-assessor**（權重與門檻需你決定）：`app/risk/engine.py`、`config/risk-policy.yaml`（權重、分級、critical_override，帶 policy_version）、`skills/risk-assessor/scripts/calculate_risk.py`（與引擎共用同一函式）；模型只給五維分數與不確定性，加權由程式計算
+  - 實作調整（使用者 2026-10-21 決定 1A–5A）：權重與分級採規格 §6.1 初始值；critical_override 為人身安全 ≥ 80 → 極高，另加保底「任一面向 ≥ 80 → 至少高」；不看查證狀態（假設事件屬實）；評測的高風險 = 分級為高或極高。AI 自行決定：以 Decimal 計算、四捨五入到小數一位；`risk_assessments.dimensions` 另存 `_rules`、`_weighted_level`；評測新增「衍生欄位」機制（SKILL.md `metadata.derived_fields`，評測時由程式計算後併入輸出再比對，錄製只存模型原始輸出），另外修改 `app/ai/eval/runner.py`、`scripts/skills/validate_skill.py`（含其測試）、`docs/architecture/skill-standard.md`，新增 `tests/unit/risk/test_engine.py`、`tests/unit/ai/test_eval_derived.py`
 - **P2-T12 S07 root-cause-analyst ＋ S08 solution-planner**：`skills/root-cause-analyst/`、`skills/solution-planner/`；必須區分 confirmed／hypothesized，證據不足時 abstain
 - **P2-T13 分析管線**：`app/pipeline/analyze_item.py`（Celery chain S01→S02→S03→S04→S05→S06）、`POST /api/v1/admin/events/{id}/analyze`
   - 驗證：`tests/integration/test_pipeline.py` 端到端（fake provider）

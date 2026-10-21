@@ -1,0 +1,46 @@
+{
+  "case_id": "normal-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 85,
+        "uncertainty": 0.5,
+        "reason": "有持刀可疑人士靠近學生宿舍，屬可能造成人身傷害的情況，故評為高風險。"
+      },
+      "operations": {
+        "score": 50,
+        "uncertainty": 0.5,
+        "reason": "宿舍周邊出現持刀可疑人士可能使師生暫時不外出並干擾日常出入，影響屬局部且短期。"
+      },
+      "property": {
+        "score": 10,
+        "uncertainty": 0.5,
+        "reason": "目前未描述任何財產損毀或破壞，主要為人身安全疑慮。"
+      },
+      "reputation": {
+        "score": 30,
+        "uncertainty": 0.5,
+        "reason": "事件可能引起校內關注與抱怨，但未顯示已成為重大外部報導。"
+      },
+      "scope": {
+        "score": 50,
+        "uncertainty": 0.5,
+        "reason": "事件發生在女二舍周邊，主要影響該宿舍及附近師生，範圍為一棟建築或相近人群。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "剛剛女二舍後面有一個男的拿著刀在走來走去，已經報警了，大家先不要出門。"
+      }
+    ],
+    "reason": "在女二舍後方出現持刀可疑人士並已報警，若屬實會對宿舍區人身安全造成高風險，影響主要為當地師生暫時避免外出。",
+    "abstain_reason": null
+  }
+}

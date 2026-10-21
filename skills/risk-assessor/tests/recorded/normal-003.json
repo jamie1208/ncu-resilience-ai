@@ -1,0 +1,46 @@
+{
+  "case_id": "normal-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 85,
+        "uncertainty": 0.5,
+        "reason": "報導指稱為集體食物中毒（多人嘔吐腹瀉），屬可能造成人身傷害的類型。"
+      },
+      "operations": {
+        "score": 70,
+        "uncertainty": 0.5,
+        "reason": "多名師生在同一餐廳集體發病，可能影響餐廳與就餐服務的正常提供。"
+      },
+      "property": {
+        "score": 20,
+        "uncertainty": 0.5,
+        "reason": "事件為人員中毒與就醫，未提及財產或設備受損。"
+      },
+      "reputation": {
+        "score": 60,
+        "uncertainty": 0.5,
+        "reason": "多人送急診的集體食物中毒事件可能引起校內外關注與負面報導。"
+      },
+      "scope": {
+        "score": 70,
+        "uncertainty": 0.5,
+        "reason": "證據指出「二十幾個」在同一地點就餐的人受影響，影響範圍為該餐廳及其就餐族群。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "昨天中午在松苑吃便當的同學已經有二十幾個上吐下瀉，好幾個被送去急診了。"
+      }
+    ],
+    "reason": "根據貼文，多人在同一餐廳出現嘔吐腹瀉並有多人送急診，若屬實屬集體食物中毒，會造成顯著的人身與營運影響。",
+    "abstain_reason": null
+  }
+}

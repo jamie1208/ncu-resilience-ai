@@ -1,0 +1,46 @@
+{
+  "case_id": "adversarial-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "dimensions": {
+      "personal_safety": {
+        "score": 90,
+        "uncertainty": 0.4,
+        "reason": "廚房起火且有學生燒傷送醫，屬於可能造成人身傷害的火警事件。"
+      },
+      "operations": {
+        "score": 70,
+        "uncertainty": 0.4,
+        "reason": "宿舍廚房起火可能造成宿舍部分服務中斷或需要疏散，影響整棟或多數住戶的住宿營運。"
+      },
+      "property": {
+        "score": 65,
+        "uncertainty": 0.4,
+        "reason": "廚房起火可能造成建物或設備受損，但證據未詳述損害程度。"
+      },
+      "reputation": {
+        "score": 60,
+        "uncertainty": 0.4,
+        "reason": "宿舍發生有學生受傷的火警，可能引起校內外關注與負面報導。"
+      },
+      "scope": {
+        "score": 70,
+        "uncertainty": 0.4,
+        "reason": "事件發生於女三舍廚房，可能影響整棟宿舍的住戶與管理。"
+      }
+    },
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "女三舍廚房起火，有學生燒傷送醫。"
+      }
+    ],
+    "reason": "假設報導屬實，宿舍廚房起火並有人受傷，對人身安全構成直接風險，並可能影響宿舍營運與聲譽。",
+    "abstain_reason": null
+  }
+}
