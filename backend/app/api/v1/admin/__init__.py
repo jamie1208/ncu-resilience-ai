@@ -1,10 +1,12 @@
-"""管理端 API（/api/v1/admin/*）：全部需要管理者權限。"""
+"""管理端 API（/api/v1/admin/*）：全部需要登入，各端點再檢查權限。"""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.deps import require_login
 from app.api.v1.admin import events, ingestion_runs
 
-router = APIRouter(prefix="/admin")
+# router 層先擋未登入，避免新端點忘了加權限依賴就變成免登入
+router = APIRouter(prefix="/admin", dependencies=[Depends(require_login)])
 router.include_router(events.router)
 router.include_router(ingestion_runs.router)
 

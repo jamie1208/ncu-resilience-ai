@@ -1,4 +1,7 @@
-"""P0-T07：角色與權限（規格 §2、§10；docs/architecture/rbac.md）。"""
+"""P0-T07：角色與權限（規格 §2、§10；docs/architecture/rbac.md）。
+
+P3-T01（ADR-0008，使用者 2026-10-21 同意改寫）：單一使用者，移除訪客（公開閱讀）與匿名投稿者角色。
+"""
 
 from __future__ import annotations
 
@@ -14,7 +17,13 @@ from app.core.security import (
     PrincipalKind,
     Role,
     has_permission,
+    hash_password,
+    hash_token,
+    new_token,
+    password_needs_rehash,
     require,
+    token_matches,
+    verify_password,
 )
 
 P = Permission
@@ -45,18 +54,23 @@ def test_every_permission_belongs_to_some_role() -> None:
     assert granted == set(Permission)
 
 
-def test_visitor_can_only_read_public_and_submit_reports() -> None:
-    assert ROLE_PERMISSIONS[Role.VISITOR] == {P.PUBLIC_READ, P.REPORTS_CREATE}
-    for perm in ADMIN_ONLY | {P.ALERTS_PUBLISH, P.REPORTS_FOLLOWUP}:
+def test_anonymous_has_no_permissions() -> None:
+    # 個人版沒有公開頁面與投稿：未登入者什麼都不能做（ADR-0008）
+    assert ANONYMOUS.roles == frozenset()
+    assert ANONYMOUS.permissions == frozenset()
+    for perm in Permission:
         assert not has_permission(ANONYMOUS, perm)
 
 
-def test_reporter_can_follow_up_but_not_create_verified_events() -> None:
-    reporter = Principal(kind="reporter", subject=None, roles=frozenset({Role.REPORTER}))
-    assert has_permission(reporter, P.REPORTS_FOLLOWUP)
-    assert not has_permission(reporter, P.EVENTS_VERIFY)
-    assert not has_permission(reporter, P.EVENTS_WRITE)
-    assert not has_permission(reporter, P.ALERTS_PUBLISH)
+def test_no_public_or_reporter_roles_remain() -> None:
+    assert {r.value for r in Role} == {
+        "admin",
+        "service_ingestion",
+        "service_ai",
+        "service_notifier",
+    }
+    values = {p.value for p in Permission}
+    assert not values & {"public:read", "reports:create", "reports:followup"}
 
 
 def test_admin_has_management_permissions_but_cannot_publish_directly() -> None:
@@ -100,13 +114,10 @@ def test_require_raises_with_details() -> None:
     require(admin(), P.AUDIT_LOGS_READ)
 
 
-def test_actor_strings_never_expose_reporter_identity() -> None:
+def test_actor_strings() -> None:
     assert ANONYMOUS.actor == "anonymous"
     assert admin("u-42").actor == "admin:u-42"
     assert service(Role.SERVICE_AI, "ai-worker").actor == "service:ai-worker"
-    reporter = Principal(kind="reporter", subject="receipt-token", roles=frozenset({Role.REPORTER}))
-    assert reporter.actor == "reporter"
-    assert "receipt-token" not in reporter.actor
 
 
 def test_admin_and_service_principals_need_subject() -> None:
@@ -123,13 +134,11 @@ def test_admin_and_service_principals_need_subject() -> None:
     ("kind", "subject", "roles"),
     [
         ("anonymous", None, {Role.ADMIN}),
-        ("anonymous", None, {Role.VISITOR, Role.SERVICE_NOTIFIER}),
-        ("reporter", None, {Role.SERVICE_NOTIFIER}),
-        ("reporter", None, {Role.ADMIN}),
+        ("anonymous", None, {Role.SERVICE_NOTIFIER}),
         ("admin", "u-1", {Role.SERVICE_AI}),
         ("service", "ai-worker", {Role.ADMIN}),
-        ("service", "ai-worker", {Role.VISITOR}),
         ("admin", "u-1", set()),
+        ("service", "ai-worker", set()),
     ],
 )
 def test_kind_and_roles_must_be_consistent(
@@ -140,8 +149,7 @@ def test_kind_and_roles_must_be_consistent(
 
 
 def test_valid_kind_role_combinations() -> None:
-    Principal(kind="anonymous", subject=None, roles=frozenset({Role.VISITOR}))
-    Principal(kind="reporter", subject=None, roles=frozenset({Role.REPORTER}))
+    Principal(kind="anonymous", subject=None, roles=frozenset())
     Principal(kind="admin", subject="u-1", roles=frozenset({Role.ADMIN}))
     Principal(
         kind="service",
@@ -155,3 +163,37 @@ def test_permissions_are_computed_once() -> None:
     assert a.permissions is a.permissions
     assert a.permissions == ROLE_PERMISSIONS[Role.ADMIN]
     assert "permissions" not in repr(a)
+
+
+# --- P3-T01：密碼雜湊與 session／CSRF token -------------------------------------------
+
+
+def test_password_hash_is_argon2id_and_verifies() -> None:
+    hashed = hash_password("correct horse battery staple")
+    assert hashed.startswith("$argon2id$")
+    assert "correct horse" not in hashed
+    assert verify_password(hashed, "correct horse battery staple")
+    assert not verify_password(hashed, "wrong password")
+    assert not password_needs_rehash(hashed)
+
+
+def test_same_password_gets_different_salt() -> None:
+    assert hash_password("same-password-123") != hash_password("same-password-123")
+
+
+def test_verify_password_rejects_malformed_hash() -> None:
+    assert not verify_password("not-a-hash", "anything")
+
+
+def test_tokens_are_random_and_only_hashes_are_stored() -> None:
+    a, b = new_token(), new_token()
+    assert a != b
+    assert len(a) >= 43  # 32 bytes urlsafe base64
+    digest = hash_token(a)
+    assert len(digest) == 64
+    assert a not in digest
+    assert hash_token(a) == digest
+    assert token_matches(a, digest)
+    assert not token_matches(b, digest)
+    assert not token_matches(None, digest)
+    assert not token_matches("", digest)

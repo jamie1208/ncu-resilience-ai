@@ -11,6 +11,7 @@ from app.models.source import (
     SourceItem,
     SourceItemVersion,
 )
+from app.models.user import User, UserSession
 
 __all__ = [
     "AIAnalysisRun",
@@ -26,4 +27,6 @@ __all__ = [
     "Source",
     "SourceItem",
     "SourceItemVersion",
+    "User",
+    "UserSession",
 ]
