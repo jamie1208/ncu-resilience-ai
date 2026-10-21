@@ -1,0 +1,26 @@
+{
+  "case_id": "boundary-011",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "none",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "體育館游泳池剛剛有同學抽筋差點溺水，救生員救上來後送醫了。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "化學館一樓今日上午發生小火警，已撲滅。"
+      }
+    ],
+    "reason": "兩篇證據描述的事情與地點不同：a1 描述體育館游泳池的抽筋近溺水醫療事件，c1 描述化學館一樓的小火警，類型與地點都不一致，故為 none。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "event-linker 輸出",
+  "description": "判斷新文章與候選事件的關係：same_event（同一件事）、related_event（時間、地點或類型相關但不能確定是同一件事）、none（無關）。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "relation",
+    "confidence",
+    "evidence_ids",
+    "evidence_spans",
+    "reason",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已判斷；abstain：內容不足，無法判斷",
+      "type": "string",
+      "enum": [
+        "ok",
+        "abstain"
+      ]
+    },
+    "relation": {
+      "description": "兩者的關係；abstain 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "same_event",
+        "related_event",
+        "none",
+        null
+      ]
+    },
+    "confidence": {
+      "description": "判斷的信心；只能靠推測時較低",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "evidence_ids": {
+      "description": "支持判斷的證據；same_event 時新文章與候選事件各至少 1 個，且必須存在於輸入",
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_spans": {
+      "description": "逐字抄錄、支持判斷的原句；Runner 會比對原句確實存在",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "quote"
+        ],
+        "properties": {
+          "evidence_id": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 120
+          }
+        }
+      }
+    },
+    "reason": {
+      "description": "一兩句判斷理由（時間、地點、事情是否一致）；不得包含個資與人名、店名",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "insufficient_evidence",
+        null
+      ]
+    }
+  }
+}

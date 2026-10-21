@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "配合工程五館 11/2（一）08:00–12:00 停電，館內網路與機房服務同時中斷。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "工程五館於 11/2（一）08:00–12:00 配合台電檢修停電，請提前儲存資料。"
+      }
+    ],
+    "reason": "兩篇證據都指稱工程五館於 11/2 08:00–12:00 的停電，時間與地點一致，且都是配合檢修的預定停電，屬同一事件。",
+    "abstain_reason": null
+  }
+}

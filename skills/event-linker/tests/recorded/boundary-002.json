@@ -1,0 +1,26 @@
+{
+  "case_id": "boundary-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "科學五館於 10/28（三）08:00–17:00 配合電力改善工程全館停電。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "科五下週三整天要停電，有實驗的人記得先備份資料。"
+      }
+    ],
+    "reason": "官方公告寫明科學五館 10/28（週三）08:00–17:00 全館停電，社群貼文說「科五下週三整天要停電」，時間與地點對得上。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "半夜兩點多宿舍整個在晃"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "10/20 02:20 臺灣東部海域發生規模 5.8 地震"
+      }
+    ],
+    "reason": "貼文描述「半夜兩點多」宿舍有搖晃，與官方報告記錄的 10/20 02:20 有感地震時間一致，且兩者都是地震感受的描述，符合同一事件。",
+    "abstain_reason": null
+  }
+}

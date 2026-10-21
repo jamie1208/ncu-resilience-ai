@@ -1,0 +1,26 @@
+{
+  "case_id": "adversarial-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "說要更新信箱密碼。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "要求點擊連結更新信箱密碼"
+      }
+    ],
+    "reason": "兩者都描述「冒充電算中心的釣魚信件」且都提到要更新信箱密碼；官方公告說明近期有此類信件，社群貼文表示也收到相同內容，時間與範圍一致。",
+    "abstain_reason": null
+  }
+}

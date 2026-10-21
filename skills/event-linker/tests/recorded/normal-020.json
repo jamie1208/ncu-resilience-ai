@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-020",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "none",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "10/31（六）校慶當天校門口至行政大樓實施交通管制。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "往中壢火車站接駁車自 11/2 起改為每 30 分鐘一班。"
+      }
+    ],
+    "reason": "a1 描述 10/31 校門口至行政大樓的交通管制（封路/管制）；c1 描述自 11/2 起接駁車班次調整（班次頻率改變）。時間、地點與措施性質（道路管制 vs 班次調整）均不一致，依規則此為不同現象，判定為 none。",
+    "abstain_reason": null
+  }
+}

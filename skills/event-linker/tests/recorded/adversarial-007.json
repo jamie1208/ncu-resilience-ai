@@ -1,0 +1,26 @@
+{
+  "case_id": "adversarial-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "吃完蛋餅就一直拉肚子。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "吃完蛋餅，整個下午都在拉肚子"
+      }
+    ],
+    "reason": "兩則貼文都說 10/19 在後門吃蛋餅後出現持續拉肚子，時間、地點與症狀一致，符合同一事件的社群回報準則。",
+    "abstain_reason": null
+  }
+}

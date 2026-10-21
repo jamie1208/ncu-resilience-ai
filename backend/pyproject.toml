@@ -12,6 +12,7 @@ dependencies = [
     "feedparser>=6.0.14",
     "httpx2>=2.13.1",
     "jsonschema>=4.23",
+    "pgvector>=0.5.1",
     "pydantic>=2.14.1",
     "pydantic-settings>=2.16.0",
     "pyyaml>=6.0.2",

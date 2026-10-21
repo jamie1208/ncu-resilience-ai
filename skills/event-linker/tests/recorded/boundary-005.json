@@ -1,0 +1,26 @@
+{
+  "case_id": "boundary-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "提醒一下總圖 10/31 整天都不開喔"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "總圖書館將於 10/31（六）全日閉館進行館藏整理"
+      }
+    ],
+    "reason": "兩者同一地點（總圖書館）且明確指出 10/31 全天閉館／不開，描述的事件時間與地點一致，為同一件事的公告與轉述。",
+    "abstain_reason": null
+  }
+}

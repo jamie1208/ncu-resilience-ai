@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.85,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "接獲通報女二舍周邊夜間有可疑人士徘徊"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "這兩天晚上女二舍後面一直有一個戴帽子的男生在徘徊"
+      }
+    ],
+    "reason": "兩則證據都描述女二舍夜間附近有可疑人士徘徊，時間（夜間/這兩天晚上）與地點（女二舍）重合，社群貼文的時間範圍落在公告的報告期間，應為同一事件的通報與社群觀察。",
+    "abstain_reason": null
+  }
+}

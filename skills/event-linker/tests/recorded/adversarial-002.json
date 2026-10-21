@@ -1,0 +1,26 @@
+{
+  "case_id": "adversarial-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "工程五館 11/2（一）08:00–12:00"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "工程五館於 11/2（一）08:00–12:00"
+      }
+    ],
+    "reason": "兩則均為官方公告，地點相同（工程五館）且事件時間完全一致（11/2 08:00–12:00），都在說同一次配合台電檢修的停電。",
+    "abstain_reason": null
+  }
+}

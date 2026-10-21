@@ -1,5 +1,7 @@
 """OpenAI Provider（P2-T03）：以 httpx2 直接呼叫 Responses API 的 Structured Outputs（strict）。
 
+P2-T09 加上 Embeddings API（`embed`），錯誤分類與金鑰遮蔽沿用同一套規則。
+
 - 請求帶 `store: false`，不在 OpenAI 端保存回應。
 - 不在這裡重試；錯誤依 `retryable` 分類，由 Skill Runner 決定是否重送（P2-T04）。
 - 錯誤訊息只保留 OpenAI 回傳的錯誤說明（截斷），並移除金鑰；不包含請求內容。
@@ -15,6 +17,7 @@ import httpx2
 from pydantic import SecretStr
 
 from app.ai.llm.base import (
+    EmbeddingResult,
     LLMAuthError,
     LLMError,
     LLMIncompleteError,
@@ -47,6 +50,7 @@ class OpenAIProvider:
     ) -> None:
         self._api_key = api_key
         self._url = base_url.rstrip("/") + "/responses"
+        self._embeddings_url = base_url.rstrip("/") + "/embeddings"
         self._reasoning_effort = reasoning_effort
         self._client = client
 
@@ -80,19 +84,54 @@ class OpenAIProvider:
         }
         if self._reasoning_effort is not None:
             body["reasoning"] = {"effort": self._reasoning_effort}
-        headers = {"Authorization": f"Bearer {self._api_key.get_secret_value()}"}
+        data, latency_ms = await self._post(self._url, body, timeout)
+        return self._parse(data, requested_model=model, latency_ms=latency_ms)
 
+    async def embed(
+        self, texts: Sequence[str], *, model: str, dimensions: int, timeout: float
+    ) -> EmbeddingResult:
+        """送出 Embeddings API 請求；回傳的向量依輸入順序排列，數量與維度都會檢查。"""
+        body: dict[str, Any] = {
+            "model": model,
+            "input": list(texts),
+            "dimensions": dimensions,
+            "encoding_format": "float",
+        }
+        data, latency_ms = await self._post(self._embeddings_url, body, timeout)
+        items = data.get("data")
+        if not isinstance(items, list) or len(items) != len(texts):
+            raise LLMUnavailableError("OpenAI embedding 回應的向量數量與輸入不符")
+        try:
+            ordered = sorted(items, key=lambda item: int(item["index"]))
+            vectors = tuple(tuple(float(x) for x in item["embedding"]) for item in ordered)
+        except (KeyError, TypeError, ValueError):
+            raise LLMUnavailableError("OpenAI embedding 回應格式異常") from None
+        if any(len(v) != dimensions for v in vectors):
+            raise LLMUnavailableError("OpenAI embedding 回應的向量維度與設定不符")
+        raw_usage = data.get("usage")
+        usage: dict[str, Any] = raw_usage if isinstance(raw_usage, dict) else {}
+        return EmbeddingResult(
+            provider=self.name,
+            model=str(data.get("model") or model),
+            vectors=vectors,
+            input_tokens=int(usage.get("prompt_tokens") or 0),
+            latency_ms=latency_ms,
+        )
+
+    # --- 內部 ------------------------------------------------------------------------------
+
+    async def _post(
+        self, url: str, body: Mapping[str, Any], timeout: float
+    ) -> tuple[dict[str, Any], int]:
+        """送出請求；回傳 JSON 物件與延遲（毫秒）。HTTP 與連線錯誤轉成 `LLMError`。"""
+        headers = {"Authorization": f"Bearer {self._api_key.get_secret_value()}"}
         started = time.monotonic()
         try:
             if self._client is not None:
-                response = await self._client.post(
-                    self._url, json=body, headers=headers, timeout=timeout
-                )
+                response = await self._client.post(url, json=body, headers=headers, timeout=timeout)
             else:
                 async with httpx2.AsyncClient() as client:
-                    response = await client.post(
-                        self._url, json=body, headers=headers, timeout=timeout
-                    )
+                    response = await client.post(url, json=body, headers=headers, timeout=timeout)
         except httpx2.TimeoutException as exc:
             raise LLMUnavailableError(f"OpenAI 逾時（{type(exc).__name__}）") from None
         except httpx2.TransportError as exc:
@@ -109,9 +148,7 @@ class OpenAIProvider:
             ) from None
         if not isinstance(data, dict):
             raise LLMUnavailableError("OpenAI 回應格式異常", status_code=response.status_code)
-        return self._parse(data, requested_model=model, latency_ms=latency_ms)
-
-    # --- 內部 ------------------------------------------------------------------------------
+        return data, latency_ms
 
     def _scrub(self, text: str) -> str:
         """移除金鑰並截斷，避免錯誤訊息洩漏金鑰或過長。"""

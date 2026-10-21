@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-017",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "none",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "原訂 11/4（三）舉行之微積分期中考改至 11/6（五）"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "10/28（三）停課一次。"
+      }
+    ],
+    "reason": "兩篇都是學術類通知，但描述的事情不同：一篇是微積分期中考由11/4改至11/6，另一篇是通識課10/28停課，日期與事件性質皆不一致。",
+    "abstain_reason": null
+  }
+}

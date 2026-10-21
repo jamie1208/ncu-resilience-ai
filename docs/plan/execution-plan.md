@@ -219,6 +219,7 @@ uv run python ../scripts/reports/ingestion_report.py --hours 12
 - **P2-T08 S03 event-classifier**：`skills/event-classifier/` + `references/taxonomy.md`；輸出類別、標籤、classification_confidence
   - 實作調整（AI 自行決定，2026-10-21）：分類法沿用標記規範的 9 類（含 none），同時符合多類時依原因歸類；輸入只有證據（與 S02 相同），不依賴 S02 的輸出；tags 0～5 個，優先用 taxonomy.md 的建議標籤；證據沿用 P2-T06 的原句比對；golden cases 56 筆（9 類各 6 筆、dev／test 各半，另 2 筆 abstain）；門檻寫入 `eval/thresholds.yaml`；本任務 API 費用上限 US$0.8
 - **P2-T09 S04 event-linker**：`skills/event-linker/` + `app/ai/embeddings.py`（pgvector 候選召回＋時間地點視窗）；輸出 same_event／related_event／none 與信心
+  - 實作調整（使用者 2026-10-21 決定：範圍 A、text-embedding-3-small）：另外修改 `app/ai/llm/`（base、openai_provider、fake_provider、config 加上 embedding）、`config/llm.yaml`（embedding 模型、維度與價格）、`app/models/event.py`（`occurrence_start_date`、`embedding vector(1536)`），新增 migration `0006_event_embeddings.py`、`pgvector` 依賴、`tests/unit/ai/test_embeddings.py`、`tests/integration/test_event_candidates.py`；候選召回依類別、事件日期 ±7 天、cosine 距離排序，地點不過濾；S04 每次判斷一對（新文章, 候選事件），以 relation = same_event 為正類計算 precision／recall；golden cases 41 筆；本任務 API 費用上限 US$0.8
 - **P2-T10 S05 evidence-verifier**：`skills/evidence-verifier/` + `app/verification/rules.py`；規則優先（官方來源→confirmed），模型只提供建議，狀態變更一律經規則與狀態機
 
 ### P2c 風險與決策

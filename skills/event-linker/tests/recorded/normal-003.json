@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "停水時間延至 17:00。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "09:00 至 15:00 進行水塔清洗，暫停供水。"
+      }
+    ],
+    "reason": "兩則公告都描述男一舍 10/28 的水塔清洗停水，c1 為原始 09:00–15:00 的停水通知，a1 明確寫出「延長」並將停水時間延至 17:00，屬於同一件事的時間調整／延長。",
+    "abstain_reason": null
+  }
+}

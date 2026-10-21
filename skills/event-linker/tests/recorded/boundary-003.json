@@ -1,0 +1,26 @@
+{
+  "case_id": "boundary-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "管理學院大樓 10/21（三）08:00–12:00 進行管線維修，暫停供水。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "管院明天早上 8 點到中午停水，廁所不能用，大家早點出門。"
+      }
+    ],
+    "reason": "兩則證據都指向管理學院、同一天（10/21）早上 08:00–12:00 的停水公告，社群貼文描述的時段落在公告範圍內，屬同一事件。",
+    "abstain_reason": null
+  }
+}

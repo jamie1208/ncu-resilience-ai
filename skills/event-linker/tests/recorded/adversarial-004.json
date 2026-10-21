@@ -1,0 +1,26 @@
+{
+  "case_id": "adversarial-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.8,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "男七舍交誼廳錢包一直不見的事"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "男七舍最近好幾個人的錢包在交誼廳不見，大家東西收好。"
+      }
+    ],
+    "reason": "兩則貼文都描述在男七舍交誼廳發生錢包遺失的情況，時間接近且事情類型一致，符合社群貼文在48小時內描述同一事件的情形。",
+    "abstain_reason": null
+  }
+}

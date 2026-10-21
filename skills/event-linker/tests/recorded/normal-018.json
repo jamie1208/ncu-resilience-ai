@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-018",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "none",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "科學二館化學品外洩"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "近期校內流感病例增加，衛生保健組提醒師生勤洗手。"
+      }
+    ],
+    "reason": "a1 描述的是科學二館的化學品外洩事故，c1 是全校性的流感防治提醒，事情性質與影響範圍不同，故不是同一事件也不僅為時間或地點相近的相關事件。",
+    "abstain_reason": null
+  }
+}

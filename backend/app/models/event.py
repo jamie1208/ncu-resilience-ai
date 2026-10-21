@@ -1,18 +1,26 @@
 """事件、證據與地點：events、event_evidence、locations（規格 §9）。
 
 狀態欄位的合法值由 app/domain/states.py 定義；events.status 以 CHECK 約束強制（0002）。
+events.embedding、occurrence_start_date 供 S04 候選召回使用（P2-T09，0006）。
 """
 
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import CheckConstraint, Double, ForeignKey, String, Text
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import CheckConstraint, Date, Double, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.domain.states import EventStatus
 from app.models.base import Base, created_at_col, updated_at_col, uuid_pk
+
+EVENT_EMBEDDING_DIM = 1536
+"""events.embedding 的維度；必須等於 config/llm.yaml 的 embedding.dimensions。
+
+改維度要寫 migration。
+"""
 
 _EVENT_STATUS_VALUES = ", ".join(f"'{s.value}'" for s in EventStatus)
 
@@ -43,6 +51,12 @@ class Event(Base):
         ForeignKey("locations.id", ondelete="SET NULL")
     )
     status: Mapped[str] = mapped_column(String(32), index=True)
+    occurrence_start_date: Mapped[date | None] = mapped_column(
+        Date, comment="事件開始日期（台北時間，S02 抽取）"
+    )
+    embedding: Mapped[list[float] | None] = mapped_column(
+        Vector(EVENT_EMBEDDING_DIM), comment="事件標題與證據的向量（S04 候選召回）"
+    )
     created_at: Mapped[datetime] = created_at_col(index=True)
     updated_at: Mapped[datetime] = updated_at_col()
 
