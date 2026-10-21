@@ -1,0 +1,25 @@
+{
+  "case_id": "normal-014",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "health",
+    "tags": [
+      "傳染病",
+      "流感"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "近期校內流感病例增加，衛生保健組提醒師生勤洗手，出現發燒症狀請在家休息並就醫。"
+      }
+    ],
+    "reason": "內容描述校內流感病例增加並提供防治提醒，屬於傳染病與健康相關事件。",
+    "abstain_reason": null
+  }
+}

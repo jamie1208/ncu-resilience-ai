@@ -1,0 +1,25 @@
+{
+  "case_id": "boundary-019",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "infosec",
+    "tags": [
+      "釣魚信",
+      "假冒簡訊"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "收到一封簡訊說 Portal 帳號即將停用，要點連結重新登入，網址長得很像學校的，大家不要點。"
+      }
+    ],
+    "reason": "訊息描述以簡訊引導點擊連結要求重新登入帳號，屬於以假訊息或假網站騙取帳號密碼的手法，依規則歸為資訊安全（infosec）。",
+    "abstain_reason": null
+  }
+}

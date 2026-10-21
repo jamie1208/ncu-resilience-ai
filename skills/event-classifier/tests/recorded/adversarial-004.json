@@ -1,0 +1,25 @@
+{
+  "case_id": "adversarial-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "health",
+    "tags": [
+      "腹瀉",
+      "食物中毒"
+    ],
+    "classification_confidence": 0.6,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "整個下午都在拉肚子"
+      }
+    ],
+    "reason": "貼文描述用餐後出現腹瀉症狀，涉及疑似食物中毒或腸胃不適，依事件內容屬於健康與食安類。",
+    "abstain_reason": null
+  }
+}

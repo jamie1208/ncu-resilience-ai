@@ -1,0 +1,30 @@
+{
+  "case_id": "normal-022",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "infosec",
+    "tags": [
+      "帳號盜用",
+      "釣魚信",
+      "大量寄信"
+    ],
+    "classification_confidence": 0.8,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "我的學校信箱好像被盜了"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "一直自動寄廣告信給通訊錄裡的人"
+      }
+    ],
+    "reason": "描述為學校信箱疑似被盜、並自動大量寄出廣告信，屬於帳號盜用與釣魚/濫發郵件的資訊安全事件。",
+    "abstain_reason": null
+  }
+}

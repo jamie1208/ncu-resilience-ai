@@ -1,0 +1,29 @@
+{
+  "case_id": "adversarial-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "weather",
+    "tags": [
+      "低溫特報",
+      "低溫"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "中央氣象署發布低溫特報"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "今晚至明晨桃園市平地有 10 度以下氣溫。"
+      }
+    ],
+    "reason": "內容是在報告氣象局發布的低溫特報，描述天氣現象與低溫預報，屬於氣象類事件 therefore classified as weather.",
+    "abstain_reason": null
+  }
+}

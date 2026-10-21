@@ -1,0 +1,26 @@
+{
+  "case_id": "boundary-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "facility",
+    "tags": [
+      "系統維護",
+      "系統升級",
+      "暫停服務"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "進行系統升級，期間暫停服務。"
+      }
+    ],
+    "reason": "內容描述校務系統在特定時段進行系統升級並暫停服務，屬於設施與營運的系統維護事件。",
+    "abstain_reason": null
+  }
+}

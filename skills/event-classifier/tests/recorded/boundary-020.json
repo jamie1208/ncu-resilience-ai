@@ -1,0 +1,29 @@
+{
+  "case_id": "boundary-020",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "none",
+    "tags": [
+      "受試者招募",
+      "實驗"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "徵求受試者"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "約 60 分鐘，酬勞 200 元。"
+      }
+    ],
+    "reason": "內容是徵求實驗受試者的招募公告，屬例行的招募/活動資訊，並非發生的事件。",
+    "abstain_reason": null
+  }
+}

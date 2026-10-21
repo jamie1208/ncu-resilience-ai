@@ -1,0 +1,24 @@
+{
+  "case_id": "normal-011",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "traffic",
+    "tags": [
+      "車禍"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "機車跟汽車擦撞"
+      }
+    ],
+    "reason": "描述為機車與汽車擦撞並有人倒地，屬於交通事故，故歸類為 traffic。",
+    "abstain_reason": null
+  }
+}

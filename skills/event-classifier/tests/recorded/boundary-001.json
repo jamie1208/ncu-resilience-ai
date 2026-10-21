@@ -1,0 +1,24 @@
+{
+  "case_id": "boundary-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "facility",
+    "tags": [
+      "施工"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "後方外牆施工中"
+      }
+    ],
+    "reason": "內容描述建築外牆施工並提醒師生改道，屬於設施與營運範疇（施工）。",
+    "abstain_reason": null
+  }
+}

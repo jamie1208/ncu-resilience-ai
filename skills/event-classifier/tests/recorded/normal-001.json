@@ -1,0 +1,25 @@
+{
+  "case_id": "normal-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "facility",
+    "tags": [
+      "停電",
+      "配合檢修"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "配合台電檢修停電"
+      }
+    ],
+    "reason": "內容描述為建築物因配合電力公司檢修而暫時停電，屬於設施與營運類（停電/營運異動）。",
+    "abstain_reason": null
+  }
+}

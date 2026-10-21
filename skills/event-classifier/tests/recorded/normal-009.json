@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "security",
+    "tags": [
+      "詐騙",
+      "電話詐騙",
+      "財物損失"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "昨天有同學在中壢火車站附近被假冒客服的詐騙集團騙了兩萬塊，大家小心不明電話。"
+      }
+    ],
+    "reason": "內文描述有人遭假冒客服的詐騙，並造成金錢損失，屬於治安與財物類的詐騙事件。",
+    "abstain_reason": null
+  }
+}

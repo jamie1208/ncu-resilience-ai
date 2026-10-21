@@ -1,0 +1,26 @@
+{
+  "case_id": "boundary-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "traffic",
+    "tags": [
+      "拖吊",
+      "違規停車",
+      "消防通道"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "近日校內機車違規停放於消防通道情形嚴重，自 11/1 起將會同警方進行拖吊。"
+      }
+    ],
+    "reason": "內容是在通知校內將配合警方執行違規停車拖吊，屬於交通管理/拖吊執法事件，故分類為 traffic。",
+    "abstain_reason": null
+  }
+}

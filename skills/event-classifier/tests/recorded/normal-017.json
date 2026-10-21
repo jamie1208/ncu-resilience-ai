@@ -1,0 +1,28 @@
+{
+  "case_id": "normal-017",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "fire",
+    "tags": [
+      "冒煙"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "變電箱在冒煙"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "消防車剛到"
+      }
+    ],
+    "reason": "變電箱冒煙並有消防車到場，屬於火警或緊急意外事件，依據事件性質歸入 fire 類別。",
+    "abstain_reason": null
+  }
+}

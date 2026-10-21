@@ -1,0 +1,25 @@
+{
+  "case_id": "normal-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "weather",
+    "tags": [
+      "強風",
+      "9 級陣風"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "今日下午起桃園市沿海及空曠地區易有 9 級以上強陣風。"
+      }
+    ],
+    "reason": "中央氣象署發布強風特報，內容描述桃園沿海及空曠地區將出現強陣風，屬於氣象類事件。",
+    "abstain_reason": null
+  }
+}

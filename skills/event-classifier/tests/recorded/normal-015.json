@@ -1,0 +1,30 @@
+{
+  "case_id": "normal-015",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "fire",
+    "tags": [
+      "火警警報",
+      "冒煙",
+      "疏散"
+    ],
+    "classification_confidence": 0.8,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "火警警報大響"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "三樓有人煮東西冒煙"
+      }
+    ],
+    "reason": "描述有火警警報響起且有煮東西冒煙、全體被叫下樓，屬於火警或冒煙等緊急意外，依規則歸為 fire。",
+    "abstain_reason": null
+  }
+}

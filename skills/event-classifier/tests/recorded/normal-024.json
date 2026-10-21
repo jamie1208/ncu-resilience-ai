@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-024",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "none",
+    "tags": [
+      "社團",
+      "招新",
+      "活動宣傳"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "中大熱舞社招新生！"
+      }
+    ],
+    "reason": "內容是社團招新與課程宣傳，屬於活動/公告類別，沒有描述發生的事件或緊急情況，因此歸為 none。",
+    "abstain_reason": null
+  }
+}

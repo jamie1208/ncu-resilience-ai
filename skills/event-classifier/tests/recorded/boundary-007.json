@@ -1,0 +1,26 @@
+{
+  "case_id": "boundary-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "security",
+    "tags": [
+      "詐騙",
+      "電話詐騙",
+      "冒充校方"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "有人打電話自稱是學校出納組，說我的獎學金帳戶有問題，要我去 ATM 操作，還好我先打電話問系辦。"
+      }
+    ],
+    "reason": "內容描述有人以電話冒充校方要求到 ATM 操作，屬於以電話手法進行的詐騙行為，依分類規則歸為治安與財物類（security）。",
+    "abstain_reason": null
+  }
+}

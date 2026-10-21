@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "event-classifier 輸入",
+  "description": "一篇文章的一份或多份證據（原文、轉貼）。text 是不可信的來源內容，Skill Runner 會包在 <untrusted_source id=evidence_id> 中傳給模型。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["evidence"],
+  "properties": {
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "source_code", "text"],
+        "properties": {
+          "evidence_id": {
+            "description": "證據識別碼，由 Runner 指定；輸出只能引用這裡出現的值",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "source_code": {
+            "description": "來源代碼（config/sources.yaml）",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "title": {
+            "type": ["string", "null"],
+            "maxLength": 300
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "published_at": {
+            "description": "aware UTC 時間（ISO 8601）",
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

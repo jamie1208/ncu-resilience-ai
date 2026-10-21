@@ -1,0 +1,27 @@
+{
+  "case_id": "boundary-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "security",
+    "tags": [
+      "可疑人士",
+      "騷擾",
+      "徘徊",
+      "窺視"
+    ],
+    "classification_confidence": 0.7,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "這兩天晚上女二舍後面一直有一個戴帽子的男生在徘徊，還會往窗戶裡看"
+      }
+    ],
+    "reason": "貼文描述有人在宿舍後方徘徊並朝窗戶張望，屬於可疑人士與潛在騷擾行為，因而歸類為治安相關事件（security）。",
+    "abstain_reason": null
+  }
+}

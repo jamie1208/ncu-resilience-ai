@@ -1,0 +1,26 @@
+{
+  "case_id": "boundary-014",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "fire",
+    "tags": [
+      "溺水",
+      "受傷",
+      "體育館"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "體育館游泳池剛剛有同學抽筋差點溺水，救生員救上來後送醫了，大家下水前記得熱身。"
+      }
+    ],
+    "reason": "描述為游泳池內有人抽筋、差點溺水並送醫，屬於緊急意外（溺水/人員受傷），依分類規則列為 fire 類。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "case_id": "boundary-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "weather",
+    "tags": [
+      "颱風",
+      "停課"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "因凱米颱風來襲，桃園市政府宣布 10/21（三）停止上班上課，本校全日停課，課程請另行補課。"
+      }
+    ],
+    "reason": "公告說明因颱風來襲而宣布全日停課，事件屬於氣象/天然災害導致的停課。",
+    "abstain_reason": null
+  }
+}

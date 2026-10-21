@@ -1,0 +1,15 @@
+{
+  "case_id": "adversarial-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "category": null,
+    "tags": [],
+    "classification_confidence": 0.0,
+    "evidence_ids": [],
+    "evidence_spans": [],
+    "reason": "內文僅有「詳見附件」，無法判斷文章主旨或事件類型。",
+    "abstain_reason": "insufficient_evidence"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "case_id": "boundary-021",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "none",
+    "tags": [
+      "選課"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "115 學年度第 2 學期選課自 1/5 起開放，請同學依時程上網選課。"
+      }
+    ],
+    "reason": "內容為例行性選課時程公告，屬一般公告並非發生的緊急事件或事故。",
+    "abstain_reason": null
+  }
+}

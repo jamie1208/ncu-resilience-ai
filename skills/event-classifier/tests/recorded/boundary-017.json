@@ -1,0 +1,29 @@
+{
+  "case_id": "boundary-017",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "infosec",
+    "tags": [
+      "個資外洩",
+      "設定錯誤"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "系統資料外洩通報"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "部分使用者的姓名與系級資料可被外部查詢"
+      }
+    ],
+    "reason": "證據說明系統設定錯誤導致使用者姓名與系級等個資可被外部查詢，屬於資訊安全與個資外洩事件。",
+    "abstain_reason": null
+  }
+}

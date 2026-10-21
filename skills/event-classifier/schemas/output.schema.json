@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "event-classifier 輸出",
+  "description": "把一篇與校園相關的文章分到 9 類之一（references/taxonomy.md），附上補充標籤、分類信心與證據原句。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "category",
+    "tags",
+    "classification_confidence",
+    "evidence_ids",
+    "evidence_spans",
+    "reason",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已分類；abstain：內容不足，無法分類",
+      "type": "string",
+      "enum": ["ok", "abstain"]
+    },
+    "category": {
+      "description": "事件類別（references/taxonomy.md）；none 表示非事件；abstain 時為 null",
+      "type": ["string", "null"],
+      "enum": [
+        "facility",
+        "weather",
+        "security",
+        "traffic",
+        "health",
+        "fire",
+        "academic",
+        "infosec",
+        "none",
+        null
+      ]
+    },
+    "tags": {
+      "description": "補充細節（例如類別依原因判斷時，記下造成的結果）；優先使用 taxonomy.md 的建議標籤；不得包含人名、店名與個資",
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "string",
+        "maxLength": 20
+      }
+    },
+    "classification_confidence": {
+      "description": "分類的信心；同時符合多類、需要依原因判斷時較低；abstain 時為 0",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "evidence_ids": {
+      "description": "支持分類的證據；ok 時至少 1 個，且必須存在於輸入",
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_spans": {
+      "description": "逐字抄錄、支持分類的原句；Runner 會比對原句確實存在",
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "quote"],
+        "properties": {
+          "evidence_id": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 120
+          }
+        }
+      }
+    },
+    "reason": {
+      "description": "一兩句分類理由；不得包含個資與人名、店名",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": ["string", "null"],
+      "enum": ["insufficient_evidence", null]
+    }
+  }
+}

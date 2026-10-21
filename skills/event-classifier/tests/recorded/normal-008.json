@@ -1,0 +1,24 @@
+{
+  "case_id": "normal-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "security",
+    "tags": [
+      "失竊"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "我的腳踏車昨晚停在男九舍門口，今天早上就不見了"
+      }
+    ],
+    "reason": "文章敘述個人停放的腳踏車今晨不見，符合失竊類事件的描述。",
+    "abstain_reason": null
+  }
+}
