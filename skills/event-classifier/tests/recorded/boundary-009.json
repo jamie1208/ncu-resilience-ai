@@ -1,0 +1,25 @@
+{
+  "case_id": "boundary-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "traffic",
+    "tags": [
+      "交通管制",
+      "校慶活動"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "10/31（六）校慶當天 07:00–17:00 校門口至行政大樓實施交通管制，校外車輛請改停後門停車場。"
+      }
+    ],
+    "reason": "內容描述在特定日期與時段對校園道路實施交通管制，屬於交通與停車類事件。",
+    "abstain_reason": null
+  }
+}

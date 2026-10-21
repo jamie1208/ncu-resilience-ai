@@ -1,0 +1,25 @@
+{
+  "case_id": "normal-018",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "academic",
+    "tags": [
+      "停課",
+      "通識課"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "10/28（三）停課一次"
+      }
+    ],
+    "reason": "公告說明某門通識課因授課教師出國而臨時停課，屬於教務與課務異動，因此分類為 academic。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "case_id": "normal-021",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "infosec",
+    "tags": [
+      "釣魚信",
+      "釣魚信件警示"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "近日有冒充電算中心的釣魚信件，要求點擊連結更新信箱密碼，請勿點擊並直接刪除。"
+      }
+    ],
+    "reason": "內容描述冒充單位發送要求點擊連結更新密碼的信件，屬於以信件騙取帳號密碼的資訊安全事件（釣魚）。",
+    "abstain_reason": null
+  }
+}

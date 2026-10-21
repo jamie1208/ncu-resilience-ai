@@ -1,0 +1,25 @@
+{
+  "case_id": "normal-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "traffic",
+    "tags": [
+      "施工",
+      "道路封閉"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "自 10/26（一）至 10/30（五）進行管線施工，封閉內側車道，請用路人注意安全。"
+      }
+    ],
+    "reason": "內容描述路口在特定期間進行管線施工並封閉內側車道，屬於施工造成的道路封閉，依規則歸類為交通類。",
+    "abstain_reason": null
+  }
+}

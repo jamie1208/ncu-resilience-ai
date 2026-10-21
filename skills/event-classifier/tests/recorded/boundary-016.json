@@ -1,0 +1,25 @@
+{
+  "case_id": "boundary-016",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "academic",
+    "tags": [
+      "調課",
+      "實驗課"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "物理系普通物理實驗週三班，自 11/4 起調整至週五下午上課，教室不變。"
+      }
+    ],
+    "reason": "內容是在說明普通物理實驗的上課時間調整，屬於課務異動（調課）。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,515 @@
+{
+  "skill": "event-classifier",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "mode": "live",
+  "provider": "openai",
+  "model": "gpt-5-mini",
+  "split": "test",
+  "generated_at": "2026-10-21T03:59:14.958251+00:00",
+  "max_cost_usd": 0.1,
+  "summary": {
+    "cases": 28,
+    "passed": 28,
+    "pass_rate": 1.0,
+    "schema_pass_rate": 1.0,
+    "traceability": 1.0,
+    "abstain_rate": 0.03571428571428571,
+    "failed_runs": 0,
+    "no_recording": 0,
+    "skipped_budget": 0,
+    "by_type": {
+      "normal": {
+        "cases": 12,
+        "passed": 12
+      },
+      "boundary": {
+        "cases": 9,
+        "passed": 9
+      },
+      "adversarial": {
+        "cases": 7,
+        "passed": 7
+      }
+    },
+    "attempts": 28,
+    "input_tokens": 110943,
+    "output_tokens": 11905,
+    "cost_usd": 0.029082,
+    "latency_ms": 155901
+  },
+  "metrics": [
+    {
+      "name": "macro_f1",
+      "type": "macro_f1",
+      "field": "category",
+      "value": 1.0,
+      "threshold": 0.85,
+      "passed": true
+    }
+  ],
+  "gates": {
+    "schema_pass_rate": {
+      "value": 1.0,
+      "threshold": 0.99,
+      "passed": true
+    },
+    "traceability": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "passed": true
+    }
+  },
+  "incomplete": false,
+  "passed": true,
+  "cases": [
+    {
+      "id": "normal-002",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "facility"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "facility"
+      }
+    },
+    {
+      "id": "normal-004",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "facility"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "facility"
+      }
+    },
+    {
+      "id": "boundary-001",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "facility"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "facility"
+      }
+    },
+    {
+      "id": "normal-006",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "weather"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "weather"
+      }
+    },
+    {
+      "id": "boundary-003",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "weather"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "weather"
+      }
+    },
+    {
+      "id": "normal-007",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "weather"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "weather"
+      }
+    },
+    {
+      "id": "normal-009",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "security"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "security"
+      }
+    },
+    {
+      "id": "boundary-005",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "security"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "security"
+      }
+    },
+    {
+      "id": "adversarial-002",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "security"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "security"
+      }
+    },
+    {
+      "id": "normal-011",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "traffic"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "traffic"
+      }
+    },
+    {
+      "id": "boundary-008",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "traffic"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "traffic"
+      }
+    },
+    {
+      "id": "adversarial-003",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "traffic"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "traffic"
+      }
+    },
+    {
+      "id": "normal-014",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "health"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "health"
+      }
+    },
+    {
+      "id": "boundary-010",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "health"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "health"
+      }
+    },
+    {
+      "id": "adversarial-004",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "health"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "health"
+      }
+    },
+    {
+      "id": "normal-016",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "fire"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "fire"
+      }
+    },
+    {
+      "id": "boundary-013",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "fire"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "fire"
+      }
+    },
+    {
+      "id": "normal-017",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "fire"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "fire"
+      }
+    },
+    {
+      "id": "normal-019",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "academic"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "academic"
+      }
+    },
+    {
+      "id": "boundary-015",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "academic"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "academic"
+      }
+    },
+    {
+      "id": "adversarial-006",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "academic"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "academic"
+      }
+    },
+    {
+      "id": "normal-022",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "infosec"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "infosec"
+      }
+    },
+    {
+      "id": "boundary-017",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "infosec"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "infosec"
+      }
+    },
+    {
+      "id": "adversarial-007",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "infosec"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "infosec"
+      }
+    },
+    {
+      "id": "normal-024",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "none"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "none"
+      }
+    },
+    {
+      "id": "boundary-020",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "none"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "none"
+      }
+    },
+    {
+      "id": "adversarial-008",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "category": "none"
+      },
+      "predicted": {
+        "status": "ok",
+        "category": "none"
+      }
+    },
+    {
+      "id": "adversarial-009",
+      "type": "adversarial",
+      "split": "test",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence"
+      },
+      "predicted": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence"
+      }
+    }
+  ]
+}

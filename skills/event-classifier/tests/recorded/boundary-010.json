@@ -1,0 +1,24 @@
+{
+  "case_id": "boundary-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "health",
+    "tags": [
+      "化學品外洩"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "今日上午科學二館三樓實驗室發生化學品外洩，已疏散人員，環安中心正在處理。"
+      }
+    ],
+    "reason": "證據描述實驗室化學品外洩並已疏散人員，屬於實驗室化學品外洩事件，依分類規則歸為健康與食安類別（health）。",
+    "abstain_reason": null
+  }
+}

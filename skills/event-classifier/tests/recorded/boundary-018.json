@@ -1,0 +1,29 @@
+{
+  "case_id": "boundary-018",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "infosec",
+    "tags": [
+      "惡意程式",
+      "USB感染"
+    ],
+    "classification_confidence": 0.8,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "電腦教室那幾台電腦插 USB 會中毒"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "我的隨身碟資料夾全部變成捷徑，大家小心。"
+      }
+    ],
+    "reason": "內容描述電腦插入 USB 後出現中毒與隨身碟資料夾被竄改的情況，屬於以惡意程式透過媒介傳播的資訊安全事件。",
+    "abstain_reason": null
+  }
+}

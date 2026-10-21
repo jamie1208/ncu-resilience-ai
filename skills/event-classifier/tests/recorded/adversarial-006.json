@@ -1,0 +1,25 @@
+{
+  "case_id": "adversarial-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "academic",
+    "tags": [
+      "停課",
+      "補課"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "資訊工程系「資料結構」11/2 停課一次"
+      }
+    ],
+    "reason": "內容是在通知特定課程於特定日期停課並安排補課事宜，屬於教務與課務異動。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "case_id": "normal-013",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "health",
+    "tags": [
+      "腹瀉",
+      "群聚症狀"
+    ],
+    "classification_confidence": 0.7,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "下午整寢室四個人都在拉肚子，有其他人也這樣嗎？"
+      }
+    ],
+    "reason": "多位同寢室成員出現腹瀉症狀，屬於健康類群聚症狀報告；因此分類為 health。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "case_id": "boundary-015",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "academic",
+    "tags": [
+      "停課"
+    ],
+    "classification_confidence": 0.8,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "系上剛發信說線代老師身體不適，這週四的課停一次，下週再補。"
+      }
+    ],
+    "reason": "內容描述因授課教師身體不適而暫停本週課程，屬於課務異動（停課），因此歸類為 academic。",
+    "abstain_reason": null
+  }
+}

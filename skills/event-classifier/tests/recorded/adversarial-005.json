@@ -1,0 +1,24 @@
+{
+  "case_id": "adversarial-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "fire",
+    "tags": [
+      "火警"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "化學館一樓今日上午發生小火警，已撲滅。"
+      }
+    ],
+    "reason": "文中描述在化學館一樓發生小火警並已撲滅，屬於火警及緊急意外類事件，依據以事件原因分類為 fire。",
+    "abstain_reason": null
+  }
+}

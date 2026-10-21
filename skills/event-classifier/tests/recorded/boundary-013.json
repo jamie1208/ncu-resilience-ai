@@ -1,0 +1,30 @@
+{
+  "case_id": "boundary-013",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "fire",
+    "tags": [
+      "火警",
+      "實驗室",
+      "停電"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工程四館實驗室電器起火"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "該館因檢修暫時停電。"
+      }
+    ],
+    "reason": "證據描述實驗室電器起火並已撲滅，事件為火警，所造成的停電為火災相關結果，因此歸類為 fire。",
+    "abstain_reason": null
+  }
+}

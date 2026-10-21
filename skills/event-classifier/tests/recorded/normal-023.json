@@ -1,0 +1,24 @@
+{
+  "case_id": "normal-023",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "none",
+    "tags": [
+      "學術新聞"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "本校大氣科學系研究團隊分析近十年颱風資料，研究成果刊登於國際期刊。"
+      }
+    ],
+    "reason": "內容報導研究團隊的學術成果刊登於國際期刊，屬於學術新聞或出版訊息，並非描述會影響校園運作的事件。",
+    "abstain_reason": null
+  }
+}

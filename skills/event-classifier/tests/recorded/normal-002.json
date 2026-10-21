@@ -1,0 +1,25 @@
+{
+  "case_id": "normal-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "facility",
+    "tags": [
+      "網路中斷",
+      "系統維護"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "男三舍宿舍網路將於 10/25（日）02:00–06:00 進行設備更新，期間暫停服務。"
+      }
+    ],
+    "reason": "內容描述宿舍網路設備更新並暫停服務，屬於系統維護或網路中斷的設施營運事件。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "case_id": "normal-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "weather",
+    "tags": [
+      "豪雨",
+      "淹水",
+      "瞬間大雨"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "中央氣象署發布豪雨特報"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "今日桃園市山區及平地有局部大雨或豪雨發生的機率，請注意瞬間大雨及積淹水。"
+      }
+    ],
+    "reason": "內容為中央氣象署發布的豪雨特報，描述豪雨與可能造成的淹水，屬於氣象/天然災害類事件，因此歸類為 weather。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-020",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "academic",
+    "tags": [
+      "線上授課",
+      "期末考改線上",
+      "考場不足"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "因期末考週考場不足，部分大一必修課程的期末考改為線上考試，詳細名單請見附件。"
+      }
+    ],
+    "reason": "公告說明期末考因考場不足而改為線上考試，屬於教務與課務異動（考試方式變更）。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "case_id": "boundary-011",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "health",
+    "tags": [
+      "傳染病",
+      "疥瘡",
+      "宿舍"
+    ],
+    "classification_confidence": 0.8,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "我們寢室有兩個人被診斷出疥瘡"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "醫生說可能是宿舍床墊傳染的"
+      }
+    ],
+    "reason": "內文描述多人在寢室被診斷出疥瘡，且提到可能由床墊傳染，屬於傳染性疾病事件，應歸為健康類別。",
+    "abstain_reason": null
+  }
+}

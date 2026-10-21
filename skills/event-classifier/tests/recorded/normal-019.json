@@ -1,0 +1,24 @@
+{
+  "case_id": "normal-019",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "academic",
+    "tags": [
+      "考試異動"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "原訂 11/4（三）舉行之微積分期中考，因考場調度改至 11/6（五）同一時段舉行。"
+      }
+    ],
+    "reason": "內容是微積分期中考的時間調整，屬於教務與課務異動（考試時間變動）。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "case_id": "normal-016",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "fire",
+    "tags": [
+      "瓦斯外洩",
+      "疏散"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "第二餐廳廚房瓦斯外洩"
+      },
+      {
+        "evidence_id": "e1",
+        "quote": "現在整棟都被淨空了"
+      }
+    ],
+    "reason": "內文描述廚房發生瓦斯外洩並已疏散整棟，瓦斯外洩屬於火災與緊急意外類別，因此歸為 fire。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "category": "security",
+    "tags": [
+      "偷拍",
+      "可疑人士"
+    ],
+    "classification_confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工三二樓女廁發現有人拿手機從隔間上方偷拍，已經報給校安了，大家上廁所注意一下。"
+      }
+    ],
+    "reason": "內容描述在女廁發現有人以手機偷拍，屬於治安與財物類的可疑／騷擾事件，依分類為 security。",
+    "abstain_reason": null
+  }
+}
