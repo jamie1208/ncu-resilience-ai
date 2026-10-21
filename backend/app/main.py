@@ -11,7 +11,7 @@ from collections.abc import Awaitable, Callable
 from fastapi import FastAPI, Request, Response
 
 from app.api.errors import register_error_handlers
-from app.api.v1 import admin, health
+from app.api.v1 import admin, auth, health
 from app.core.config import get_settings
 from app.core.logging import configure_logging, request_id_var
 
@@ -33,7 +33,15 @@ def create_app() -> FastAPI:
     settings = get_settings()
     configure_logging(settings.log_level)
 
-    app = FastAPI(title=settings.app_name, version=settings.version)
+    # API 文件預設關閉：個人版除 health 與登入外沒有免登入的端點（P3-T01）
+    docs = settings.api_docs_enabled
+    app = FastAPI(
+        title=settings.app_name,
+        version=settings.version,
+        docs_url="/docs" if docs else None,
+        redoc_url="/redoc" if docs else None,
+        openapi_url="/openapi.json" if docs else None,
+    )
 
     @app.middleware("http")
     async def request_context(
@@ -62,6 +70,7 @@ def create_app() -> FastAPI:
 
     register_error_handlers(app)
     app.include_router(health.router, prefix=settings.api_prefix)
+    app.include_router(auth.router, prefix=settings.api_prefix)
     app.include_router(admin.router, prefix=settings.api_prefix)
     return app
 

@@ -1,22 +1,27 @@
-"""角色、權限與身分（介面先行；規格 §2、§10，見 docs/architecture/rbac.md）。
+"""角色、權限、身分與驗證用的密碼學工具（規格 §2、§10，見 docs/architecture/rbac.md）。
 
-本模組只定義「誰能做什麼」。密碼、session、CSRF 等驗證實作於 P3-T01，
-透過 `Authenticator` 介面產生 `Principal`。
+個人版只有一位使用者（ADR-0008）：沒有訪客（公開閱讀）與匿名投稿者角色，未登入者沒有任何權限。
+密碼以 argon2id 雜湊；session 與 CSRF token 只以 SHA-256 雜湊存進資料庫
+（P3-T01；資料庫操作見 app/services/auth.py，請求驗證見 app/api/deps.py）。
 """
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import secrets
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Literal, Protocol
+from typing import Literal
+
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerificationError
 
 
 class Role(StrEnum):
     """角色（規格 §2）。系統服務帳號依最小權限拆成三個。"""
 
-    VISITOR = "visitor"
-    REPORTER = "reporter"
     ADMIN = "admin"
     SERVICE_INGESTION = "service_ingestion"
     SERVICE_AI = "service_ai"
@@ -26,9 +31,6 @@ class Role(StrEnum):
 class Permission(StrEnum):
     """權限，格式為 `<資源>:<動作>`。"""
 
-    PUBLIC_READ = "public:read"
-    REPORTS_CREATE = "reports:create"
-    REPORTS_FOLLOWUP = "reports:followup"
     REPORTS_READ_INTERNAL = "reports:read_internal"
     EVENTS_READ_ALL = "events:read_all"
     EVENTS_WRITE = "events:write"
@@ -49,13 +51,9 @@ class Permission(StrEnum):
 P = Permission
 
 ROLE_PERMISSIONS: Mapping[Role, frozenset[Permission]] = {
-    Role.VISITOR: frozenset({P.PUBLIC_READ, P.REPORTS_CREATE}),
-    # 匿名投稿者只以收據碼補件，不是帳號；無權建立已核實事件或觸發公開
-    Role.REPORTER: frozenset({P.PUBLIC_READ, P.REPORTS_CREATE, P.REPORTS_FOLLOWUP}),
-    # 管理者不能直接發布：公開發布只能經 app/alerts/policy.py 的確定性規則
+    # 管理者（使用者本人）不能直接發布：通知只能經 app/alerts/policy.py 的確定性規則
     Role.ADMIN: frozenset(
         {
-            P.PUBLIC_READ,
             P.REPORTS_READ_INTERNAL,
             P.EVENTS_READ_ALL,
             P.EVENTS_VERIFY,
@@ -79,12 +77,11 @@ SENSITIVE_PERMISSIONS: frozenset[Permission] = frozenset(
     {P.AUDIT_LOGS_READ, P.REPORTS_READ_INTERNAL}
 )
 
-PrincipalKind = Literal["anonymous", "reporter", "admin", "service"]
+PrincipalKind = Literal["anonymous", "admin", "service"]
 
 # 每種身分可持有的角色；避免例如 anonymous 卻帶 ADMIN 角色，使稽核的行為者失真
 KIND_ROLES: Mapping[PrincipalKind, frozenset[Role]] = {
-    "anonymous": frozenset({Role.VISITOR}),
-    "reporter": frozenset({Role.REPORTER}),
+    "anonymous": frozenset(),
     "admin": frozenset({Role.ADMIN}),
     "service": frozenset({Role.SERVICE_INGESTION, Role.SERVICE_AI, Role.SERVICE_NOTIFIER}),
 }
@@ -92,7 +89,7 @@ KIND_ROLES: Mapping[PrincipalKind, frozenset[Role]] = {
 
 @dataclass(frozen=True)
 class Principal:
-    """請求的身分。`subject` 為管理者帳號 ID 或服務名稱；投稿者的收據碼不得放進 actor。"""
+    """請求的身分。`subject` 為使用者帳號 ID 或服務名稱；未登入者沒有角色也沒有權限。"""
 
     kind: PrincipalKind
     subject: str | None
@@ -102,7 +99,7 @@ class Principal:
     def __post_init__(self) -> None:
         if self.kind in ("admin", "service") and not self.subject:
             raise ValueError(f"{self.kind} 身分必須有 subject")
-        if not self.roles:
+        if self.kind != "anonymous" and not self.roles:
             raise ValueError(f"{self.kind} 身分至少需要一個角色")
         extra = self.roles - KIND_ROLES[self.kind]
         if extra:
@@ -114,7 +111,7 @@ class Principal:
 
     @property
     def actor(self) -> str:
-        """寫入稽核紀錄的行為者字串；匿名與投稿者不含任何可識別資訊。"""
+        """寫入稽核紀錄的行為者字串；未登入者一律為 `anonymous`。"""
         if self.kind in ("admin", "service"):
             return f"{self.kind}:{self.subject}"
         return self.kind
@@ -125,7 +122,7 @@ class Principal:
         return self._permissions
 
 
-ANONYMOUS = Principal(kind="anonymous", subject=None, roles=frozenset({Role.VISITOR}))
+ANONYMOUS = Principal(kind="anonymous", subject=None, roles=frozenset())
 
 
 class PermissionDeniedError(Exception):
@@ -148,11 +145,42 @@ def require(principal: Principal, permission: Permission) -> None:
         raise PermissionDeniedError(principal.actor, permission)
 
 
-class Authenticator(Protocol):
-    """由請求的標頭與 cookie 辨識身分（P3-T01 實作；無有效憑證時回傳 ANONYMOUS）。"""
+# --- 密碼與 token（P3-T01） ---------------------------------------------------------------
 
-    async def authenticate(
-        self, headers: Mapping[str, str], cookies: Mapping[str, str]
-    ) -> Principal:
-        """回傳請求者的 Principal。"""
-        ...
+# argon2id，參數採 argon2-cffi 預設（RFC 9106 低記憶體建議組）
+_hasher = PasswordHasher()
+
+
+def hash_password(password: str) -> str:
+    """回傳 argon2id 雜湊（含隨機 salt）。"""
+    return _hasher.hash(password)
+
+
+def verify_password(password_hash: str, password: str) -> bool:
+    """密碼是否符合雜湊；雜湊格式錯誤也回傳 False。"""
+    try:
+        return _hasher.verify(password_hash, password)
+    except (VerificationError, InvalidHashError):
+        return False
+
+
+def password_needs_rehash(password_hash: str) -> bool:
+    """雜湊參數是否已過時（登入成功時順手升級）。"""
+    return _hasher.check_needs_rehash(password_hash)
+
+
+def new_token() -> str:
+    """產生 session／CSRF 用的隨機 token（32 bytes，URL-safe）。"""
+    return secrets.token_urlsafe(32)
+
+
+def hash_token(token: str) -> str:
+    """token 的 SHA-256 hex；資料庫只存這個值，外洩也無法還原 cookie。"""
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def token_matches(token: str | None, token_hash: str) -> bool:
+    """`token` 的雜湊是否等於 `token_hash`（常數時間比較）。"""
+    if not token:
+        return False
+    return hmac.compare_digest(hash_token(token), token_hash)

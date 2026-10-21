@@ -139,7 +139,9 @@ tasks:
     updated_at: '2026-10-21T19:57:30+08:00'
     evidence: docs/progress/records/P2-T14-20261021.md
   P3-T01:
-    status: pending
+    status: done
+    updated_at: '2026-10-21T20:39:34+08:00'
+    evidence: docs/progress/records/P3-T01-20261021.md
   P3-T03:
     status: pending
   P3-T05:
@@ -788,4 +790,14 @@ history:
   to: pass
   note: 使用者 2026-10-21 確認：S01–S08 test split 可追溯率皆 1.000；P2-T12 人工審閱假設與事實區分 60/60
   confirmed_by_user: true
-updated_at: '2026-10-21T20:13:41+08:00'
+- at: '2026-10-21T20:24:18+08:00'
+  id: P3-T01
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-21T20:39:34+08:00'
+  id: P3-T01
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-21T20:39:34+08:00'

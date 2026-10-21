@@ -57,6 +57,11 @@ class Settings(BaseSettings):
         None, validation_alias=AliasChoices("OPENAI_API_KEY", "NCU_OPENAI_API_KEY")
     )
 
+    # 登入 session（P3-T01）：絕對有效期限；cookie 一律 HttpOnly＋Secure＋SameSite=Strict
+    session_ttl_hours: int = Field(12, ge=1, le=24 * 7)
+    # API 文件（/docs、/openapi.json）預設關閉，維持「除 health 與登入外沒有免登入端點」
+    api_docs_enabled: bool = False
+
     @property
     def database_url(self) -> URL:
         """asyncpg 連線 URL；缺少帳密或資料庫名稱時拋出 ValueError。"""

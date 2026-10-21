@@ -1,68 +1,65 @@
 # RBAC 與稽核規格
 
-依據規格 §2（使用者與權限）、§10（API 與權限）、§9（audit_logs append-only）與 AGENTS.md。
+依據規格 §2（使用者與權限）、§10（API 與權限）、§9（audit_logs append-only）、AGENTS.md 與 ADR-0008（個人版：單一使用者、不對外公開）。
 
-- 實作：`backend/app/core/security.py`（角色、權限、`Principal`、`require()`、`Authenticator` 介面）
+- 角色與權限、密碼與 token 工具：`backend/app/core/security.py`
+- 帳號與 session：`backend/app/services/auth.py`；資料表 `infra/migrations/versions/0007_users_roles.py`
+- 請求驗證（cookie、CSRF、權限依賴）：`backend/app/api/deps.py`；登入 API：`backend/app/api/v1/auth.py`
+- 建立／重設使用者：`scripts/admin/create_admin.py`
 - 稽核：`backend/app/services/audit.py`（`record_audit()`）；`infra/migrations/versions/0002_audit_append_only.py`（trigger）
-- 測試：`backend/tests/unit/test_security.py`、`backend/tests/integration/test_audit_append_only.py`
-- 驗證實作（密碼、session、CSRF）屬 P3-T01；本文件與 `security.py` 先定義「誰能做什麼」。
+- 測試：`backend/tests/unit/test_security.py`、`backend/tests/integration/test_auth.py`、`backend/tests/integration/test_audit_append_only.py`
 
 ## 角色
 
 | 角色 | 對應規格 §2 | 身分（`Principal.kind`） | 說明 |
 | --- | --- | --- | --- |
-| `visitor` | 訪客 | anonymous | 未登入的所有人 |
-| `reporter` | 匿名投稿者 | reporter | 持有效收據碼補件時才是 reporter；不是帳號，不得識別個人 |
-| `admin` | 開發團隊管理者 | admin | 個人帳號；敏感存取需稽核 |
+| （無） | — | anonymous | 未登入者：沒有任何角色與權限 |
+| `admin` | 管理者（個人版即使用者本人） | admin | 系統唯一的帳號；敏感存取需稽核 |
 | `service_ingestion` | 系統服務帳號 | service | 來源擷取排程 |
 | `service_ai` | 系統服務帳號 | service | AI 分析（Skill Runner） |
 | `service_notifier` | 系統服務帳號 | service | 依發布規則發布與外送警示 |
 
 系統服務帳號依規格「最小權限」拆成三個：擷取程式不能改事件，AI 不能發布，通知服務不能查證。
 
-`Principal` 建立時會檢查身分種類與角色是否一致（`KIND_ROLES`）：anonymous 只能是 visitor、reporter 只能是 reporter、admin 只能是 admin、service 只能是三種服務角色，且至少要有一個角色。不一致時直接拋出 ValueError，避免出現「anonymous 卻有管理權限」這種無法追溯的身分。
+個人版（ADR-0008）移除了規格 §2 的訪客（公開閱讀）與匿名投稿者角色，以及 `public:read`、`reports:create`、`reports:followup` 權限（P3-T01）。
+
+`Principal` 建立時會檢查身分種類與角色是否一致（`KIND_ROLES`）：anonymous 不能有任何角色、admin 只能是 admin、service 只能是三種服務角色，且 admin 與 service 至少要有一個角色。不一致時直接拋出 ValueError，避免出現「anonymous 卻有管理權限」這種無法追溯的身分。
 
 ## 權限矩陣
 
-| 權限 | visitor | reporter | admin | service_ingestion | service_ai | service_notifier |
-| --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| `public:read` | ✓ | ✓ | ✓ | | | |
-| `reports:create` | ✓ | ✓ | | | | |
-| `reports:followup` | | ✓ | | | | |
-| `reports:read_internal` ⚠ | | | ✓ | | | |
-| `events:read_all` | | | ✓ | | ✓ | |
-| `events:write` | | | | | ✓ | |
-| `events:verify` | | | ✓ | | | |
-| `events:analyze` | | | ✓ | | | |
-| `alerts:read_all` | | | ✓ | | | ✓ |
-| `alerts:publish` | | | | | | ✓ |
-| `alerts:retract` | | | ✓ | | | |
-| `sources:read` | | | ✓ | ✓ | | |
-| `sources:manage` | | | ✓ | | | |
-| `ingestion:write` | | | | ✓ | | |
-| `ingestion_runs:read` | | | ✓ | | | |
-| `ai:run` | | | | | ✓ | |
-| `scenarios:create` | | | ✓ | | | |
-| `audit_logs:read` ⚠ | | | ✓ | | | |
+| 權限 | admin | service_ingestion | service_ai | service_notifier |
+| --- | :-: | :-: | :-: | :-: |
+| `reports:read_internal` ⚠ | ✓ | | | |
+| `events:read_all` | ✓ | | ✓ | |
+| `events:write` | | | ✓ | |
+| `events:verify` | ✓ | | | |
+| `events:analyze` | ✓ | | | |
+| `alerts:read_all` | ✓ | | | ✓ |
+| `alerts:publish` | | | | ✓ |
+| `alerts:retract` | ✓ | | | |
+| `sources:read` | ✓ | ✓ | | |
+| `sources:manage` | ✓ | | | |
+| `ingestion:write` | | ✓ | | |
+| `ingestion_runs:read` | ✓ | | | |
+| `ai:run` | | | ✓ | |
+| `scenarios:create` | ✓ | | | |
+| `audit_logs:read` ⚠ | ✓ | | | |
 
 ⚠ = 敏感權限（`SENSITIVE_PERMISSIONS`）：連「讀取」也必須寫入稽核紀錄。
 
 重點規則：
 
-- **只有 `service_notifier` 能發布警示**，而且只能依 `app/alerts/policy.py` 的確定性規則發布（AGENTS.md）。管理者可以撤回，但不能直接發布。
-- 投稿者無權建立已核實事件，也不能觸發公開（規格 §2）。
+- **只有 `service_notifier` 能發布警示**（個人版：通知使用者本人），而且只能依 `app/alerts/policy.py` 的確定性規則（AGENTS.md）。使用者可以撤回，但不能直接發布。
 - 管理者不能寫入擷取資料或直接改事件內容；事件狀態只能經 `events:verify`，並由 `app/domain/states.py` 檢查轉移。
 
 ## 路由權限（規格 §10）
 
 | 方法 | 路由 | 權限 | 稽核 |
 | --- | --- | --- | --- |
-| GET | `/api/v1/events` | `public:read`（只回公開事件與欄位） | |
-| GET | `/api/v1/events/{id}` | `public:read` | |
-| GET | `/api/v1/alerts` | `public:read`（只回有效警示） | |
-| POST | `/api/v1/reports` | `reports:create`（限流） | `report.create`（不記原文） |
-| POST | `/api/v1/reports/{token}/followups` | `reports:followup`（有效收據碼） | `report.followup`（不記收據碼） |
-| GET | `/api/v1/dashboard/summary` | `public:read` | |
+| GET | `/api/v1/health` | **免登入** | |
+| POST | `/api/v1/auth/login` | **免登入**（連續失敗鎖定） | `auth.login`／`auth.login_failed`／`auth.login_locked` |
+| POST | `/api/v1/auth/logout` | 已登入＋CSRF | `auth.logout` |
+| GET | `/api/v1/auth/me` | 已登入 | |
 | GET | `/api/v1/admin/events` | `events:read_all` | |
 | POST | `/api/v1/admin/events/{id}/verify` | `events:verify` | `event.verify` |
 | POST | `/api/v1/admin/events/{id}/analyze` | `events:analyze` | `event.analyze` |
@@ -72,7 +69,22 @@
 | GET | `/api/v1/admin/ingestion-runs/health` | `ingestion_runs:read` | |
 | GET | `/api/v1/admin/audit-logs` | `audit_logs:read` | `audit_log.read`（敏感讀取） |
 
-未登入存取需要權限的路由回 `UNAUTHORIZED`；已登入但權限不足回 `FORBIDDEN`（規格 §10.1）。
+個人版沒有公開 API（ADR-0008）：除上表兩個免登入端點外，所有端點都需要登入；`/api/v1/admin/*` 在 router 層就先擋未登入，新端點即使忘了加權限依賴也不會變成免登入。`/docs`、`/redoc`、`/openapi.json` 預設關閉（`NCU_API_DOCS_ENABLED=true` 才開，僅供本機開發）。`tests/integration/test_auth.py` 會列舉所有路由驗證這點。
+
+未登入存取需要權限的路由回 `UNAUTHORIZED`（401）；已登入但權限不足或 CSRF 驗證失敗回 `FORBIDDEN`（403）；登入鎖定回 `RATE_LIMITED`（429）（規格 §10.1）。
+
+## 驗證（P3-T01）
+
+| 項目 | 做法 |
+| --- | --- |
+| 帳號 | `users` 只允許一列（常數唯一索引 `uq_users_single_user`），角色固定 `admin`；以 `scripts/admin/create_admin.py` 建立或重設密碼 |
+| 密碼 | argon2id（argon2-cffi 預設參數），不限長度（不可為空）；參數過時時於登入成功後重新雜湊；帳號不存在時也跑一次雜湊，避免以回應時間探測帳號 |
+| 鎖定 | 連續失敗 5 次鎖定 15 分鐘，鎖定期間正確密碼也回 429；成功登入或重設密碼時歸零 |
+| Session | 隨機 32 bytes token，cookie `ncu_session`：HttpOnly、Secure、SameSite=Strict、Path=/api；資料庫 `user_sessions` 只存 SHA-256；絕對有效期 `NCU_SESSION_TTL_HOURS`（預設 12 小時）；登出、重設密碼、停用帳號即失效 |
+| CSRF | 每個 session 一組 CSRF token（同樣只存雜湊），登入回應與 cookie `ncu_csrf`（非 HttpOnly、Secure、SameSite=Strict、Path=/）提供；POST／PUT／PATCH／DELETE 須帶 `X-CSRF-Token` 標頭且與該 session 相符 |
+| 錯誤訊息 | 帳號不存在、密碼錯誤、帳號停用一律回「帳號或密碼錯誤」 |
+
+Secure cookie 只經 HTTPS 送出；瀏覽器把 `http://localhost` 視為安全來源（Chrome、Firefox），本機開發可用，但 Safari 可能不送出。
 
 ## 稽核紀錄（audit_logs）
 
@@ -80,13 +92,14 @@
 
 - 所有寫入操作（規格 §10.1：所有寫入建立 request_id），包括服務帳號的寫入。
 - 敏感讀取：`audit_logs:read`、`reports:read_internal`。
-- 權限遭拒（`FORBIDDEN`）的管理端請求：P3-T01 加入（`authorize()` 目前遭拒時不寫紀錄）。
+- 登入、登出、登入失敗與鎖定（`auth.*`）；建立使用者與重設密碼（`user.create`、`user.password_reset`）。密碼與 token 永不寫入。
+- 已登入者（或服務帳號）權限遭拒（`FORBIDDEN`）：`require_permission()` 以獨立交易寫入 `auth.forbidden`（metadata 為所需權限）。未登入的 401 不寫，避免被灌爆。
 
 ### 欄位
 
 | 欄位 | 內容 |
 | --- | --- |
-| `actor` | `Principal.actor`：`admin:<帳號ID>`、`service:<服務名稱>`、`anonymous`、`reporter`（投稿者不含收據碼或任何識別資訊） |
+| `actor` | `Principal.actor`：`admin:<帳號ID>`、`service:<服務名稱>`、`anonymous` |
 | `action` | `<資源>.<動作>`，小寫，例如 `event.verify`、`alert.retract`；格式不符會被拒絕 |
 | `target` | 被操作的對象，例如 `events/<id>` |
 | `request_id` | 參數 > 目前請求的 `X-Request-ID` > 新產生的 UUID（背景工作沒有請求上下文時也一定有值） |
@@ -126,6 +139,4 @@ migration `0002_audit_append_only` 建立：
 
 ## 之後的任務
 
-- P3-T01：實作 `Authenticator`（argon2 密碼、HttpOnly Secure Cookie session、CSRF），API 依賴注入 `require()`，並把權限遭拒寫入稽核。
-- P3-T02：公開 API 欄位白名單。
 - P5-T06：正式環境的資料庫角色分離。
