@@ -188,6 +188,9 @@ def validate_output(
             _check_spans(node.get("evidence_spans"), path, evidence_texts, issues)
 
     for path, text in _strings(output):
+        # evidence_id 是 Runner 指定的值（例如文章 id 的十六進位），存在於輸入時不當成個資（P2-T13）
+        if path.rsplit("/", 1)[-1] == "evidence_id" and text in known:
+            continue
         for match in find_pii(text):
             issues.append(Issue("pii", f"{path}：疑似{match.kind}"))
     return issues

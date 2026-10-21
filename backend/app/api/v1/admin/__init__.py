@@ -2,9 +2,10 @@
 
 from fastapi import APIRouter
 
-from app.api.v1.admin import ingestion_runs
+from app.api.v1.admin import events, ingestion_runs
 
 router = APIRouter(prefix="/admin")
+router.include_router(events.router)
 router.include_router(ingestion_runs.router)
 
 __all__ = ["router"]
