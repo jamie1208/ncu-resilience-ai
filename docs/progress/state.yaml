@@ -214,6 +214,11 @@ tasks:
     status: done
     updated_at: '2026-10-18T16:22:24+08:00'
     evidence: docs/progress/records/P1-T16-20261018.md
+  P3-T11:
+    status: done
+    updated_at: '2026-10-21T21:26:58+08:00'
+    note: 使用者決定新增雙設計系統（ADR-0014）
+    evidence: docs/progress/records/P3-T11-20261021.md
 gates:
   G0-1:
     status: pass
@@ -812,4 +817,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-21T20:52:12+08:00'
+- at: '2026-10-21T21:17:40+08:00'
+  id: P3-T11
+  from: pending
+  to: in_progress
+  note: 使用者決定新增雙設計系統（ADR-0014）
+- at: '2026-10-21T21:26:58+08:00'
+  id: P3-T11
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-21T21:26:58+08:00'

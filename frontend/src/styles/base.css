@@ -1,0 +1,33 @@
+/*
+ * 兩套設計共用的 base 樣式與 reduced-motion（ADR-0014）。
+ * 由各設計的 styles.css 在 `@import 'tailwindcss'` 之後引入；這裡只能用 design/contract.ts 列出的 token。
+ */
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* 使用者要求減少動態時，停用所有持續性動畫與轉場 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

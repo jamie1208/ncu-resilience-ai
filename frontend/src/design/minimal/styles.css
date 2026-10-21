@@ -1,8 +1,9 @@
 /*
- * NCU Resilience AI 設計 token（Minimalist Modern，見 ncu-frontend-design skill 與 ADR-0003）。
- * 所有色彩、字體、陰影都從這裡取用；元件不得寫死色碼。
+ * Minimalist Modern 設計 token（ncu-frontend-design skill、ADR-0003、ADR-0014）。
+ * 所有色彩、字體、陰影都從這裡取用；元件不得寫死色碼。必要語意 token 見 design/contract.ts。
  */
 @import 'tailwindcss';
+@import '../../styles/base.css';
 
 @theme {
   /* 基礎色彩 */
@@ -74,34 +75,4 @@
 @utility bg-dot-pattern {
   background-image: radial-gradient(circle, rgb(255 255 255 / 0.03) 1px, transparent 1px);
   background-size: 32px 32px;
-}
-
-@layer base {
-  html {
-    color-scheme: light;
-  }
-
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--color-ring);
-    outline-offset: 2px;
-  }
-}
-
-/* 使用者要求減少動態時，停用所有持續性動畫與轉場 */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
 }
