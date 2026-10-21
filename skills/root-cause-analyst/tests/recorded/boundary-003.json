@@ -1,0 +1,36 @@
+{
+  "case_id": "boundary-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似水塔馬達燒毀導致女一舍停水。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "我是總務處的工讀生，跟大家說一下，女一舍沒水是因為水塔馬達燒掉了。"
+          }
+        ],
+        "to_verify": "向總務處或後勤確認水塔馬達是否故障或燒毀，並檢視維修或更換紀錄。"
+      }
+    ],
+    "missing_information": [
+      "是否有官方（總務處或後勤）對停水原因的說明",
+      "現場檢查或維修報告以確認馬達故障情形",
+      "停水開始與預計恢復時間",
+      "是否僅女一舍受影響或有其他建物也停水"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "唯一證據為社群貼文，內容稱停水是因水塔馬達燒毀；因來源非官方且措辭非官方公告，該原因列為 hypothesized，需向總務處確認。",
+    "abstain_reason": null
+  }
+}

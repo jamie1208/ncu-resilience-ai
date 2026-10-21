@@ -1,0 +1,51 @@
+{
+  "case_id": "normal-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "經衛生局檢驗確認為諾羅病毒感染。",
+        "basis": "confirmed",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "經衛生局檢驗，近日宿舍學生腸胃炎群聚確認為諾羅病毒感染，請同學勤洗手。"
+          }
+        ],
+        "to_verify": null
+      },
+      {
+        "cause_id": "c2",
+        "description": "疑似宿舍飲水機濾心太久沒更換導致污染並成為感染來源。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e2",
+            "quote": "一定是宿舍飲水機太久沒換濾心，大家喝了才出事。"
+          }
+        ],
+        "to_verify": "向相關單位（如總務或衛生局/學校防疫小組）確認飲水機是否檢出病原、濾心更換紀錄及是否有共同飲水接觸者。"
+      }
+    ],
+    "missing_information": [
+      "是否有共同飲水或共同用餐史以支持飲水機為感染來源",
+      "飲水機或其他疑似設備的檢驗結果與濾心更換紀錄",
+      "完整的感染源調查報告與流行病學接觸調查結果"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "校方（衛生局檢驗）已確認群聚為諾羅病毒感染；社群貼文指稱飲水機濾心未換可能是原因，這屬於待查證的假設，需要檢驗與更換紀錄確認。",
+    "abstain_reason": null
+  }
+}

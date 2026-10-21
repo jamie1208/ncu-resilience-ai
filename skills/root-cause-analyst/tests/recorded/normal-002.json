@@ -1,0 +1,36 @@
+{
+  "case_id": "normal-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "實驗廢液混合不當產生刺激性氣體。",
+        "basis": "confirmed",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "經查為實驗廢液混合不當產生刺激性氣體"
+          }
+        ],
+        "to_verify": null
+      }
+    ],
+    "missing_information": [
+      "發生混合的廢液來源與種類",
+      "是否違反實驗室廢液處理或儲存規範",
+      "是否已針對空氣中污染物做成分檢測與結果",
+      "是否有改進處置流程以防再發"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "校方（權責單位）已說明此次異味「經查為實驗廢液混合不當產生刺激性氣體」，為已確認原因；仍需進一步釐清廢液種類、來源與後續檢測結果等細節。",
+    "abstain_reason": null
+  }
+}

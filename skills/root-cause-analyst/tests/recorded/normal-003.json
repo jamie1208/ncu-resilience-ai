@@ -1,0 +1,50 @@
+{
+  "case_id": "normal-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似鍋爐故障導致熱水中斷。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "聽說是鍋爐壞掉一直沒修好"
+          }
+        ],
+        "to_verify": "向宿舍管理單位或總務處確認鍋爐是否故障以及維修紀錄。"
+      },
+      {
+        "cause_id": "c2",
+        "description": "疑似維修延誤或保養不足，導致本週多次熱水中斷。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "這禮拜第三次"
+          }
+        ],
+        "to_verify": "確認本週熱水中斷次數與維修處理時程，並查詢是否有未完成的維修工單或保養紀錄。"
+      }
+    ],
+    "missing_information": [
+      "官方或宿舍管理單位是否確認鍋爐故障及其故障細節",
+      "目前是否有進行或排程中的維修作業與預計恢復時間",
+      "是否存在保養紀錄或反覆故障的歷史紀錄"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "僅有社群貼文指出「聽說是鍋爐壞掉一直沒修好」且提到「這禮拜第三次」，沒有官方說明，所有原因均為假設性推測，需由宿舍管理單位或相關單位確認。",
+    "abstain_reason": null
+  }
+}

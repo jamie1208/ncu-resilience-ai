@@ -1,0 +1,80 @@
+{
+  "case_id": "normal-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "立即暫時撤離科學二館前三樓及鄰近實驗室，避免進入現場並遵從校方封鎖區域指示，直到環安中心或相關單位確認安全。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "暫時封閉受影響之實驗室並停止相關實驗作業，集中人員進行現場通風與初步安全處置，直到完成空氣品質檢測並取得安全確認。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "環安中心",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "由環安中心執行空氣品質採樣與化學物質檢測，確認刺激性氣體濃度降至安全標準後公告可開放時間並放行場地。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "環安中心",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "清點並依危險廢棄物處理程序移除與處置產生刺激性氣體之實驗廢液，必要時進行場地清潔與除污染作業，並記錄事故處理流程。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "檢視並修訂實驗廢液標示、分類與混合作業SOP，對相關實驗室與指導人員進行危險化學品與廢液處理教育訓練，並定期納入稽核。",
+        "audience": "school",
+        "horizon": "long",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "環安中心",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "已查證為實驗廢液混合不當產生刺激性氣體，故優先執行撤離、封鎖與空氣品質檢測等立即應變；後續著重於廢液處置、場地除污與修訂SOP與教育訓練以預防再發。",
+    "abstain_reason": null
+  }
+}

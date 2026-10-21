@@ -1,0 +1,67 @@
+{
+  "case_id": "boundary-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "立即避開工二館地下室及周邊區域，依照現場人員指示到指定集合點並回報自身安全狀況。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "立即封鎖並管制工二館地下室出入口，暫停該區域一切人員進出，並於校內公告禁入與後續進度。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "駐衛警",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請環安中心與總務處盡速到場協同消防調查現場，確認是否為電線走火並採樣保存相關證據以利鑑定。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "環安中心",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若查證屬實，立即對工二館地下室與相關配電設備進行全面電氣檢查並排定必要的維修或汰換計畫，並在一學期內完成重點改善。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "事件屬實且風險分級為高，優先以人員撤離與現場管制作為短期應變；電線走火為待查證的可能原因，已安排現場調查並規劃若查證屬實的修繕預防措施。",
+    "abstain_reason": null
+  }
+}

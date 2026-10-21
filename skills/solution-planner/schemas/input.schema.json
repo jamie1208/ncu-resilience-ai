@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "solution-planner 輸入",
+  "description": "一個事件、它的 1～6 份證據、S06 的風險分級與 S07 的原因。text 是不可信的來源內容，Skill Runner 會包在 <untrusted_source> 中；event 與 causes 放在 <skill_input> 中，同樣是資料。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence",
+    "event",
+    "causes"
+  ],
+  "properties": {
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "source_code",
+          "text"
+        ],
+        "properties": {
+          "evidence_id": {
+            "description": "證據識別碼，由 Runner 指定；輸出只能引用這裡出現的值",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "source_code": {
+            "description": "來源代碼（config/sources.yaml）",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 300
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "published_at": {
+            "description": "aware UTC 時間（ISO 8601）",
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "event": {
+      "description": "要擬定措施的事件",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "category",
+        "occurrence_start_date",
+        "location",
+        "verification_status",
+        "risk_level"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "category": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "facility",
+            "weather",
+            "security",
+            "traffic",
+            "health",
+            "fire",
+            "academic",
+            "infosec",
+            "none",
+            null
+          ]
+        },
+        "occurrence_start_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "location": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 50
+        },
+        "verification_status": {
+          "description": "S05 的查證狀態；false（已被否認）時不擬定措施",
+          "type": "string",
+          "enum": [
+            "unverified",
+            "verified",
+            "disputed",
+            "false"
+          ]
+        },
+        "risk_level": {
+          "description": "S06 經 app/risk/engine.py 計算的分級；null 表示尚未評估",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical",
+            null
+          ]
+        }
+      }
+    },
+    "causes": {
+      "description": "S07 的原因；S07 abstain 時為空陣列。basis 由 S07 決定，措施要沿用",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cause_id",
+          "description",
+          "basis"
+        ],
+        "properties": {
+          "cause_id": {
+            "type": "string",
+            "enum": [
+              "c1",
+              "c2",
+              "c3",
+              "c4"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "hypothesized"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

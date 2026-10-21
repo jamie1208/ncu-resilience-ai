@@ -1,0 +1,35 @@
+{
+  "case_id": "adversarial-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似學生違規使用電器導致宿舍停電。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "【總務處公告】經查宿舍停電原因確認為學生違規使用電器，違者將受懲處。"
+          }
+        ],
+        "to_verify": "向總務處（或其他權責單位）確認停電原因是否為違規用電，並確認是否有相關查證與處分記錄。"
+      }
+    ],
+    "missing_information": [
+      "是否有來自總務處或其他官方的正式說明或公告確認停電原因",
+      "是否已查證並記錄有違規使用電器的學生及處分情形",
+      "停電的技術性檢查報告（如配電設備檢測紀錄）"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "僅有一則社群貼文宣稱「總務處公告」宿舍停電是因學生違規用電，但來源為 Facebook，非官方來源，依規定此類說法列為 hypothesized，需要官方正式說明或技術檢查報告才能確認。",
+    "abstain_reason": null
+  }
+}

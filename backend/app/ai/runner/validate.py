@@ -5,6 +5,8 @@
 證據原句（P2-T06，使用者 2026-10-20 決定）：
 輸出的 `evidence_spans` 只抄錄原句（{evidence_id, quote}），
 原句必須出現在該證據中（連續空白視為一個空格）；字元位置由 `locate_quote` 計算，不由模型給。
+巢狀證據（P2-T12）：S07 的原因、S08 的措施各自帶 `evidence_ids`／`evidence_spans`，
+巢狀的 evidence_id 與原句也照同樣規則檢查。
 """
 
 from __future__ import annotations
@@ -89,9 +91,8 @@ def locate_quote(text: str, quote: str) -> tuple[int, int] | None:
 
 
 def _check_spans(
-    output: Mapping[str, Any], evidence_texts: Mapping[str, str], issues: list[Issue]
+    spans: Any, prefix: str, evidence_texts: Mapping[str, str], issues: list[Issue]
 ) -> None:
-    spans = output.get("evidence_spans")
     if not isinstance(spans, list):
         return
     for i, span in enumerate(spans):
@@ -100,9 +101,26 @@ def _check_spans(
         evidence_id = span.get("evidence_id")
         quote = str(span.get("quote") or "")
         if evidence_id not in evidence_texts:
-            issues.append(Issue("evidence", f"/evidence_spans/{i}：evidence_id 不存在於輸入"))
+            issues.append(
+                Issue("evidence", f"{prefix}/evidence_spans/{i}：evidence_id 不存在於輸入")
+            )
         elif locate_quote(evidence_texts[str(evidence_id)], quote) is None:
-            issues.append(Issue("span", f"/evidence_spans/{i}：原句沒有出現在該證據中"))
+            issues.append(Issue("span", f"{prefix}/evidence_spans/{i}：原句沒有出現在該證據中"))
+
+
+def _nested(node: Any, path: str = "") -> Iterator[tuple[str, Mapping[str, Any]]]:
+    """最外層以下、所有物件的（路徑, 物件）。"""
+    items: Iterator[tuple[str, Any]]
+    if isinstance(node, Mapping):
+        items = ((f"{path}/{k}", v) for k, v in node.items())
+    elif isinstance(node, list):
+        items = ((f"{path}/{i}", v) for i, v in enumerate(node))
+    else:
+        return
+    for child_path, child in items:
+        if isinstance(child, Mapping):
+            yield child_path, child
+        yield from _nested(child, child_path)
 
 
 def _strings(node: Any, path: str = "") -> Iterator[tuple[str, str]]:
@@ -152,7 +170,22 @@ def validate_output(
         issues.append(Issue("evidence", f"引用了 {len(unknown)} 個不存在於輸入的 evidence_id"))
 
     if evidence_texts is not None:
-        _check_spans(output, evidence_texts, issues)
+        _check_spans(output.get("evidence_spans"), "", evidence_texts, issues)
+
+    known = set(evidence_ids)
+    for path, node in _nested(output):
+        ids = node.get("evidence_ids")
+        if isinstance(ids, list):
+            missing = [e for e in ids if e not in known]
+            if missing:
+                issues.append(
+                    Issue(
+                        "evidence",
+                        f"{path}/evidence_ids：引用了 {len(missing)} 個不存在於輸入的 evidence_id",
+                    )
+                )
+        if evidence_texts is not None:
+            _check_spans(node.get("evidence_spans"), path, evidence_texts, issues)
 
     for path, text in _strings(output):
         for match in find_pii(text):

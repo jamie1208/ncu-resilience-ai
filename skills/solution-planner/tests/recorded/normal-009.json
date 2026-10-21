@@ -1,0 +1,93 @@
+{
+  "case_id": "normal-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "宿舍生將窗戶、陽台門等加固並移動易被風打翻的物品至室內，準備三日所需飲水、糧食與必要藥品。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若住校學生需移動到較安全樓層或集中避難處所，依宿舍管理指示辦理並通知家屬與導師。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "透過校務系統與官方帳號發布停課、宿舍安全注意事項及預估復課時間（如有變更持續更新）。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "學務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "派員巡檢校內重點建物（學生活動中心、宿舍、實驗室）並立即排除危險（如加固圍欄、移除鬆動物件），必要時暫時封閉高風險區域。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "停課期間安排駐衛警加強校園進出管制，協助緊急通報與現場秩序維護；若有受傷或急需協助者，由衛保組協助醫療聯繫。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "駐衛警",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "颱風過後一週內完成校園結構與設施全面檢查，針對損壞設備排定修繕時程並回報復課評估結果。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "因政府宣布停班停課、校方全日停課已確認，優先安排學生自我防護與校方立即應變（公告、巡檢、管制與醫療協助）；颱風過後需進行設施檢查與修繕以恢復正常運作。",
+    "abstain_reason": null
+  }
+}

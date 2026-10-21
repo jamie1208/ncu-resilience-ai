@@ -1,0 +1,80 @@
+{
+  "case_id": "normal-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "有腹瀉或嘔吐症狀的學生立即就醫並保留剩餘餐盒或滷蛋樣本供檢驗；有發燒或嚴重脫水者請優先送急診。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "暫時中止松苑該時段相關便當供餐並封存可疑食材（包括滷蛋）與剩餘餐盒，等待衛生檢驗結果與調查。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請學務處衛生保健組與總務處協調採樣並檢驗疑似食物（含滷蛋）與廚房環境，並調閱當日食材供應與烹調記錄以查證滷蛋是否未煮熟或保存不當。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "學務處衛生保健組",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若查證屬實（滷蛋烹調或保存不當導致污染），要求總務處修訂廚房作業流程，包括明確的滷蛋內部熟度與保存溫度標準、每日溫度紀錄與供應鏈追溯，並在一學期內完成稽核與員工再教育。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "公告提醒全校學生暫時避免食用來源不明或當日剩食，並指示相關單位在確認檢驗結果前加強餐廳清潔與食材管理，提供學生可選的替代用餐地點資訊以降低健康風險。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "優先處理受影響學生的就醫與封存可疑食物，並進行衛生檢驗以查證滷蛋未煮熟的假設；若調查證實，進一步修訂廚房作業與保存流程以防再發。",
+    "abstain_reason": null
+  }
+}

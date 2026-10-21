@@ -1,0 +1,69 @@
+{
+  "case_id": "boundary-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "暫停游泳館使用並提醒學生暫時勿進入池區或更衣室，改至其他運動設施進行活動。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "立即在游泳館入口、學校公告與官網張貼停館並說明檢驗處理中，派員巡視現場維持封鎖，並公告後續檢驗結果及復館標準。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "請學務處衛生保健組或環安中心盡速採樣並確認池水是否大腸桿菌超標，必要時委託檢驗單位重複檢驗以確定結果。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "學務處衛生保健組",
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "若查證屬實，立即實施池水消毒（例如加強氯化處理）、汰換濾材並完成復水檢驗合格後才開放；同時排定定期水質監測與記錄流程以防再發。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e2"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "學校已公告游泳館暫停開放，須先以保護學生安全為優先，並由專責單位短期封館與公告復館流程；因「池水大腸桿菌超標」仍為待查證的假設性原因（c1），需檢驗確認後再實施後續消毒與長期預防措施。",
+    "abstain_reason": null
+  }
+}

@@ -99,7 +99,7 @@ frontmatter 之後依序放以下二級標題，名稱必須完全相同：
 
 - `ok` 時結論欄位不可為 null，`evidence_ids` 至少 1 個；
 - `abstain` 時結論欄位為 null，`abstain_reason` 不可為 null；
-- `evidence_ids` 都必須存在於輸入；
+- `evidence_ids` 都必須存在於輸入；巢狀物件（例如 S07 的每個原因、S08 的每項措施）中的 `evidence_ids` 與 `evidence_spans` 也照同樣規則檢查（P2-T12）；
 - `reason` 等自由文字欄位不得包含個資（電話、email、學號、身分證號）。
 
 需要指出證據位置時，用 `evidence_spans` 陣列，每項為 `{evidence_id, quote}`（P2-T06）：模型逐字抄錄證據中的連續片段，Runner 檢查原句確實出現在該證據中（連續空白視為一個空格），字元位置由程式（`locate_quote`）計算，不由模型給。

@@ -92,5 +92,21 @@ skills:
         positive: true
         threshold: 0.95
 
-  # 以下在各 Skill 的任務中，依其輸出欄位加入（門檻照計畫表）：
-  #   root-cause-analyst／solution-planner（P2-T12）  人工審閱：假設與事實區分正確率 ≥ 0.90
+  # S07（P2-T12）：假設與事實區分正確率 ≥ 0.90。計畫的指標是人工審閱，驗收時由使用者審閱輸出；
+  # 這裡是自動代理指標：cause_basis 是衍生欄位（app/ai/eval/derived.py），原因全為 confirmed、
+  # 全為 hypothesized 或兩者都有（mixed），與標準答案完全相等的比例。abstain 案例沒有 cause_basis，不計入。
+  root-cause-analyst:
+    metrics:
+      - name: fact_hypothesis_accuracy
+        type: accuracy
+        field: cause_basis
+        threshold: 0.90
+
+  # S08（P2-T12）：同上，自動代理指標為 basis_by_cause（措施回填的原因性質是否與 S07 的 basis 一致，
+  # 依 cause_id 排序成「c1=confirmed;c2=hypothesized」）完全相等的比例；人工審閱另在驗收時進行。
+  solution-planner:
+    metrics:
+      - name: fact_hypothesis_accuracy
+        type: accuracy
+        field: basis_by_cause
+        threshold: 0.90

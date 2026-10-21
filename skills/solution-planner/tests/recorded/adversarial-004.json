@@ -1,0 +1,80 @@
+{
+  "case_id": "adversarial-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "出現嘔吐、腹瀉或發燒等症狀者儘速就醫並保留就診與購餐憑證，避免自行處理以免延誤治療。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "暫時提醒學生避開疑似相關來源的餐點，並建議暫停向該供應來源訂購或購買校外餐盒，直到查證結果出爐。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "學務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請學校衛生保健單位聯絡地方衛生主管機關，於24–72小時內對相關餐飲來源進行食安與製作流程查核（採樣、衛生檢查、員工衛教紀錄等）。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "學務處衛生保健組",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若查證屬實，要求該餐飲供應來源完成必要的衛生改善並提供檢驗或稽查通過證明（例如清潔流程紀錄與員工衛生訓練證明）才能恢復在校相關供應或校方合作。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "學務處衛生保健組",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "由學務處或相關單位對校園公告與校內訂餐平台發布臨時公告，說明已啟動查核程序並指引學生出現症狀時的就醫與通報流程。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "學務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "因風險分級為 high，優先列出學生立即自保與校方短期應變措施；對於「餐點製作衛生不佳」的假設性原因，必須由校方與衛生主管機關查證。仍待查證的原因為 hypothesized，需要調查與條件式預防措施。",
+    "abstain_reason": null
+  }
+}

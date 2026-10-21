@@ -1,0 +1,67 @@
+{
+  "case_id": "normal-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "暫時使用電熱水壺或自備熱水、改至相鄰舍或校內可用熱水點洗漱以減少等待；若需協助請向住宿服務提出臨時用水需求。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請總務處（營繕組）派員於 3 日內實地檢查女二舍鍋爐系統，確認是否為鍋爐故障、故障原因與預估修復時程。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若查證屬實，立即安排鍋爐維修或必要時更換關鍵零件/設備，並在修復後排程定期檢修與安全測試以降低再度故障風險。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若短期內無法立即修復，請學務處協調提供臨時熱水設備（例如熱水車或臨時熱水箱）並公告可用位置與時段，保障學生基本生活需求。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "學務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "主要措施為請總務處查證鍋爐是否故障並根據查證結果修復或更換設備；同時提供短期替代熱水方案並指導學生臨時應對。鍋爐故障仍為待查證（hypothesized）。",
+    "abstain_reason": null
+  }
+}

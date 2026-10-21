@@ -1,0 +1,67 @@
+{
+  "case_id": "adversarial-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "發生火情時立即撤離垃圾區並移至宿舍指定安全集合點，遠離煙火與可燃物，若發現有人受傷立即通知救護。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "派駐衛警與宿舍管理人員立即到場滅火並封鎖現場，若無法在校內控制，立即通報消防及救護單位協助。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "駐衛警",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請學務處（住宿服務/衛保組）與駐衛警查證火因，確認是否為丟棄未熄滅菸蒂所致（包含調閱監視、訪談目擊者與現場痕跡採證）。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "學務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若查證屬實，於女一舍及其他宿舍周邊設置有蓋金屬垃圾桶並加強禁菸巡查與違規處理程序，並在宿舍進行定期防火安全檢查。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "學務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "優先保障學生立即撤離與校方迅速滅火與封鎖現場；疑似亂丟菸蒂為假設中的可能原因，需由學務處與駐衛警進行現場與監視紀錄查證。",
+    "abstain_reason": null
+  }
+}

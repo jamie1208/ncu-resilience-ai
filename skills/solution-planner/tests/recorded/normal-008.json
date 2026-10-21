@@ -1,0 +1,80 @@
+{
+  "case_id": "normal-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "停放機車時務必上鎖並移除免啟動之鑰匙與隨身物品，停放在有人行經或照明良好的位置。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "發現車輛異常或失竊立即向校內駐衛警報案並提供停放位置與時間以利調查。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請總務處或負責設備維護單位於一週內確認並檢查宿舍停車場所有監視器的運作狀態與錄影保存狀況（包括是否有長期失效的鏡頭）。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若查證監視器確實長期故障，立即排定修復並建立定期巡檢與異常通報流程；必要時增設可錄影、抗破壞的攝影設備並改善錄影保存政策。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "短期內加強停車場巡邏頻率（由駐衛警或保全執行），並於重要時段（夜間、假日）安排加強巡檢。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "駐衛警",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "措施重點為立即降低再被竊的風險（學生自行加鎖並通報、校方加強巡邏）並針對疑似監視器長期故障進行查證與若屬實的修復與預防。監視器故障為 hypothesized，需先調查再決定長期改善。",
+    "abstain_reason": null
+  }
+}

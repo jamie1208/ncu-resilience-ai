@@ -1,0 +1,12 @@
+{
+  "case_id": "boundary-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "measures": [],
+    "evidence_ids": [],
+    "reason": "官方已發出澄清，表示網路流傳的爆炸事件經查無此事，不需要擬定應變或預防措施。",
+    "abstain_reason": "event_refuted"
+  }
+}

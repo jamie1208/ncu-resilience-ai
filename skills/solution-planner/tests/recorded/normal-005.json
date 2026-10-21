@@ -1,0 +1,81 @@
+{
+  "case_id": "normal-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "公告目前停水原因與預計恢復時間（依據自來水公司搶修進度），並在公告中說明飲用水與生活用水替代方案（供水站位置或領取瓶裝水）。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "學務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "提醒宿舍學生暫時節約用水並提供簡單應對方法（如暫停洗衣、提前儲水、使用備用瓶裝水）。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請總務處向自來水公司確認搶修細節與後續預防措施，並評估是否需檢視校內進水點以降低外部事件影響。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "由總務處查證是否為校方清洗水塔且未事前公告（確認公告記錄與作業日誌），若查證屬實，訂定水塔清洗前的公告與替代供水作業流程。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c2",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "若查證屬實，學校於未來執行水塔清洗前至少提前48小時公告並安排替代供水（如臨時飲水站或瓶裝水發放），並將程序寫入例行維護作業辦法。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c2",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e2"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "自來水公司外部管線搶修已確認，先以公告與臨時供水措施降低對學生生活的影響；疑似學校清洗水塔一事仍待總務處查證，若屬實再落實事前公告與替代供水程序。",
+    "abstain_reason": null
+  }
+}

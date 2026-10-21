@@ -34,6 +34,7 @@ from pydantic import (
     model_validator,
 )
 
+from app.ai.eval.derived import root_cause_fields, solution_plan_fields
 from app.ai.eval.metrics import (
     accuracy,
     case_outcome,
@@ -186,8 +187,15 @@ def _report_name(skill: Skill, mode: Mode, model: str, default_model: str) -> st
 
 Deriver = Callable[[dict[str, Any]], dict[str, Any]]
 
-DERIVERS: dict[str, Deriver] = {"risk-assessor": derived_fields}
-"""由輸出計算衍生欄位的 Skill（P2-T11）；欄位名稱要在 SKILL.md 的 metadata.derived_fields 宣告。"""
+DERIVERS: dict[str, Deriver] = {
+    "risk-assessor": derived_fields,
+    "root-cause-analyst": root_cause_fields,
+    "solution-planner": solution_plan_fields,
+}
+"""由輸出計算衍生欄位的 Skill（P2-T11；S07／S08 為 P2-T12）。
+
+欄位名稱要在 SKILL.md 的 metadata.derived_fields 宣告。
+"""
 
 
 def with_derived(output: dict[str, Any] | None, deriver: Deriver | None) -> dict[str, Any] | None:

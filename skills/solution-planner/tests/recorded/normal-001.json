@@ -1,0 +1,67 @@
+{
+  "case_id": "normal-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "停電期間與恢復後，學生暫停或延後需穩定供電之實驗與設備操作，並檢查個人與小組設備是否有損壞；若發現異常請向授課教師回報。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "確認停電已完全恢復且相關電力設備已完成更換與安全測試，對外公告已恢復供電時間與後續監測安排。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "針對工學院其他可能老舊的變電箱與相關配電設備進行全面盤點與風險評估，排定汰換或更新時程並納入年度預算。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "建立定期（例如每年）配電設備檢查與維護程序，含定期試載、接地與保護裝置測試，並將檢查紀錄備查以降低類似跳脫風險。",
+        "audience": "school",
+        "horizon": "long",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "因變電箱老舊跳脫已被確認，優先確保學生在停電期間與恢復後的安全並由總務處完成更換與後續檢測；建議進行其他配電設備的盤點與長期維護以預防再發。",
+    "abstain_reason": null
+  }
+}

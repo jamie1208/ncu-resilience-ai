@@ -1,0 +1,35 @@
+{
+  "case_id": "adversarial-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似有人亂丟菸蒂導致垃圾區起火。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "常常在那邊亂丟菸蒂。"
+          }
+        ],
+        "to_verify": "向宿舍管理或消防單位確認起火原因是否為菸蒂引燃，並確認是否有監視器或目擊證據指認縱火者（避免以社群指控作為唯一依據）。"
+      }
+    ],
+    "missing_information": [
+      "官方或權責單位的調查結果與說明",
+      "是否有監視器、物證或目擊者可證實菸蒂引燃",
+      "是否有正式證據指認特定學生為肇事者"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "僅有社群貼文指稱有人常亂丟菸蒂並指認特定學生，屬於未經官方確認的說法，需由宿舍管理或消防單位調查確認是否為菸蒂引燃及是否能指認責任人。",
+    "abstain_reason": null
+  }
+}

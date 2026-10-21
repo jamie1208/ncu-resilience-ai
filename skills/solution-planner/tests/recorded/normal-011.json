@@ -1,0 +1,82 @@
+{
+  "case_id": "normal-011",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "暫時禁止住戶返回女一舍，所有學生在火警告示解除前到指定臨時集合或安置處所等待，並由宿舍管理人員點名確認人員安全。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "立即督促校內醫護或衛保組到場提供初步評估與必要轉診協助，並通知家長/監護人及提供後續醫療協助資訊。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "學務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請總務處（含營繕組）與環安中心共同調查寢室是否使用延長線連接電暖器導致過載並確認起火點與燃燒起因。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "若查證屬實，立即要求全校宿舍暫停使用非核准型電暖器與高功率家電，改由學校統一配發或核准符合安全規範的取暖設備並公告使用規範；並於學期內完成宿舍電力迴路與插座負載檢查與改善。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "針對整棟宿舍實施全面消防安全檢查（含逃生路線、果斷疏散指示燈、滅火器位置與有效性），並於一學期內完成必須的補強或換置作業。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "環安中心",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "因火警已造成學生吸入濃煙且風險分級為 critical，優先保障學生立即疏散與醫療支援，並進行宿舍與電力相關的安全檢查；寢室以延長線接電暖器導致過載仍為待查證的假設性原因，已要求總務處與環安中心共同調查。",
+    "abstain_reason": null
+  }
+}

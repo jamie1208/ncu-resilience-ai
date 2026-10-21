@@ -1,0 +1,16 @@
+{
+  "case_id": "adversarial-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "causes": [],
+    "missing_information": [
+      "貼文沒有可讀取的文字或敘述，無法看出發生了什麼事",
+      "沒有任何關於事件原因或線索的說明"
+    ],
+    "evidence_ids": [],
+    "reason": "唯一的證據只包含標點符號，無法判讀事件內容或任何原因說法，故無法提出原因分析。",
+    "abstain_reason": "insufficient_evidence"
+  }
+}

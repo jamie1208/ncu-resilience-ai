@@ -1,0 +1,18 @@
+{
+  "case_id": "boundary-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "causes": [],
+    "missing_information": [
+      "停電原因",
+      "是否有官方或權責單位說明停電原因",
+      "受影響的設備或設施範圍（哪些店家或路段）",
+      "預計恢復時間或處理進度"
+    ],
+    "evidence_ids": [],
+    "reason": "現有證據只描述宵夜街整排停電的現象，沒有任何關於可能原因或來源的說法，因此無法列出已確認或可驗證的原因。",
+    "abstain_reason": "no_cause_evidence"
+  }
+}

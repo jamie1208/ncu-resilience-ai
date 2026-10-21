@@ -1,0 +1,35 @@
+{
+  "case_id": "boundary-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "化學館四樓異味經查確認為冷凍櫃冷媒外洩。",
+        "basis": "confirmed",
+        "evidence_ids": [
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e2",
+            "quote": "化學館四樓異味經查確認為冷凍櫃冷媒外洩，已完成修繕，即日起恢復使用。"
+          }
+        ],
+        "to_verify": null
+      }
+    ],
+    "missing_information": [
+      "冷媒種類與洩漏濃度及其對師生健康之評估報告",
+      "是否有紀錄洩漏發生的時間點與原因分析細節"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "校方（ncu-epsc）先以公告表示原因調查中，後續公告經查確認為冷凍櫃冷媒外洩並已修繕；因此冷媒外洩為已確認原因，仍缺乏關於冷媒種類與濃度及健康影響的細節。",
+    "abstain_reason": null
+  }
+}
