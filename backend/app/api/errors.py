@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import logging
 from enum import StrEnum
 
 from fastapi import FastAPI, Request
@@ -14,6 +15,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.responses import error_envelope
 from app.core.security import ANONYMOUS, PermissionDeniedError
+
+logger = logging.getLogger("app.api")
 
 
 class ErrorCode(StrEnum):
@@ -27,6 +30,7 @@ class ErrorCode(StrEnum):
     CONFLICT = "CONFLICT"
     MODEL_UNAVAILABLE = "MODEL_UNAVAILABLE"
     METHOD_NOT_ALLOWED = "METHOD_NOT_ALLOWED"
+    INTERNAL_ERROR = "INTERNAL_ERROR"
 
 
 STATUS_CODES: dict[ErrorCode, int] = {
@@ -37,6 +41,7 @@ STATUS_CODES: dict[ErrorCode, int] = {
     ErrorCode.METHOD_NOT_ALLOWED: 405,
     ErrorCode.CONFLICT: 409,
     ErrorCode.RATE_LIMITED: 429,
+    ErrorCode.INTERNAL_ERROR: 500,
     ErrorCode.MODEL_UNAVAILABLE: 503,
 }
 
@@ -107,9 +112,16 @@ async def _http_error(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(error_envelope(code.value, message), status_code=exc.status_code)
 
 
+async def _unexpected_error(request: Request, exc: Exception) -> JSONResponse:
+    # 只記例外類型：訊息可能含投稿原文或個資；回應也不帶任何細節
+    logger.error("unhandled_error", extra={"fields": {"error_type": type(exc).__name__}})
+    return error_response(ApiError(ErrorCode.INTERNAL_ERROR, "伺服器內部錯誤"))
+
+
 def register_error_handlers(app: FastAPI) -> None:
     """註冊例外處理，讓所有錯誤都以 `{data, meta, error}` 回應。"""
     app.add_exception_handler(ApiError, _api_error)
     app.add_exception_handler(RequestValidationError, _validation_error)
     app.add_exception_handler(PermissionDeniedError, _permission_denied)
     app.add_exception_handler(StarletteHTTPException, _http_error)
+    app.add_exception_handler(Exception, _unexpected_error)

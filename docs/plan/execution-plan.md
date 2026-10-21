@@ -274,6 +274,8 @@ uv run python ../scripts/eval/run_eval.py --all --split test --live --summary ev
 - **P3-T03 管理 API**
   - 檔案：`app/api/v1/admin/events.py`（列表、verify、analyze）、`alerts.py`（retract）、`dashboard.py`、`audit_logs.py`、`app/api/pagination.py`（cursor）、`app/api/errors.py`（{data,meta,error} 與錯誤碼）；所有寫入帶 request_id 並寫稽核
   - 驗證：`tests/integration/test_admin_api.py`
+  - 範圍調整（使用者決定，2026-10-21）：計畫原本沒有任務建立 alerts 表，改由本任務新增 `app/models/alert.py`（alerts、alert_deliveries，依規格 §9）與 `infra/migrations/versions/0008_alerts.py`，P3-T08 直接沿用
+  - 實作調整（AI 自行決定，2026-10-21）：另加 `GET /admin/events/{id}`（證據來源、風險歷史，供 P3-T05 事件工作台）與 `GET /admin/alerts`（通知中心）；儀表板為 `GET /admin/dashboard`（取代規格的公開 `/dashboard/summary`，需 `events:read_all`）；verify 可設定 detected、analyzing 以外的事件狀態，轉移不合法回 CONFLICT；只有 published、updated 可撤回；備註／撤回原因含個資回 VALIDATION_ERROR；稽核查詢的稽核 action 為 `audit_logs.read`（`authorize()` 既有命名）；未預期例外回 500 `INTERNAL_ERROR`（統一格式、不帶細節）。另外修改 `app/api/v1/admin/__init__.py`、`app/models/__init__.py`、`docs/architecture/rbac.md`
 - **P3-T05 管理前端**（唯一的前端）
   - 檔案：`frontend/src/admin/pages/`（EventWorkbench：來源對照、風險分項、證據；AlertCenter：個人通知中心；SkillsDashboard：版本、費用、失敗率、評測結果；Ops）；移除 P0-T03 的 `frontend/src/public/` 骨架與「回公開網站」連結，根路徑改為登入頁
   - 驗證：Playwright 管理流程測試

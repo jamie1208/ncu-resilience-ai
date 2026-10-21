@@ -61,13 +61,16 @@
 | POST | `/api/v1/auth/logout` | 已登入＋CSRF | `auth.logout` |
 | GET | `/api/v1/auth/me` | 已登入 | |
 | GET | `/api/v1/admin/events` | `events:read_all` | |
+| GET | `/api/v1/admin/events/{id}` | `events:read_all` | |
 | POST | `/api/v1/admin/events/{id}/verify` | `events:verify` | `event.verify` |
 | POST | `/api/v1/admin/events/{id}/analyze` | `events:analyze` | `event.analyze` |
+| GET | `/api/v1/admin/alerts` | `alerts:read_all` | |
 | POST | `/api/v1/admin/alerts/{id}/retract` | `alerts:retract` | `alert.retract`（含原因） |
+| GET | `/api/v1/admin/dashboard` | `events:read_all` | |
 | POST | `/api/v1/admin/scenarios` | `scenarios:create` | `scenario.create` |
 | GET | `/api/v1/admin/ingestion-runs` | `ingestion_runs:read` | |
 | GET | `/api/v1/admin/ingestion-runs/health` | `ingestion_runs:read` | |
-| GET | `/api/v1/admin/audit-logs` | `audit_logs:read` | `audit_log.read`（敏感讀取） |
+| GET | `/api/v1/admin/audit-logs` | `audit_logs:read` | `audit_logs.read`（敏感讀取，經 `authorize()`） |
 
 個人版沒有公開 API（ADR-0008）：除上表兩個免登入端點外，所有端點都需要登入；`/api/v1/admin/*` 在 router 層就先擋未登入，新端點即使忘了加權限依賴也不會變成免登入。`/docs`、`/redoc`、`/openapi.json` 預設關閉（`NCU_API_DOCS_ENABLED=true` 才開，僅供本機開發）。`tests/integration/test_auth.py` 會列舉所有路由驗證這點。
 
