@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "女一舍昨夜火警警報經查為三樓交誼廳烹煮冒煙所致，無人受傷。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "女一舍半夜火警警報大響，全部人都被叫下樓，聽說是三樓有人煮東西冒煙。"
+      }
+    ],
+    "reason": "兩者都描述同一地點（女一舍）、同一時段（昨夜/半夜 10/19）及相同起因（三樓烹煮/煮東西冒煙），描述吻合，屬同一事件。",
+    "abstain_reason": null
+  }
+}

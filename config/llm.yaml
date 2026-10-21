@@ -20,6 +20,11 @@ limits:
   # 每日累計：P2-T04 從 ai_analysis_runs 讀取當日已花費後強制執行
   daily_usd: 1.0
 
+# 事件關聯的候選召回（P2-T09，使用者 2026-10-21 決定）；dimensions 必須等於 events.embedding 的維度
+embedding:
+  model: text-embedding-3-small
+  dimensions: 1536
+
 # 每百萬 token 的價格（USD，Standard tier，≤ 272K 輸入）
 pricing_checked_at: 2026-10-19
 pricing:
@@ -27,3 +32,7 @@ pricing:
     input: 0.25
     cached_input: 0.025
     output: 2.0
+  # embedding 只計輸入 token（2026-10-21 官網模型頁）
+  text-embedding-3-small:
+    input: 0.02
+    output: 0.0

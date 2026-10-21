@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-012",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "related_event",
+    "confidence": 0.7,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "昨天有同學在中壢火車站附近被假冒客服的詐騙集團騙了兩萬塊。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "有人打電話自稱是學校出納組，說獎學金帳戶有問題，要我去 ATM 操作。"
+      }
+    ],
+    "reason": "兩則皆為詐騙案例（security 類），但 a1 描述發生於中壢火車站附近且為假冒客服的實際金錢詐騙，c1 則是電話詐騙、自稱出納組要求 ATM 操作；時間與作案手法、地點細節不一致，無法視為同一件事。",
+    "abstain_reason": null
+  }
+}

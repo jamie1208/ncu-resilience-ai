@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-014",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "related_event",
+    "confidence": 0.8,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "女一舍火警警報昨天晚上又響了"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "女一舍上週六半夜火警警報大響"
+      }
+    ],
+    "reason": "兩篇都在女一舍、同為火警警報，但時間不同；新文說「這週第二次」，表示為另一起發生於不同時點的警報，應為相關事件而非同一事件。",
+    "abstain_reason": null
+  }
+}

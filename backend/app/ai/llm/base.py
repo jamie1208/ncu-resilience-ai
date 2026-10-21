@@ -1,6 +1,7 @@
 """LLM Adapter 介面（P2-T03）。
 
-業務邏輯只透過 `LLMProvider.generate_structured` 呼叫模型，
+業務邏輯只透過 `LLMProvider.generate_structured` 呼叫模型、
+透過 `EmbeddingProvider.embed` 取得向量（P2-T09），
 更換供應商或模型只需要改設定（閘門 G2-3）。
 Provider 只負責送出請求與分類錯誤：回傳模型輸出的原始文字，JSON 解析、schema 與業務驗證、
 重試與 abstain 由 Skill Runner 處理（P2-T04）。
@@ -42,6 +43,17 @@ class LLMResult:
     text: str
     usage: Usage
     response_id: str | None
+    latency_ms: int
+
+
+@dataclass(frozen=True)
+class EmbeddingResult:
+    """一次 embedding 呼叫的結果；`vectors` 與輸入文字一一對應、順序相同。"""
+
+    provider: str
+    model: str
+    vectors: tuple[tuple[float, ...], ...]
+    input_tokens: int
     latency_ms: int
 
 
@@ -103,4 +115,17 @@ class LLMProvider(Protocol):
         max_output_tokens: int,
     ) -> LLMResult:
         """送出訊息，要求輸出符合 `json_schema`（strict）的 JSON；失敗時拋出 `LLMError`。"""
+        ...
+
+
+@runtime_checkable
+class EmbeddingProvider(Protocol):
+    """Embedding 供應商（P2-T09）。實作：`OpenAIProvider`、`FakeEmbeddingProvider`。"""
+
+    name: str
+
+    async def embed(
+        self, texts: Sequence[str], *, model: str, dimensions: int, timeout: float
+    ) -> EmbeddingResult:
+        """回傳每段文字的向量（長度為 `dimensions`）；失敗時拋出 `LLMError`。"""
         ...

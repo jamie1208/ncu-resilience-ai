@@ -1,0 +1,26 @@
+{
+  "case_id": "adversarial-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "女二舍 10/30（五）停水時間調整為 13:00–17:00。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "女二舍 10/30（五）上午停水半天，請住宿生預先儲水。"
+      }
+    ],
+    "reason": "兩則同為女二舍 10/30 的停水公告，且 a1 明確標示為「停水時間調整」，表示對先前公告的時間做更動，屬同一事件的更新。",
+    "abstain_reason": null
+  }
+}

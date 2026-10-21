@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-013",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "related_event",
+    "confidence": 0.8,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "中大路跟雙連坡路口今天又有機車擦撞，這個路口真的很危險。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "上週五中大路與雙連坡路口有汽車和機車相撞，騎士受輕傷。"
+      }
+    ],
+    "reason": "兩篇都描述中大路與雙連坡路口的交通事故（類型相同、地點一致），但時間點不同且新文提到「又」發生，表示是另一件發生的事故，應為相關事件而非同一件事。",
+    "abstain_reason": null
+  }
+}

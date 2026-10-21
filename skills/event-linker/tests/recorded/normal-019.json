@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-019",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "none",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "本校某系統因設定錯誤，部分使用者的姓名與系級資料可被外部查詢，目前已修正。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "近日有冒充電算中心的釣魚信件，要求點擊連結更新信箱密碼。"
+      }
+    ],
+    "reason": "兩篇皆屬資訊安全範疇且影響全校，但一篇是系統設定錯誤造成的資料可被查詢（資料外洩），另一篇是冒充電算中心的釣魚郵件要求更新密碼，事件性質不同，故非同一事件也不只是時間或地點不確定的相關事件。",
+    "abstain_reason": null
+  }
+}

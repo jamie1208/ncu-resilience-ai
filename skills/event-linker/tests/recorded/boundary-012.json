@@ -1,0 +1,26 @@
+{
+  "case_id": "boundary-012",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "none",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "我的腳踏車停在男九舍門口被偷了，灰色捷安特。"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "昨天有同學在中壢火車站附近被假冒客服的詐騙集團騙了兩萬塊。"
+      }
+    ],
+    "reason": "一則描述男九舍門口的腳踏車被偷，另一則描述中壢火車站附近的假冒客服詐騙，地點與事件型態（失竊 vs. 詐騙）都不一致，故非相關事件。",
+    "abstain_reason": null
+  }
+}

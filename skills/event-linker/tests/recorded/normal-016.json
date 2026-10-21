@@ -1,0 +1,26 @@
+{
+  "case_id": "normal-016",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "none",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "中央氣象署發布桃園市陸上強風特報"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "10/19 02:20 臺灣東部海域發生規模 5.8 地震"
+      }
+    ],
+    "reason": "兩篇證據描述的現象不同：a1 是強風特報，c1 是規模 5.8 的地震，雖同為氣象/災害類但不是同一種事件，依規則應為 none。",
+    "abstain_reason": null
+  }
+}

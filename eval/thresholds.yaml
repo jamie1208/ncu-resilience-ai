@@ -53,8 +53,23 @@ skills:
         field: category
         threshold: 0.85
 
+  # S04（P2-T09）：同事件 precision ≥ 0.95、recall ≥ 0.85。
+  # 每筆 case 是一對（新文章, 候選事件），以 relation = same_event 為正類；
+  # 等同「是否合併這一對」的配對式指標。abstain 案例沒有 relation，不計入。
+  event-linker:
+    metrics:
+      - name: same_event_precision
+        type: precision
+        field: relation
+        positive: same_event
+        threshold: 0.95
+      - name: same_event_recall
+        type: recall
+        field: relation
+        positive: same_event
+        threshold: 0.85
+
   # 以下在各 Skill 的任務中，依其輸出欄位加入（門檻照計畫表）：
-  #   event-linker（P2-T09）      同事件 precision ≥ 0.95、recall ≥ 0.85（配對式合併指標）
   #   evidence-verifier（P2-T10） 無 evidence_ids 被標 verified 的次數 = 0
   #   risk-assessor（P2-T11）     高風險 recall ≥ 0.95；同輸入結果重現 100%
   #   root-cause-analyst／solution-planner（P2-T12）  人工審閱：假設與事實區分正確率 ≥ 0.90

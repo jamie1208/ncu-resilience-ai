@@ -5,19 +5,23 @@
 - 字串：原樣回傳（用來模擬無效 JSON）；
 - `LLMError`：直接拋出（用來模擬逾時、拒答等）。
 
+`FakeEmbeddingProvider`（P2-T09）以文字的雜湊產生固定的單位向量，也可以指定特定文字的向量。
+
 錄製回應格式見 docs/architecture/skill-standard.md §8（`tests/recorded/<case id>.json`）。
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
+import math
 from collections import deque
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from app.ai.llm.base import LLMError, LLMResult, Message, Usage
+from app.ai.llm.base import EmbeddingResult, LLMError, LLMResult, Message, Usage
 
 Scripted = Mapping[str, Any] | str | LLMError
 
@@ -93,3 +97,37 @@ class FakeProvider:
             response_id=None,
             latency_ms=0,
         )
+
+
+class FakeEmbeddingProvider:
+    """不呼叫 API 的 embedding：同一段文字永遠得到同一個單位向量。"""
+
+    name = "fake"
+
+    def __init__(self, vectors: Mapping[str, Sequence[float]] | None = None) -> None:
+        self._vectors = dict(vectors or {})
+        self.calls: list[tuple[str, ...]] = []
+
+    async def embed(
+        self, texts: Sequence[str], *, model: str, dimensions: int, timeout: float
+    ) -> EmbeddingResult:
+        """記錄呼叫，回傳指定的向量；沒有指定的文字以雜湊產生。"""
+        self.calls.append(tuple(texts))
+        vectors = tuple(
+            tuple(self._vectors[t]) if t in self._vectors else _hash_vector(t, dimensions)
+            for t in texts
+        )
+        tokens = sum(len(t.encode("utf-8")) for t in texts)
+        return EmbeddingResult(self.name, model, vectors, tokens, 0)
+
+
+def _hash_vector(text: str, dimensions: int) -> tuple[float, ...]:
+    raw: list[float] = []
+    counter = 0
+    while len(raw) < dimensions:
+        digest = hashlib.sha256(f"{counter}\0{text}".encode()).digest()
+        raw.extend(b / 127.5 - 1.0 for b in digest)
+        counter += 1
+    raw = raw[:dimensions]
+    norm = math.sqrt(sum(x * x for x in raw)) or 1.0
+    return tuple(x / norm for x in raw)

@@ -1,0 +1,26 @@
+{
+  "case_id": "boundary-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "科學二館化學品外洩"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "科二三樓整層都是刺鼻的味道"
+      }
+    ],
+    "reason": "兩則證據都指向科學二館三樓、同日發生的化學品相關事件（外洩與刺鼻氣味、並有疏散），時間、地點與事情描述一致。",
+    "abstain_reason": null
+  }
+}

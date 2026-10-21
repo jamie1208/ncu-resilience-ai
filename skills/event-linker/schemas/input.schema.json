@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "event-linker 輸入",
+  "description": "一篇新文章與一個候選事件。evidence 同時包含新文章（article.evidence_ids）與候選事件（candidate.evidence_ids）的證據；text 是不可信的來源內容，Skill Runner 會包在 <untrusted_source> 中傳給模型。article／candidate 的摘要來自 S02／S03 的輸出，放在 <skill_input> 中。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence",
+    "article",
+    "candidate"
+  ],
+  "properties": {
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "source_code",
+          "text"
+        ],
+        "properties": {
+          "evidence_id": {
+            "description": "證據識別碼，由 Runner 指定；輸出只能引用這裡出現的值",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "source_code": {
+            "description": "來源代碼（config/sources.yaml）",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 300
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "published_at": {
+            "description": "aware UTC 時間（ISO 8601）",
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "article": {
+      "description": "新文章的 S02／S03 摘要",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_ids",
+        "category",
+        "occurrence_start_date",
+        "location"
+      ],
+      "properties": {
+        "evidence_ids": {
+          "description": "屬於這一方的證據",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          }
+        },
+        "category": {
+          "description": "S03 的類別",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "facility",
+            "weather",
+            "security",
+            "traffic",
+            "health",
+            "fire",
+            "academic",
+            "infosec",
+            "none",
+            null
+          ]
+        },
+        "occurrence_start_date": {
+          "description": "S02 的開始日期（台北時間）",
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "location": {
+          "description": "S02 的地點標準名稱",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 50
+        }
+      }
+    },
+    "candidate": {
+      "description": "候選事件（由 app/ai/embeddings.py 召回）的摘要",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "evidence_ids",
+        "category",
+        "occurrence_start_date",
+        "location"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "evidence_ids": {
+          "description": "屬於這一方的證據",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          }
+        },
+        "category": {
+          "description": "S03 的類別",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "facility",
+            "weather",
+            "security",
+            "traffic",
+            "health",
+            "fire",
+            "academic",
+            "infosec",
+            "none",
+            null
+          ]
+        },
+        "occurrence_start_date": {
+          "description": "S02 的開始日期（台北時間）",
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "location": {
+          "description": "S02 的地點標準名稱",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 50
+        }
+      }
+    }
+  }
+}

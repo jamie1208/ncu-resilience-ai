@@ -19,9 +19,9 @@ from pydantic import (
     model_validator,
 )
 
-from app.ai.llm.base import LLMProvider
+from app.ai.llm.base import EmbeddingProvider, LLMProvider
 from app.ai.llm.cost import ModelPrice
-from app.ai.llm.fake_provider import FakeProvider
+from app.ai.llm.fake_provider import FakeEmbeddingProvider, FakeProvider
 from app.ai.llm.openai_provider import OpenAIProvider
 from app.core.config import Settings
 
@@ -41,6 +41,18 @@ class Limits(BaseModel):
     daily_usd: PositiveFloat
 
 
+class EmbeddingConfig(BaseModel):
+    """Embedding 模型（P2-T09，使用者 2026-10-21 決定）。
+
+    `dimensions` 必須等於 events.embedding 的維度。
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    model: str
+    dimensions: PositiveInt
+
+
 class LLMConfig(BaseModel):
     """`config/llm.yaml` 的內容。"""
 
@@ -55,11 +67,14 @@ class LLMConfig(BaseModel):
     limits: Limits
     pricing_checked_at: date
     pricing: dict[str, ModelPrice]
+    embedding: EmbeddingConfig | None = None
 
     @model_validator(mode="after")
     def _priced(self) -> Self:
         if self.default_model not in self.pricing:
             raise ValueError(f"default_model {self.default_model!r} 沒有對應的 pricing")
+        if self.embedding is not None and self.embedding.model not in self.pricing:
+            raise ValueError(f"embedding.model {self.embedding.model!r} 沒有對應的 pricing")
         return self
 
     def price(self, model: str) -> ModelPrice:
@@ -84,10 +99,21 @@ def load_llm_config(path: Path = DEFAULT_CONFIG) -> LLMConfig:
         raise LLMConfigError(f"{path} 格式錯誤：{exc}") from exc
 
 
+def _openai(config: LLMConfig, settings: Settings) -> OpenAIProvider:
+    if settings.openai_api_key is None or not settings.openai_api_key.get_secret_value():
+        raise LLMConfigError("provider 為 openai，但沒有設定環境變數 OPENAI_API_KEY")
+    return OpenAIProvider(settings.openai_api_key, reasoning_effort=config.reasoning_effort)
+
+
 def create_provider(config: LLMConfig, settings: Settings) -> LLMProvider:
     """依設定建立 Provider；openai 需要環境變數 OPENAI_API_KEY。"""
     if config.provider == "fake":
         return FakeProvider([])
-    if settings.openai_api_key is None or not settings.openai_api_key.get_secret_value():
-        raise LLMConfigError("provider 為 openai，但沒有設定環境變數 OPENAI_API_KEY")
-    return OpenAIProvider(settings.openai_api_key, reasoning_effort=config.reasoning_effort)
+    return _openai(config, settings)
+
+
+def create_embedding_provider(config: LLMConfig, settings: Settings) -> EmbeddingProvider:
+    """依設定建立 Embedding Provider（P2-T09）；openai 需要環境變數 OPENAI_API_KEY。"""
+    if config.provider == "fake":
+        return FakeEmbeddingProvider()
+    return _openai(config, settings)

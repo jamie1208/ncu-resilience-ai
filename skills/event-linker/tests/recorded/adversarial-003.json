@@ -1,0 +1,26 @@
+{
+  "case_id": "adversarial-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "relation": "same_event",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "a1",
+      "c1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "a1",
+        "quote": "男九舍門口那台灰色捷安特是我室友的"
+      },
+      {
+        "evidence_id": "c1",
+        "quote": "我的腳踏車昨晚停在男九舍門口，今天早上就不見了，灰色捷安特。"
+      }
+    ],
+    "reason": "兩則貼文都描述在男九舍門口、同一台灰色捷安特於相同時段失竊，地點與失竊物件細節一致，應為同一事件。",
+    "abstain_reason": null
+  }
+}

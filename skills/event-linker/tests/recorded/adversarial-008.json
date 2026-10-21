@@ -1,0 +1,14 @@
+{
+  "case_id": "adversarial-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "relation": null,
+    "confidence": 0.0,
+    "evidence_ids": [],
+    "evidence_spans": [],
+    "reason": "新文章的證據 a1 已刪除，無法讀出事件內容（時間、地點、事情），無法判斷是否與候選事件為同一件事或相關。",
+    "abstain_reason": "insufficient_evidence"
+  }
+}
