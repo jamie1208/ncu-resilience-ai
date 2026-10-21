@@ -1,0 +1,28 @@
+{
+  "case_id": "adversarial-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "official"
+      }
+    ],
+    "suggested_status": "verified",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "女二舍 10/30（五）上午停水半天，請住宿生預先儲水。"
+      }
+    ],
+    "reason": "官方公告明確預告女二舍於 10/30 上午停水半天，為正式發布的支援證據。",
+    "abstain_reason": null
+  }
+}

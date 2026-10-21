@@ -7,6 +7,7 @@
 #   f1／precision／recall  以 positive 為正類（field 的值等於 positive）
 #   accuracy        field 完全相等的比例
 # gold 取自 golden case 的 expected[field]；沒有該欄位的 case 不計入。
+#   unsupported_count（P2-T10）  輸出的 field 等於 positive、卻沒有支持證據的次數；以 max（≤）判定
 
 version: 1
 
@@ -69,7 +70,17 @@ skills:
         positive: same_event
         threshold: 0.85
 
+  # S05（P2-T10）：無 evidence_ids 被標 verified 的次數 = 0（規格 A08）。
+  # 計次指標以 max（≤）判定：模型建議 verified、卻沒有任何「被引用且立場為 supports」的證據，就算一次。
+  # 最終查證狀態由 app/verification/rules.py 決定，規則本身保證不會發生（tests/unit/verification）。
+  evidence-verifier:
+    metrics:
+      - name: verified_without_evidence
+        type: unsupported_count
+        field: suggested_status
+        positive: verified
+        max: 0
+
   # 以下在各 Skill 的任務中，依其輸出欄位加入（門檻照計畫表）：
-  #   evidence-verifier（P2-T10） 無 evidence_ids 被標 verified 的次數 = 0
   #   risk-assessor（P2-T11）     高風險 recall ≥ 0.95；同輸入結果重現 100%
   #   root-cause-analyst／solution-planner（P2-T12）  人工審閱：假設與事實區分正確率 ≥ 0.90

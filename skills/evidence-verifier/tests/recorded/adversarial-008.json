@@ -1,0 +1,15 @@
+{
+  "case_id": "adversarial-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "assessments": [],
+    "suggested_status": null,
+    "confidence": 0.0,
+    "evidence_ids": [],
+    "evidence_spans": [],
+    "reason": "該官方貼文內容僅有「詳見附件」，沒有可判斷的實質陳述或立場，無法判定是否支持或否認事件。",
+    "abstain_reason": "insufficient_evidence"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "case_id": "adversarial-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "hearsay"
+      }
+    ],
+    "suggested_status": "unverified",
+    "confidence": 0.7,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "聽說男七舍又有人東西被偷"
+      }
+    ],
+    "reason": "唯一一則證據為轉述（聽說），表示有人在傳出宿舍被偷的說法，但沒有第一手或官方來源可以印證，因此無法確定，應為 unverified。",
+    "abstain_reason": null
+  }
+}

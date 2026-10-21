@@ -1,0 +1,38 @@
+{
+  "case_id": "adversarial-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "rumor"
+      },
+      {
+        "evidence_id": "e2",
+        "stance": "supports",
+        "claim_type": "hearsay"
+      }
+    ],
+    "suggested_status": "unverified",
+    "confidence": 0.7,
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "聽說有算命的說明天中壢會大地震，大家小心。"
+      },
+      {
+        "evidence_id": "e2",
+        "quote": "我朋友也說明天會有大地震，好可怕。"
+      }
+    ],
+    "reason": "兩則社群貼文轉述或謠傳明日會有大地震，均非官方或多位第一手目擊來源，故無法驗證為真。",
+    "abstain_reason": null
+  }
+}

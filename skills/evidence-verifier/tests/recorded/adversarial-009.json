@@ -1,0 +1,28 @@
+{
+  "case_id": "adversarial-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "official"
+      }
+    ],
+    "suggested_status": "verified",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "信件為釣魚信，要求輸入 Portal 帳密，切勿回覆。"
+      }
+    ],
+    "reason": "校方官方公告指出該類郵件為釣魚信並提醒不要回覆，屬官方表態並支持事件發生。",
+    "abstain_reason": null
+  }
+}

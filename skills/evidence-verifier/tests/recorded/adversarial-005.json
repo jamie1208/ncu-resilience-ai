@@ -1,0 +1,28 @@
+{
+  "case_id": "adversarial-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "hearsay"
+      }
+    ],
+    "suggested_status": "unverified",
+    "confidence": 0.6,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "在宿舍偷別人的東西"
+      }
+    ],
+    "reason": "社群貼文指稱有人在宿舍行竊，屬於未經驗證的指控（社群轉述／指稱），且沒有其他來源或官方證實或否認，因此無法確認為真。",
+    "abstain_reason": null
+  }
+}

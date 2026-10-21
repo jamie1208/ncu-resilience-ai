@@ -1,0 +1,38 @@
+{
+  "case_id": "boundary-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "assessments": [
+      {
+        "evidence_id": "e1",
+        "stance": "supports",
+        "claim_type": "first_hand"
+      },
+      {
+        "evidence_id": "e2",
+        "stance": "supports",
+        "claim_type": "official"
+      }
+    ],
+    "suggested_status": "verified",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e2",
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "半夜兩點多宿舍整個在晃，有人也被搖醒嗎？"
+      },
+      {
+        "evidence_id": "e2",
+        "quote": "顯著有感地震報告：10/20 02:20 臺灣東部海域發生規模 5.8 地震，桃園市震度 3 級。"
+      }
+    ],
+    "reason": "官方地震通報明確紀錄 10/20 02:20 在臺灣東部海域發生規模 5.8 地震，且社群貼文描述深夜宿舍有明顯晃動，兩者皆支持該事件發生。",
+    "abstain_reason": null
+  }
+}

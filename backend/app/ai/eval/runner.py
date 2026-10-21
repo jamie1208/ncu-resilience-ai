@@ -22,12 +22,25 @@ from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Self
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    NonNegativeInt,
+    ValidationError,
+    model_validator,
+)
 
-from app.ai.eval.metrics import accuracy, case_outcome, macro_f1, precision_recall_f1
+from app.ai.eval.metrics import (
+    accuracy,
+    case_outcome,
+    macro_f1,
+    precision_recall_f1,
+    unsupported_count,
+)
 from app.ai.llm.base import LLMProvider
 from app.ai.llm.config import LLMConfig, LLMConfigError, create_provider, load_llm_config
 from app.ai.llm.fake_provider import FakeProvider
@@ -65,15 +78,37 @@ class GlobalGates(BaseModel):
 
 
 class MetricSpec(BaseModel):
-    """一個指標：類型、gold 欄位（expected 中的欄位）、正類與門檻（≥）。"""
+    """一個指標：類型、欄位、正類與門檻。
+
+    比例型指標以 `threshold`（≥）判定，`field` 是 expected 中的 gold 欄位；
+    計次指標（`unsupported_count`，P2-T10）以 `max`（≤）判定，`field` 是輸出欄位。
+    """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     name: str
-    type: Literal["macro_f1", "f1", "precision", "recall", "accuracy"]
+    type: Literal["macro_f1", "f1", "precision", "recall", "accuracy", "unsupported_count"]
     field: str
     positive: Any = True
-    threshold: Ratio
+    threshold: Ratio | None = None
+    max: NonNegativeInt | None = None
+
+    @model_validator(mode="after")
+    def _one_limit(self) -> Self:
+        if self.type == "unsupported_count":
+            if self.max is None or self.threshold is not None:
+                raise ValueError("unsupported_count 只能設定 max")
+        elif self.threshold is None or self.max is not None:
+            raise ValueError(f"{self.type} 只能設定 threshold")
+        return self
+
+    def passed(self, value: Any) -> bool:
+        """數值是否達標；無法計算（None）一律未達標。"""
+        if value is None:
+            return False
+        if self.max is not None:
+            return bool(value <= self.max)
+        return self.threshold is not None and bool(value >= self.threshold)
 
 
 class SkillThresholds(BaseModel):
@@ -149,6 +184,8 @@ def _report_name(skill: Skill, mode: Mode, model: str, default_model: str) -> st
 
 
 def _metric(spec: MetricSpec, rows: list[tuple[dict[str, Any], dict[str, Any] | None]]) -> Any:
+    if spec.type == "unsupported_count":
+        return unsupported_count([o for _, o in rows], field=spec.field, positive=spec.positive)
     pairs = [
         (case["expected"][spec.field], output.get(spec.field) if output else "<no_output>")
         for case, output in rows
@@ -321,7 +358,8 @@ async def evaluate_skill(
                 "field": spec.field,
                 "value": value,
                 "threshold": spec.threshold,
-                "passed": value is not None and value >= spec.threshold,
+                "max": spec.max,
+                "passed": spec.passed(value),
             }
         )
     gates = {
