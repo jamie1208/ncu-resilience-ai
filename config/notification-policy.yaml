@@ -1,0 +1,36 @@
+# 個人通知規則（P3-T07；使用者 2026-10-21 決定）。
+# 決定哪些事件要通知使用者本人（ADR-0008：系統不對外發布）；由 backend/app/alerts/policy.py 讀取。
+# 規則是確定性的：同一輸入永遠得到同一結果，不呼叫模型。
+# 修改任何規則都要由使用者決定，並更新 policy_version。
+
+policy_version: "2026-10-21.1"
+
+# 只有這些風險分級（config/risk-policy.yaml 計算）才通知；低、中一律不通知。
+notify_levels: [high, critical]
+
+# 不通知的事件類別（none 表示非事件）；其他類別都適用，由風險分級決定。
+excluded_event_types: [none]
+
+# 呈現方式依查證狀態（規格 §6.4）：
+# - verified，或有官方來源（S05 claim_type = official）且未判定為 false → 事實模板（事實＋防護建議）
+# - unverified、disputed → 一般安全提醒：只寫類別、地點、日期與防護建議，不帶事件標題與來源原文，
+#   不主張事件已發生
+# - false → 不通知（已發出的由 P3-T08 撤回）
+# - 疑似指控（見 allegation）→ 一律用一般安全提醒，標記 possible_allegation 給管理端人工判斷
+
+# 每個事件類別的中文名稱與防護建議（S01 event-classifier 的類別，none 除外）。
+event_types:
+  facility: {label: 設施, advice: 請避開受影響的區域，並留意校方公告的修復進度。}
+  weather: {label: 天氣, advice: 請留意氣象署最新資訊，減少不必要的外出並注意自身安全。}
+  security: {label: 治安, advice: 請注意個人財物與人身安全，夜間盡量結伴同行，遇緊急狀況請撥打 110 或校安專線。}
+  traffic: {label: 交通, advice: 請預留通行時間並改道，注意往來車輛。}
+  health: {label: 健康, advice: 請注意個人衛生與身體狀況，有症狀時盡早就醫。}
+  fire: {label: 火災, advice: 請遠離現場、依指示疏散，遇緊急狀況請撥打 119。}
+  academic: {label: 學業, advice: 請留意系所與教務處的正式公告。}
+  infosec: {label: 資安, advice: 請勿點擊可疑連結，必要時更換密碼並啟用多重驗證。}
+
+# 疑似指控：標題同時出現「對象」與「指控」關鍵字時標記 possible_allegation。
+# 只是粗略的確定性偵測，誤判只會讓通知改用一般安全提醒，不會把指控寫成事實。
+allegation:
+  subjects: [老師, 教授, 助教, 教官, 同學, 學長, 學姐, 學姊, 學弟, 學妹, 室友, 老闆, 店家, 店員, 店長, 員工, 職員, 主任, 校長, 警衛, 司機, 先生, 小姐, 某人, 此人, 這個人]
+  accusations: [偷, 竊, 詐騙, 騙, 性騷擾, 騷擾, 偷拍, 跟蹤, 霸凌, 恐嚇, 威脅, 打人, 施暴, 侵害, 猥褻, 下藥, 黑心, 盜]

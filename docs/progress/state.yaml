@@ -149,7 +149,8 @@ tasks:
   P3-T05:
     status: pending
   P3-T07:
-    status: pending
+    status: in_progress
+    updated_at: '2026-10-21T20:59:49+08:00'
   P3-T08:
     status: pending
   P3-T10:
@@ -812,4 +813,9 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-21T20:52:12+08:00'
+- at: '2026-10-21T20:59:49+08:00'
+  id: P3-T07
+  from: pending
+  to: in_progress
+  note: ''
+updated_at: '2026-10-21T20:59:49+08:00'
