@@ -1,7 +1,8 @@
 """events.embedding（pgvector）與 events.occurrence_start_date（P2-T09）。
 
 S04 event-linker 的候選召回：以向量的 cosine 距離排序，並以事件日期限制時間視窗。
-維度 1536 對應 config/llm.yaml 的 embedding.dimensions（使用者 2026-10-21 決定 text-embedding-3-small）。
+維度 1536 對應 config/llm.yaml 的 embedding.dimensions
+（使用者 2026-10-21 決定 text-embedding-3-small）。
 資料量小，先不建 HNSW 索引（精確搜尋）。
 
 Revision ID: 0006_event_embeddings
