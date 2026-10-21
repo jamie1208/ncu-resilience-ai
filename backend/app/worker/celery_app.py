@@ -16,12 +16,14 @@ from app.core.config import get_settings
 
 DISPATCH_TASK = "ingest.dispatch_due_sources"
 INGEST_TASK = "ingest.ingest_source"
+ANALYZE_ITEM_TASK = "pipeline.analyze_item"  # P2-T13
+ANALYZE_EVENT_TASK = "pipeline.analyze_event"
 DISPATCH_EVERY_SECONDS = 60.0
 
 celery_app = Celery(
     "ncu_resilience",
     broker=get_settings().redis_url,
-    include=["app.worker.tasks.ingest"],
+    include=["app.worker.tasks.ingest", "app.pipeline.analyze_item"],
 )
 celery_app.conf.update(
     timezone="UTC",
