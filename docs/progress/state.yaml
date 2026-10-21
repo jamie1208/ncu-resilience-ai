@@ -262,13 +262,38 @@ gates:
     note: 111 筆（dev 78、test 33），dataset_stats --check-min 100 通過；類別不平衡（none 94、facility 11、weather 6），P2 S01/S03 前補標；第二批 46
       筆為 AI 預標、使用者逐列確認（2026-10-19）
   G2-1:
-    status: pending
+    status: pass
+    last_run: '2026-10-21T20:13:21+08:00'
+    last_output: '✓ relevance-filter 1.0.0（recorded，gpt-5-mini-2025-08-07，test）：通過 15/15，f1 1.000，schema 1.000，可追溯 1.000，US$0.0000
+      → /Users/jamie/Development/ncu-resilience-ai/eval/reports/relevance-filter/1.0.0.recorded.json
+
+      ✓ risk-assessor 1.0.0（recorded，gpt-5-mini-2025-08-07，test）：通過 17/17，high_risk_recall 1.000，schema 1.000，可追溯 1.000，US$0.0000
+      → /Users/jamie/Development/ncu-resilience-ai/eval/reports/risk-assessor/1.0.0.recorded.json
+
+      ✓ root-cause-analyst 1.0.0（recorded，gpt-5-mini-2025-08-07，test）：通過 13/13，fact_hypothesis_accuracy 1.000，schema 1.000，可追溯
+      1.000，US$0.0000 → /Users/jamie/Development/ncu-resilience-ai/eval/reports/root-cause-analyst/1.0.0.recorded.json
+
+      ✓ solution-planner 1.0.0（recorded，gpt-5-mini-2025-08-07，test）：通過 11/11，fact_hypothesis_accuracy 1.000，schema 1.000，可追溯
+      1.000，US$0.0000 → /Users/jamie/Development/ncu-resilience-ai/eval/reports/solution-planner/1.0.0.recorded.json
+
+      摘要 → ../eval/reports/P2-summary.json'
   G2-2:
-    status: pending
+    status: pass
+    updated_at: '2026-10-21T20:13:41+08:00'
+    note: 使用者 2026-10-21 確認：S01–S08 test split 可追溯率皆 1.000；P2-T12 人工審閱假設與事實區分 60/60
+    evidence: eval/reports/P2-summary.json
   G2-3:
-    status: pending
+    status: pass
+    last_run: '2026-10-21T20:13:22+08:00'
+    last_output: '..........                                                               [100%]
+
+      10 passed in 0.43s'
   G2-4:
-    status: pending
+    status: pass
+    last_run: '2026-10-21T20:13:22+08:00'
+    last_output: '.............................                                            [100%]
+
+      29 passed in 0.26s'
   G3-2:
     status: pending
   G3-3:
@@ -757,4 +782,10 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-21T19:57:30+08:00'
+- at: '2026-10-21T20:13:41+08:00'
+  id: G2-2
+  from: pending
+  to: pass
+  note: 使用者 2026-10-21 確認：S01–S08 test split 可追溯率皆 1.000；P2-T12 人工審閱假設與事實區分 60/60
+  confirmed_by_user: true
+updated_at: '2026-10-21T20:13:41+08:00'

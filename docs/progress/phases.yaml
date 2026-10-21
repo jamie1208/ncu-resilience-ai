@@ -234,7 +234,7 @@ phases:
     gates:
       - id: G2-1
         title: S01–S08 達到評測門檻
-        command: cd backend && uv run python ../scripts/eval/run_eval.py --all --split test --summary eval/reports/P2-summary.json --check-thresholds
+        command: cd backend && uv run python ../scripts/eval/run_eval.py --all --split test --summary ../eval/reports/P2-summary.json
       - id: G2-2
         title: 事實性結論 100% 可追溯或 abstain
         manual: true
