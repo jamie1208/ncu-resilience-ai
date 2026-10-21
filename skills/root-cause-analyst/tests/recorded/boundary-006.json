@@ -1,0 +1,36 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似池水檢驗顯示大腸桿菌超標。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e2",
+            "quote": "聽說是池水檢驗大腸桿菌超標。"
+          }
+        ],
+        "to_verify": "向校方（游泳館或相關單位）確認是否有檢驗結果顯示大腸桿菌超標以及此一結果是否為暫停開放的原因。"
+      }
+    ],
+    "missing_information": [
+      "官方尚未說明游泳館暫停開放的具體原因",
+      "是否存在大腸桿菌檢驗報告及其檢驗日期與結果",
+      "是否有主管機關或校內單位的處理或通報紀錄"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "校方公告僅說明游泳館暫停開放但未交代原因；社群貼文提到「池水檢驗大腸桿菌超標」，該說法為未經官方確認的傳聞，需由校方或相關單位出示檢驗結果或正式說明來確認。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "case_id": "normal-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似有人私自使用電暖器導致跳電。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "一定是有人偷用電暖器"
+          }
+        ],
+        "to_verify": "向舍監或總務處確認是否查獲於宿舍內私自使用電暖器或其他高耗電設備，以及電力系統的檢測報告。"
+      }
+    ],
+    "missing_information": [
+      "官方或權責單位是否就跳電原因作出說明或檢查結果",
+      "當時是否有人使用電暖器或其他高耗電設備的具體證據",
+      "是否有供電設備或配電箱異常紀錄或故障報告",
+      "事件是否造成設施設備受損或影響範圍的技術細節"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "僅有社群貼文指出「一定是有人偷用電暖器」，屬於社群猜測，因非官方來源且措辭不確定，列為 hypothesized；尚無權責單位的肯定說明。",
+    "abstain_reason": null
+  }
+}

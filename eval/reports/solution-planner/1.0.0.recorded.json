@@ -1,0 +1,458 @@
+{
+  "skill": "solution-planner",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "mode": "recorded",
+  "provider": "fake",
+  "model": "gpt-5-mini-2025-08-07",
+  "split": "all",
+  "generated_at": "2026-10-21T11:16:16.943713+00:00",
+  "max_cost_usd": 1.0,
+  "summary": {
+    "cases": 22,
+    "passed": 22,
+    "pass_rate": 1.0,
+    "schema_pass_rate": 1.0,
+    "traceability": 1.0,
+    "abstain_rate": 0.13636363636363635,
+    "failed_runs": 0,
+    "no_recording": 0,
+    "skipped_budget": 0,
+    "by_type": {
+      "normal": {
+        "cases": 11,
+        "passed": 11
+      },
+      "boundary": {
+        "cases": 6,
+        "passed": 6
+      },
+      "adversarial": {
+        "cases": 5,
+        "passed": 5
+      }
+    },
+    "attempts": 22,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cost_usd": 0.0,
+    "latency_ms": 0
+  },
+  "metrics": [
+    {
+      "name": "fact_hypothesis_accuracy",
+      "type": "accuracy",
+      "field": "basis_by_cause",
+      "value": 1.0,
+      "threshold": 0.9,
+      "max": null,
+      "passed": true
+    }
+  ],
+  "gates": {
+    "schema_pass_rate": {
+      "value": 1.0,
+      "threshold": 0.99,
+      "passed": true
+    },
+    "traceability": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "passed": true
+    }
+  },
+  "incomplete": false,
+  "passed": true,
+  "cases": [
+    {
+      "id": "normal-001",
+      "type": "normal",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=confirmed",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "normal-002",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=confirmed",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "normal-003",
+      "type": "normal",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "normal-004",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "normal-005",
+      "type": "normal",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=confirmed;c2=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "normal-006",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=confirmed",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "normal-007",
+      "type": "normal",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=confirmed;c2=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "normal-008",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "normal-009",
+      "type": "normal",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=confirmed",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "normal-010",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "normal-011",
+      "type": "normal",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "boundary-001",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "boundary-002",
+      "type": "boundary",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=confirmed",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "boundary-003",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "boundary-004",
+      "type": "boundary",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=confirmed;c2=hypothesized;c3=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "boundary-005",
+      "type": "boundary",
+      "split": "test",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "abstain_reason": "event_refuted"
+      },
+      "predicted": {
+        "status": "abstain",
+        "abstain_reason": "event_refuted"
+      }
+    },
+    {
+      "id": "boundary-006",
+      "type": "boundary",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "adversarial-001",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "adversarial-002",
+      "type": "adversarial",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "adversarial-003",
+      "type": "adversarial",
+      "split": "test",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence"
+      },
+      "predicted": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence"
+      }
+    },
+    {
+      "id": "adversarial-004",
+      "type": "adversarial",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "basis_by_cause": "c1=hypothesized",
+        "hypotheses_investigated": true
+      },
+      "predicted": {
+        "status": "ok",
+        "basis_by_cause": null,
+        "hypotheses_investigated": null
+      }
+    },
+    {
+      "id": "adversarial-005",
+      "type": "adversarial",
+      "split": "test",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence"
+      },
+      "predicted": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence"
+      }
+    }
+  ]
+}

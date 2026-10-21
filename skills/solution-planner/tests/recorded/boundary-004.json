@@ -1,0 +1,108 @@
+{
+  "case_id": "boundary-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "暫時避開停電範圍並改至其他教室或遠端上課，遵從教室負責人或公告的指示以維護安全。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "確認已更換的變電箱運作正常並做通電後的安全測試，若發現異常立即派員修復並公布復電時間。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "盤點校內其他變電箱與配電設備的年限與風險，排定汰換或預防性維護時程並納入年度預算。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請總務處確認附近施工是否曾影響或挖掘到校園地下電纜，並檢視施工時段與管線通報紀錄以釐清關聯性。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c2",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "若查證屬實，制定施工通報與監督流程（施工前確認地下管線位置、施工期間派員監測、施工後復原驗收），以降低挖掘造成供電中斷的風險。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c2",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "請總務處或環安單位檢視變電設備的定期檢查紀錄，確認是否存在檢查缺口並補齊檢查計畫。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c3",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e3"
+        ]
+      },
+      {
+        "action": "若查證變電設備檢查不足，建立並落實定期檢查與維護制度（含巡檢表與紀錄保存），並於一學期內完成首輪排查與風險降級措施。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c3",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e3"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3"
+    ],
+    "reason": "變電箱老舊跳脫已被確認並更換設備，故以確認運作與盤點汰換為主；施工挖到電纜與缺乏定期檢查仍屬待查證，已安排調查並提出若屬實時的預防措施。",
+    "abstain_reason": null
+  }
+}

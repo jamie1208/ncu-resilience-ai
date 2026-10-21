@@ -1,0 +1,80 @@
+{
+  "case_id": "normal-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "請師生暫時避免進入行政大樓非必要區域，改至其他教學或辦公空間辦公或辦理業務。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請總務處立即派員檢查電力設備並確認停電範圍與初步原因（配電箱、跳電保護、外部供電中斷等）。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若檢查發現需立即搶修，總務處應優先派遣電工進行現場搶修並啟動臨時電源或備用設備以恢復關鍵服務（如照明、電梯、伺服器機房等）。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若停電原因與外部供電或長期設備老化有關，於一學期內排定全面檢修或汰換計畫並編列維護預算。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "由總務處或行政單位定期對外發布停電進度與預估恢復時間，並在校內公告替代服務地點與聯絡窗口以減少影響。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "行政大樓停電已被驗證但原因尚待釐清；措施著重於短期避險與搶修（檢查、搶修、臨時電源、公告），並建議中期檢修或汰換計畫以防再發。尚無具體原因，需由總務處進一步調查。",
+    "abstain_reason": null
+  }
+}

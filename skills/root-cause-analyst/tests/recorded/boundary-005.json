@@ -1,0 +1,52 @@
+{
+  "case_id": "boundary-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似附近施工或施工挖掘導致路面冒水。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "大門口旁邊施工圍籬那邊的路面一直冒水，整條人行道都濕了。"
+          }
+        ],
+        "to_verify": "向校方或總務處確認附近施工是否有挖掘或施工行為造成管線破裂或排水影響，並查看施工單位的施工報備與施工範圍。"
+      },
+      {
+        "cause_id": "c2",
+        "description": "疑似地下管線破裂或漏水導致路面滲水冒出。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "大門口旁邊施工圍籬那邊的路面一直冒水，整條人行道都濕了。"
+          }
+        ],
+        "to_verify": "調查並檢測現場地下給水或污水管線是否破裂或滲漏，並由工務或相關單位出具檢測報告以確認水源。"
+      }
+    ],
+    "missing_information": [
+      "是否有官方或校方對冒水原因的說明或通報",
+      "現場檢測結果（是否為管線破裂、排水阻塞或施工因素）",
+      "附近施工單位的作業內容與時程是否與冒水時間重疊",
+      "冒出水的性質（清水、污水或雨水）",
+      "是否有影響範圍與緊急處置措施的紀錄或通報"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "現有證據為社群目擊描述，提到施工圍籬與路面冒水，沒有官方肯定說法；因此列出兩項基於現場線索的假設性原因，均需官方或現場檢測確認。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "case_id": "normal-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "昨晚大雨造成步道積水。",
+        "basis": "confirmed",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "昨晚大雨造成中大湖周邊步道積水"
+          }
+        ],
+        "to_verify": null
+      },
+      {
+        "cause_id": "c2",
+        "description": "疑似排水溝堵塞導致積水。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "初步研判可能是排水溝堵塞"
+          }
+        ],
+        "to_verify": "請總務或相關維護單位確認排水系統檢查結果與是否存在堵塞，並提供檢查報告以確認。"
+      }
+    ],
+    "missing_information": [
+      "排水溝檢查結果與是否確實堵塞",
+      "其他排水設施或工程是否影響排水",
+      "降雨量與排水能力的對照資料",
+      "詳細調查結論與修復措施"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "官方說明已確認昨晚大雨造成步道積水；同一份說明亦提出排水溝堵塞為初步研判，為假設需進一步查證。",
+    "abstain_reason": null
+  }
+}

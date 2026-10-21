@@ -1,0 +1,80 @@
+{
+  "case_id": "boundary-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "若仍聞到異味，請暫時避開化學館四樓區域並依照學校指示改至其他空間活動；如有頭暈、嘔吐等不適，盡速至衛保組求助並就醫。 ",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "由環安中心進行現場空氣品質採樣與檢測，確認冷媒殘留與空氣指標已回復至安全值；完成檢測後公告檢測結果與安全評估。 ",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "環安中心",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "針對已確認發生冷媒外洩的冷凍櫃執行全面維修與汰換評估，包含更換老化零件、檢漏測試及必要時汰換設備，並將維修紀錄列入設備管理清冊。 ",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "建立及排定化學館內所有冷凍設備的定期檢查計畫（含檢漏、壓力與接頭檢查），並將檢查結果回報環安中心以利追蹤。 ",
+        "audience": "school",
+        "horizon": "long",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "評估並於化學館高風險設備處安裝冷媒洩漏偵測器與自動通風啟動機制，若偵測異常自動警示並啟動排風。 ",
+        "audience": "school",
+        "horizon": "long",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "已由官方查證為冷凍櫃冷媒外洩並完成修繕與恢復使用，故以確認的原因提出現場檢測、維修汰換與長期檢查與偵測措施；同時建議學生暫避現場並在有不適時就醫。",
+    "abstain_reason": null
+  }
+}

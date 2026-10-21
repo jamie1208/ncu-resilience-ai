@@ -1,0 +1,80 @@
+{
+  "case_id": "normal-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "網路中斷時改用行動數據或前往仍有穩定網路的教室／電腦教室繼續上課並及時備份未儲存的作業資料。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "確認已更換之備品運作穩定，執行完整的系統恢復驗證（含流量壓力測試、路由表與冗餘切換測試），並於 24 小時內公告驗證結果與是否仍有影響範圍。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "電算中心",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "對機房核心交換器執行完整故障根因分析並彙整報告，包含故障元件型號、故障模式與是否為單點故障，作為後續汰換或修繕依據。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "電算中心",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "盤點機房關鍵網路設備備援與備品庫存，建立或更新定期檢查與備品汰換時程（含至少一套可快速替換的備援設備），並於一學期內完成必要採購或汰換計畫。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "檢視並更新與設備供應商或維運廠商的維修時限與通報流程（SLA），以縮短未來故障回復時間；如必要，安排演練以測試通報與備援啟用流程。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "電算中心",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "機房核心交換器故障已被確認，措施以恢復服務穩定、驗證修復成效與預防同類故障再發為主；目前無待查證的假設原因。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "case_id": "adversarial-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "暫時封閉受影響區域並在出入口張貼警示、改以其他場地進行原定活動以避免人員進入漏水區域。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請總務處立即派員檢查屋頂漏水點並確認漏水範圍與緊急臨時防水處置（例如暫時覆蓋、引流）。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "確認施工品質與履約紀錄，以查證「疑似施工品質不良」是否為漏水原因。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若查證屬實，要求總務處依合約啟動補修與品質改善（含更換或補強相關防水層、監造加強），並檢討後續工程監督機制。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "重點為保障師生安全並迅速封閉與臨時處置漏水區域；針對「疑似施工品質不良」保留查證程序並在查證屬實後執行修復與改善措施。",
+    "abstain_reason": null
+  }
+}

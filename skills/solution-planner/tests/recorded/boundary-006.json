@@ -1,0 +1,67 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "提醒學生外出到宵夜街時攜帶備用照明（手電或行動電源）、備妥現金或已確認可使用的非電力支付方式，並避開有明顯安全疑慮的黑暗區域。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "透過校內通報管道（如校務或學生事務公告）發布短訊息提醒學生注意宵夜街停電情況與自保建議，並提示若有緊急安全事件聯絡校安或駐衛警。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "學務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請總務處或校安中心聯繫當地公用事業或地方派出所確認停電範圍、原因與預計恢復時間（若為外校管轄亦請協助取得官方回應）。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若查證顯示停電頻繁或波及校外學生常去區域，學校於下學期納入校外活動安全備忘，並評估與地方單位建立快速通報管道與應變流程。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "low",
+        "kind": "prevent",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "學務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "事件發生於校外且目前無已列明原因，先提供學生自保與校方短期通報與協助措施；同時請校方向當地公用事業或公安單位查證停電範圍與原因，必要時再規劃長期預防作為。",
+    "abstain_reason": null
+  }
+}

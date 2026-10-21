@@ -1,0 +1,36 @@
+{
+  "case_id": "normal-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似便當內的滷蛋未熟導致多人腸胃不適。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "大家都說是滷蛋沒熟。"
+          }
+        ],
+        "to_verify": "向松苑或供餐單位確認該批便當是否包含滷蛋、滷蛋烹煮狀況及是否有檢體檢驗結果。"
+      }
+    ],
+    "missing_information": [
+      "松苑或供餐單位是否對此事件有回應或說明。",
+      "是否有官方或檢驗單位的食物檢驗結果以確認病因。",
+      "便當批次、供應時間與保存運送條件等資訊。",
+      "其他用餐者是否也出現類似症狀及其人數。"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "目前僅有社群貼文指出多人用餐後腹瀉，且貼文稱「大家都說是滷蛋沒熟」，為社群目擊/當事人陳述，屬假設性說法（hypothesized），未見官方或權責單位的確認說明。",
+    "abstain_reason": null
+  }
+}

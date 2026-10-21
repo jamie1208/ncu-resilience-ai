@@ -1,0 +1,36 @@
+{
+  "case_id": "normal-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似監視器故障導致監控不足，讓小偷有機可乘。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "管理員說那邊的監視器已經壞好幾個月了"
+          }
+        ],
+        "to_verify": "向宿舍管理或校方確認該停車場監視器是否故障及故障起訖時間、查看監視器維修紀錄與是否有可用錄影畫面，並確認是否有其他監控或巡邏措施。"
+      }
+    ],
+    "missing_information": [
+      "是否已向警方報案及警方查證結果（有無監視器畫面、抓到可疑人等）",
+      "宿舍管理或校方對監視器故障的正式說法與維修紀錄",
+      "是否有其他監視器或巡邏紀錄可以補強監控缺口",
+      "是否為單一事件或近期有多起類似失竊案件"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "僅有一則社群貼文提到管理員表示監視器壞了數月，指出監控不足可能是失竊原因；該說法出自 facebook，非官方來源，且未有肯定性官方說明，故列為 hypothesized，需由宿舍管理或警方查證。",
+    "abstain_reason": null
+  }
+}

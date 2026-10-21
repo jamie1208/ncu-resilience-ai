@@ -1,0 +1,94 @@
+{
+  "case_id": "normal-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "measures": [
+      {
+        "action": "出現症狀者立即留在宿舍單獨房間休息並聯繫衛保組進行初步評估，避免使用公共設施。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "由學校公告宿舍區目前為諾羅病毒群聚，啟動宿舍緊急應變：派員執行病例通報、症狀監控並協助隔離與就醫安排。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "學務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "立即對宿舍公用區域（廚房、浴廁、電梯按鈕、門把、飲水機周邊等）進行含氯消毒，並在一週內每日加強清潔與消毒頻次。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "cause_basis": "confirmed",
+        "responsible_unit": "環安中心",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "請總務處與環安中心調查飲水機及其濾心的保養、更換記錄與現況，確認是否有未依規定更換或汙染情形。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c2",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "若查證屬實，立即更換該宿舍區所有飲水機濾心並建立更換與檢驗作業要點（含更換頻率與紀錄）。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c2",
+        "cause_basis": "hypothesized",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "在宿舍及公共區域設置洗手提醒標示、提供含酒精乾洗手或洗手設施，並在本週內加強衛教，教導正確洗手與處理嘔吐物、糞便之步驟。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": null,
+        "cause_basis": null,
+        "responsible_unit": "衛保組",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "依衛生局檢驗（e1）已確認為諾羅病毒，優先執行隔離、通報與加強消毒等立即應變；飲水機濾心為待查項目（e2），需先調查是否為感染來源，查證屬實後再進行更換與制度化預防措施。",
+    "abstain_reason": null
+  }
+}

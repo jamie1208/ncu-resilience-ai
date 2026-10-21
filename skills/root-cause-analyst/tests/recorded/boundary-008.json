@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "causes": [],
+    "missing_information": [
+      "無需進一步釐清原因，事件已由官方說明為不實。"
+    ],
+    "evidence_ids": [],
+    "reason": "官方單位已澄清科一館並未發生實驗爆炸，事件被否認，因事件已被官方否認而不進行原因分析。",
+    "abstain_reason": "event_refuted"
+  }
+}

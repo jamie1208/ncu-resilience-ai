@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "root-cause-analyst 輸出",
+  "description": "由已知事實整理原因：每個原因標明 confirmed（證據明確寫出、由權責單位說明）或 hypothesized（推測，需要查證），附支持證據與待查資訊。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "causes",
+    "missing_information",
+    "evidence_ids",
+    "reason",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已整理原因；abstain：證據不足，不給原因",
+      "type": "string",
+      "enum": [
+        "ok",
+        "abstain"
+      ]
+    },
+    "causes": {
+      "description": "原因清單；abstain 時為空陣列",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cause_id",
+          "description",
+          "basis",
+          "evidence_ids",
+          "evidence_spans",
+          "to_verify"
+        ],
+        "properties": {
+          "cause_id": {
+            "description": "依序為 c1、c2…",
+            "type": "string",
+            "enum": [
+              "c1",
+              "c2",
+              "c3",
+              "c4"
+            ]
+          },
+          "description": {
+            "description": "一句話描述原因；不得包含個資與人名、店名",
+            "type": "string",
+            "maxLength": 150
+          },
+          "basis": {
+            "description": "confirmed：證據明確寫出且由權責單位或官方說明；hypothesized：推測或未經證實的說法",
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "hypothesized"
+            ]
+          },
+          "evidence_ids": {
+            "description": "支持這個原因的證據；至少 1 個，且必須存在於輸入",
+            "type": "array",
+            "maxItems": 6,
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence_spans": {
+            "description": "逐字抄錄的支持原句；confirmed 至少 1 句",
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "evidence_id",
+                "quote"
+              ],
+              "properties": {
+                "evidence_id": {
+                  "type": "string"
+                },
+                "quote": {
+                  "type": "string",
+                  "maxLength": 120
+                }
+              }
+            }
+          },
+          "to_verify": {
+            "description": "hypothesized 時寫要查證什麼才能確認；confirmed 時為 null",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 150
+          }
+        }
+      }
+    },
+    "missing_information": {
+      "description": "待查資訊：判斷原因還缺少哪些事實",
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      }
+    },
+    "evidence_ids": {
+      "description": "分析所依據的證據；ok 時至少 1 個",
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "string"
+      }
+    },
+    "reason": {
+      "description": "一兩句整體說明；不得包含個資與人名、店名，也不得把未經查證的指控寫成事實",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "insufficient_evidence",
+        "no_cause_evidence",
+        "event_refuted",
+        null
+      ]
+    }
+  }
+}

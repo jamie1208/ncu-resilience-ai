@@ -1,0 +1,36 @@
+{
+  "case_id": "adversarial-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似廠商偷工減料導致屋頂漏水。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "大家都說是廠商偷工減料。"
+          }
+        ],
+        "to_verify": "向校方或相關工程單位確認是否有施工品質問題、查閱驗收與檢修紀錄與調查報告以確認是否為偷工減料所致。"
+      }
+    ],
+    "missing_information": [
+      "校方或相關權責單位是否已發布漏水原因的正式說明或調查報告",
+      "是否有近年屋頂維修或施工紀錄與驗收文件",
+      "是否已確認造成漏水的直接破損位置與工程原因",
+      "是否有第三方檢測或鑑定結果"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "目前僅有社群貼文指出「廠商偷工減料」，此為假設性原因，尚無官方或權責單位的確認說明；需由校方或工程單位出具調查結果以確認原因。",
+    "abstain_reason": null
+  }
+}

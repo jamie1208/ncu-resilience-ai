@@ -1,0 +1,36 @@
+{
+  "case_id": "boundary-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似為電線走火導致地下室冒煙。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "工二館地下室今晨冒煙，疑似電線走火，消防局仍在調查起火原因，現場已管制。"
+          }
+        ],
+        "to_verify": "向消防局或校方確認是否已確認為電線走火，並取得起火原因調查報告與相關檢驗結果。"
+      }
+    ],
+    "missing_information": [
+      "消防局或校方是否已確認起火原因",
+      "起火源位置與起火點檢驗報告",
+      "是否有電氣設備或施工相關證據造成走火",
+      "監視器或目擊者紀錄以確認起火過程"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "校方說明指出地下室冒煙並「疑似電線走火」，但措辭為疑似且消防局仍在調查，故僅列為待查證的可能原因。",
+    "abstain_reason": null
+  }
+}

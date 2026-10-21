@@ -1,0 +1,50 @@
+{
+  "case_id": "normal-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "自來水公司進行外部管線搶修導致停水。",
+        "basis": "confirmed",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "原因為自來水公司進行外部管線搶修"
+          }
+        ],
+        "to_verify": null
+      },
+      {
+        "cause_id": "c2",
+        "description": "疑似學校清洗水塔忘記公告導致停水。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e2",
+            "quote": "我覺得根本是學校在清洗水塔忘記公告吧。"
+          }
+        ],
+        "to_verify": "向總務處或相關單位確認是否曾安排水塔清洗，並確認是否因清洗而停水。"
+      }
+    ],
+    "missing_information": [
+      "自來水公司搶修的具體時程與受影響範圍細節",
+      "是否有學校安排水塔清洗及其時程"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "校方公告指出停水原因為自來水公司進行外部管線搶修（confirmed）；社群貼文則懷疑為學校清洗水塔忘記公告（hypothesized），需由相關單位進一步確認。",
+    "abstain_reason": null
+  }
+}

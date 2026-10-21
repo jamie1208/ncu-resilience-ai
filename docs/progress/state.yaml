@@ -127,7 +127,9 @@ tasks:
     updated_at: '2026-10-21T16:07:24+08:00'
     evidence: docs/progress/records/P2-T11-20261021.md
   P2-T12:
-    status: pending
+    status: done
+    updated_at: '2026-10-21T19:16:22+08:00'
+    evidence: docs/progress/records/P2-T12-20261021.md
   P2-T13:
     status: pending
   P2-T14:
@@ -721,4 +723,14 @@ history:
   to: done
   note: ''
   confirmed_by_user: true
-updated_at: '2026-10-21T16:07:24+08:00'
+- at: '2026-10-21T16:17:23+08:00'
+  id: P2-T12
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-21T19:16:22+08:00'
+  id: P2-T12
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-21T19:16:22+08:00'

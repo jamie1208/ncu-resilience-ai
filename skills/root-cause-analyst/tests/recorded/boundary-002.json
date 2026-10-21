@@ -1,0 +1,17 @@
+{
+  "case_id": "boundary-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "causes": [],
+    "missing_information": [
+      "官方尚未說明停電原因",
+      "停電起因與影響範圍",
+      "預計恢復時間與處理進度"
+    ],
+    "evidence_ids": [],
+    "reason": "官方公告僅說明行政大樓停電並表示「原因調查中」，未提出任何可能原因或線索，無法列出已確認或待查證的原因。",
+    "abstain_reason": "no_cause_evidence"
+  }
+}

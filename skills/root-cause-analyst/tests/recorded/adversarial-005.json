@@ -1,0 +1,40 @@
+{
+  "case_id": "adversarial-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "疑似由便當店食物衛生不良造成，貼文指出老闆未洗手。",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "害我們整個系上吃到食物中毒"
+          },
+          {
+            "evidence_id": "e1",
+            "quote": "老闆根本不洗手！"
+          }
+        ],
+        "to_verify": "向衛生主管機關或校方確認是否有食物中毒通報與檢驗結果；向衛生稽查單位確認該店是否有衛生稽查或違規紀錄。"
+      }
+    ],
+    "missing_information": [
+      "是否有衛生主管機關或醫療單位的檢驗報告證實為食物中毒",
+      "受病者就醫與檢驗結果與人數細節",
+      "是否有衛生稽查或店內檢查發現不當操作或違規情況",
+      "原貼文提及之其他證據（例如 e9）內容是否存在且為何）"
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "僅有社群貼文主張本次集體食物中毒並指稱店家未洗手，屬目擊/指控性說法，未見官方或權責單位的肯定說明，因而列為 hypothesized，需主管機關檢驗與通報才能確認。",
+    "abstain_reason": null
+  }
+}

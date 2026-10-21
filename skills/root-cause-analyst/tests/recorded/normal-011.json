@@ -1,0 +1,31 @@
+{
+  "case_id": "normal-011",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "因颱風來襲，桃園市政府宣布停止上班上課，故本校全日停課。",
+        "basis": "confirmed",
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "因颱風來襲，桃園市政府宣布明日停止上班上課，本校全日停課。"
+          }
+        ],
+        "to_verify": null
+      }
+    ],
+    "missing_information": [],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "官方（本校公告）明確表示因颱風來襲並依桃園市政府宣布停止上班上課，故學校全日停課，原因已確認。",
+    "abstain_reason": null
+  }
+}

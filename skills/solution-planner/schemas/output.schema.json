@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "solution-planner 輸出",
+  "description": "學生與校方的措施清單：對象、時程、優先級、類型，以及針對哪個原因與該原因是否已確認（沿用 S07）。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "measures",
+    "evidence_ids",
+    "reason",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已擬定措施；abstain：證據不足或事件已被否認",
+      "type": "string",
+      "enum": [
+        "ok",
+        "abstain"
+      ]
+    },
+    "measures": {
+      "description": "措施清單；abstain 時為空陣列",
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action",
+          "audience",
+          "horizon",
+          "priority",
+          "kind",
+          "cause_id",
+          "cause_basis",
+          "responsible_unit",
+          "evidence_ids"
+        ],
+        "properties": {
+          "action": {
+            "description": "一句具體可執行的措施；針對待查證原因時不得寫成已確定；不得包含個資與人名、店名",
+            "type": "string",
+            "maxLength": 150
+          },
+          "audience": {
+            "description": "students：學生自己可以做的；school：校方（處室）要做的",
+            "type": "string",
+            "enum": [
+              "students",
+              "school"
+            ]
+          },
+          "horizon": {
+            "description": "short：立即到一週內；mid：一學期內；long：一學期以上",
+            "type": "string",
+            "enum": [
+              "short",
+              "mid",
+              "long"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "kind": {
+            "description": "respond：應變與降低影響；investigate：查證待查原因；prevent：預防再發",
+            "type": "string",
+            "enum": [
+              "respond",
+              "investigate",
+              "prevent"
+            ]
+          },
+          "cause_id": {
+            "description": "針對的原因（輸入 causes 的 cause_id）；一般應變措施為 null",
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "c1",
+              "c2",
+              "c3",
+              "c4",
+              null
+            ]
+          },
+          "cause_basis": {
+            "description": "照抄該原因在輸入中的 basis；cause_id 為 null 時為 null",
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "confirmed",
+              "hypothesized",
+              null
+            ]
+          },
+          "responsible_unit": {
+            "description": "建議負責的單位（例如總務處、環安中心）；學生措施為 null；不得寫人名",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 30
+          },
+          "evidence_ids": {
+            "description": "這項措施依據的證據；必須存在於輸入",
+            "type": "array",
+            "maxItems": 6,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "evidence_ids": {
+      "description": "擬定措施所依據的證據；ok 時至少 1 個",
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "string"
+      }
+    },
+    "reason": {
+      "description": "一兩句整體說明；不得包含個資與人名、店名，也不得把待查證的原因寫成事實",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "insufficient_evidence",
+        "event_refuted",
+        null
+      ]
+    }
+  }
+}
