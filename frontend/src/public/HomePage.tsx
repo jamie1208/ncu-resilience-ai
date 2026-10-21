@@ -1,7 +1,6 @@
 import { motion, type Variants } from 'framer-motion'
 
-import { Button } from '../components/Button'
-import { SectionLabel } from '../components/SectionLabel'
+import { Button, SectionLabel } from '@design'
 
 const easeOut = [0.16, 1, 0.3, 1] as const
 

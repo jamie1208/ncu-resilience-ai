@@ -87,6 +87,7 @@ jobs:
       - run: npm run lint
       - run: npm run test
       - run: npm run build
+      - run: npm run build:playful
 
   tooling:
     name: 開發工具（tracker、來源盤點、skill 靜態驗證）

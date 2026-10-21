@@ -1,8 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { Button } from './Button'
-import { SectionLabel } from './SectionLabel'
+import { Button, Card, SectionLabel } from '.'
 
 describe('Button', () => {
   it('預設為 primary，觸控高度至少 44px（h-11 以上）並有可見 focus ring', () => {
@@ -40,5 +39,35 @@ describe('SectionLabel', () => {
     const text = screen.getByText('校園動態')
     expect(text.className).not.toContain('uppercase')
     expect(text.className).not.toContain('tracking-[0.15em]')
+  })
+})
+
+describe('Card', () => {
+  it('白底、細框、柔和陰影；預設為 div，as 可指定語意標籤', () => {
+    render(
+      <ul>
+        <Card as="li" data-testid="card">
+          內容
+        </Card>
+      </ul>,
+    )
+    const card = screen.getByTestId('card')
+    expect(card.tagName).toBe('LI')
+    expect(card.className).toContain('bg-card')
+    expect(card.className).toContain('border-border')
+    expect(card.className).toContain('shadow-sm')
+  })
+
+  it('featured 使用 accent 邊框；只有 interactive 才有 hover 效果', () => {
+    const { rerender } = render(<Card featured data-testid="card">重點</Card>)
+    const cls = screen.getByTestId('card').className
+    expect(cls).toContain('border-accent/30')
+    expect(cls).not.toContain('hover:')
+    rerender(
+      <Card interactive data-testid="card">
+        可互動
+      </Card>,
+    )
+    expect(screen.getByTestId('card').className).toContain('hover:shadow-md')
   })
 })

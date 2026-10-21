@@ -1,15 +1,7 @@
-import type { ReactNode } from 'react'
-
-import { cn } from '../lib/cn'
+import type { SectionLabelProps } from '../contract'
+import { cn } from '../../lib/cn'
 
 const CJK = /[㐀-鿿豈-﫿]/
-
-export interface SectionLabelProps {
-  children: ReactNode
-  /** 圓點是否脈動；只用於裝飾，使用者要求減少動態時自動停止。 */
-  pulse?: boolean
-  className?: string
-}
 
 /**
  * 區塊標籤（pill + 圓點 + 等寬字）。
