@@ -7,7 +7,7 @@
 >
 > 修改計畫時三處要一起改：本檔、phases.yaml（或其覆寫檔 `docs/progress/phases.yaml`）、ADR。
 
-全案 6 個階段、62 個任務、24 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。Migration 檔名以實際的下一個可用編號為準（ADR-0009），計畫中寫成 `<下一個編號>_<名稱>.py`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
+全案 6 個階段、63 個任務、24 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。Migration 檔名以實際的下一個可用編號為準（ADR-0009），計畫中寫成 `<下一個編號>_<名稱>.py`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
 
 **個人使用（ADR-0008）**：本系統只給使用者本人使用，不提供公開網站、公開 API、匿名通報或任何對外發布管道。已刪除的任務與閘門（P3-T02、P3-T04、P3-T06、P3-T09、P5-T07、G3-1、G5-3）不重新編號，ID 也不重複使用。
 
@@ -264,7 +264,7 @@ uv run python ../scripts/eval/run_eval.py --all --split test --live --summary ev
 
 ## P3 產品與個人通知（MVP）
 
-目標：完成個人版的最小可展示端到端版本（規格 §13.1 去除公開與通報部分，ADR-0008）。分 P3a 個人管理介面（T01、T03、T05）、P3c 個人通知（T07、T08、T10）；原 P3-T02、P3-T04、P3-T06、P3-T09 已刪除。系統不提供任何對外發布管道。前置：G2 通過。
+目標：完成個人版的最小可展示端到端版本（規格 §13.1 去除公開與通報部分，ADR-0008）。分 P3a 個人管理介面（T01、T03、T11、T05）、P3c 個人通知（T07、T08、T10）；原 P3-T02、P3-T04、P3-T06、P3-T09 已刪除。系統不提供任何對外發布管道。前置：G2 通過。
 
 ### P3a 個人管理介面
 
@@ -276,9 +276,14 @@ uv run python ../scripts/eval/run_eval.py --all --split test --live --summary ev
   - 驗證：`tests/integration/test_admin_api.py`
   - 範圍調整（使用者決定，2026-10-21）：計畫原本沒有任務建立 alerts 表，改由本任務新增 `app/models/alert.py`（alerts、alert_deliveries，依規格 §9）與 `infra/migrations/versions/0008_alerts.py`，P3-T08 直接沿用
   - 實作調整（AI 自行決定，2026-10-21）：另加 `GET /admin/events/{id}`（證據來源、風險歷史，供 P3-T05 事件工作台）與 `GET /admin/alerts`（通知中心）；儀表板為 `GET /admin/dashboard`（取代規格的公開 `/dashboard/summary`，需 `events:read_all`）；verify 可設定 detected、analyzing 以外的事件狀態，轉移不合法回 CONFLICT；只有 published、updated 可撤回；備註／撤回原因含個資回 VALIDATION_ERROR；稽核查詢的稽核 action 為 `audit_logs.read`（`authorize()` 既有命名）；未預期例外回 500 `INTERNAL_ERROR`（統一格式、不帶細節）。另外修改 `app/api/v1/admin/__init__.py`、`app/models/__init__.py`、`docs/architecture/rbac.md`
-- **P3-T05 管理前端**（唯一的前端）
+- **P3-T11 雙設計系統**（ADR-0014，使用者決定，2026-10-21）
+  - 檔案：`docs/decisions/ADR-0014-dual-design-system.md`；`frontend/src/design/contract.ts`（兩套元件庫共同的元件介面與必要 token 清單）、`frontend/src/design/registry.ts`（設計名稱、字體、建置時選擇）；`frontend/src/design/minimal/`（既有 Minimalist Modern，由 `src/components/` 與 `src/styles/index.css` 搬入）、`frontend/src/design/playful/`（Playful Geometric 元件與 token）；`frontend/src/styles/base.css`（兩套共用的 base 與 reduced-motion）；`frontend/vite.config.ts`、`frontend/tsconfig.app.json`、`frontend/index.html`、`frontend/package.json`、`frontend/Dockerfile`（`VITE_DESIGN` 建置參數與 `@design` 別名）；`.github/workflows/ci.yml`（兩套都建置）；`.claude/skills/ncu-frontend-design/`（加入 Playful Geometric 規範）
+  - 內容：頁面只從 `@design` 匯入元件；`VITE_DESIGN=minimal|playful` 在建置時決定別名指向哪一套，預設 minimal，未知值建置失敗；兩套元件庫實作同一份介面、提供同一組語意 token；風險等級與緊急資訊在兩套都使用語意色且不加裝飾動畫
+  - 驗證：`cd frontend && npm run lint && npm run test && npm run build && VITE_DESIGN=playful npm run build`
+- **P3-T05 管理前端**（唯一的前端；頁面只從 `@design` 匯入元件，兩套設計都要能建置，P3-T11）
   - 檔案：`frontend/src/admin/pages/`（EventWorkbench：來源對照、風險分項、證據；AlertCenter：個人通知中心；SkillsDashboard：版本、費用、失敗率、評測結果；Ops）；移除 P0-T03 的 `frontend/src/public/` 骨架與「回公開網站」連結，根路徑改為登入頁
   - 驗證：Playwright 管理流程測試
+  - 實作調整（AI 自行決定，2026-10-21）：另加 `GET /admin/skills`（`app/api/v1/admin/skills.py`，SkillsDashboard 需要的版本、近 7 天執行統計與評測摘要；需 `events:read_all`，只回摘要）與 `tests/integration/test_admin_skills_api.py`；`@design` contract 新增 Badge、Input、Select、Textarea（兩套都實作，`src/design/forms.test.tsx`）；管理端共用模組 `src/admin/{api,format,router,auth,useLoad,Link,ui,AdminApp}`，路由以 History API 自寫、不加套件；Playwright 測試放 `frontend/e2e/`（`*.e2e.ts`，API 以 page.route 模擬、共用 `src/test/fixtures.ts`），`npm run e2e`／`e2e:playful`，另加 `playwright.config.ts`、`tsconfig.e2e.json` 並納入 CI；`App.test.tsx` 依本任務移除公開首頁而改寫（根路徑改為登入頁，免責聲明與 110／119 斷言保留）
 
 ### P3c 個人通知
 

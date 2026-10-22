@@ -70,7 +70,7 @@ jobs:
         run: uv run pytest -q
 
   frontend:
-    name: 前端（lint、test、build）
+    name: 前端（lint、test、build、Playwright）
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     defaults:
@@ -87,6 +87,11 @@ jobs:
       - run: npm run lint
       - run: npm run test
       - run: npm run build
+      - run: npm run build:playful
+      # P3-T05 管理流程（API 以 page.route 模擬，兩套設計都跑）
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - run: npm run e2e:playful
 
   tooling:
     name: 開發工具（tracker、來源盤點、skill 靜態驗證）

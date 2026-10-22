@@ -1,7 +1,7 @@
-import { cva, type VariantProps } from 'class-variance-authority'
-import type { ButtonHTMLAttributes } from 'react'
+import { cva } from 'class-variance-authority'
 
-import { cn } from '../lib/cn'
+import type { ButtonProps } from '../contract'
+import { cn } from '../../lib/cn'
 
 const buttonVariants = cva(
   [
@@ -34,10 +34,6 @@ const buttonVariants = cva(
     defaultVariants: { variant: 'primary', size: 'md' },
   },
 )
-
-export interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {}
 
 /** 基礎按鈕（primary／outline／ghost）。預設 `type="button"`，避免意外送出表單。 */
 export function Button({ className, variant, size, type = 'button', ...props }: ButtonProps) {

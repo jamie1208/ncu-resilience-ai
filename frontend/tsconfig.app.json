@@ -16,6 +16,12 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* 設計元件庫別名：型別檢查以 minimal 為準，playful 由 design/contract.test.ts 強制同一介面（ADR-0014） */
+    "paths": {
+      "@design": ["./src/design/minimal/index.ts"],
+      "@design/*": ["./src/design/minimal/*"]
+    },
+
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
