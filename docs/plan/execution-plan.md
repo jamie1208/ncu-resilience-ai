@@ -283,6 +283,7 @@ uv run python ../scripts/eval/run_eval.py --all --split test --live --summary ev
 - **P3-T05 管理前端**（唯一的前端；頁面只從 `@design` 匯入元件，兩套設計都要能建置，P3-T11）
   - 檔案：`frontend/src/admin/pages/`（EventWorkbench：來源對照、風險分項、證據；AlertCenter：個人通知中心；SkillsDashboard：版本、費用、失敗率、評測結果；Ops）；移除 P0-T03 的 `frontend/src/public/` 骨架與「回公開網站」連結，根路徑改為登入頁
   - 驗證：Playwright 管理流程測試
+  - 實作調整（AI 自行決定，2026-10-21）：另加 `GET /admin/skills`（`app/api/v1/admin/skills.py`，SkillsDashboard 需要的版本、近 7 天執行統計與評測摘要；需 `events:read_all`，只回摘要）與 `tests/integration/test_admin_skills_api.py`；`@design` contract 新增 Badge、Input、Select、Textarea（兩套都實作，`src/design/forms.test.tsx`）；管理端共用模組 `src/admin/{api,format,router,auth,useLoad,Link,ui,AdminApp}`，路由以 History API 自寫、不加套件；Playwright 測試放 `frontend/e2e/`（`*.e2e.ts`，API 以 page.route 模擬、共用 `src/test/fixtures.ts`），`npm run e2e`／`e2e:playful`，另加 `playwright.config.ts`、`tsconfig.e2e.json` 並納入 CI；`App.test.tsx` 依本任務移除公開首頁而改寫（根路徑改為登入頁，免責聲明與 110／119 斷言保留）
 
 ### P3c 個人通知
 

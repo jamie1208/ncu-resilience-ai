@@ -3,7 +3,15 @@
  * 頁面只從 `@design` 匯入元件，只使用 REQUIRED_TOKENS 對應的 Tailwind 色彩與字體；
  * 各設計專屬的 token（例如 playful 的 secondary／tertiary）只能在該設計的元件內部使用。
  */
-import type { ButtonHTMLAttributes, ComponentType, HTMLAttributes, ReactNode } from 'react'
+import type {
+  ButtonHTMLAttributes,
+  ComponentType,
+  HTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from 'react'
 
 export type ButtonVariant = 'primary' | 'outline' | 'ghost'
 export type ButtonSize = 'sm' | 'md' | 'lg'
@@ -29,11 +37,26 @@ export interface CardProps extends HTMLAttributes<HTMLElement> {
   interactive?: boolean
 }
 
+/** 標籤色調：對應語意 token；風險等級、事件狀態必須搭配文字，不能只靠顏色。 */
+export type BadgeTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger'
+
+export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
+  tone?: BadgeTone | null
+}
+
+export type InputProps = InputHTMLAttributes<HTMLInputElement>
+export type SelectProps = SelectHTMLAttributes<HTMLSelectElement>
+export type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement>
+
 /** 每套設計都必須匯出的元件。 */
 export interface DesignLibrary {
+  Badge: ComponentType<BadgeProps>
   Button: ComponentType<ButtonProps>
   Card: ComponentType<CardProps>
+  Input: ComponentType<InputProps>
   SectionLabel: ComponentType<SectionLabelProps>
+  Select: ComponentType<SelectProps>
+  Textarea: ComponentType<TextareaProps>
 }
 
 /** 每套設計的 styles.css 都必須定義的語意 token（頁面只能用這些）。 */

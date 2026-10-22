@@ -1,17 +1,12 @@
 import { MotionConfig } from 'framer-motion'
 
-import { AdminPage } from './admin/AdminPage'
-import { HomePage } from './public/HomePage'
+import { AdminApp } from './admin/AdminApp'
 
-function isAdminPath(pathname: string): boolean {
-  return pathname === '/admin' || pathname.startsWith('/admin/')
-}
-
-/** 依路徑切換公開前端與管理後台；正式路由於 P3 前端任務決定。 */
+/** 只有管理前端（ADR-0008）：根路徑為登入頁，登入後進入 /admin。 */
 export default function App() {
   return (
     <MotionConfig reducedMotion="user">
-      {isAdminPath(window.location.pathname) ? <AdminPage /> : <HomePage />}
+      <AdminApp />
     </MotionConfig>
   )
 }
