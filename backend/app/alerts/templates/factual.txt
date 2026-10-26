@@ -1,0 +1,3 @@
+【$label】$title
+地點：$location　日期：$date　依據：$basis
+建議：$advice

@@ -151,7 +151,10 @@ tasks:
     updated_at: '2026-10-21T22:22:50+08:00'
     evidence: docs/progress/records/P3-T05-20261021.md
   P3-T07:
-    status: pending
+    status: done
+    updated_at: '2026-10-26T15:11:07+08:00'
+    note: 沿用 2026-10-21 WIP 分支，已合併 main
+    evidence: docs/progress/records/P3-T07-20261022.md
   P3-T08:
     status: pending
   P3-T10:
@@ -839,4 +842,15 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-21T22:22:50+08:00'
+- at: '2026-10-22T11:47:34+08:00'
+  id: P3-T07
+  from: pending
+  to: in_progress
+  note: 沿用 2026-10-21 WIP 分支，已合併 main
+- at: '2026-10-26T15:11:07+08:00'
+  id: P3-T07
+  from: in_progress
+  to: done
+  note: ''
+  confirmed_by_user: true
+updated_at: '2026-10-26T15:11:07+08:00'
