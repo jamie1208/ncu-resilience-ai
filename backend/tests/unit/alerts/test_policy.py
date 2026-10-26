@@ -296,8 +296,6 @@ def test_below_threshold_allegation_is_still_flagged(policy: NotificationPolicy)
         ("學號 109502001 遺失學生證", "109502001"),
         ("身分證 A123456789 掉了", "A123456789"),
         ("電話 (03)422-7151", "422-7151"),
-        ("王小明同學的機車被拖吊", "王小明"),
-        ("林老師的研究室漏水", "林老師"),
     ],
 )
 def test_mask_pii_removes_identifiers(text: str, leaked: str) -> None:
@@ -308,6 +306,12 @@ def test_mask_pii_removes_identifiers(text: str, leaked: str) -> None:
 
 def test_mask_pii_keeps_ordinary_text() -> None:
     text = "工程一館 10 月 21 日停電，預計 3 小時後恢復"
+    assert mask_pii(text) == text
+
+
+def test_mask_pii_only_applies_existing_patterns() -> None:
+    # 使用者 2026-10-22 決定：只沿用 PII_PATTERNS，不遮蔽「姓氏＋稱謂」
+    text = "王小明同學的機車被拖吊"
     assert mask_pii(text) == text
 
 
@@ -334,4 +338,3 @@ def test_every_notified_body_is_pii_free(policy: NotificationPolicy) -> None:
             )
             if decision.body is not None:
                 assert not find_pii(decision.body)
-                assert "李同學" not in decision.body
