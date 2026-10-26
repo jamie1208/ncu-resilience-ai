@@ -35,6 +35,15 @@ describe('AlertCenter', () => {
     expect(within(second).queryByRole('button', { name: '撤回' })).not.toBeInTheDocument()
   })
 
+  it('疑似指控的通知標記給管理端人工判斷（附錄 A05）', async () => {
+    const flagged = { ...ALERTS[0], id: 'al-3', flags: ['possible_allegation'], body: '近期校內有治安相關訊息。' }
+    open({ 'GET /api/v1/admin/alerts': { data: [flagged, ALERTS[1]] } })
+    const row = (await screen.findByText('近期校內有治安相關訊息。')).closest('li')!
+    expect(within(row).getByText('疑似指控，需人工判斷')).toBeInTheDocument()
+    const other = screen.getByText('圖書館網路維護。').closest('li')!
+    expect(within(other).queryByText('疑似指控，需人工判斷')).not.toBeInTheDocument()
+  })
+
   it('依狀態篩選', async () => {
     const { calls, user } = open({
       'GET /api/v1/admin/alerts': { data: ALERTS },

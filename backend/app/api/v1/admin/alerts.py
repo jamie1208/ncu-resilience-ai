@@ -1,7 +1,8 @@
 """管理端通知 API（P3-T03）。
 
 - `GET /api/v1/admin/alerts`：通知列表（個人通知中心），新到舊，cursor 分頁；可依狀態篩選。
-  需要 `alerts:read_all`。
+  需要 `alerts:read_all`。每筆附 `flags`：疑似指控（possible_allegation，P3-T07 的確定性規則）
+  給管理端人工判斷（附錄 A05，P3-T10）；讀取時依事件標題重算，不另存欄位。
 - `POST /api/v1/admin/alerts/{id}/retract`：撤回通知並記錄原因；只有 published、updated 可撤回，
   其他狀態回 CONFLICT。需要 `alerts:retract`，寫入稽核 `alert.retract`（含原因）。
 
@@ -11,6 +12,7 @@
 from __future__ import annotations
 
 import uuid
+from functools import cache
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query
@@ -18,6 +20,7 @@ from pydantic import AwareDatetime, BaseModel, Field, StringConstraints
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.alerts.policy import NotificationPolicy, load_policy
 from app.api.deps import get_db_session, require_permission
 from app.api.errors import ApiError, ErrorCode
 from app.api.pagination import DEFAULT_LIMIT, MAX_LIMIT, keyset_after, split_page
@@ -46,6 +49,7 @@ class AlertOut(BaseModel):
     version: int
     body: str
     retract_reason: str | None
+    flags: list[str]
     created_at: AwareDatetime
     updated_at: AwareDatetime
 
@@ -56,6 +60,19 @@ class RetractIn(BaseModel):
     reason: Annotated[
         str, StringConstraints(strip_whitespace=True, min_length=1), Field(max_length=200)
     ]
+
+
+POSSIBLE_ALLEGATION = "possible_allegation"
+
+
+@cache
+def _policy() -> NotificationPolicy:
+    return load_policy()
+
+
+def _flags(title: str) -> list[str]:
+    """管理端要人工判斷的標記（只有規則代碼，不含內容）。"""
+    return [POSSIBLE_ALLEGATION] if _policy().allegation.matches(title) else []
 
 
 @router.get("")
@@ -89,6 +106,7 @@ async def list_alerts(
             version=alert.version,
             body=alert.body,
             retract_reason=alert.retract_reason,
+            flags=_flags(title),
             created_at=alert.created_at,
             updated_at=alert.updated_at,
         ).model_dump(mode="json")

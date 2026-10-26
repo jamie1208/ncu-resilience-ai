@@ -110,6 +110,8 @@ export interface AlertItem {
   version: number
   body: string
   retract_reason: string | null
+  /** 管理端要人工判斷的標記，例如 possible_allegation（疑似指控） */
+  flags: string[]
   created_at: string
   updated_at: string
 }

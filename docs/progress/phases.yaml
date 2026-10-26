@@ -287,7 +287,7 @@ phases:
         command: cd backend && uv run pytest tests/integration/test_auth.py -q
       - id: G3-4
         title: 附錄 A 的 A01–A08（個人版）全過
-        command: cd frontend && npx playwright test
+        command: make e2e
       - id: G3-5
         title: MVP 展示路徑可運作
         manual: true

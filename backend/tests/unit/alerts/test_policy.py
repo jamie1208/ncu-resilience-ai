@@ -338,3 +338,15 @@ def test_every_notified_body_is_pii_free(policy: NotificationPolicy) -> None:
             )
             if decision.body is not None:
                 assert not find_pii(decision.body)
+
+
+@pytest.mark.parametrize("risk_level", [None, "low", "medium"])
+def test_false_is_reported_even_when_skipped_earlier(
+    policy: NotificationPolicy, risk_level: str | None
+) -> None:
+    """P3-T10（A06）：澄清後風險也降低時仍帶出 verification_false，讓 P3-T08 撤回而非過期。"""
+    decision = evaluate(
+        make_input(verification=VerificationStatus.FALSE, risk_level=risk_level), policy
+    )
+    assert not decision.notify
+    assert "verification_false" in decision.reasons

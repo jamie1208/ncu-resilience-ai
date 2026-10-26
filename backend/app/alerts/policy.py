@@ -140,9 +140,14 @@ def evaluate(item: NotificationInput, policy: NotificationPolicy) -> Notificatio
     if allegation:
         reasons.append("possible_allegation")
 
+    # 查證為 false 時，不論在哪一關略過都帶出 verification_false：澄清後風險也可能降低，
+    # P3-T08 需要它來撤回（而不是過期）已發出的通知（附錄 A06，P3-T10）
+    false = item.verification is VerificationStatus.FALSE
+
     def skip(reason: str) -> NotificationDecision:
+        extra = ("verification_false",) if false and reason != "verification_false" else ()
         return NotificationDecision(
-            item.event_id, False, None, None, (*reasons, reason), policy.policy_version
+            item.event_id, False, None, None, (*reasons, reason, *extra), policy.policy_version
         )
 
     if item.event_type in policy.excluded_event_types or item.event_type == "none":
@@ -151,7 +156,7 @@ def evaluate(item: NotificationInput, policy: NotificationPolicy) -> Notificatio
         return skip("no_risk_assessment")
     if item.risk_level not in policy.notify_levels:
         return skip("below_threshold")
-    if item.verification is VerificationStatus.FALSE:
+    if false:
         return skip("verification_false")
 
     official = item.has_official_source and item.verification is not VerificationStatus.VERIFIED
