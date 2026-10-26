@@ -294,6 +294,8 @@ uv run python ../scripts/eval/run_eval.py --all --split test --live --summary ev
 - **P3-T08 警示狀態機與個人遞送**
   - 檔案：`app/alerts/service.py`（candidate→policy_checked→eligible→published→updated／retracted／expired；published 表示已通知使用者本人）、`app/alerts/delivery.py`（先做管理介面通知中心，Email 留介面）；idempotency_key ＝ hash(event_id, alert_version, audience)
   - 驗證：`tests/integration/test_alert_idempotency.py`（重送不重複、撤回後停止）
+  - 範圍調整（使用者決定，2026-10-26）：接上呼叫端，另外修改 `app/pipeline/analyze_item.py`（S06 之後同步通知）與 `app/api/v1/admin/events.py`（verify 之後同步通知）
+  - 實作調整（AI 自行決定，2026-10-26）：入口為 `sync_event_alert(session, event_id)`，以事件列 `FOR UPDATE` 串行化；不符合規則時不建立通知列（`blocked` 不落地）；查證 false → 自動 retracted，事件 resolved／archived 或不再符合規則 → expired，之後再符合規則則建立新通知、版本接續；最新一則已撤回 → 不再通知該事件；不在 S03 類別的事件不通知（不拋錯）；執行者為 `service:notifier`，自動改版／撤回／過期只需 `alerts:publish`（`alerts:retract` 仍只供手動撤回）；monitoring 視為 unverified；官方來源依最新成功 S05 的 claim_type＝official 且 supports 的證據；遞送以 alert_deliveries 唯一約束 `ON CONFLICT DO NOTHING` 佔位後才送出，失敗記 `failed` 不重試
 - **P3-T10 端到端測試**
   - 檔案：`tests/e2e/`（Playwright），涵蓋附錄 A 的 A01–A08，期望結果依個人版改寫（A05 改為社群貼文惡意誣指個人：通知不呈現指控，管理端標記異常）
   - 驗證：`npx playwright test` 全過

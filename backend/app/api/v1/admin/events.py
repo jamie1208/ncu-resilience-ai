@@ -23,6 +23,7 @@ from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.alerts.service import sync_event_alert
 from app.api.deps import get_db_session, require_permission
 from app.api.errors import ApiError, ErrorCode
 from app.api.pagination import DEFAULT_LIMIT, MAX_LIMIT, keyset_after, split_page
@@ -268,6 +269,8 @@ async def verify_event(
     await record_audit(
         session, principal, "event.verify", target=f"event:{event_id}", metadata=metadata
     )
+    # 查證結果改變後同步個人通知（P3-T08）；由通知服務帳號執行，管理者本身沒有發布權限
+    await sync_event_alert(session, event_id)
     await session.commit()
     return envelope({"id": str(event_id), "status": target.value, "previous": previous.value})
 
