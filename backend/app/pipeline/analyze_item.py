@@ -59,6 +59,7 @@ from app.ai.llm.config import (
 from app.ai.llm.cost import CostLimitExceededError
 from app.ai.runner.loader import Skill, discover_skills
 from app.ai.runner.run import RunStatus, SkillRunResult, SqlRunStore, run_skill
+from app.alerts.service import sync_event_alert
 from app.core.config import get_settings
 from app.core.security import Permission, Principal, Role, require
 from app.domain.states import EventStatus, StateTransitionError, VerificationStatus, transition
@@ -316,6 +317,9 @@ async def _verify_and_assess(
         session.add(row)
         level = row.level
         await session.commit()
+    # 查證與風險更新後同步個人通知（P3-T08）
+    await sync_event_alert(session, event.id, request_id=ctx.trace_id)
+    await session.commit()
     return decision_status, level
 
 

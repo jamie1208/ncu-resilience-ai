@@ -156,7 +156,9 @@ tasks:
     note: 沿用 2026-10-21 WIP 分支，已合併 main
     evidence: docs/progress/records/P3-T07-20261022.md
   P3-T08:
-    status: pending
+    status: done
+    updated_at: '2026-10-26T15:27:32+08:00'
+    evidence: docs/progress/records/P3-T08-20261026.md
   P3-T10:
     status: pending
   P4-T01:
@@ -853,4 +855,14 @@ history:
   to: done
   note: ''
   confirmed_by_user: true
-updated_at: '2026-10-26T15:11:07+08:00'
+- at: '2026-10-26T15:17:42+08:00'
+  id: P3-T08
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-26T15:27:32+08:00'
+  id: P3-T08
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-26T15:27:32+08:00'
