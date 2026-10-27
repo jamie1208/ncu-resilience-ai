@@ -18,7 +18,7 @@ import uuid
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 
-from sqlalchemy import Boolean, func, literal_column, select, text
+from sqlalchemy import Boolean, func, literal_column, select, text, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,7 +26,7 @@ from app.core.security import Permission, Principal, require
 from app.ingestion.normalize import NormalizedItem, content_hash
 from app.ingestion.registry import SourceNotApprovedError
 from app.ingestion.types import AccessPolicy
-from app.models.source import Source, SourceItem, SourceItemVersion
+from app.models.source import AnalysisStatus, Source, SourceItem, SourceItemVersion
 from app.services.audit import record_audit
 
 AUDIT_ACTION = "source_items.ingest"
@@ -87,6 +87,7 @@ async def store_items(
             new_items += 1
         elif version_added:
             changed_items += 1
+            await _reset_analysis(session, item_id)
         else:
             unchanged += 1
 
@@ -158,6 +159,17 @@ async def _upsert_item(
     inserted = literal_column("(xmax = 0)", Boolean).label("inserted")
     row = (await session.execute(stmt.returning(SourceItem.id, inserted))).one()
     return row[0], row[1]
+
+
+async def _reset_analysis(session: AsyncSession, item_id: uuid.UUID) -> None:
+    """內容改變的文章重新排入分析（P4-T07）。"""
+    await session.execute(
+        update(SourceItem)
+        .where(SourceItem.id == item_id)
+        .values(
+            analysis_status=AnalysisStatus.PENDING, analysis_attempts=0, analysis_queued_at=None
+        )
+    )
 
 
 async def _add_version(session: AsyncSession, item_id: uuid.UUID, item: NormalizedItem) -> bool:

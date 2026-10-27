@@ -54,9 +54,16 @@ def test_celery_runs_in_utc_and_acks_late() -> None:
 
 def test_beat_dispatches_due_sources_every_minute() -> None:
     schedule = celery_app.conf.beat_schedule
-    assert schedule == {
-        "dispatch-due-sources": {"task": "ingest.dispatch_due_sources", "schedule": 60.0}
+    assert schedule["dispatch-due-sources"] == {
+        "task": "ingest.dispatch_due_sources",
+        "schedule": 60.0,
     }
+    # P4-T07：分析掃描（使用者 2026-10-27 同意改為逐項斷言）
+    assert schedule["dispatch-pending-items"] == {
+        "task": "pipeline.dispatch_pending_items",
+        "schedule": 60.0,
+    }
+    assert set(schedule) == {"dispatch-due-sources", "dispatch-pending-items"}
 
 
 def test_tasks_are_registered() -> None:

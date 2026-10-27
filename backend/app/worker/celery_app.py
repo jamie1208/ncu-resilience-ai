@@ -18,6 +18,7 @@ DISPATCH_TASK = "ingest.dispatch_due_sources"
 INGEST_TASK = "ingest.ingest_source"
 ANALYZE_ITEM_TASK = "pipeline.analyze_item"  # P2-T13
 ANALYZE_EVENT_TASK = "pipeline.analyze_event"
+ANALYZE_DISPATCH_TASK = "pipeline.dispatch_pending_items"  # P4-T07
 DISPATCH_EVERY_SECONDS = 60.0
 
 celery_app = Celery(
@@ -36,5 +37,9 @@ celery_app.conf.update(
     broker_connection_retry_on_startup=True,
     beat_schedule={
         "dispatch-due-sources": {"task": DISPATCH_TASK, "schedule": DISPATCH_EVERY_SECONDS},
+        "dispatch-pending-items": {
+            "task": ANALYZE_DISPATCH_TASK,
+            "schedule": DISPATCH_EVERY_SECONDS,
+        },
     },
 )

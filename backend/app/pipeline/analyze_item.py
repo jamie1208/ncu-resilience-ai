@@ -33,12 +33,12 @@ import contextlib
 import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import select, update
+from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -65,11 +65,16 @@ from app.core.security import Permission, Principal, Role, require
 from app.domain.states import EventStatus, StateTransitionError, VerificationStatus, transition
 from app.models.ai import AIAnalysisRun, EventRelation
 from app.models.event import Event, EventEvidence, Location
-from app.models.source import Source, SourceItem, SourceItemVersion
+from app.models.source import AnalysisStatus, Source, SourceItem, SourceItemVersion
 from app.risk.engine import RiskPolicy, assessment_record, load_policy
 from app.services.audit import record_audit
 from app.verification.rules import assessments_from_output, decide, event_status_for
-from app.worker.celery_app import ANALYZE_EVENT_TASK, ANALYZE_ITEM_TASK, celery_app
+from app.worker.celery_app import (
+    ANALYZE_DISPATCH_TASK,
+    ANALYZE_EVENT_TASK,
+    ANALYZE_ITEM_TASK,
+    celery_app,
+)
 
 S01 = "relevance-filter"
 S02 = "event-extractor"
@@ -92,6 +97,16 @@ UNKNOWN_LOCATION = "不明"
 UNTITLED = "未命名事件"
 INITIAL_SUPPORT = "mentions"
 TAIPEI = ZoneInfo("Asia/Taipei")
+
+ANALYSIS_WINDOW_DAYS = 14
+"""只分析發布（沒有發布時間時以擷取時間）在幾天內的文章；更舊的標為 skipped（P4-T07）。"""
+MAX_ANALYSIS_ATTEMPTS = 3
+"""同一篇文章分析失敗幾次後標為 failed；費用上限造成的中止不計。"""
+DISPATCH_BATCH = 3
+"""排隊中（未逾時）的文章最多幾篇；掃描只補到這個數量。"""
+REQUEUE_AFTER = timedelta(minutes=60)
+"""排入後超過這段時間仍是 queued，視為任務遺失、重新排入。"""
+COST_LIMIT_ERRORS = frozenset({"cost_limit", CostLimitExceededError.__name__})
 
 PIPELINE_PRINCIPAL = Principal(
     kind="service", subject="ai-pipeline", roles=frozenset({Role.SERVICE_AI})
@@ -129,6 +144,7 @@ class Step:
     name: str
     status: str
     run_id: uuid.UUID | None = None
+    error_type: str | None = None
 
 
 @dataclass(frozen=True)
@@ -165,7 +181,7 @@ class _Context:
             trace_id=self.trace_id,
         )
         await self.session.commit()
-        self.steps.append(Step(skill_name, result.status.value, result.run_id))
+        self.steps.append(Step(skill_name, result.status.value, result.run_id, result.error_type))
         return result
 
 
@@ -402,7 +418,101 @@ async def analyze_item(
     require(PIPELINE_PRINCIPAL, Permission.AI_RUN)
     ctx = _Context(session, deps, _trace(trace_id))
     result = await _analyze_item(ctx, item_id)
+    await _mark_analysis(session, item_id, result)
     return await _finish(ctx, "pipeline.analyze_item", f"source_item:{item_id}", result)
+
+
+async def _mark_analysis(session: AsyncSession, item_id: uuid.UUID, result: PipelineResult) -> None:
+    """依管線結果更新文章的分析狀態（P4-T07）。
+
+    完成或模型 abstain → done；費用上限 → 保持 pending、不計次數；其他失敗計一次，
+    達 `MAX_ANALYSIS_ATTEMPTS` 次 → failed，否則回到 pending 等下一次掃描。
+    """
+    last = result.steps[-1] if result.steps else None
+    item = await session.get(SourceItem, item_id, with_for_update=True)
+    if item is None:
+        return
+    item.analysis_queued_at = None
+    if result.outcome is not Outcome.STOPPED or (
+        last is not None and last.status == RunStatus.ABSTAINED.value
+    ):
+        item.analysis_status = AnalysisStatus.DONE
+    elif last is not None and (last.error_type or last.status) in COST_LIMIT_ERRORS:
+        item.analysis_status = AnalysisStatus.PENDING
+    else:
+        item.analysis_attempts += 1
+        item.analysis_status = (
+            AnalysisStatus.FAILED
+            if item.analysis_attempts >= MAX_ANALYSIS_ATTEMPTS
+            else AnalysisStatus.PENDING
+        )
+
+
+async def dispatch_pending_items(
+    session: AsyncSession,
+    *,
+    now: datetime,
+    daily_usd: float,
+    limit: int = DISPATCH_BATCH,
+    window_days: int = ANALYSIS_WINDOW_DAYS,
+    requeue_after: timedelta = REQUEUE_AFTER,
+) -> list[uuid.UUID]:
+    """挑出待分析的文章標為 queued 並回傳 id（新的先做）；只 flush 不 commit（P4-T07）。
+
+    1. 超過時間窗的 pending 文章標為 skipped。
+    2. 台北日已花費達每日上限時不排（隔天再排）。
+    3. 未逾時的 queued 文章已有 `limit` 篇時不排；否則補到 `limit` 篇，逾時的 queued 一併重排。
+    """
+    reference = func.coalesce(SourceItem.published_at, SourceItem.fetched_at)
+    await session.execute(
+        update(SourceItem)
+        .where(
+            SourceItem.analysis_status == AnalysisStatus.PENDING,
+            reference < now - timedelta(days=window_days),
+        )
+        .values(analysis_status=AnalysisStatus.SKIPPED)
+    )
+    if await SqlRunStore(session).spent_today_usd(now) >= daily_usd:
+        return []
+    stale_before = now - requeue_after
+    in_flight = await session.scalar(
+        select(func.count())
+        .select_from(SourceItem)
+        .where(
+            SourceItem.analysis_status == AnalysisStatus.QUEUED,
+            SourceItem.analysis_queued_at >= stale_before,
+        )
+    )
+    room = limit - int(in_flight or 0)
+    if room <= 0:
+        return []
+    ids = list(
+        await session.scalars(
+            select(SourceItem.id)
+            .where(
+                or_(
+                    SourceItem.analysis_status == AnalysisStatus.PENDING,
+                    and_(
+                        SourceItem.analysis_status == AnalysisStatus.QUEUED,
+                        or_(
+                            SourceItem.analysis_queued_at.is_(None),
+                            SourceItem.analysis_queued_at < stale_before,
+                        ),
+                    ),
+                )
+            )
+            .order_by(reference.desc(), SourceItem.id)
+            .limit(room)
+            .with_for_update(skip_locked=True)
+        )
+    )
+    if ids:
+        await session.execute(
+            update(SourceItem)
+            .where(SourceItem.id.in_(ids))
+            .values(analysis_status=AnalysisStatus.QUEUED, analysis_queued_at=now)
+        )
+    return ids
 
 
 def _stopped(ctx: _Context, step: str) -> PipelineResult:
@@ -611,6 +721,25 @@ def analyze_item_task(item_id: str, trace_id: str | None = None) -> None:
     asyncio.run(_in_worker(item_id, None, trace_id))
 
 
+async def _dispatch_in_worker() -> list[uuid.UUID]:
+    from app.worker.tasks.ingest import open_sessionmaker  # 避免 API 匯入時載入擷取模組
+
+    config = load_llm_config()
+    async with open_sessionmaker() as maker, maker() as session, session.begin():
+        return await dispatch_pending_items(
+            session, now=datetime.now(UTC), daily_usd=config.limits.daily_usd
+        )
+
+
+@celery_app.task(name=ANALYZE_DISPATCH_TASK)
+def dispatch_pending_items_task() -> int:
+    """Celery beat 任務：交易提交後才把挑出的文章排入 `analyze_item`。"""
+    ids = asyncio.run(_dispatch_in_worker())
+    for item_id in ids:
+        celery_app.send_task(ANALYZE_ITEM_TASK, args=[str(item_id)])
+    return len(ids)
+
+
 @celery_app.task(name=ANALYZE_EVENT_TASK)
 def analyze_event_task(event_id: str, trace_id: str | None = None) -> None:
     """Celery 任務：重跑事件的查證與風險評估（trace_id 沿用 API 的 request_id）。"""
@@ -618,12 +747,17 @@ def analyze_event_task(event_id: str, trace_id: str | None = None) -> None:
 
 
 __all__ = [
+    "ANALYSIS_WINDOW_DAYS",
+    "ANALYZE_DISPATCH_TASK",
     "ANALYZE_EVENT_TASK",
     "ANALYZE_ITEM_TASK",
+    "MAX_ANALYSIS_ATTEMPTS",
+    "AnalysisStatus",
     "Outcome",
     "PipelineDeps",
     "PipelineResult",
     "Step",
     "analyze_event",
     "analyze_item",
+    "dispatch_pending_items",
 ]
