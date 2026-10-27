@@ -5,6 +5,7 @@ from app.models.alert import Alert, AlertDelivery
 from app.models.audit import AuditLog
 from app.models.base import Base
 from app.models.event import Event, EventEvidence, Location
+from app.models.publication import Publication, PublicationTakedown, PublicationVersion
 from app.models.report import EventReport
 from app.models.response_action import ResponseAction, ResponseActionTransition
 from app.models.source import (
@@ -29,6 +30,9 @@ __all__ = [
     "IngestionDeadLetter",
     "IngestionRun",
     "Location",
+    "Publication",
+    "PublicationTakedown",
+    "PublicationVersion",
     "ResponseAction",
     "ResponseActionTransition",
     "RiskAssessment",

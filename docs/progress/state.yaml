@@ -227,7 +227,10 @@ tasks:
     updated_at: '2026-10-27T22:51:36+08:00'
     evidence: docs/progress/records/P4-T10-20261027.md
   P5-T10:
-    status: pending
+    status: done
+    updated_at: '2026-10-27T23:40:31+08:00'
+    note: 使用者同意在 G4-7、G4-8 尚未通過時超前開始（2026-10-27）
+    evidence: docs/progress/records/P5-T10-20261027.md
   P5-T11:
     status: pending
   P5-T14:
@@ -379,13 +382,34 @@ gates:
     updated_at: '2026-10-27T13:36:59+08:00'
     note: 使用者 2026-10-27 於對話中確認通過；已以附錄 A 案例資料走過展示路徑，未附錄影（使用者決定不錄影直接結案）
   G4-4:
-    status: pending
+    status: pass
+    last_run: '2026-10-27T23:17:25+08:00'
+    last_output: '..................                                                       [100%]
+
+      18 passed in 2.77s
+
+      warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will be ignored;
+      use `--active` to target the active environment instead'
   G5-2:
     status: pending
   G4-5:
-    status: pending
+    status: pass
+    last_run: '2026-10-27T23:17:28+08:00'
+    last_output: '...................                                                      [100%]
+
+      19 passed in 2.58s
+
+      warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will be ignored;
+      use `--active` to target the active environment instead'
   G4-6:
-    status: pending
+    status: pass
+    last_run: '2026-10-27T23:17:28+08:00'
+    last_output: '......................                                                   [100%]
+
+      22 passed in 0.21s
+
+      warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will be ignored;
+      use `--active` to target the active environment instead'
   G4-7:
     status: pending
   G4-8:
@@ -1007,4 +1031,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-27T22:51:36+08:00'
+- at: '2026-10-27T23:26:32+08:00'
+  id: P5-T10
+  from: pending
+  to: in_progress
+  note: 使用者同意在 G4-7、G4-8 尚未通過時超前開始（2026-10-27）
+- at: '2026-10-27T23:40:31+08:00'
+  id: P5-T10
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-27T23:40:31+08:00'
