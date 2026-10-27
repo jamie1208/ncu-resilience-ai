@@ -1,0 +1,17 @@
+# 再發生偵測規則（P4-T10）。
+# 由 backend/app/resilience/recurrence.py 讀取；規則是確定性的，不呼叫模型。
+# 通知中心每次讀取時依目前的事件重算，提醒「可能不是單純個案，要不要整批檢查？」。
+# 修改規則時更新 policy_version。
+
+policy_version: "2026-10-27.1"
+
+# 同地點、同類別的事件，從最近一次往回 window_days 天內（含）達到 min_events 件 → 提醒。
+window_days: 30
+min_events: 2
+
+# 只顯示最近一次發生在 active_days 天內（含）的組，舊紀錄不再佔著通知中心。
+active_days: 30
+
+# 有改善措施達到「改進」的事件，改進日之後 after_improvement_days 天內（含）
+# 同地點、同類別再次發生 → 標示「改善後再發生」。
+after_improvement_days: 365

@@ -239,6 +239,30 @@ export interface AlertItem {
   updated_at: string
 }
 
+export type RecurrenceReason = 'within_window' | 'after_improvement'
+
+export interface RecurrenceEvent {
+  id: string
+  title: string
+  status: string
+  occurred_on: string
+  /** 改善措施達到「改進」的日期（台北）；沒有則為 null */
+  improved_on: string | null
+}
+
+/** 同地點、同類別的一組再發生提醒（後端讀取時以確定性規則重算） */
+export interface RecurrenceGroup {
+  location_id: string
+  location_name: string | null
+  event_type: string
+  event_type_label: string
+  reasons: RecurrenceReason[]
+  message: string
+  latest_on: string
+  /** 新到舊 */
+  events: RecurrenceEvent[]
+}
+
 export interface AiRunStats {
   skill_name: string
   runs: number
@@ -486,6 +510,10 @@ export async function transitionAction(
 
 export function listAlerts(filters: { state?: AlertState | ''; cursor?: string | null } = {}) {
   return getPage<AlertItem>(`/admin/alerts${query(filters)}`)
+}
+
+export async function listRecurrences(): Promise<RecurrenceGroup[]> {
+  return (await apiGet<RecurrenceGroup[]>(`${V1}/admin/recurrences`)).data
 }
 
 export async function retractAlert(alertId: string, reason: string) {

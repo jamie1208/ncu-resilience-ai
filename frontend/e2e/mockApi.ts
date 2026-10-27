@@ -8,6 +8,7 @@ import {
   EVENT_DETAIL,
   EVENTS,
   INGESTION_RUNS,
+  RECURRENCES,
   SKILLS,
   SOURCE_HEALTH,
 } from '../src/test/fixtures'
@@ -107,6 +108,7 @@ export async function mockBackend(page: Page, options: { report?: EventReport | 
       state.alertState = 'retracted'
       return reply(200, { id: ALERTS[0].id, state: 'retracted', previous: 'published' })
     }
+    if (method === 'GET' && path === '/admin/recurrences') return reply(200, RECURRENCES)
     if (method === 'GET' && path === '/admin/skills') return reply(200, SKILLS)
     if (method === 'GET' && path === '/admin/dashboard') return reply(200, DASHBOARD)
     if (method === 'GET' && path === '/admin/ingestion-runs/health') return reply(200, SOURCE_HEALTH)

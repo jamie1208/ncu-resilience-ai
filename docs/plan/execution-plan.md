@@ -350,6 +350,8 @@ make e2e   # 啟動資料庫，在獨立 e2e 資料庫建立附錄 A 案例並�
 - **P4-T10 再發生偵測與提醒**
   - 檔案：`app/resilience/recurrence.py`（確定性規則：同地點、同類別在設定的時間窗內再次發生，或已標記「已改善」的事件再次發生）、`config/recurrence.yaml`（時間窗與門檻）、通知中心提醒「可能不是單純個案，要不要整批檢查？」
   - 驗證：`tests/unit/resilience/test_recurrence.py`（合成資料：時間窗內再發生會提醒、不同地點或類別不會、改善後再發生會標示）
+  - 範圍調整（使用者決定，2026-10-27）：提醒在讀取時計算，不加 migration、不接管線；另外新增 `app/api/v1/admin/recurrences.py`（`GET /api/v1/admin/recurrences`，權限沿用 `alerts:read_all`，並在 `app/api/v1/admin/__init__.py` 註冊）與 `tests/integration/test_recurrence_api.py`；前端 `frontend/src/admin/{api.ts,pages/AlertCenter.tsx,pages/AlertCenter.test.tsx}`、`frontend/src/test/fixtures.ts`、`frontend/e2e/mockApi.ts`（通知中心「再發生提醒」區塊）；提醒無法標為已看過
+  - 實作調整（AI 自行決定，2026-10-27）：時間窗從同組最近一次往回 30 天（含）、門檻 2 件；最近一次不在 30 天內的組不顯示；改進日之後（不含當天）365 天內再發生標示 after_improvement；事件日期用 S02 發生日期，沒有時用建立時間的台北日期；改進日取最早一次轉到 improved；地點不明、類別 none、查證不實的事件不列入；同地點以 location_id 判斷（地點依名稱去重）；類別中文名稱沿用 notification-policy.yaml；地點與標題經 `mask_pii()`
 
 ```bash
 cd backend && uv run pytest tests/integration/test_event_summary.py tests/integration/test_event_report.py tests/integration/test_response_actions.py tests/unit/resilience -q

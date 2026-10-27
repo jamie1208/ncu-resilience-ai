@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from '../../App'
-import { ALERTS } from '../../test/fixtures'
+import { ALERTS, EVENT_ID, RECURRENCES } from '../../test/fixtures'
 import { ME, mockApi, type MockRoute } from '../../test/mockApi'
 
 function open(routes: Record<string, MockRoute>) {
@@ -90,5 +90,50 @@ describe('AlertCenter', () => {
   it('沒有通知時顯示空狀態', async () => {
     open({ 'GET /api/v1/admin/alerts': { data: [] } })
     expect(await screen.findByText('目前沒有通知')).toBeInTheDocument()
+  })
+
+  it('再發生提醒：同地點同類別的事件整組列出，可以逐一檢查', async () => {
+    open({
+      'GET /api/v1/admin/alerts': { data: ALERTS },
+      'GET /api/v1/admin/recurrences': { data: RECURRENCES },
+    })
+    const panel = await screen.findByRole('region', { name: '再發生提醒' })
+    const groups = within(panel).getAllByRole('article')
+    expect(groups).toHaveLength(2)
+
+    const [lib, again] = groups
+    expect(within(lib).getByText('工程一館・設施：2 件')).toBeInTheDocument()
+    expect(within(lib).getByText('可能不是單純個案，要不要整批檢查？')).toBeInTheDocument()
+    expect(within(lib).getByText('時間窗內再發生')).toBeInTheDocument()
+    expect(within(lib).getByRole('link', { name: '工程一館停電' })).toHaveAttribute(
+      'href',
+      `/admin/events/${EVENT_ID}`,
+    )
+    expect(within(lib).getByRole('link', { name: '工程一館跳電' })).toBeInTheDocument()
+
+    expect(within(again).getByText('改善後再發生')).toBeInTheDocument()
+    expect(within(again).getByText('已改善（2026-06-15）')).toBeInTheDocument()
+    expect(within(again).queryByText('時間窗內再發生')).not.toBeInTheDocument()
+  })
+
+  it('沒有再發生時不顯示提醒區塊', async () => {
+    open({
+      'GET /api/v1/admin/alerts': { data: ALERTS },
+      'GET /api/v1/admin/recurrences': { data: [] },
+    })
+    await screen.findByText('工程一館停電施工至 12 時，請留意。')
+    expect(screen.queryByRole('region', { name: '再發生提醒' })).not.toBeInTheDocument()
+  })
+
+  it('再發生提醒載入失敗時顯示錯誤，不影響通知列表', async () => {
+    open({
+      'GET /api/v1/admin/alerts': { data: ALERTS },
+      'GET /api/v1/admin/recurrences': {
+        status: 500,
+        error: { code: 'INTERNAL_ERROR', message: '伺服器錯誤' },
+      },
+    })
+    expect(await screen.findByText('工程一館停電施工至 12 時，請留意。')).toBeInTheDocument()
+    expect(await screen.findByText(/再發生提醒載入失敗/)).toBeInTheDocument()
   })
 })
