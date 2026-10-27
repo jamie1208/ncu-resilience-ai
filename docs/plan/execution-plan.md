@@ -340,6 +340,8 @@ make e2e   # 啟動資料庫，在獨立 e2e 資料庫建立附錄 A 案例並�
   - 檔案：`app/reports/service.py`（S06 之後執行 S07、S08；風險中以上自動產生，其他可在後台手動觸發；事件版本更新時重算）、`infra/migrations/versions/<下一個編號>_event_reports.py`（保存每次產生的報告與 AI run 關聯）、`app/api/v1/admin/events.py`（詳情回傳小報告）、後台事件頁「事件小報告」區塊
   - 呈現：可能的影響（S06 分項）；值得查查看（S07 `hypothesized`，明確標示「推測，尚未查證」）與已確認原因（S07 `confirmed`，附原句）；可以怎麼做（S08，依同學／學校與短／中／長期分組）；建議轉給哪個單位（S08 `responsible_unit`，只顯示給使用者，系統不寄信）；S07／S08 abstain 時顯示「證據不足，暫不分析」
   - 驗證：`tests/integration/test_event_report.py`（每一項都有存在的 evidence_ids；hypothesized 永遠帶推測標示；abstain 不產生空白或捏造內容；事件被查證為不實時報告標為失效）；Playwright 事件頁流程
+  - 範圍調整（使用者決定，2026-10-27）：另外修改 `app/pipeline/analyze_item.py`（`PipelineDeps.report_hook`，S06 之後呼叫）、`app/models/report.py`（event_reports）、`app/worker/celery_app.py`（任務 `reports.generate_event_report`）、`frontend/src/admin/{api.ts,pages/EventWorkbench.tsx}`、`frontend/src/test/fixtures.ts`、`frontend/e2e/mockApi.ts`；手動觸發為 `POST /api/v1/admin/events/{id}/report`
+  - 實作調整（AI 自行決定，2026-10-27）：報告為獨立 Celery 任務；風險 medium 以上自動產生，low 但已有有效報告時重算；確認原因必須有官方來源的逐字原句，否則改判 hypothesized，措施的 cause_basis 依改判結果重填；缺 evidence_ids 或引用非事件證據的項目捨棄；報告保留歷史、失效不刪除；手動觸發沿用 `events:analyze`，不實或封存回 CONFLICT
 - **P4-T05 改善措施追蹤（F10）**
   - 檔案：`app/resilience/actions.py`（可從 S08 的校方措施建立追蹤項目，也可手動新增）、`infra/migrations/versions/<下一個編號>_response_actions.py`（含狀態變更歷史）、後台改善追蹤頁
   - 驗證：`tests/integration/test_response_actions.py`（發現→處理→恢復→改進完整紀錄）

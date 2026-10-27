@@ -1,5 +1,6 @@
 import type { Page, Request } from '@playwright/test'
 
+import type { EventReport } from '../src/admin/api'
 import {
   ALERTS,
   AUDIT_LOGS,
@@ -24,8 +25,13 @@ export interface Recorded {
  * 以 page.route 模擬後端：登入前 /auth/me 回 401；登入後所有管理 API 可用。
  * 寫入請求沒有正確 CSRF token 時回 403（與後端行為一致）。
  */
-export async function mockBackend(page: Page) {
-  const state = { signedIn: false, eventStatus: EVENT_DETAIL.status, alertState: ALERTS[0].state }
+export async function mockBackend(page: Page, options: { report?: EventReport | null } = {}) {
+  const state = {
+    signedIn: false,
+    eventStatus: EVENT_DETAIL.status,
+    alertState: ALERTS[0].state,
+    report: options.report ?? null,
+  }
   const calls: Recorded[] = []
 
   await page.route('**/api/v1/**', async (route) => {
@@ -80,11 +86,18 @@ export async function mockBackend(page: Page) {
       return reply(200, EVENTS.map((e) => (e.id === EVENT_DETAIL.id ? { ...e, status: state.eventStatus } : e)))
     }
     if (method === 'GET' && path === `/admin/events/${EVENT_DETAIL.id}`) {
-      return reply(200, { ...EVENT_DETAIL, status: state.eventStatus })
+      return reply(200, { ...EVENT_DETAIL, status: state.eventStatus, report: state.report })
+    }
+    if (method === 'POST' && path === `/admin/events/${EVENT_DETAIL.id}/report`) {
+      return reply(202, { event_id: EVENT_DETAIL.id, status: 'queued' })
     }
     if (method === 'POST' && path === `/admin/events/${EVENT_DETAIL.id}/verify`) {
       const previous = state.eventStatus
       state.eventStatus = body.status
+      // 與後端相同：事件改為不實時小報告失效
+      if (body.status === 'false' && state.report) {
+        state.report = { ...state.report, valid: false, invalidated_reason: 'event_false' }
+      }
       return reply(200, { id: EVENT_DETAIL.id, status: body.status, previous })
     }
     if (method === 'GET' && path === '/admin/alerts') {

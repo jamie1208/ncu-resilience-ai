@@ -5,6 +5,7 @@ from app.models.alert import Alert, AlertDelivery
 from app.models.audit import AuditLog
 from app.models.base import Base
 from app.models.event import Event, EventEvidence, Location
+from app.models.report import EventReport
 from app.models.source import (
     IngestionDeadLetter,
     IngestionRun,
@@ -23,6 +24,7 @@ __all__ = [
     "Event",
     "EventEvidence",
     "EventRelation",
+    "EventReport",
     "IngestionDeadLetter",
     "IngestionRun",
     "Location",

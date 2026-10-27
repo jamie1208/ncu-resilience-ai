@@ -98,6 +98,71 @@ export interface EventSummary {
   updated_at: string | null
 }
 
+/** 可能的影響：S06 的一個分項（分數由規則引擎計算）。 */
+export interface ReportImpact {
+  dimension: string
+  score: number
+  uncertainty: number
+  reason: string | null
+  evidence_ids: string[]
+}
+
+export type CauseBasis = 'confirmed' | 'hypothesized'
+
+/** S07 的原因；hypothesized 一律帶「推測，尚未查證」標示，confirmed 附官方來源的逐字原句。 */
+export interface ReportCause {
+  cause_id: string
+  description: string
+  basis: CauseBasis
+  label: string
+  quotes: { evidence_id: string; quote: string }[]
+  to_verify: string | null
+  evidence_ids: string[]
+}
+
+export type MeasureAudience = 'students' | 'school'
+export type MeasureHorizon = 'short' | 'mid' | 'long'
+
+/** S08 的措施；cause_basis 沿用（規則改判後的）原因性質。 */
+export interface ReportMeasure {
+  action: string
+  audience: MeasureAudience
+  horizon: MeasureHorizon
+  priority: 'high' | 'medium' | 'low'
+  kind: 'respond' | 'investigate' | 'prevent'
+  cause_id: string | null
+  cause_basis: CauseBasis | null
+  responsible_unit: string | null
+  evidence_ids: string[]
+}
+
+/** 報告的一個區塊；abstained／failed 時沒有項目，message 是給使用者看的說明。 */
+export interface ReportSection<T> {
+  status: 'ok' | 'abstained' | 'failed' | 'unavailable'
+  message: string | null
+  items: T[]
+}
+
+/** 事件小報告（P4-T09）：每一項都帶 evidence_ids（文章 id 的十六進位）。 */
+export interface EventReport {
+  id: string
+  trigger: 'auto' | 'manual'
+  valid: boolean
+  invalidated_at: string | null
+  invalidated_reason: string | null
+  verification_status: string
+  risk_level: RiskLevel | null
+  impacts: ReportSection<ReportImpact>
+  causes: ReportSection<ReportCause>
+  missing_information: string[]
+  measures: ReportSection<ReportMeasure>
+  /** 建議轉給的單位：只顯示給使用者，系統不寄信 */
+  referrals: { unit: string; evidence_ids: string[] }[]
+  root_cause_run_id: string | null
+  solution_run_id: string | null
+  created_at: string
+}
+
 export interface EventDetail {
   id: string
   title: string
@@ -109,6 +174,7 @@ export interface EventDetail {
   summary: EventSummary | null
   evidence: Evidence[]
   risk_assessments: RiskAssessment[]
+  report: EventReport | null
 }
 
 export interface AlertItem {
@@ -314,6 +380,12 @@ export async function verifyEvent(eventId: string, status: VerifyStatus, note = 
 /** 重跑事件分析（非同步排入佇列）。 */
 export async function analyzeEvent(eventId: string) {
   return (await post<{ event_id: string; status: string }>(`/admin/events/${id(eventId)}/analyze`))
+    .data
+}
+
+/** 手動產生事件小報告（非同步排入佇列）。 */
+export async function generateReport(eventId: string) {
+  return (await post<{ event_id: string; status: string }>(`/admin/events/${id(eventId)}/report`))
     .data
 }
 
