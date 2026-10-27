@@ -39,7 +39,7 @@ wait_for_network() {
   done
 }
 
-output="$(mktemp -t fb-capture)"
+output="$(mktemp "${TMPDIR:-/tmp}/fb-capture.XXXXXX")"
 trap 'rm -f "${output}"' EXIT
 
 for (( attempt = 1; attempt <= TRIES; attempt++ )); do
