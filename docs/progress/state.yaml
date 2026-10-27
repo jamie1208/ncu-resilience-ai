@@ -365,7 +365,9 @@ gates:
       [WebServer] warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will
       be ignored; use `--active` to target the active environment instead'
   G3-5:
-    status: pending
+    status: pass
+    updated_at: '2026-10-27T13:36:59+08:00'
+    note: 使用者 2026-10-27 於對話中確認通過；已以附錄 A 案例資料走過展示路徑，未附錄影（使用者決定不錄影直接結案）
   G4-4:
     status: pending
   G5-2:
@@ -939,4 +941,10 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-27T13:28:33+08:00'
+- at: '2026-10-27T13:36:59+08:00'
+  id: G3-5
+  from: pending
+  to: pass
+  note: 使用者 2026-10-27 於對話中確認通過；已以附錄 A 案例資料走過展示路徑，未附錄影（使用者決定不錄影直接結案）
+  confirmed_by_user: true
+updated_at: '2026-10-27T13:36:59+08:00'
