@@ -164,7 +164,9 @@ tasks:
     updated_at: '2026-10-26T22:34:14+08:00'
     evidence: docs/progress/records/P3-T10-20261026.md
   P4-T05:
-    status: pending
+    status: done
+    updated_at: '2026-10-27T22:08:42+08:00'
+    evidence: docs/progress/records/P4-T05-20261027.md
   P5-T04:
     status: pending
   P5-T05:
@@ -983,4 +985,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-27T17:09:26+08:00'
+- at: '2026-10-27T18:00:43+08:00'
+  id: P4-T05
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-27T22:08:42+08:00'
+  id: P4-T05
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-27T22:08:42+08:00'

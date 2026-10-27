@@ -345,6 +345,8 @@ make e2e   # 啟動資料庫，在獨立 e2e 資料庫建立附錄 A 案例並�
 - **P4-T05 改善措施追蹤（F10）**
   - 檔案：`app/resilience/actions.py`（可從 S08 的校方措施建立追蹤項目，也可手動新增）、`infra/migrations/versions/<下一個編號>_response_actions.py`（含狀態變更歷史）、後台改善追蹤頁
   - 驗證：`tests/integration/test_response_actions.py`（發現→處理→恢復→改進完整紀錄）
+  - 範圍調整（使用者決定，2026-10-27）：另外新增 `app/resilience/__init__.py`、`app/models/response_action.py`（並在 `app/models/__init__.py` 註冊）、`app/api/v1/admin/actions.py`（並在 `app/api/v1/admin/__init__.py` 註冊）；後台路由 `GET /api/v1/admin/actions`、`GET`／`PATCH /api/v1/admin/actions/{id}`、`POST /api/v1/admin/actions/{id}/transitions`、`POST /api/v1/admin/events/{id}/actions`；權限沿用 `events:read_all`／`events:verify`，不新增權限；前端 `frontend/src/admin/pages/ResponseActions.tsx`（含測試）、`frontend/src/admin/{api.ts,router.ts,AdminApp.tsx}`、`frontend/src/test/fixtures.ts`，以及 `frontend/src/admin/pages/EventWorkbench.tsx`（校方措施旁「加入改善追蹤」、手動新增）
+  - 實作調整（AI 自行決定，2026-10-27）：狀態 discovered／handling／recovered／improved，另有 dropped（不追蹤）；發現、處理、恢復可改為不追蹤，恢復可回到處理，改進與不追蹤為終點；轉到恢復、改進必須附佐證；只有有效報告的校方措施可建立，同一份報告的同一項措施只能建立一次，保存措施快照、負責人預設為建議單位；事件不實或封存時不能新增；名稱、負責人、備註、佐證含個資時拒絕；每次狀態變更（含建立）寫入 response_action_transitions 並與稽核紀錄共用 request_id；期限在前端以台北當日 23:59:59 為準，已改進或不追蹤的項目不算逾期
 - **P4-T10 再發生偵測與提醒**
   - 檔案：`app/resilience/recurrence.py`（確定性規則：同地點、同類別在設定的時間窗內再次發生，或已標記「已改善」的事件再次發生）、`config/recurrence.yaml`（時間窗與門檻）、通知中心提醒「可能不是單純個案，要不要整批檢查？」
   - 驗證：`tests/unit/resilience/test_recurrence.py`（合成資料：時間窗內再發生會提醒、不同地點或類別不會、改善後再發生會標示）

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from '../../App'
-import { EVENT_DETAIL, EVENT_ID, EVENT_REPORT, EVENTS } from '../../test/fixtures'
+import { ACTION_DETAIL, EVENT_DETAIL, EVENT_ID, EVENT_REPORT, EVENTS } from '../../test/fixtures'
 import { ME, mockApi, type MockRoute } from '../../test/mockApi'
 
 const DETAIL = `GET /api/v1/admin/events/${EVENT_ID}`
@@ -236,6 +236,66 @@ describe('EventWorkbench', () => {
     await user.click(within(report).getByRole('button', { name: '產生小報告' }))
     expect(await within(report).findByRole('status')).toHaveTextContent('已排入產生小報告')
     expect(calls.some((c) => c.method === 'POST' && c.path.endsWith('/report'))).toBe(true)
+  })
+
+  it('小報告的校方措施可以加入改善追蹤，同學措施不行', async () => {
+    const { calls, user } = open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: { ...EVENT_DETAIL, report: EVENT_REPORT } },
+      [`POST /api/v1/admin/events/${EVENT_ID}/actions`]: { status: 201, data: ACTION_DETAIL },
+    })
+    const measures = await screen.findByRole('region', { name: '可以怎麼做' })
+    const students = within(measures).getByRole('group', { name: '同學可以做' })
+    expect(within(students).queryByRole('button', { name: '加入改善追蹤' })).not.toBeInTheDocument()
+
+    const item = within(measures).getByText('盤點同年份的變電箱並排定汰換。').closest('li')!
+    await user.click(within(item).getByRole('button', { name: '加入改善追蹤' }))
+
+    expect(await within(item).findByRole('link', { name: '已加入改善追蹤' })).toHaveAttribute('href', '/admin/actions')
+    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ report_id: 'rp-1', measure_index: 1 })
+  })
+
+  it('措施已在追蹤中時顯示伺服器訊息', async () => {
+    const { user } = open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: { ...EVENT_DETAIL, report: EVENT_REPORT } },
+      [`POST /api/v1/admin/events/${EVENT_ID}/actions`]: {
+        status: 409,
+        error: { code: 'CONFLICT', message: '這項措施已經在追蹤中' },
+      },
+    })
+    const measures = await screen.findByRole('region', { name: '可以怎麼做' })
+    const item = within(measures).getByText('盤點同年份的變電箱並排定汰換。').closest('li')!
+    await user.click(within(item).getByRole('button', { name: '加入改善追蹤' }))
+    expect(await within(item).findByRole('alert')).toHaveTextContent('這項措施已經在追蹤中')
+  })
+
+  it('失效報告的措施沒有加入追蹤按鈕', async () => {
+    open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: {
+        data: { ...EVENT_DETAIL, report: { ...EVENT_REPORT, valid: false, invalidated_reason: 'event_false' } },
+      },
+    })
+    const measures = await screen.findByRole('region', { name: '可以怎麼做' })
+    expect(within(measures).queryByRole('button', { name: '加入改善追蹤' })).not.toBeInTheDocument()
+  })
+
+  it('手動新增改善措施', async () => {
+    const { calls, user } = open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: EVENT_DETAIL },
+      [`POST /api/v1/admin/events/${EVENT_ID}/actions`]: { status: 201, data: ACTION_DETAIL },
+    })
+    const section = await screen.findByRole('region', { name: '改善追蹤' })
+    const submit = within(section).getByRole('button', { name: '新增' })
+    expect(submit).toBeDisabled()
+    await user.type(within(section).getByLabelText('改善措施'), '請總務處說明復電流程')
+    await user.type(within(section).getByLabelText('負責人'), '總務處')
+    await user.click(submit)
+
+    expect(await within(section).findByRole('status')).toHaveTextContent('已新增')
+    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ title: '請總務處說明復電流程', owner: '總務處' })
   })
 
   it('事件不存在時顯示錯誤', async () => {
