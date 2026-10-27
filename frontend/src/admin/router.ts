@@ -29,6 +29,7 @@ export type Route =
   | { page: 'root' }
   | { page: 'events'; eventId: string | null }
   | { page: 'alerts' }
+  | { page: 'actions' }
   | { page: 'skills' }
   | { page: 'ops' }
   | { page: 'not_found' }
@@ -41,6 +42,7 @@ export function matchRoute(path: string): Route {
   const event = /^\/admin\/events\/([^/]+)$/.exec(clean)
   if (event) return { page: 'events', eventId: decodeURIComponent(event[1]) }
   if (clean === '/admin/alerts') return { page: 'alerts' }
+  if (clean === '/admin/actions') return { page: 'actions' }
   if (clean === '/admin/skills') return { page: 'skills' }
   if (clean === '/admin/ops') return { page: 'ops' }
   return { page: 'not_found' }

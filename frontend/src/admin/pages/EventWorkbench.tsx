@@ -1,10 +1,11 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 
-import { Badge, Button, Card, Select, Textarea } from '@design'
+import { Badge, Button, Card, Input, Select, Textarea } from '@design'
 
 import { cn } from '../../lib/cn'
 import {
   analyzeEvent,
+  createAction,
   generateReport,
   getEvent,
   listEvents,
@@ -187,6 +188,7 @@ function EventPanel({ eventId }: { eventId: string }) {
           </Card>
           <SummaryCard event={event} />
           <ReportCard event={event} />
+          <ActionsCard event={event} />
           <SourceComparison event={event} />
           <RiskBreakdown assessments={event.risk_assessments} />
           <VerifyForm
@@ -356,7 +358,11 @@ function ReportBody({ event, report }: { event: EventDetail; report: EventReport
         {report.measures.status !== 'ok' ? (
           <Muted>{report.measures.message}</Muted>
         ) : (
-          <MeasureGroups measures={report.measures.items} sources={sources} />
+          <MeasureGroups
+            measures={report.measures.items}
+            sources={sources}
+            track={trackable(event, report) ? { eventId: event.id, reportId: report.id } : null}
+          />
         )}
       </SubSection>
 
@@ -399,7 +405,22 @@ function CauseItem({ cause, sources }: { cause: ReportCause; sources: (ids: stri
   )
 }
 
-function MeasureGroups({ measures, sources }: { measures: ReportMeasure[]; sources: (ids: string[]) => string }) {
+/** 有效報告、事件未被查證為不實或封存時，校方措施才能加入改善追蹤（P4-T05）。 */
+function trackable(event: EventDetail, report: EventReport): boolean {
+  return report.valid && event.status !== 'false' && event.status !== 'archived'
+}
+
+type Track = { eventId: string; reportId: string } | null
+
+function MeasureGroups({
+  measures,
+  sources,
+  track,
+}: {
+  measures: ReportMeasure[]
+  sources: (ids: string[]) => string
+  track: Track
+}) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {AUDIENCES.map(([audience, title]) => {
@@ -430,6 +451,9 @@ function MeasureGroups({ measures, sources }: { measures: ReportMeasure[]; sourc
                           {m.responsible_unit && <span>{`建議單位：${m.responsible_unit}`}</span>}
                           <span>{sources(m.evidence_ids)}</span>
                         </span>
+                        {track && audience === 'school' && (
+                          <TrackButton track={track} index={measures.indexOf(m)} />
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -440,6 +464,102 @@ function MeasureGroups({ measures, sources }: { measures: ReportMeasure[]; sourc
         )
       })}
     </div>
+  )
+}
+
+/** 把一項校方措施加入改善追蹤；成功後改為連到改善追蹤頁。 */
+function TrackButton({ track, index }: { track: NonNullable<Track>; index: number }) {
+  const [busy, setBusy] = useState(false)
+  const [added, setAdded] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const message = useErrorMessage()
+
+  async function add() {
+    setBusy(true)
+    setError(null)
+    try {
+      await createAction(track.eventId, { report_id: track.reportId, measure_index: index })
+      setAdded(true)
+    } catch (e) {
+      setError(message(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="mt-1 space-y-1">
+      {added ? (
+        <Link to="/admin/actions" className="text-xs text-accent underline underline-offset-4">
+          已加入改善追蹤
+        </Link>
+      ) : (
+        <Button variant="outline" size="sm" disabled={busy} onClick={() => void add()}>
+          加入改善追蹤
+        </Button>
+      )}
+      {error && <ErrorText>{error}</ErrorText>}
+    </div>
+  )
+}
+
+/** 改善追蹤（P4-T05）：手動新增這個事件的改善措施；進度在改善追蹤頁更新。 */
+function ActionsCard({ event }: { event: EventDetail }) {
+  const [title, setTitle] = useState('')
+  const [owner, setOwner] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+  const message = useErrorMessage()
+  const closed = event.status === 'false' || event.status === 'archived'
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError(null)
+    setNotice(null)
+    try {
+      const body = owner.trim() ? { title: title.trim(), owner: owner.trim() } : { title: title.trim() }
+      await createAction(event.id, body)
+      setTitle('')
+      setOwner('')
+      setNotice('已新增，可到改善追蹤頁更新進度')
+    } catch (err) {
+      setError(message(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Card>
+      <Section id="actions-heading" title="改善追蹤">
+        <div className="space-y-3">
+          <Link to="/admin/actions" className="text-sm text-accent underline underline-offset-4">
+            到改善追蹤頁
+          </Link>
+          {closed ? (
+            <Muted>事件已被查證為不實或已封存，不能新增改善措施。</Muted>
+          ) : (
+            <form aria-label="新增改善措施" className="grid gap-2 sm:grid-cols-[1fr_12rem_auto] sm:items-end" onSubmit={submit}>
+              <label className="block space-y-1 text-sm text-foreground">
+                <span>改善措施</span>
+                <Input value={title} maxLength={200} placeholder="請勿填寫個資" onChange={(e) => setTitle(e.target.value)} />
+              </label>
+              <label className="block space-y-1 text-sm text-foreground">
+                <span>負責人</span>
+                <Input value={owner} maxLength={100} placeholder="選填" onChange={(e) => setOwner(e.target.value)} />
+              </label>
+              <Button type="submit" size="sm" disabled={busy || title.trim() === ''}>
+                新增
+              </Button>
+            </form>
+          )}
+          {error && <ErrorText>{error}</ErrorText>}
+          {notice && <Notice>{notice}</Notice>}
+        </div>
+      </Section>
+    </Card>
   )
 }
 

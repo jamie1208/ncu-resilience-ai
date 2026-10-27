@@ -7,6 +7,8 @@ import type {
   EventItem,
   EventReport,
   IngestionRun,
+  ResponseActionDetail,
+  ResponseActionItem,
   SkillSummary,
   SourceHealth,
 } from '../admin/api'
@@ -340,3 +342,62 @@ export const SKILLS: SkillSummary[] = [
     eval: null,
   },
 ]
+
+export const ACTIONS: ResponseActionItem[] = [
+  {
+    id: 'ra-1',
+    event_id: EVENT_ID,
+    event: { id: EVENT_ID, title: '工程一館停電' },
+    origin: 'measure',
+    report_id: 'rp-1',
+    measure_index: 1,
+    measure: EVENT_REPORT.measures.items[1],
+    title: '盤點同年份的變電箱並排定汰換。',
+    owner: '總務處',
+    due_at: '2026-10-25T15:59:59Z',
+    state: 'handling',
+    proof: null,
+    overdue: true,
+    created_at: '2026-10-20T03:00:00Z',
+    updated_at: '2026-10-21T03:00:00Z',
+  },
+  {
+    id: 'ra-2',
+    event_id: EVENT_ID,
+    event: { id: EVENT_ID, title: '工程一館停電' },
+    origin: 'measure',
+    report_id: 'rp-1',
+    measure_index: 2,
+    measure: EVENT_REPORT.measures.items[2],
+    title: '確認附近施工是否曾影響供電線路。',
+    owner: null,
+    due_at: null,
+    state: 'recovered',
+    proof: '總務處公告：已恢復供電',
+    overdue: false,
+    created_at: '2026-10-20T03:00:00Z',
+    updated_at: '2026-10-20T05:00:00Z',
+  },
+]
+
+export const ACTION_DETAIL: ResponseActionDetail = {
+  ...ACTIONS[0],
+  history: [
+    {
+      from_state: null,
+      to_state: 'discovered',
+      note: null,
+      proof: null,
+      actor: 'admin:u-1',
+      created_at: '2026-10-20T03:00:00Z',
+    },
+    {
+      from_state: 'discovered',
+      to_state: 'handling',
+      note: '已向總務處反映',
+      proof: null,
+      actor: 'admin:u-1',
+      created_at: '2026-10-21T03:00:00Z',
+    },
+  ],
+}

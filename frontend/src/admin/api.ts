@@ -177,6 +177,53 @@ export interface EventDetail {
   report: EventReport | null
 }
 
+export type ActionState = 'discovered' | 'handling' | 'recovered' | 'improved' | 'dropped'
+/** 改善措施的狀態轉移（與 app/resilience/actions.py 相同）；改進、不追蹤為終點。 */
+export const ACTION_TRANSITIONS: Record<ActionState, ActionState[]> = {
+  discovered: ['handling', 'dropped'],
+  handling: ['recovered', 'dropped'],
+  recovered: ['improved', 'handling', 'dropped'],
+  improved: [],
+  dropped: [],
+}
+/** 轉到恢復、改進必須附佐證。 */
+export const PROOF_REQUIRED: readonly ActionState[] = ['recovered', 'improved']
+
+/** 改善措施追蹤（P4-T05）；measure 是從 S08 建立時的措施快照，手動新增為 null。 */
+export interface ResponseAction {
+  id: string
+  event_id: string
+  origin: 'measure' | 'manual'
+  report_id: string | null
+  measure_index: number | null
+  measure: ReportMeasure | null
+  title: string
+  owner: string | null
+  due_at: string | null
+  state: ActionState
+  proof: string | null
+  overdue: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ResponseActionItem extends ResponseAction {
+  event: { id: string; title: string }
+}
+
+export interface ActionTransition {
+  from_state: ActionState | null
+  to_state: ActionState
+  note: string | null
+  proof: string | null
+  actor: string
+  created_at: string
+}
+
+export interface ResponseActionDetail extends ResponseAction {
+  history: ActionTransition[]
+}
+
 export interface AlertItem {
   id: string
   event_id: string
@@ -304,11 +351,15 @@ export function clearCsrfToken(): void {
 }
 
 function post<T>(path: string, body?: unknown) {
+  return send<T>('POST', path, body)
+}
+
+function send<T>(method: 'POST' | 'PATCH', path: string, body?: unknown) {
   const headers = new Headers({ 'Content-Type': 'application/json' })
   const token = csrfToken ?? readCookie(CSRF_COOKIE)
   if (token) headers.set('X-CSRF-Token', token)
   return apiRequest<T>(`${V1}${path}`, {
-    method: 'POST',
+    method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
   })
@@ -387,6 +438,48 @@ export async function analyzeEvent(eventId: string) {
 export async function generateReport(eventId: string) {
   return (await post<{ event_id: string; status: string }>(`/admin/events/${id(eventId)}/report`))
     .data
+}
+
+// ---- 改善措施追蹤 ----
+
+export async function listActions(
+  filters: { state?: ActionState | ''; event_id?: string } = {},
+): Promise<ResponseActionItem[]> {
+  return (await apiGet<ResponseActionItem[]>(`${V1}/admin/actions${query(filters)}`)).data
+}
+
+export async function getAction(actionId: string): Promise<ResponseActionDetail> {
+  return (await apiGet<ResponseActionDetail>(`${V1}/admin/actions/${id(actionId)}`)).data
+}
+
+/** 新增追蹤項目：帶 report_id、measure_index 從小報告的校方措施建立，否則以 title 手動新增。 */
+export async function createAction(
+  eventId: string,
+  body:
+    | { report_id: string; measure_index: number }
+    | { title: string; owner?: string; due_at?: string },
+): Promise<ResponseActionDetail> {
+  return (await post<ResponseActionDetail>(`/admin/events/${id(eventId)}/actions`, body)).data
+}
+
+/** 修改負責人、期限；null 代表清除。 */
+export async function updateAction(
+  actionId: string,
+  body: { owner?: string | null; due_at?: string | null },
+): Promise<ResponseActionDetail> {
+  return (await send<ResponseActionDetail>('PATCH', `/admin/actions/${id(actionId)}`, body)).data
+}
+
+/** 變更狀態；備註、佐證空白不送。 */
+export async function transitionAction(
+  actionId: string,
+  to: ActionState,
+  { note = '', proof = '' }: { note?: string; proof?: string } = {},
+): Promise<ResponseActionDetail> {
+  const body: Record<string, string> = { to }
+  if (note.trim()) body.note = note.trim()
+  if (proof.trim()) body.proof = proof.trim()
+  return (await post<ResponseActionDetail>(`/admin/actions/${id(actionId)}/transitions`, body)).data
 }
 
 // ---- 通知 ----

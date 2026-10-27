@@ -10,6 +10,7 @@ import { AlertCenter } from './pages/AlertCenter'
 import { EventWorkbench } from './pages/EventWorkbench'
 import { LoginPage } from './pages/LoginPage'
 import { Ops } from './pages/Ops'
+import { ResponseActions } from './pages/ResponseActions'
 import { SkillsDashboard } from './pages/SkillsDashboard'
 import { matchRoute, navigate, usePath, type Route } from './router'
 import { Disclaimer, Muted, PageHeader } from './ui'
@@ -17,6 +18,7 @@ import { Disclaimer, Muted, PageHeader } from './ui'
 const NAV = [
   { to: '/admin/events', label: '事件工作台', page: 'events' },
   { to: '/admin/alerts', label: '通知中心', page: 'alerts' },
+  { to: '/admin/actions', label: '改善追蹤', page: 'actions' },
   { to: '/admin/skills', label: 'Skills', page: 'skills' },
   { to: '/admin/ops', label: '運維', page: 'ops' },
 ] as const
@@ -130,6 +132,8 @@ function Page({ route }: { route: Route }) {
       return <EventWorkbench eventId={route.eventId} />
     case 'alerts':
       return <AlertCenter />
+    case 'actions':
+      return <ResponseActions />
     case 'skills':
       return <SkillsDashboard />
     case 'ops':

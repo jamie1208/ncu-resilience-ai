@@ -6,6 +6,7 @@ from app.models.audit import AuditLog
 from app.models.base import Base
 from app.models.event import Event, EventEvidence, Location
 from app.models.report import EventReport
+from app.models.response_action import ResponseAction, ResponseActionTransition
 from app.models.source import (
     IngestionDeadLetter,
     IngestionRun,
@@ -28,6 +29,8 @@ __all__ = [
     "IngestionDeadLetter",
     "IngestionRun",
     "Location",
+    "ResponseAction",
+    "ResponseActionTransition",
     "RiskAssessment",
     "Source",
     "SourceItem",
