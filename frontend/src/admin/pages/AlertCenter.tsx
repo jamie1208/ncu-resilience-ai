@@ -4,18 +4,26 @@ import { Badge, Button, Card, Input, Select } from '@design'
 
 import {
   listAlerts,
+  listRecurrences,
   retractAlert,
   RETRACTABLE_STATES,
   type AlertItem,
   type AlertState,
   type Page,
+  type RecurrenceGroup,
+  type RecurrenceReason,
 } from '../api'
-import { ALERT_LABELS, ALERT_TONES, formatTime, label } from '../format'
+import { ALERT_LABELS, ALERT_TONES, formatTime, label, STATUS_LABELS } from '../format'
 import { Link } from '../Link'
 import { useErrorMessage, useLoad } from '../useLoad'
-import { ErrorText, LoadState, PageHeader } from '../ui'
+import { ErrorText, LoadState, PageHeader, Section } from '../ui'
 
 const STATES = Object.keys(ALERT_LABELS) as AlertState[]
+
+const REASON_LABELS: Record<RecurrenceReason, string> = {
+  within_window: '時間窗內再發生',
+  after_improvement: '改善後再發生',
+}
 
 /** 個人通知中心：系統送給使用者本人的通知（ADR-0008），可撤回已通知的內容。 */
 export function AlertCenter() {
@@ -48,6 +56,7 @@ export function AlertCenter() {
           </label>
         }
       />
+      <Recurrences />
       <LoadState loading={alerts.loading} error={alerts.error} empty={items.length === 0} emptyText="目前沒有通知" />
       {items.length > 0 && (
         <ul className="space-y-3">
@@ -57,6 +66,56 @@ export function AlertCenter() {
         </ul>
       )}
     </div>
+  )
+}
+
+/** 再發生提醒：同地點、同類別的事件不只一次，整組列出供逐一檢查（P4-T10）。 */
+function Recurrences() {
+  const groups = useLoad<RecurrenceGroup[]>(listRecurrences, 'recurrences')
+  if (groups.error) return <ErrorText>{`再發生提醒載入失敗：${groups.error}`}</ErrorText>
+  const items = groups.data ?? []
+  if (items.length === 0) return null
+  return (
+    <Section id="recurrences" title="再發生提醒">
+      <div className="space-y-3">
+        {items.map((group) => (
+          <RecurrenceCard key={`${group.location_id}:${group.event_type}`} group={group} />
+        ))}
+      </div>
+    </Section>
+  )
+}
+
+function RecurrenceCard({ group }: { group: RecurrenceGroup }) {
+  return (
+    <Card as="article" className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-sm font-semibold text-foreground">
+          {`${group.location_name ?? '地點未明'}・${group.event_type_label}：${group.events.length} 件`}
+        </h3>
+        {group.reasons.map((reason) => (
+          <Badge key={reason} tone="warning">
+            {label(REASON_LABELS, reason)}
+          </Badge>
+        ))}
+      </div>
+      <p className="text-sm text-foreground">{group.message}</p>
+      <ul className="space-y-1">
+        {group.events.map((event) => (
+          <li key={event.id} className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span className="font-mono">{event.occurred_on}</span>
+            <Link
+              to={`/admin/events/${encodeURIComponent(event.id)}`}
+              className="text-sm text-accent underline underline-offset-4"
+            >
+              {event.title}
+            </Link>
+            <span>{label(STATUS_LABELS, event.status)}</span>
+            {event.improved_on && <Badge tone="success">{`已改善（${event.improved_on}）`}</Badge>}
+          </li>
+        ))}
+      </ul>
+    </Card>
   )
 }
 

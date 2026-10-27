@@ -7,6 +7,7 @@ import type {
   EventItem,
   EventReport,
   IngestionRun,
+  RecurrenceGroup,
   ResponseActionDetail,
   ResponseActionItem,
   SkillSummary,
@@ -220,6 +221,47 @@ export const ALERTS: AlertItem[] = [
     flags: [],
     created_at: '2026-10-19T09:01:00Z',
     updated_at: '2026-10-19T10:00:00Z',
+  },
+]
+
+export const RECURRENCES: RecurrenceGroup[] = [
+  {
+    location_id: 'loc-1',
+    location_name: '工程一館',
+    event_type: 'facility',
+    event_type_label: '設施',
+    reasons: ['within_window'],
+    message: '可能不是單純個案，要不要整批檢查？',
+    latest_on: '2026-10-20',
+    events: [
+      { id: EVENT_ID, title: '工程一館停電', status: 'unverified', occurred_on: '2026-10-20', improved_on: null },
+      { id: EVENT_ID_2, title: '工程一館跳電', status: 'resolved', occurred_on: '2026-10-08', improved_on: null },
+    ],
+  },
+  {
+    location_id: 'loc-2',
+    location_name: '總圖書館',
+    event_type: 'facility',
+    event_type_label: '設施',
+    reasons: ['after_improvement'],
+    message: '可能不是單純個案，要不要整批檢查？',
+    latest_on: '2026-10-18',
+    events: [
+      {
+        id: '0b4f2a52-6a43-4c55-9d43-1d2a2b0e0003',
+        title: '總圖漏水',
+        status: 'unverified',
+        occurred_on: '2026-10-18',
+        improved_on: null,
+      },
+      {
+        id: '0b4f2a52-6a43-4c55-9d43-1d2a2b0e0004',
+        title: '總圖天花板漏水',
+        status: 'resolved',
+        occurred_on: '2026-05-02',
+        improved_on: '2026-06-15',
+      },
+    ],
   },
 ]
 
