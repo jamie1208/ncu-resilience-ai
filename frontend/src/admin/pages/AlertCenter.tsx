@@ -95,6 +95,7 @@ function AlertRow({ alert, onChange }: { alert: AlertItem; onChange: (a: AlertIt
         >
           {alert.event_title}
         </Link>
+        {alert.flags.includes('possible_allegation') && <Badge tone="warning">疑似指控，需人工判斷</Badge>}
       </div>
       <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">{alert.body}</p>
       {alert.retract_reason && (

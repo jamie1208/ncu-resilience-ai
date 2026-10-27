@@ -298,12 +298,14 @@ uv run python ../scripts/eval/run_eval.py --all --split test --live --summary ev
   - 實作調整（AI 自行決定，2026-10-26）：入口為 `sync_event_alert(session, event_id)`，以事件列 `FOR UPDATE` 串行化；不符合規則時不建立通知列（`blocked` 不落地）；查證 false → 自動 retracted，事件 resolved／archived 或不再符合規則 → expired，之後再符合規則則建立新通知、版本接續；最新一則已撤回 → 不再通知該事件；不在 S03 類別的事件不通知（不拋錯）；執行者為 `service:notifier`，自動改版／撤回／過期只需 `alerts:publish`（`alerts:retract` 仍只供手動撤回）；monitoring 視為 unverified；官方來源依最新成功 S05 的 claim_type＝official 且 supports 的證據；遞送以 alert_deliveries 唯一約束 `ON CONFLICT DO NOTHING` 佔位後才送出，失敗記 `failed` 不重試
 - **P3-T10 端到端測試**
   - 檔案：`tests/e2e/`（Playwright），涵蓋附錄 A 的 A01–A08，期望結果依個人版改寫（A05 改為社群貼文惡意誣指個人：通知不呈現指控，管理端標記異常）
-  - 驗證：`npx playwright test` 全過
+  - 驗證：`make e2e` 全過
+  - 範圍調整（使用者決定，2026-10-26）：真實全端（FastAPI＋PostgreSQL＋前端，不模擬 API）；`tests/e2e/` 自成一組 Playwright 設定（借用 frontend 的 `@playwright/test`），G3-4 指令改為 `make e2e`，Makefile 加 `e2e` 目標；A04 只驗證建立不同事件，related_event 的呈現留到 P4-T01／P4-T02；A05 的「管理端標記異常」另外修改 `app/api/v1/admin/alerts.py`（通知列表回傳 `flags`，讀取時依 P3-T07 的指控規則重算）與 `frontend/src/admin/{api.ts,pages/AlertCenter.tsx}`（「疑似指控，需人工判斷」標記）；e2e 發現查證 false 但風險同時降低時通知被標為過期而非撤回，修正 `app/alerts/policy.py`（略過時一律帶出 verification_false）
+  - 實作調整（AI 自行決定，2026-10-26）：`tests/e2e/seed_appendix_a.py` 在獨立資料庫（名稱必須以 `_e2e` 結尾）以真實的 `store_items` 與 `analyze_item`（腳本化假模型）建立案例，並檢查只有資料庫看得到的不變量（A03 證據數、A07 冪等）；API 跑在 8001、Redis 用 db 15，開發用 worker 收不到任務；頁面的 `/api` 請求由 `fixtures.ts` 以 page.route 轉到 e2e API
 
 ```bash
 cd backend && uv run pytest tests/integration tests/unit/alerts -q
 cd ../frontend && npm run test && npx playwright test
-make e2e   # 啟動完整環境並跑附錄 A 案例
+make e2e   # 啟動資料庫，在獨立 e2e 資料庫建立附錄 A 案例並以真實 API＋前端跑 Playwright
 ```
 
 | 閘門 | 條件 | 驗證方式 |

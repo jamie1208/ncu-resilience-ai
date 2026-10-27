@@ -388,6 +388,21 @@ async def test_list_alerts_with_state_filter(api: Api, session: AsyncSession) ->
     assert only[0]["body"] == "工程四館停電，請留意。"
 
 
+async def test_list_alerts_flags_possible_allegation(api: Api, session: AsyncSession) -> None:
+    """P3-T10（A05）：疑似指控的事件，通知列表標記 possible_allegation 給管理端人工判斷。"""
+    accused = await make_event(session, title="有同學在圖書館偷錢包")
+    plain = await make_event(session, title="工程四館停電")
+    await make_alert(session, accused, created_at=T0 + timedelta(hours=1))
+    await make_alert(session, plain)
+    await session.commit()
+
+    data = (await api.get(ALERTS)).json()["data"]
+    assert [(a["event_title"], a["flags"]) for a in data] == [
+        ("有同學在圖書館偷錢包", ["possible_allegation"]),
+        ("工程四館停電", []),
+    ]
+
+
 @pytest.mark.parametrize("state", ["published", "updated"])
 async def test_retract_alert_records_reason_and_audit(
     api: Api, session: AsyncSession, state: str

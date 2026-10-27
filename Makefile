@@ -6,7 +6,7 @@ API_PORT ?= 8000
 WEB_PORT ?= 8088
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps logs smoke test migrate sources health reset
+.PHONY: help up down ps logs smoke test e2e migrate sources health reset
 
 help: ## 列出可用指令
 	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  make %-8s %s\n", $$1, $$2}'
@@ -37,6 +37,10 @@ smoke: ## 冒煙測試：API health、前端首頁、前端經反向代理呼叫
 test: ## 執行後端與前端測試（本機，不需要 Docker）
 	cd backend && uv run pytest -q
 	cd frontend && npm run test
+
+e2e: .env ## 附錄 A 端到端測試（P3-T10）：啟動 db，在獨立的 e2e 資料庫建立案例後以真實 API＋前端跑 Playwright
+	$(COMPOSE) up -d --wait db redis
+	cd frontend && NODE_PATH=$$PWD/node_modules npx playwright test -c ../tests/e2e/playwright.config.ts
 
 migrate: .env ## 執行資料庫 migration（P0-T05 起可用）
 	@test -f backend/alembic.ini || { echo "尚無 backend/alembic.ini：migration 於 P0-T05 建立"; exit 1; }
