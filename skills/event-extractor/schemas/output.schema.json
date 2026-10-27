@@ -14,6 +14,7 @@
     "occurrence_end_time",
     "location",
     "mentions_person",
+    "summary",
     "evidence_ids",
     "evidence_spans",
     "reason",
@@ -63,6 +64,26 @@
     "mentions_person": {
       "description": "內文是否點名可辨識的個人或店家（姓名、綽號、系級加特徵、店名）；abstain 時為 null",
       "type": ["boolean", "null"]
+    },
+    "summary": {
+      "description": "事件說明：一到三句中性的說明（發生什麼事、影響誰、目前狀況），不含人名、店名與個資，附依據的證據；不是事件或 abstain 時為 null",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["text", "evidence_ids"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "evidence_ids": {
+          "description": "說明依據的證據；至少 1 個，且必須存在於輸入",
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "evidence_ids": {
       "description": "支持判斷的證據；ok 時至少 1 個，且必須存在於輸入",

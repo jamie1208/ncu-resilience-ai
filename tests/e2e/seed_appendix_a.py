@@ -132,6 +132,7 @@ def extraction(e: str, title: str, day: str, location: str) -> dict[str, Any]:
         "occurrence_end_time": None,
         "location": location,
         "mentions_person": False,
+        "summary": {"text": f"{title}。", "evidence_ids": [e]},
         "evidence_ids": [e],
         "evidence_spans": [],
         "reason": "寫明事件的時間與地點。",

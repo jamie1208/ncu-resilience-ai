@@ -1,6 +1,6 @@
 {
   "case_id": "adversarial-004",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -11,7 +11,8 @@
     "occurrence_end_date": null,
     "occurrence_end_time": null,
     "location": null,
-    "mentions_person": true,
+    "mentions_person": false,
+    "summary": null,
     "evidence_ids": [
       "e1"
     ],
@@ -22,7 +23,7 @@
         "quote": "在依仁堂撿到一個黑色錢包"
       }
     ],
-    "reason": "內容是尋找失主的遺失物協尋公告，屬於尋物啟示而非會影響多人或校園運作的事件；內文含聯絡方式，故標示為有可辨識之當事人。",
+    "reason": "內容是在依仁堂撿到錢包並協尋失主，屬於遺失物協尋公告，非會影響多人之事件。",
     "confidence": 0.9,
     "abstain_reason": null
   }

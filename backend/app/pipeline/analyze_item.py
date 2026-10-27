@@ -12,6 +12,11 @@
 6. S06 risk-assessor：模型只給五維分數，加權與分級由 `app/risk/engine.py` 計算，
    risk_assessments 每次新增一筆（保留歷史）。
 
+事件說明（P4-T08）：S02 的 `summary` 在建立或併入事件時寫入 events。同事件多篇來源時，
+以證據最強（官方來源優先）、其次最新（發布時間，沒有時用擷取時間）的一篇為準；
+新文章沒有比目前的出處更強或更新、或沒有摘要時不覆寫。寫入前再經 `mask_pii()` 遮蔽
+（Runner 已拒絕含個資的輸出，這是第二道防線）。
+
 `analyze_event`（`POST /api/v1/admin/events/{id}/analyze` 的重跑）：以事件目前的證據重跑 S05、S06。
 文章已屬於某個事件時，`analyze_item` 不重建事件，改為重跑該事件（冪等）。
 
@@ -59,6 +64,7 @@ from app.ai.llm.config import (
 from app.ai.llm.cost import CostLimitExceededError
 from app.ai.runner.loader import Skill, discover_skills
 from app.ai.runner.run import RunStatus, SkillRunResult, SqlRunStore, run_skill
+from app.alerts.pii import mask_pii
 from app.alerts.service import sync_event_alert
 from app.core.config import get_settings
 from app.core.security import Permission, Principal, Role, require
@@ -68,7 +74,12 @@ from app.models.event import Event, EventEvidence, Location
 from app.models.source import AnalysisStatus, Source, SourceItem, SourceItemVersion
 from app.risk.engine import RiskPolicy, assessment_record, load_policy
 from app.services.audit import record_audit
-from app.verification.rules import assessments_from_output, decide, event_status_for
+from app.verification.rules import (
+    assessments_from_output,
+    decide,
+    event_status_for,
+    is_official_source,
+)
 from app.worker.celery_app import (
     ANALYZE_DISPATCH_TASK,
     ANALYZE_EVENT_TASK,
@@ -262,6 +273,51 @@ async def _location_id(session: AsyncSession, name: str | None) -> uuid.UUID | N
 
 def _parse_date(value: Any) -> date | None:
     return date.fromisoformat(value) if isinstance(value, str) and value else None
+
+
+# ---------- 事件說明（P4-T08） ----------
+
+
+async def _summary_rank(session: AsyncSession, item_id: uuid.UUID) -> tuple[bool, datetime] | None:
+    """文章作為事件說明出處的強弱：（是否官方來源, 發布時間或擷取時間）；越大越優先。"""
+    row = (
+        await session.execute(
+            select(Source.code, SourceItem.published_at, SourceItem.fetched_at)
+            .join(Source, Source.id == SourceItem.source_id)
+            .where(SourceItem.id == item_id)
+        )
+    ).one_or_none()
+    if row is None:
+        return None
+    code, published_at, fetched_at = row
+    return is_official_source(code), published_at or fetched_at
+
+
+async def _update_summary(
+    session: AsyncSession,
+    event: Event,
+    summary: Any,
+    *,
+    item_id: uuid.UUID,
+    run_id: uuid.UUID | None,
+) -> None:
+    """S02 的摘要比目前的出處更強或更新時寫入事件；沒有摘要或文字、證據為空時不動。"""
+    if not isinstance(summary, Mapping):
+        return
+    text = str(summary.get("text") or "").strip()
+    evidence_ids = [str(e) for e in summary.get("evidence_ids") or []]
+    if not text or not evidence_ids:
+        return
+    if event.summary is not None and event.summary_source_item_id is not None:
+        current = await _summary_rank(session, event.summary_source_item_id)
+        candidate = await _summary_rank(session, item_id)
+        if current is not None and (candidate is None or candidate <= current):
+            return
+    event.summary = mask_pii(text)
+    event.summary_evidence_ids = evidence_ids
+    event.summary_source_item_id = item_id
+    event.summary_ai_run_id = run_id
+    event.summary_updated_at = datetime.now(UTC)
 
 
 # ---------- 查證與風險（S05、S06） ----------
@@ -547,7 +603,8 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
     if relevance.get("is_campus_relevant") is not True:
         return PipelineResult(Outcome.IRRELEVANT, None, ctx.trace_id, tuple(ctx.steps))
 
-    extracted = _ok(await ctx.run(S02, payload))
+    extraction = await ctx.run(S02, payload)
+    extracted = _ok(extraction)
     if extracted is None:
         return _stopped(ctx, S02)
     if extracted.get("is_event") is not True:
@@ -622,6 +679,13 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
         outcome = Outcome.CREATED
     session.add(
         EventEvidence(event_id=event.id, source_item_id=item_id, support_type=INITIAL_SUPPORT)
+    )
+    await _update_summary(
+        session,
+        event,
+        extracted.get("summary"),
+        item_id=item_id,
+        run_id=extraction.run_id,
     )
     article_runs = [s.run_id for s in ctx.steps if s.name in (S01, S02, S03) and s.run_id]
     await session.execute(

@@ -334,6 +334,8 @@ make e2e   # 啟動資料庫，在獨立 e2e 資料庫建立附錄 A 案例並�
 - **P4-T08 事件說明（摘要）**
   - 檔案：`skills/event-extractor/`（輸出加 `summary`：一到三句中性說明，不含人名、店名與個資，附 evidence_ids；SKILL.md 升版並重跑評測，門檻不得調低）、`infra/migrations/versions/<下一個編號>_event_summary.py`、`app/pipeline/analyze_item.py`（寫入摘要；同事件多篇來源時以最新、證據最強的一篇為準）、`app/api/v1/admin/events.py`（詳情回傳摘要）、後台事件頁顯示
   - 驗證：`tests/integration/test_event_summary.py`（摘要寫入與更新、含個資時被遮蔽或拒絕）；S02 評測維持 P2 門檻
+  - 範圍調整（使用者決定，2026-10-27）：S02 輸出 schema 為 strict（所有欄位必填），既有測試的假 S02 輸出補上 `summary` 欄位（`tests/integration/test_pipeline.py`、`tests/e2e/seed_appendix_a.py`、`tests/fixtures/adversarial/samples.json`，斷言不變）；以真實 gpt-5-mini 重錄 S02 的 30 個案例；另外修改 `app/models/event.py`（欄位）與 `frontend/src/admin/{api.ts,pages/EventWorkbench.tsx}`、`frontend/src/test/fixtures.ts`（後台事件頁「事件說明」）
+  - 實作調整（AI 自行決定，2026-10-27）：`summary` 為 `{text, evidence_ids}` 或 null（不是事件、abstain）；events 加 summary、summary_evidence_ids、summary_source_item_id、summary_ai_run_id、summary_updated_at；出處強弱為（是否官方來源, 發布時間或擷取時間），新文章嚴格較強才覆寫，沒有摘要不覆寫；含個資或引用不存在的證據由 Runner 拒絕（重試後 abstain，管線停在 S02），寫入前另經 `mask_pii()`；既有事件不回填
 - **P4-T09 事件小報告（接上 S07／S08）**
   - 檔案：`app/reports/service.py`（S06 之後執行 S07、S08；風險中以上自動產生，其他可在後台手動觸發；事件版本更新時重算）、`infra/migrations/versions/<下一個編號>_event_reports.py`（保存每次產生的報告與 AI run 關聯）、`app/api/v1/admin/events.py`（詳情回傳小報告）、後台事件頁「事件小報告」區塊
   - 呈現：可能的影響（S06 分項）；值得查查看（S07 `hypothesized`，明確標示「推測，尚未查證」）與已確認原因（S07 `confirmed`，附原句）；可以怎麼做（S08，依同學／學校與短／中／長期分組）；建議轉給哪個單位（S08 `responsible_unit`，只顯示給使用者，系統不寄信）；S07／S08 abstain 時顯示「證據不足，暫不分析」

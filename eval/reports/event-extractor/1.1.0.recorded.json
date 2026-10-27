@@ -1,0 +1,371 @@
+{
+  "skill": "event-extractor",
+  "version": "1.1.0",
+  "schema_version": "1",
+  "mode": "recorded",
+  "provider": "fake",
+  "model": "gpt-5-mini-2025-08-07",
+  "split": "test",
+  "generated_at": "2026-10-27T08:44:31.586897+00:00",
+  "max_cost_usd": 1.0,
+  "summary": {
+    "cases": 15,
+    "passed": 15,
+    "pass_rate": 1.0,
+    "schema_pass_rate": 1.0,
+    "traceability": 1.0,
+    "abstain_rate": 0.06666666666666667,
+    "failed_runs": 0,
+    "no_recording": 0,
+    "skipped_budget": 0,
+    "by_type": {
+      "normal": {
+        "cases": 7,
+        "passed": 7
+      },
+      "boundary": {
+        "cases": 4,
+        "passed": 4
+      },
+      "adversarial": {
+        "cases": 4,
+        "passed": 4
+      }
+    },
+    "attempts": 15,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cost_usd": 0.0,
+    "latency_ms": 0
+  },
+  "metrics": [
+    {
+      "name": "start_date_accuracy",
+      "type": "accuracy",
+      "field": "occurrence_start_date",
+      "value": 1.0,
+      "threshold": 0.85,
+      "max": null,
+      "passed": true
+    },
+    {
+      "name": "location_accuracy",
+      "type": "accuracy",
+      "field": "location",
+      "value": 1.0,
+      "threshold": 0.85,
+      "max": null,
+      "passed": true
+    }
+  ],
+  "gates": {
+    "schema_pass_rate": {
+      "value": 1.0,
+      "threshold": 0.99,
+      "passed": true
+    },
+    "traceability": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "passed": true
+    }
+  },
+  "incomplete": false,
+  "passed": true,
+  "cases": [
+    {
+      "id": "normal-002",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-25",
+        "location": "男三舍"
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-25",
+        "location": "男三舍"
+      }
+    },
+    {
+      "id": "normal-004",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-20",
+        "location": "全校"
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-20",
+        "location": "全校"
+      }
+    },
+    {
+      "id": "normal-006",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-28",
+        "location": "男一舍"
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-28",
+        "location": "男一舍"
+      }
+    },
+    {
+      "id": "normal-008",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-11-01",
+        "location": "全校"
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-11-01",
+        "location": "全校"
+      }
+    },
+    {
+      "id": "normal-010",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-31",
+        "location": "總圖書館"
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-31",
+        "location": "總圖書館"
+      }
+    },
+    {
+      "id": "normal-012",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": false
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": false
+      }
+    },
+    {
+      "id": "normal-014",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": false
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": false
+      }
+    },
+    {
+      "id": "boundary-001",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-28",
+        "location": "科學五館"
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-28",
+        "location": "科學五館"
+      }
+    },
+    {
+      "id": "boundary-003",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-26",
+        "location": "中大路"
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-26",
+        "location": "中大路"
+      }
+    },
+    {
+      "id": "boundary-005",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-19",
+        "location": "校外",
+        "mentions_person": false
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-19",
+        "location": "校外",
+        "mentions_person": false
+      }
+    },
+    {
+      "id": "boundary-007",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-20",
+        "location": "十二舍",
+        "mentions_person": false
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-20",
+        "location": "十二舍",
+        "mentions_person": false
+      }
+    },
+    {
+      "id": "adversarial-001",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-30",
+        "location": "科學一館"
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-30",
+        "location": "科學一館"
+      }
+    },
+    {
+      "id": "adversarial-003",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-20",
+        "location": "後門",
+        "mentions_person": true
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-20",
+        "location": "後門",
+        "mentions_person": true
+      }
+    },
+    {
+      "id": "adversarial-005",
+      "type": "adversarial",
+      "split": "test",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence"
+      },
+      "predicted": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence"
+      }
+    },
+    {
+      "id": "adversarial-007",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-30",
+        "location": "女二舍"
+      },
+      "predicted": {
+        "status": "ok",
+        "is_event": true,
+        "occurrence_start_date": "2026-10-30",
+        "location": "女二舍"
+      }
+    }
+  ]
+}

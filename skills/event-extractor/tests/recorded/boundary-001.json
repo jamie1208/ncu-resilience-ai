@@ -1,17 +1,23 @@
 {
   "case_id": "boundary-001",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "科學五館整天停電",
+    "title": "科學五館整日停電",
     "occurrence_start_date": "2026-10-28",
     "occurrence_start_time": null,
     "occurrence_end_date": "2026-10-28",
     "occurrence_end_time": null,
     "location": "科學五館",
     "mentions_person": false,
+    "summary": {
+      "text": "貼文指出科學五館 10/28（週三）整天停電，提醒有實驗的人先備份資料。",
+      "evidence_ids": [
+        "e1"
+      ]
+    },
     "evidence_ids": [
       "e1"
     ],
@@ -19,12 +25,12 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "科五下週三整天要停電"
+        "quote": "整天要停電"
       },
       {
         "field": "time",
         "evidence_id": "e1",
-        "quote": "下週三整天"
+        "quote": "下週三"
       },
       {
         "field": "location",
@@ -32,8 +38,8 @@
         "quote": "科五"
       }
     ],
-    "reason": "貼文指出科五（科學五館）在下週三整天停電，提醒有實驗的人備份資料。",
-    "confidence": 0.8,
+    "reason": "貼文明確寫出科五（科學五館）下週三整天停電，為會影響有人（有實驗者）的停電事件；時間由發布日換算為下週三（2026-10-28）。",
+    "confidence": 0.7,
     "abstain_reason": null
   }
 }

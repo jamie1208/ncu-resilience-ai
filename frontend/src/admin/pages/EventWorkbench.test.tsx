@@ -78,6 +78,34 @@ describe('EventWorkbench', () => {
     expect(within(risk).getAllByRole('listitem', { name: /評估/ })).toHaveLength(2)
   })
 
+  it('事件說明：顯示 AI 摘要與出處來源，摘要只當純文字', async () => {
+    const summary = {
+      text: '工程一館 10/20 上午停電，<b>電梯</b>暫停。',
+      evidence_ids: ['si1hex'],
+      source_item_id: 'si-1',
+      ai_run_id: 'run-1',
+      updated_at: '2026-10-20T02:20:00Z',
+    }
+    open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: { ...EVENT_DETAIL, summary } },
+    })
+    const region = await screen.findByRole('region', { name: '事件說明' })
+    expect(within(region).getByText('工程一館 10/20 上午停電，<b>電梯</b>暫停。')).toBeInTheDocument()
+    expect(within(region).getByText(/AI 依來源整理/)).toBeInTheDocument()
+    expect(within(region).getByText(/ncu_announcements/)).toBeInTheDocument()
+    expect(within(region).getByText(/2026-10-20 10:20/)).toBeInTheDocument()
+  })
+
+  it('沒有事件說明時顯示尚未產生', async () => {
+    open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: EVENT_DETAIL },
+    })
+    const region = await screen.findByRole('region', { name: '事件說明' })
+    expect(within(region).getByText('尚未產生事件說明。')).toBeInTheDocument()
+  })
+
   it('記錄查證結果後更新狀態並送出備註', async () => {
     const { calls, user } = open(`/admin/events/${EVENT_ID}`, {
       'GET /api/v1/admin/events': { data: EVENTS },

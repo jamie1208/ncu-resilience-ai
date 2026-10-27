@@ -2,15 +2,18 @@
 
 狀態欄位的合法值由 app/domain/states.py 定義；events.status 以 CHECK 約束強制（0002）。
 events.embedding、occurrence_start_date 供 S04 候選召回使用（P2-T09，0006）。
+events.summary* 是 S02 的事件說明與出處（P4-T08，0010）。
 """
 
 from __future__ import annotations
 
 import uuid
 from datetime import date, datetime
+from typing import Any
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import CheckConstraint, Date, Double, ForeignKey, String, Text
+from sqlalchemy import CheckConstraint, Date, DateTime, Double, ForeignKey, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.domain.states import EventStatus
@@ -57,6 +60,18 @@ class Event(Base):
     embedding: Mapped[list[float] | None] = mapped_column(
         Vector(EVENT_EMBEDDING_DIM), comment="事件標題與證據的向量（S04 候選召回）"
     )
+    summary: Mapped[str | None] = mapped_column(Text, comment="事件說明（S02，已遮蔽個資）")
+    summary_evidence_ids: Mapped[list[Any] | None] = mapped_column(
+        JSONB, comment="事件說明依據的 evidence_id（文章 id 的十六進位）"
+    )
+    summary_source_item_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("source_items.id", ondelete="SET NULL")
+    )
+    # ai_analysis_runs.event_id 也參照 events，循環外鍵以 use_alter 建立
+    summary_ai_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("ai_analysis_runs.id", ondelete="SET NULL", use_alter=True)
+    )
+    summary_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = created_at_col(index=True)
     updated_at: Mapped[datetime] = updated_at_col()
 

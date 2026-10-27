@@ -1,17 +1,23 @@
 {
   "case_id": "boundary-006",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "鴻經館外牆施工並提醒通行改道",
+    "title": "鴻經館外牆施工",
     "occurrence_start_date": null,
     "occurrence_start_time": null,
     "occurrence_end_date": null,
     "occurrence_end_time": null,
     "location": "鴻經館",
     "mentions_person": false,
+    "summary": {
+      "text": "鴻經館後方外牆施工中，提醒師生經過時注意上方掉落物並改走前門，影響經過該處的師生通行。",
+      "evidence_ids": [
+        "e1"
+      ]
+    },
     "evidence_ids": [
       "e1"
     ],
@@ -19,16 +25,16 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "鴻經館後方外牆施工中，請師生經過時注意上方掉落物並改走前門。"
+        "quote": "鴻經館後方外牆施工中"
       },
       {
         "field": "location",
         "evidence_id": "e1",
-        "quote": "鴻經館外牆施工"
+        "quote": "鴻經館後方"
       }
     ],
-    "reason": "公告說明鴻經館外牆正在施工並提醒師生注意掉落物、改走前門，屬於會影響通行的施工事件。",
-    "confidence": 0.8,
+    "reason": "官方公告寫明鴻經館外牆正在施工並提醒師生改走前門，為會影響通行的施工事件。",
+    "confidence": 0.9,
     "abstain_reason": null
   }
 }

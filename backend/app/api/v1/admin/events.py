@@ -2,7 +2,8 @@
 
 - `GET /api/v1/admin/events`（P3-T03）：事件列表，新到舊，cursor 分頁；可依狀態、類型篩選。
   每筆附最新一次風險評估與證據數。需要 `events:read_all`。
-- `GET /api/v1/admin/events/{id}`（P3-T03）：事件詳細，含證據來源與風險評估歷史。
+- `GET /api/v1/admin/events/{id}`（P3-T03）：事件詳細，含證據來源與風險評估歷史；
+  P4-T08 起附事件說明（S02 摘要與出處，沒有時為 null）。
 - `POST /api/v1/admin/events/{id}/verify`（P3-T03）：記錄查證結果（變更事件狀態）；
   轉移由 app/domain/states.py 檢查，非法回 CONFLICT。需要 `events:verify`，寫入稽核 `event.verify`。
 - `POST /api/v1/admin/events/{id}/analyze`（P2-T13）：重跑事件的分析（S05 查證、S06 風險），
@@ -95,6 +96,16 @@ class EvidenceOut(BaseModel):
     published_at: AwareDatetime | None
     support_type: str
     excerpt: str | None
+
+
+class SummaryOut(BaseModel):
+    """事件說明：S02 的中性摘要、依據的證據與出處（文章、AI 執行紀錄）。"""
+
+    text: str
+    evidence_ids: list[str]
+    source_item_id: uuid.UUID | None
+    ai_run_id: uuid.UUID | None
+    updated_at: AwareDatetime | None
 
 
 class RiskAssessmentOut(BaseModel):
@@ -223,6 +234,17 @@ async def get_event(event_id: uuid.UUID, session: Session, _: CanRead) -> dict[s
         ).model_dump(mode="json")
         for r in risk_rows.scalars()
     ]
+    summary = (
+        SummaryOut(
+            text=event.summary,
+            evidence_ids=[str(e) for e in event.summary_evidence_ids or []],
+            source_item_id=event.summary_source_item_id,
+            ai_run_id=event.summary_ai_run_id,
+            updated_at=event.summary_updated_at,
+        ).model_dump(mode="json")
+        if event.summary is not None
+        else None
+    )
     data = {
         "id": str(event.id),
         "title": event.title,
@@ -233,6 +255,7 @@ async def get_event(event_id: uuid.UUID, session: Session, _: CanRead) -> dict[s
         ),
         "created_at": event.created_at.isoformat(),
         "updated_at": event.updated_at.isoformat(),
+        "summary": summary,
         "evidence": evidence,
         "risk_assessments": risks,
     }

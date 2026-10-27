@@ -1,6 +1,6 @@
 {
   "case_id": "boundary-004",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -12,6 +12,12 @@
     "occurrence_end_time": "17:00",
     "location": "工程一館",
     "mentions_person": false,
+    "summary": {
+      "text": "工程一館與工程二館於 11/2（一）13 點到 17 點配合電力改善工程停電，期間網路中斷。",
+      "evidence_ids": [
+        "e1"
+      ]
+    },
     "evidence_ids": [
       "e1"
     ],
@@ -19,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "工程一館、二館停電"
+        "quote": "配合電力改善工程停電"
       },
       {
         "field": "time",
@@ -32,7 +38,7 @@
         "quote": "工程一館、工程二館"
       }
     ],
-    "reason": "公告寫明工程一館與工程二館於 11/2 13:00–17:00 因電力改善工程停電並造成期間網路中斷，故判定為事件並以第一個出現的地點作為主要位置。",
+    "reason": "官方公告寫明工程一館與工程二館於 11/2（週一）13:00–17:00 停電並造成網路中斷，提供明確的日期與時段。",
     "confidence": 0.95,
     "abstain_reason": null
   }
