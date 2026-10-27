@@ -56,6 +56,7 @@ skills/<skill-name>/
   - 樣式基礎（ADR-0003，設計規範見 `ncu-frontend-design` skill）：`vite.config.ts`（`@tailwindcss/vite`）、`src/styles/index.css`（Tailwind 匯入、`@theme` 設計 token、含繁中 fallback 的字體堆疊、`prefers-reduced-motion` 基礎規則）、`index.html`（Google Fonts：Inter、Calistoga、JetBrains Mono、Noto Sans TC、Noto Serif TC）、`src/lib/cn.ts`（`clsx` + `tailwind-merge`）、`src/lib/cn.test.ts`
   - 套件：`tailwindcss`、`@tailwindcss/vite`、`framer-motion`、`class-variance-authority`、`tailwind-merge`、`clsx`、`vitest`
   - 驗證：`cd frontend && npm run lint && npm run test && npm run build`
+  - 後續變更（2026-10-27 更新 tracker 路徑）：`src/public/` 在 P3-T05 依 ADR-0008 移除（P5-T12 依 ADR-0015 重建）；`src/styles/index.css` 在 P3-T11 依 ADR-0014 拆成共用的 `src/styles/base.css` 與各設計的 `src/design/*/styles.css`
 - **P0-T04 Docker Compose 環境**
   - 檔案：`infra/docker/docker-compose.yml`（pgvector/pgvector:pg16、redis、api、worker、web）、`backend/Dockerfile`、`frontend/Dockerfile`、`.env.example`、`Makefile`（up／down／test／migrate／reset）
   - 驗證：`make up` 後 `curl localhost:8000/api/v1/health` 回 200
