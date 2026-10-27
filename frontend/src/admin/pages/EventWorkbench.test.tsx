@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from '../../App'
-import { EVENT_DETAIL, EVENT_ID, EVENTS } from '../../test/fixtures'
+import { EVENT_DETAIL, EVENT_ID, EVENT_REPORT, EVENTS } from '../../test/fixtures'
 import { ME, mockApi, type MockRoute } from '../../test/mockApi'
 
 const DETAIL = `GET /api/v1/admin/events/${EVENT_ID}`
@@ -151,6 +151,91 @@ describe('EventWorkbench', () => {
     await user.click(await screen.findByRole('button', { name: '重新分析' }))
     expect(await screen.findByRole('status')).toHaveTextContent('已排入分析佇列')
     expect(calls.some((c) => c.path.endsWith('/analyze'))).toBe(true)
+  })
+
+  it('事件小報告：影響、推測與已確認原因分開、措施依對象與時程分組、建議單位只供參考', async () => {
+    open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: { ...EVENT_DETAIL, report: EVENT_REPORT } },
+    })
+    const report = await screen.findByRole('region', { name: '事件小報告' })
+
+    const impacts = within(report).getByRole('region', { name: '可能的影響' })
+    expect(within(impacts).getByText('營運')).toBeInTheDocument()
+    expect(within(impacts).getByText('停電影響上課與實驗。')).toBeInTheDocument()
+
+    const hypotheses = within(report).getByRole('region', { name: '值得查查看' })
+    expect(within(hypotheses).getByText('疑似附近施工挖到電纜。')).toBeInTheDocument()
+    expect(within(hypotheses).getByText('推測，尚未查證')).toBeInTheDocument()
+    expect(within(hypotheses).getByText(/向總務處確認施工是否影響供電/)).toBeInTheDocument()
+    expect(within(hypotheses).queryByText('變電箱老舊跳脫。')).not.toBeInTheDocument()
+
+    const confirmed = within(report).getByRole('region', { name: '已確認原因' })
+    expect(within(confirmed).getByText('變電箱老舊跳脫。')).toBeInTheDocument()
+    expect(within(confirmed).getByText('停電原因為變電箱老舊跳脫')).toBeInTheDocument()
+    expect(within(confirmed).getByText(/ncu_announcements/)).toBeInTheDocument()
+    expect(within(confirmed).queryByText('推測，尚未查證')).not.toBeInTheDocument()
+
+    const measures = within(report).getByRole('region', { name: '可以怎麼做' })
+    const students = within(measures).getByRole('group', { name: '同學可以做' })
+    expect(within(students).getByText('停電期間改到其他大樓自習。')).toBeInTheDocument()
+    const school = within(measures).getByRole('group', { name: '學校可以做' })
+    expect(within(within(school).getByRole('list', { name: '中期' })).getByText(/盤點同年份的變電箱/)).toBeInTheDocument()
+    const check = within(within(school).getByRole('list', { name: '短期' })).getByText(/確認附近施工/).closest('li')!
+    expect(within(check).getByText('針對推測原因')).toBeInTheDocument()
+
+    const referrals = within(report).getByRole('region', { name: '建議轉給哪個單位' })
+    expect(within(referrals).getByText('總務處')).toBeInTheDocument()
+    expect(within(referrals).getByText(/系統不會寄信/)).toBeInTheDocument()
+  })
+
+  it('事件小報告：S07／S08 abstain 時顯示證據不足，不顯示任何項目', async () => {
+    const abstained = { status: 'abstained' as const, message: '證據不足，暫不分析', items: [] }
+    open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: {
+        data: {
+          ...EVENT_DETAIL,
+          report: { ...EVENT_REPORT, causes: abstained, measures: abstained, referrals: [] },
+        },
+      },
+    })
+    const report = await screen.findByRole('region', { name: '事件小報告' })
+    expect(within(report).getAllByText('證據不足，暫不分析')).toHaveLength(2)
+    expect(within(report).queryByRole('region', { name: '值得查查看' })).not.toBeInTheDocument()
+    expect(within(report).queryByRole('region', { name: '建議轉給哪個單位' })).not.toBeInTheDocument()
+  })
+
+  it('事件小報告：事件被查證為不實時標示報告已失效', async () => {
+    open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: {
+        data: {
+          ...EVENT_DETAIL,
+          status: 'false',
+          report: { ...EVENT_REPORT, valid: false, invalidated_at: '2026-10-21T00:00:00Z', invalidated_reason: 'event_false' },
+        },
+      },
+    })
+    const report = await screen.findByRole('region', { name: '事件小報告' })
+    expect(within(report).getByText(/事件已被查證為不實，這份報告已失效/)).toBeInTheDocument()
+    expect(within(report).queryByRole('button', { name: '產生小報告' })).not.toBeInTheDocument()
+  })
+
+  it('沒有小報告時可以手動產生', async () => {
+    const { calls, user } = open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: EVENT_DETAIL },
+      [`POST /api/v1/admin/events/${EVENT_ID}/report`]: {
+        status: 202,
+        data: { event_id: EVENT_ID, status: 'queued' },
+      },
+    })
+    const report = await screen.findByRole('region', { name: '事件小報告' })
+    expect(within(report).getByText('尚未產生事件小報告。')).toBeInTheDocument()
+    await user.click(within(report).getByRole('button', { name: '產生小報告' }))
+    expect(await within(report).findByRole('status')).toHaveTextContent('已排入產生小報告')
+    expect(calls.some((c) => c.method === 'POST' && c.path.endsWith('/report'))).toBe(true)
   })
 
   it('事件不存在時顯示錯誤', async () => {

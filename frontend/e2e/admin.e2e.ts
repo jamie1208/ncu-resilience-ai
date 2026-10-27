@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-import { EVENT_ID } from '../src/test/fixtures'
+import { EVENT_ID, EVENT_REPORT } from '../src/test/fixtures'
 import { mockBackend } from './mockApi'
 
 async function signIn(page: Page) {
@@ -85,6 +85,37 @@ test('管理流程：登入 → 事件查證 → 撤回通知 → Skills → 運
   await page.goto('/admin/ops')
   await expect(page.getByRole('heading', { level: 1, name: '登入管理後台' })).toBeVisible()
   await expect(page.getByText('氣象署警特報')).toHaveCount(0)
+})
+
+test('事件小報告：推測與已確認分開、措施分組、建議單位；查證為不實後報告失效', async ({ page }) => {
+  const { calls } = await mockBackend(page, { report: EVENT_REPORT })
+  await page.goto(`/admin/events/${EVENT_ID}`)
+  await signIn(page)
+
+  const report = page.getByRole('region', { name: '事件小報告' })
+  await expect(report.getByRole('region', { name: '可能的影響' }).getByText('停電影響上課與實驗。')).toBeVisible()
+  const hypotheses = report.getByRole('region', { name: '值得查查看' })
+  await expect(hypotheses.getByText('推測，尚未查證')).toBeVisible()
+  await expect(hypotheses.getByText('疑似附近施工挖到電纜。')).toBeVisible()
+  const confirmed = report.getByRole('region', { name: '已確認原因' })
+  await expect(confirmed.getByText('停電原因為變電箱老舊跳脫')).toBeVisible()
+  await expect(confirmed.getByText('推測，尚未查證')).toHaveCount(0)
+  const measures = report.getByRole('region', { name: '可以怎麼做' })
+  await expect(measures.getByRole('group', { name: '同學可以做' }).getByText('停電期間改到其他大樓自習。')).toBeVisible()
+  await expect(measures.getByRole('group', { name: '學校可以做' }).getByRole('list', { name: '中期' })).toContainText('盤點同年份的變電箱')
+  await expect(report.getByRole('region', { name: '建議轉給哪個單位' }).getByText('總務處')).toBeVisible()
+
+  await report.getByRole('button', { name: '重新產生小報告' }).click()
+  await expect(report.getByRole('status')).toHaveText(/已排入產生小報告/)
+  const post = calls.find((c) => c.method === 'POST' && c.path.endsWith('/report'))
+  expect(post?.csrf).toBe('csrf-e2e')
+
+  const verify = page.getByRole('form', { name: '記錄查證結果' })
+  await verify.getByLabel('查證結果').selectOption('false')
+  await verify.getByRole('button', { name: '儲存' }).click()
+  await page.reload()
+  await expect(report.getByText('事件已被查證為不實，這份報告已失效。')).toBeVisible()
+  await expect(report.getByRole('button', { name: /產生小報告/ })).toHaveCount(0)
 })
 
 test('未登入直接開啟事件頁：登入後留在該事件', async ({ page }) => {

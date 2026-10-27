@@ -5,6 +5,7 @@ import type {
   Dashboard,
   EventDetail,
   EventItem,
+  EventReport,
   IngestionRun,
   SkillSummary,
   SourceHealth,
@@ -101,6 +102,94 @@ export const EVENT_DETAIL: EventDetail = {
       created_at: '2026-10-20T02:15:00Z',
     },
   ],
+  report: null,
+}
+
+/** 事件小報告（evidence_ids 是 source_item_id 去掉連字號）。 */
+export const EVENT_REPORT: EventReport = {
+  id: 'rp-1',
+  trigger: 'auto',
+  valid: true,
+  invalidated_at: null,
+  invalidated_reason: null,
+  verification_status: 'unverified',
+  risk_level: 'high',
+  impacts: {
+    status: 'ok',
+    message: null,
+    items: [
+      { dimension: 'operations', score: 85, uncertainty: 0.1, reason: '停電影響上課與實驗。', evidence_ids: ['si1'] },
+      { dimension: 'personal_safety', score: 20, uncertainty: 0.2, reason: null, evidence_ids: ['si1'] },
+    ],
+  },
+  causes: {
+    status: 'ok',
+    message: null,
+    items: [
+      {
+        cause_id: 'c1',
+        description: '變電箱老舊跳脫。',
+        basis: 'confirmed',
+        label: '已確認',
+        quotes: [{ evidence_id: 'si1', quote: '停電原因為變電箱老舊跳脫' }],
+        to_verify: null,
+        evidence_ids: ['si1'],
+      },
+      {
+        cause_id: 'c2',
+        description: '疑似附近施工挖到電纜。',
+        basis: 'hypothesized',
+        label: '推測，尚未查證',
+        quotes: [{ evidence_id: 'si2', quote: '<b>聽說</b>是施工挖到電纜' }],
+        to_verify: '向總務處確認施工是否影響供電。',
+        evidence_ids: ['si2'],
+      },
+    ],
+  },
+  missing_information: ['變電箱更換時程'],
+  measures: {
+    status: 'ok',
+    message: null,
+    items: [
+      {
+        action: '停電期間改到其他大樓自習。',
+        audience: 'students',
+        horizon: 'short',
+        priority: 'high',
+        kind: 'respond',
+        cause_id: null,
+        cause_basis: null,
+        responsible_unit: null,
+        evidence_ids: ['si1'],
+      },
+      {
+        action: '盤點同年份的變電箱並排定汰換。',
+        audience: 'school',
+        horizon: 'mid',
+        priority: 'high',
+        kind: 'prevent',
+        cause_id: 'c1',
+        cause_basis: 'confirmed',
+        responsible_unit: '總務處',
+        evidence_ids: ['si1'],
+      },
+      {
+        action: '確認附近施工是否曾影響供電線路。',
+        audience: 'school',
+        horizon: 'short',
+        priority: 'medium',
+        kind: 'investigate',
+        cause_id: 'c2',
+        cause_basis: 'hypothesized',
+        responsible_unit: '總務處',
+        evidence_ids: ['si2'],
+      },
+    ],
+  },
+  referrals: [{ unit: '總務處', evidence_ids: ['si1', 'si2'] }],
+  root_cause_run_id: 'run-7',
+  solution_run_id: 'run-8',
+  created_at: '2026-10-20T02:40:00Z',
 }
 
 export const ALERTS: AlertItem[] = [

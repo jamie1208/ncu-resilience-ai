@@ -1,10 +1,11 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 
 import { Badge, Button, Card, Select, Textarea } from '@design'
 
 import { cn } from '../../lib/cn'
 import {
   analyzeEvent,
+  generateReport,
   getEvent,
   listEvents,
   VERIFY_STATUSES,
@@ -12,8 +13,13 @@ import {
   type DimensionScore,
   type EventDetail,
   type EventItem,
+  type EventReport,
   type EventStatus,
+  type MeasureAudience,
+  type MeasureHorizon,
   type Page,
+  type ReportCause,
+  type ReportMeasure,
   type RiskAssessment,
   type VerifyStatus,
 } from '../api'
@@ -37,6 +43,17 @@ const RULE_LABELS: Record<string, string> = {
   critical_override: '人身安全覆寫',
   floor: '單一面向保底',
 }
+const AUDIENCES: [MeasureAudience, string][] = [
+  ['students', '同學可以做'],
+  ['school', '學校可以做'],
+]
+const HORIZONS: [MeasureHorizon, string][] = [
+  ['short', '短期'],
+  ['mid', '中期'],
+  ['long', '長期'],
+]
+const PRIORITY_LABELS: Record<string, string> = { high: '優先', medium: '一般', low: '次要' }
+const INVALID_LABELS: Record<string, string> = { event_false: '事件已被查證為不實，這份報告已失效。' }
 
 /** 事件工作台：左側事件列表，右側事件詳細（來源對照、風險分項、證據、查證）。 */
 export function EventWorkbench({ eventId }: { eventId: string | null }) {
@@ -169,6 +186,7 @@ function EventPanel({ eventId }: { eventId: string }) {
             </div>
           </Card>
           <SummaryCard event={event} />
+          <ReportCard event={event} />
           <SourceComparison event={event} />
           <RiskBreakdown assessments={event.risk_assessments} />
           <VerifyForm
@@ -202,6 +220,226 @@ function SummaryCard({ event }: { event: EventDetail }) {
         )}
       </Section>
     </Card>
+  )
+}
+
+/** 小報告內的子區塊（h3 標題形成 region）。 */
+function SubSection({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+  return (
+    <section aria-labelledby={id} className="space-y-2">
+      <h3 id={id} className="text-xs font-semibold text-muted-foreground">
+        {title}
+      </h3>
+      {children}
+    </section>
+  )
+}
+
+/** evidence_id（文章 id 的十六進位）對應到來源代碼，讓每一項都能回到「來源對照」。 */
+function useSources(event: EventDetail) {
+  const byHex = new Map(event.evidence.map((ev) => [ev.source_item_id.replaceAll('-', ''), ev.source_code]))
+  return (ids: string[]) => `來源：${ids.map((i) => byHex.get(i) ?? i).join('、')}`
+}
+
+/**
+ * 事件小報告（P4-T09）：可能的影響、值得查查看（推測，尚未查證）、已確認原因（附原句）、
+ * 可以怎麼做（依同學／學校與短中長期分組）、建議轉給哪個單位（只供參考，系統不寄信）。
+ * 所有文字來自 AI 與來源原句，只當純文字顯示。
+ */
+function ReportCard({ event }: { event: EventDetail }) {
+  const report = event.report
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+  const message = useErrorMessage()
+  const canGenerate = event.status !== 'false' && event.status !== 'archived'
+
+  async function generate() {
+    setBusy(true)
+    setError(null)
+    setNotice(null)
+    try {
+      await generateReport(event.id)
+      setNotice('已排入產生小報告，完成後重新整理即可看到')
+    } catch (e) {
+      setError(message(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Card>
+      <Section id="report-heading" title="事件小報告">
+        <div className="space-y-4">
+          {!report ? (
+            <Muted>尚未產生事件小報告。</Muted>
+          ) : (
+            <ReportBody event={event} report={report} />
+          )}
+          {error && <ErrorText>{error}</ErrorText>}
+          {notice && <Notice>{notice}</Notice>}
+          {canGenerate && (
+            <Button variant="outline" size="sm" disabled={busy} onClick={() => void generate()}>
+              {report ? '重新產生小報告' : '產生小報告'}
+            </Button>
+          )}
+        </div>
+      </Section>
+    </Card>
+  )
+}
+
+function ReportBody({ event, report }: { event: EventDetail; report: EventReport }) {
+  const sources = useSources(event)
+  const causes = report.causes.items
+  const hypothesized = causes.filter((c) => c.basis === 'hypothesized')
+  const confirmed = causes.filter((c) => c.basis === 'confirmed')
+  return (
+    <div className="space-y-4">
+      {!report.valid && (
+        <p className="rounded-lg border border-border bg-muted p-3 text-sm text-foreground">
+          {INVALID_LABELS[report.invalidated_reason ?? ''] ?? '這份報告已失效。'}
+        </p>
+      )}
+      <p className="text-xs text-muted-foreground">
+        {`AI 依來源整理 · ${report.trigger === 'manual' ? '手動產生' : '自動產生'}`}
+        <span className="font-mono">{` · ${formatTime(report.created_at)}`}</span>
+      </p>
+
+      {report.impacts.items.length > 0 && (
+        <SubSection id="report-impacts" title="可能的影響">
+          <ul className="space-y-2 text-sm">
+            {report.impacts.items.map((item) => (
+              <li key={item.dimension} className="flex flex-wrap items-baseline gap-2">
+                <span className="text-foreground">{label(DIMENSION_LABELS, item.dimension)}</span>
+                <span className="font-mono text-foreground">{item.score}</span>
+                {item.reason && <span className="min-w-0 text-muted-foreground">{item.reason}</span>}
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-muted-foreground">{sources(report.impacts.items[0].evidence_ids)}</p>
+        </SubSection>
+      )}
+
+      {report.causes.status !== 'ok' ? (
+        <SubSection id="report-causes" title="原因">
+          <Muted>{report.causes.message}</Muted>
+        </SubSection>
+      ) : (
+        <>
+          {hypothesized.length > 0 && (
+            <SubSection id="report-hypotheses" title="值得查查看">
+              <ul className="space-y-3">
+                {hypothesized.map((c) => (
+                  <CauseItem key={c.cause_id} cause={c} sources={sources} />
+                ))}
+              </ul>
+            </SubSection>
+          )}
+          {confirmed.length > 0 && (
+            <SubSection id="report-confirmed" title="已確認原因">
+              <ul className="space-y-3">
+                {confirmed.map((c) => (
+                  <CauseItem key={c.cause_id} cause={c} sources={sources} />
+                ))}
+              </ul>
+            </SubSection>
+          )}
+        </>
+      )}
+      {report.missing_information.length > 0 && (
+        <p className="text-xs text-muted-foreground">{`還不知道：${report.missing_information.join('、')}`}</p>
+      )}
+
+      <SubSection id="report-measures" title="可以怎麼做">
+        {report.measures.status !== 'ok' ? (
+          <Muted>{report.measures.message}</Muted>
+        ) : (
+          <MeasureGroups measures={report.measures.items} sources={sources} />
+        )}
+      </SubSection>
+
+      {report.referrals.length > 0 && (
+        <SubSection id="report-referrals" title="建議轉給哪個單位">
+          <ul className="flex flex-wrap gap-2">
+            {report.referrals.map((r) => (
+              <li key={r.unit}>
+                <Badge>{r.unit}</Badge>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-muted-foreground">只供你參考，系統不會寄信給任何單位。</p>
+        </SubSection>
+      )}
+    </div>
+  )
+}
+
+function CauseItem({ cause, sources }: { cause: ReportCause; sources: (ids: string[]) => string }) {
+  const guess = cause.basis === 'hypothesized'
+  return (
+    <li className="rounded-lg border border-border p-3 text-sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge tone={guess ? 'warning' : 'success'}>{cause.label}</Badge>
+        <span className="min-w-0 text-foreground">{cause.description}</span>
+      </div>
+      {!guess &&
+        cause.quotes.map((q) => (
+          <blockquote
+            key={`${q.evidence_id}-${q.quote}`}
+            className="mt-2 border-l-2 border-border pl-3 whitespace-pre-wrap text-foreground"
+          >
+            {q.quote}
+          </blockquote>
+        ))}
+      {guess && cause.to_verify && <p className="mt-2 text-muted-foreground">{`待查：${cause.to_verify}`}</p>}
+      <p className="mt-1 text-xs text-muted-foreground">{sources(cause.evidence_ids)}</p>
+    </li>
+  )
+}
+
+function MeasureGroups({ measures, sources }: { measures: ReportMeasure[]; sources: (ids: string[]) => string }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {AUDIENCES.map(([audience, title]) => {
+        const mine = measures.filter((m) => m.audience === audience)
+        if (mine.length === 0) return null
+        const groupId = `report-measures-${audience}`
+        return (
+          <div key={audience} role="group" aria-labelledby={groupId} className="min-w-0 rounded-lg border border-border p-3">
+            <h4 id={groupId} className="mb-2 text-sm font-semibold text-foreground">
+              {title}
+            </h4>
+            {HORIZONS.map(([horizon, name]) => {
+              const items = mine.filter((m) => m.horizon === horizon)
+              if (items.length === 0) return null
+              const listId = `${groupId}-${horizon}`
+              return (
+                <div key={horizon} className="mb-2 last:mb-0">
+                  <p id={listId} className="text-xs text-muted-foreground">
+                    {name}
+                  </p>
+                  <ul aria-labelledby={listId} className="space-y-2 text-sm">
+                    {items.map((m) => (
+                      <li key={m.action} className="text-foreground">
+                        <span>{m.action}</span>
+                        <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          <span>{PRIORITY_LABELS[m.priority] ?? m.priority}</span>
+                          {m.cause_basis === 'hypothesized' && <Badge tone="warning">針對推測原因</Badge>}
+                          {m.responsible_unit && <span>{`建議單位：${m.responsible_unit}`}</span>}
+                          <span>{sources(m.evidence_ids)}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })}
+          </div>
+        )
+      })}
+    </div>
   )
 }
 

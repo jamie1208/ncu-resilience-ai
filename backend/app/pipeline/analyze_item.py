@@ -29,6 +29,10 @@
   S05、S06 失敗不影響事件已建立的結果。
 - 結束時寫一筆稽核紀錄（pipeline.analyze_item／pipeline.analyze_event），request_id = trace_id；
   只記結果代碼與 id，不記原文。
+
+事件小報告（P4-T09）：S06 與通知同步之後呼叫 `PipelineDeps.report_hook`（正式環境為
+`app.reports.service.after_assessment`），由它決定是否排入產生報告（S07、S08）或讓報告失效。
+沒有設定 hook 時不處理報告。
 """
 
 from __future__ import annotations
@@ -36,7 +40,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import uuid
-from collections.abc import Mapping, Sequence
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
@@ -136,9 +140,13 @@ class Outcome(StrEnum):
     SKIPPED = "skipped"  # 事件已封存或沒有證據
 
 
+ReportHook = Callable[[AsyncSession, uuid.UUID, str | None, str], Awaitable[None]]
+"""S06 之後的報告處理：（session, event_id, 風險分級, trace_id）。"""
+
+
 @dataclass(frozen=True)
 class PipelineDeps:
-    """管線的相依：模型、設定、Skills 與風險政策。"""
+    """管線的相依：模型、設定、Skills、風險政策與事件小報告的 hook。"""
 
     provider: LLMProvider
     embedder: EmbeddingProvider
@@ -146,6 +154,7 @@ class PipelineDeps:
     skills: Mapping[str, Skill]
     policy: RiskPolicy
     max_candidates: int = MAX_CANDIDATES
+    report_hook: ReportHook | None = None
 
 
 @dataclass(frozen=True)
@@ -392,6 +401,8 @@ async def _verify_and_assess(
     # 查證與風險更新後同步個人通知（P3-T08）
     await sync_event_alert(session, event.id, request_id=ctx.trace_id)
     await session.commit()
+    if ctx.deps.report_hook is not None:  # 事件小報告（P4-T09）
+        await ctx.deps.report_hook(session, event.id, level, ctx.trace_id)
     return decision_status, level
 
 
@@ -757,6 +768,8 @@ async def _link(
 
 def build_deps() -> PipelineDeps:
     """依設定檔與環境變數建立正式的相依（OpenAI 需要 OPENAI_API_KEY）。"""
+    from app.reports.service import make_report_hook, send_to_celery  # 報告模組匯入本模組
+
     config = load_llm_config()
     settings = get_settings()
     return PipelineDeps(
@@ -765,6 +778,7 @@ def build_deps() -> PipelineDeps:
         config=config,
         skills=discover_skills(),
         policy=load_policy(),
+        report_hook=make_report_hook(send_to_celery),
     )
 
 
@@ -820,6 +834,7 @@ __all__ = [
     "Outcome",
     "PipelineDeps",
     "PipelineResult",
+    "ReportHook",
     "Step",
     "analyze_event",
     "analyze_item",

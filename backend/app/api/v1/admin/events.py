@@ -3,12 +3,18 @@
 - `GET /api/v1/admin/events`（P3-T03）：事件列表，新到舊，cursor 分頁；可依狀態、類型篩選。
   每筆附最新一次風險評估與證據數。需要 `events:read_all`。
 - `GET /api/v1/admin/events/{id}`（P3-T03）：事件詳細，含證據來源與風險評估歷史；
-  P4-T08 起附事件說明（S02 摘要與出處，沒有時為 null）。
+  P4-T08 起附事件說明（S02 摘要與出處，沒有時為 null）；P4-T09 起附最新一份事件小報告
+  （沒有時為 null；推測原因帶「推測，尚未查證」標示；abstain 的區塊顯示「證據不足，暫不分析」）。
 - `POST /api/v1/admin/events/{id}/verify`（P3-T03）：記錄查證結果（變更事件狀態）；
   轉移由 app/domain/states.py 檢查，非法回 CONFLICT。需要 `events:verify`，寫入稽核 `event.verify`。
+  改為 false（不實）時，事件小報告一併標為失效（P4-T09）。
 - `POST /api/v1/admin/events/{id}/analyze`（P2-T13）：重跑事件的分析（S05 查證、S06 風險），
   排入 Celery 佇列後回 202；需要 `events:analyze`，寫入稽核 `event.analyze`。
   分析的 trace_id 沿用本請求的 request_id，可由稽核紀錄對到 ai_analysis_runs。
+- `POST /api/v1/admin/events/{id}/report`（P4-T09）：手動產生事件小報告（S07 原因、
+  S08 措施），排入 Celery 佇列後回 202；事件不實或已封存回 CONFLICT。需要 `events:analyze`，
+  寫入稽核 `event.report`。
+  建議轉給哪個單位只顯示給使用者，系統不寄信給任何單位。
 """
 
 from __future__ import annotations
@@ -34,9 +40,17 @@ from app.core.security import Permission, Principal
 from app.domain.states import EventStatus, StateTransitionError, transition
 from app.models.ai import RiskAssessment
 from app.models.event import Event, EventEvidence
+from app.models.report import EventReport
 from app.models.source import Source, SourceItem
+from app.reports.service import (
+    ABSTAIN_MESSAGE,
+    FAILED_MESSAGE,
+    INVALID_EVENT_FALSE,
+    invalidate_reports,
+    latest_report,
+)
 from app.services.audit import AuditMetadataError, prepare_metadata, record_audit
-from app.worker.celery_app import ANALYZE_EVENT_TASK, celery_app
+from app.worker.celery_app import ANALYZE_EVENT_TASK, REPORT_EVENT_TASK, celery_app
 
 router = APIRouter(prefix="/events", tags=["admin"])
 
@@ -59,11 +73,21 @@ def get_analysis_queue() -> AnalysisQueue:
     return _send_to_celery
 
 
+def _send_report_to_celery(event_id: uuid.UUID, request_id: str) -> None:
+    celery_app.send_task(REPORT_EVENT_TASK, args=[str(event_id), request_id, "manual"])
+
+
+def get_report_queue() -> AnalysisQueue:
+    """把事件排入產生小報告佇列的函式（測試時以 dependency override 替換）。"""
+    return _send_report_to_celery
+
+
 Session = Annotated[AsyncSession, Depends(get_db_session)]
 CanRead = Annotated[Principal, Depends(require_permission(Permission.EVENTS_READ_ALL))]
 CanVerify = Annotated[Principal, Depends(require_permission(Permission.EVENTS_VERIFY))]
 CanAnalyze = Annotated[Principal, Depends(require_permission(Permission.EVENTS_ANALYZE))]
 Queue = Annotated[AnalysisQueue, Depends(get_analysis_queue)]
+ReportQueue = Annotated[AnalysisQueue, Depends(get_report_queue)]
 
 
 class RiskSummary(BaseModel):
@@ -118,6 +142,79 @@ class RiskAssessmentOut(BaseModel):
     policy_version: str
     ai_run_id: uuid.UUID | None
     created_at: AwareDatetime
+
+
+class ReportSection(BaseModel):
+    """報告的一個區塊：狀態、沒有內容時給使用者看的說明，以及項目（每項都有 evidence_ids）。"""
+
+    status: str
+    message: str | None
+    items: list[dict[str, Any]]
+
+
+class Referral(BaseModel):
+    """建議轉給的單位（S08 校方措施的 responsible_unit）；只顯示給使用者，系統不寄信。"""
+
+    unit: str
+    evidence_ids: list[str]
+
+
+class ReportOut(BaseModel):
+    """事件小報告：可能的影響（S06）、原因（S07）、措施（S08）與建議轉給的單位。"""
+
+    id: uuid.UUID
+    trigger: str
+    valid: bool
+    invalidated_at: AwareDatetime | None
+    invalidated_reason: str | None
+    verification_status: str
+    risk_level: str | None
+    impacts: ReportSection
+    causes: ReportSection
+    missing_information: list[str]
+    measures: ReportSection
+    referrals: list[Referral]
+    root_cause_run_id: uuid.UUID | None
+    solution_run_id: uuid.UUID | None
+    created_at: AwareDatetime
+
+
+_SECTION_MESSAGES = {"abstained": ABSTAIN_MESSAGE, "failed": FAILED_MESSAGE}
+
+
+def _section(status: str, items: list[dict[str, Any]]) -> ReportSection:
+    return ReportSection(status=status, message=_SECTION_MESSAGES.get(status), items=items)
+
+
+def _referrals(measures: list[dict[str, Any]]) -> list[Referral]:
+    """校方措施的建議單位，依首次出現排序，合併各措施的 evidence_ids。"""
+    units: dict[str, list[str]] = {}
+    for m in measures:
+        unit = m.get("responsible_unit")
+        if m.get("audience") == "school" and unit:
+            cited = units.setdefault(str(unit), [])
+            cited.extend(e for e in m["evidence_ids"] if e not in cited)
+    return [Referral(unit=unit, evidence_ids=ids) for unit, ids in units.items()]
+
+
+def _report_out(report: EventReport) -> ReportOut:
+    return ReportOut(
+        id=report.id,
+        trigger=report.trigger,
+        valid=report.invalidated_at is None,
+        invalidated_at=report.invalidated_at,
+        invalidated_reason=report.invalidated_reason,
+        verification_status=report.verification_status,
+        risk_level=report.risk_level,
+        impacts=_section("ok" if report.impacts else "unavailable", report.impacts),
+        causes=_section(report.causes_status, report.causes),
+        missing_information=report.missing_information,
+        measures=_section(report.measures_status, report.measures),
+        referrals=_referrals(report.measures),
+        root_cause_run_id=report.root_cause_run_id,
+        solution_run_id=report.solution_run_id,
+        created_at=report.created_at,
+    )
 
 
 class VerifyIn(BaseModel):
@@ -245,6 +342,7 @@ async def get_event(event_id: uuid.UUID, session: Session, _: CanRead) -> dict[s
         if event.summary is not None
         else None
     )
+    report = await latest_report(session, event_id)
     data = {
         "id": str(event.id),
         "title": event.title,
@@ -258,6 +356,7 @@ async def get_event(event_id: uuid.UUID, session: Session, _: CanRead) -> dict[s
         "summary": summary,
         "evidence": evidence,
         "risk_assessments": risks,
+        "report": _report_out(report).model_dump(mode="json") if report is not None else None,
     }
     return envelope(data)
 
@@ -292,6 +391,8 @@ async def verify_event(
     await record_audit(
         session, principal, "event.verify", target=f"event:{event_id}", metadata=metadata
     )
+    if target is EventStatus.FALSE:  # 事件不實：小報告失效（P4-T09）
+        await invalidate_reports(session, event_id, INVALID_EVENT_FALSE)
     # 查證結果改變後同步個人通知（P3-T08）；由通知服務帳號執行，管理者本身沒有發布權限
     await sync_event_alert(session, event_id)
     await session.commit()
@@ -309,6 +410,25 @@ async def analyze_event(
     request_id = request_id_var.get() or str(uuid.uuid4())
     await record_audit(
         session, principal, "event.analyze", target=f"event:{event_id}", request_id=request_id
+    )
+    await session.commit()
+    enqueue(event_id, request_id)
+    return envelope({"event_id": str(event_id), "status": "queued"})
+
+
+@router.post("/{event_id}/report", status_code=status.HTTP_202_ACCEPTED)
+async def generate_event_report(
+    event_id: uuid.UUID, session: Session, principal: CanAnalyze, enqueue: ReportQueue
+) -> dict[str, Any]:
+    """手動產生事件小報告（非同步）；事件不存在回 NOT_FOUND，不實或已封存回 CONFLICT。"""
+    event = await _get_event(session, event_id)
+    if event.status == EventStatus.FALSE.value:
+        raise ApiError(ErrorCode.CONFLICT, "事件已被查證為不實，不產生小報告")
+    if event.status == EventStatus.ARCHIVED.value:
+        raise ApiError(ErrorCode.CONFLICT, "事件已封存，不產生小報告")
+    request_id = request_id_var.get() or str(uuid.uuid4())
+    await record_audit(
+        session, principal, "event.report", target=f"event:{event_id}", request_id=request_id
     )
     await session.commit()
     enqueue(event_id, request_id)
