@@ -7,9 +7,11 @@
 >
 > 修改計畫時三處要一起改：本檔、phases.yaml（或其覆寫檔 `docs/progress/phases.yaml`）、ADR。
 
-全案 6 個階段、63 個任務、24 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。Migration 檔名以實際的下一個可用編號為準（ADR-0009），計畫中寫成 `<下一個編號>_<名稱>.py`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
+全案 8 個階段、73 個任務、32 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。Migration 檔名以實際的下一個可用編號為準（ADR-0009），計畫中寫成 `<下一個編號>_<名稱>.py`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
 
-**個人使用（ADR-0008）**：本系統只給使用者本人使用，不提供公開網站、公開 API、匿名通報或任何對外發布管道。已刪除的任務與閘門（P3-T02、P3-T04、P3-T06、P3-T09、P5-T07、G3-1、G5-3）不重新編號，ID 也不重複使用。
+**對外公開（ADR-0015，部分取代 ADR-0008）**：管理端只有使用者本人；P5 起新增公開網站、公開唯讀 API 與匿名回報入口。公開由確定性規則自動判斷，硬性邊界：未查證只公開中性提醒、疑似指控永不自動公開、推測原因不公開、Facebook 只公開 AI 摘要、使用者可一鍵下架。通知只送給使用者本人。
+
+已刪除的任務與閘門不重新編號，ID 也不重複使用：ADR-0008 刪除 P3-T02、P3-T04、P3-T06、P3-T09、P5-T07、G3-1、G5-3；ADR-0015 把 P4-T01–T04、P4-T06、P5-T01–T03、P5-T08、P5-T09 與 G4-1–G4-3、G5-1、G5-4 搬到 P6／P7 並改用新 ID（對照表見 ADR-0015）。
 
 ---
 
@@ -313,31 +315,114 @@ make e2e   # 啟動資料庫，在獨立 e2e 資料庫建立附錄 A 案例並�
 | G3-2 | 同版本通知無重複遞送 | test_alert_idempotency |
 | G3-3 | 未登入無法存取任何事件資料 | test_auth（除 health 外沒有免登入端點） |
 | G3-4 | 附錄 A 的 A01–A08（個人版）全過 | Playwright e2e |
-| G3-5 | MVP 展示路徑可運作 | 依 §13.1（個人版）錄一段展示並附在驗收紀錄 |
+| G3-5 | MVP 展示路徑可運作 | 依 §13.1（個人版）以附錄 A 的 e2e 案例資料錄一段展示並附在驗收紀錄；真實資料展示移到 G4-8（ADR-0015） |
 
 ---
 
-## P4 關聯、趨勢與韌性追蹤
+## P4 真實資料、事件小報告與追蹤到底
 
-目標：跨事件關聯經人工確認可用，趨勢偵測回測不使用未來資料，韌性指標在資料不足時誠實顯示 N/A。前置：G3 通過。
+目標：真實來源每天穩定產生事件；後台事件頁有一份看得懂的「事件小報告」（說明、影響、值得查查看、同學／學校可以怎麼做、建議轉給哪個單位），每一項都能回溯證據，推測不會被呈現為事實；改善措施有完整的狀態紀錄，同地點同類事件再發生時會提醒使用者（ADR-0015）。前置：G3 通過。
 
-- **P4-T01 關聯圖資料與 API**
+- **P4-T07 真實資料管線診斷與修復**
+  - 背景：P1–P3 完成後主資料庫仍是 0 個事件（2026-10-27）。
+  - 檔案：先診斷，從擷取、標準化、`analyze_item` 觸發、S01 過濾到事件建立逐段確認，把原因與要修改的檔案提給使用者後再修；`docs/runbooks/pipeline-health.md`（怎麼確認每天有事件產生、常見故障與處理）
+  - 驗證：修正處先有失敗的測試；真實來源跑一輪後主資料庫有事件；之後連續 3 天每天都有新事件（G4-7）
+- **P4-T08 事件說明（摘要）**
+  - 檔案：`skills/event-extractor/`（輸出加 `summary`：一到三句中性說明，不含人名、店名與個資，附 evidence_ids；SKILL.md 升版並重跑評測，門檻不得調低）、`infra/migrations/versions/<下一個編號>_event_summary.py`、`app/pipeline/analyze_item.py`（寫入摘要；同事件多篇來源時以最新、證據最強的一篇為準）、`app/api/v1/admin/events.py`（詳情回傳摘要）、後台事件頁顯示
+  - 驗證：`tests/integration/test_event_summary.py`（摘要寫入與更新、含個資時被遮蔽或拒絕）；S02 評測維持 P2 門檻
+- **P4-T09 事件小報告（接上 S07／S08）**
+  - 檔案：`app/reports/service.py`（S06 之後執行 S07、S08；風險中以上自動產生，其他可在後台手動觸發；事件版本更新時重算）、`infra/migrations/versions/<下一個編號>_event_reports.py`（保存每次產生的報告與 AI run 關聯）、`app/api/v1/admin/events.py`（詳情回傳小報告）、後台事件頁「事件小報告」區塊
+  - 呈現：可能的影響（S06 分項）；值得查查看（S07 `hypothesized`，明確標示「推測，尚未查證」）與已確認原因（S07 `confirmed`，附原句）；可以怎麼做（S08，依同學／學校與短／中／長期分組）；建議轉給哪個單位（S08 `responsible_unit`，只顯示給使用者，系統不寄信）；S07／S08 abstain 時顯示「證據不足，暫不分析」
+  - 驗證：`tests/integration/test_event_report.py`（每一項都有存在的 evidence_ids；hypothesized 永遠帶推測標示；abstain 不產生空白或捏造內容；事件被查證為不實時報告標為失效）；Playwright 事件頁流程
+- **P4-T05 改善措施追蹤（F10）**
+  - 檔案：`app/resilience/actions.py`（可從 S08 的校方措施建立追蹤項目，也可手動新增）、`infra/migrations/versions/<下一個編號>_response_actions.py`（含狀態變更歷史）、後台改善追蹤頁
+  - 驗證：`tests/integration/test_response_actions.py`（發現→處理→恢復→改進完整紀錄）
+- **P4-T10 再發生偵測與提醒**
+  - 檔案：`app/resilience/recurrence.py`（確定性規則：同地點、同類別在設定的時間窗內再次發生，或已標記「已改善」的事件再次發生）、`config/recurrence.yaml`（時間窗與門檻）、通知中心提醒「可能不是單純個案，要不要整批檢查？」
+  - 驗證：`tests/unit/resilience/test_recurrence.py`（合成資料：時間窗內再發生會提醒、不同地點或類別不會、改善後再發生會標示）
+
+```bash
+cd backend && uv run pytest tests/integration/test_event_summary.py tests/integration/test_event_report.py tests/integration/test_response_actions.py tests/unit/resilience -q
+uv run python ../scripts/eval/run_eval.py --skill event-extractor
+```
+
+| 閘門 | 條件 | 驗證方式 |
+| --- | --- | --- |
+| G4-4 | 改善生命週期完整 | test_response_actions |
+| G4-5 | 小報告每項可回溯證據、推測不呈現為事實 | test_event_report |
+| G4-6 | 同地點同類事件再發生可被偵測 | test_recurrence |
+| G4-7 | 真實資料連續 3 天產生事件 | 使用者確認 `pipeline-health.md` 的檢查結果 |
+| G4-8 | 真實資料展示路徑可運作 | 以真實資料錄一段展示（事件列表 → 事件小報告 → 改善追蹤 → 再發生提醒）並附在驗收紀錄 |
+
+---
+
+## P5 公開網站與上線
+
+目標：任何人都能看到的公開網站。公開與否由確定性規則自動判斷，疑似指控、推測原因、Facebook 原文與匿名投稿原文永不外流；使用者可以一鍵下架；經通道從使用者的電腦上線，管理端不對外（ADR-0015）。前置：G4 通過。
+
+- **P5-T10 公開規則引擎**
+  - 檔案：`app/publishing/policy.py`（純函式，不呼叫模型）、`config/publish-policy.yaml`（可調整的門檻；硬性邊界寫在程式裡，設定無法關閉）、`infra/migrations/versions/<下一個編號>_publications.py`（公開狀態、版本、下架紀錄）
+  - 規則：已查證（官方來源證實或使用者查證為 true）才公開事件內容；未查證只公開 P3-T07 的中性安全提醒；疑似指控永不自動公開；S07 `hypothesized` 不公開；Facebook 來源只公開 AI 摘要，不放原文與連結；公開內容一律經 PII 遮蔽
+  - 驗證：`tests/unit/publishing/test_publish_policy.py`（每條硬性邊界各有正反案例；附錄 A 的 A02、A05 不會公開事件內容）
+- **P5-T11 公開唯讀 API 與威脅模型**
+  - 檔案：`app/api/v1/public/`（最新動態、安全提醒、事件分類查詢、公開版小報告、改善進度；只讀取 P5-T10 判定可公開的版本；cursor 分頁、rate limit、快取標頭）、`docs/architecture/threat-model-public.md`（每個公開端點的資料、濫用方式與防護）、`docs/architecture/rbac.md`（加入公開端點）
+  - 驗證：`tests/security/test_public_exposure.py`（以附錄 A 與對抗案例確認疑似指控、推測原因、FB 原文、投稿原文、個資不出現在任何公開回應）；`tests/integration/test_public_api.py`
+- **P5-T14 一鍵下架**
+  - 檔案：`app/publishing/takedown.py`、`app/api/v1/admin/publications.py`、後台事件頁與公開內容列表的下架按鈕
+  - 驗證：`tests/integration/test_takedown.py`（下架後公開 API 立即不再回傳、快取失效、寫入稽核）
+- **P5-T12 公開前端**
+  - 檔案：`frontend/src/public/`（首頁最新動態與安全提醒、事件分類查詢、事件頁（公開版小報告）、改善進度、關於本站）；每頁頁尾標明「個人專題，非國立中央大學官方系統」並列出校安中心、110、119；兩套設計系統都要實作（ADR-0014）
+  - 驗證：Vitest 元件測試；Playwright 公開瀏覽流程（納入 `make e2e`）
+- **P5-T13 匿名回報入口**
+  - 檔案：`app/api/v1/public/reports.py`（不保存 IP 與裝置資訊；速率限制只用短期雜湊；長度與格式限制）、`app/ingestion/adapters/anonymous_report.py`（以 `<untrusted_source>` 進入既有管線，視為獨立來源）、公開前端回報表單（說明投稿不會公開原文）
+  - 驗證：`tests/security/test_anonymous_report.py`（不落地 IP、prompt injection 無法改變分析指令、投稿原文不出現在公開端、洪水投稿被限速）
+- **P5-T04 可觀測性**
+  - 檔案：`app/core/metrics.py`（Prometheus：任務成功率、AI 延遲與費用、公開 API 錯誤率與限速次數）、`infra/monitoring/`（Prometheus、Grafana dashboard JSON、告警規則）
+  - 驗證：Grafana 顯示上述指標；trace_id 貫穿 API→worker→AI run
+- **P5-T05 備份與還原**
+  - 檔案：`infra/scripts/backup.sh`（pg_dump）、`infra/scripts/restore.sh`、`docs/runbooks/restore.md`
+  - 驗證：還原演練紀錄 `docs/progress/records/P5-restore-drill.md`
+- **P5-T06 本機常駐運行**
+  - 檔案：`infra/docker/docker-compose.local.yml`（restart 策略、所有服務只綁定 127.0.0.1）、`docs/runbooks/local-operation.md`（開機自動啟動、P1-T13 排程檢查）
+  - 驗證：重新開機後服務自動恢復，所有服務只監聽 127.0.0.1
+- **P5-T15 通道對外上線**（需你決定：通道服務、網域、上線時間）
+  - 檔案：`infra/tunnel/`（通道設定：只轉送公開網站與 `/api/v1/public/*`，管理端與登入不經通道）、`docs/runbooks/deploy.md`（上線、暫停、緊急下線步驟）
+  - 驗證：從外部網路只能存取公開路徑；`/admin`、`/api/v1/admin/*`、登入從外部一律無法連線
+
+```bash
+cd backend && uv run pytest tests/unit/publishing tests/security tests/integration/test_public_api.py tests/integration/test_takedown.py -q
+make e2e
+bash infra/scripts/backup.sh && bash infra/scripts/restore.sh --target local
+```
+
+| 閘門 | 條件 | 驗證方式 |
+| --- | --- | --- |
+| G5-2 | 備份可完整還原 | 還原演練紀錄 |
+| G5-5 | 疑似指控、推測原因、FB 原文與投稿原文不出現在公開端 | test_public_exposure、test_anonymous_report |
+| G5-6 | 公開端與附錄 A 端到端測試全過 | `make e2e` |
+| G5-7 | 下架即時生效並留稽核 | test_takedown |
+| G5-8 | 上線前確認威脅模型與公開端點清單 | 使用者本人審閱 `threat-model-public.md` 並同意上線 |
+
+---
+
+## P6 把點連成線與韌性成績單
+
+目標：跨事件關聯經人工確認可用，趨勢偵測回測不使用未來資料，韌性成績單（發現力、行動力、恢復力、進步力）在資料不足時誠實顯示 N/A（原 P4，ADR-0015）。前置：G5 通過。
+
+- **P6-T01 關聯圖資料與 API**（原 P4-T01）
   - 檔案：`app/relations/service.py`（same_event／related_event／hypothesized_cause，邊存 evidence_ids、方法、分數、人工決策）、`app/api/v1/admin/relations.py`（查詢、確認、駁回）
   - 驗證：`tests/integration/test_relations.py`（禁止 self-loop、人工駁回可回滾）
-- **P4-T02 關聯圖介面**
+- **P6-T02 關聯圖介面**（原 P4-T02）
   - 檔案：`frontend/src/admin/pages/RelationGraph.tsx`（Cytoscape.js）
   - 驗證：Playwright 確認／駁回流程
-- **P4-T03 時序統計與異常偵測**
+- **P6-T03 時序統計與異常偵測**（原 P4-T03）
   - 檔案：`app/analytics/timeseries.py`（週／月頻率、地點分布、EWMA、Poisson 變化偵測）、`infra/migrations/versions/<下一個編號>_analytics_views.py`（materialized views）
   - 驗證：`tests/unit/analytics/test_timeseries.py`（合成資料注入突增可被偵測）
-- **P4-T04 趨勢回測**
+- **P6-T04 趨勢回測**（原 P4-T04）
   - 檔案：`scripts/eval/backtest_trends.py`（滾動切點，只用切點前資料）、`tests/unit/analytics/test_no_leakage.py`
   - 驗證：洩漏測試通過；回測報告寫入 `eval/reports/trends/`
-- **P4-T05 改善措施追蹤（F10）**
-  - 檔案：`app/resilience/actions.py`、`infra/migrations/versions/<下一個編號>_response_actions.py`（含狀態變更歷史）、管理端改善追蹤頁
-  - 驗證：`tests/integration/test_response_actions.py`（發現→處理→恢復→改進完整紀錄）
-- **P4-T06 校園韌性指數 CRI 與報告頁**（ADR-0008：原為公開報告）
-  - 檔案：`app/resilience/cri.py`（四構面標準化，資料不足回傳 None）；管理端報告頁加入資料覆蓋率、時間窗、樣本量、來源限制
+- **P6-T05 校園韌性成績單 CRI（後台與公開版）**（原 P4-T06）
+  - 檔案：`app/resilience/cri.py`（四構面標準化，資料不足回傳 None）；後台報告頁加入資料覆蓋率、時間窗、樣本量、來源限制；公開版成績單頁標明「回報變多不等於校園變危險」
   - 驗證：`tests/unit/resilience/test_cri.py`（缺資料顯示 N/A，不產生假精確分數）
 
 ```bash
@@ -347,51 +432,39 @@ uv run python ../scripts/eval/backtest_trends.py --start 2026-01-01 --step week
 
 | 閘門 | 條件 | 驗證方式 |
 | --- | --- | --- |
-| G4-1 | 關聯經人工評估可用 | 抽 50 組關聯人工審閱，正確率 ≥ 0.85 |
-| G4-2 | 回測無未來資料 | test_no_leakage |
-| G4-3 | 韌性指標不假精確 | test_cri |
-| G4-4 | 改善生命週期完整 | test_response_actions |
+| G6-1 | 關聯經人工評估可用 | 抽 50 組關聯人工審閱，正確率 ≥ 0.85 |
+| G6-2 | 回測無未來資料 | test_no_leakage |
+| G6-3 | 韌性成績單不假精確 | test_cri |
 
 ---
 
-## P5 情境模擬與部署維運
+## P7 What-if 模擬與收尾
 
-目標：完成 S09–S10 與 What-if，系統可監控、可備份還原、可在本機常駐運行，並驗證 Skills 能在其他 AI 客戶端運作。前置：G4 通過。
+目標：完成 S09–S10 與 What-if，驗證 Skills 能在其他 AI 客戶端運作，並更新規格書（原 P5，ADR-0015）。前置：G6 通過。
 
-- **P5-T01 S09 trend-forecaster**：`skills/trend-forecaster/`；輸入 P4 的統計結果，只產生「異常解釋與前瞻訊號」，必須標註聲量≠事件數、資料覆蓋率
-- **P5-T02 What-if 引擎 + S10 scenario-simulator**
+- **P7-T01 S09 trend-forecaster**（原 P5-T01）：`skills/trend-forecaster/`；輸入 P6 的統計結果，只產生「異常解釋與前瞻訊號」，必須標註聲量≠事件數、資料覆蓋率
+- **P7-T02 What-if 引擎 + S10 scenario-simulator**（原 P5-T02）
   - 檔案：`app/simulations/engine.py`（baseline × Π(1 − effect_i)、效果區間、敏感度、固定隨機種子）、`skills/scenario-simulator/`（只負責解釋假設與限制，數值由引擎計算）、`infra/migrations/versions/<下一個編號>_scenario_runs.py`
   - 驗證：`tests/unit/simulations/test_engine.py`（同輸入同種子結果一致；效果值未知時回傳「無法估計」）
-- **P5-T03 What-if 介面**
+- **P7-T03 What-if 介面**（原 P5-T03）
   - 檔案：`frontend/src/admin/pages/Scenario.tsx`（參數表單、龍捲風敏感度圖、明顯的「假設情境，非成效預測」標示）
   - 驗證：Playwright
-- **P5-T04 可觀測性**
-  - 檔案：`app/core/metrics.py`（Prometheus：任務成功率、AI 延遲與費用、通知失敗率）、`infra/monitoring/`（Prometheus、Grafana dashboard JSON、告警規則）
-  - 驗證：Grafana 顯示上述指標；trace_id 貫穿 API→worker→AI run
-- **P5-T05 備份與還原**
-  - 檔案：`infra/scripts/backup.sh`（pg_dump + 物件儲存）、`infra/scripts/restore.sh`、`docs/runbooks/restore.md`
-  - 驗證：還原演練紀錄 `docs/progress/records/P5-restore-drill.md`
-- **P5-T06 本機常駐運行**（ADR-0008：原為正式部署設定）
-  - 檔案：`infra/docker/docker-compose.local.yml`（restart 策略、只綁定 127.0.0.1）、`docs/runbooks/local-operation.md`（開機自動啟動、P1-T13 排程檢查、資料只存本機）
-  - 驗證：重新開機後服務自動恢復，所有服務只監聽 127.0.0.1；原 P5-T07 負載測試已刪除
-- **P5-T08 Skills 可攜性驗證**
+- **P7-T04 Skills 可攜性驗證**（原 P5-T08）
   - 檔案：`docs/portability-report.md`；將 S01–S10 放進另一個支援 Agent Skills 的客戶端（例如 Claude Code）跑 golden cases，比較與 Runner 結果
   - 驗證：記錄各 skill 在不同平台的通過率與需調整之處
-- **P5-T09 規格書 v1.1 更新**
-  - 檔案：`docs/requirements/spec-v1.1.md`（實際來源、schema、門檻、部署規格的變更；含 ADR-0008 個人使用的刪減）
+- **P7-T05 規格書 v1.1 更新**（原 P5-T09）
+  - 檔案：`docs/requirements/spec-v1.1.md`（實際來源、schema、門檻、部署規格的變更；含 ADR-0008 與 ADR-0015 的定位變更）
   - 驗證：與 v1.0 差異清單完整
 
 ```bash
 cd backend && uv run pytest tests/unit/simulations -q
 uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scenario-simulator --live
-bash infra/scripts/backup.sh && bash infra/scripts/restore.sh --target local
 ```
 
 | 閘門 | 條件 | 驗證方式 |
 | --- | --- | --- |
-| G5-1 | 模擬結果可重現 | test_engine |
-| G5-2 | 備份可完整還原 | 還原演練紀錄 |
-| G5-4 | Skills 可攜 | portability-report.md |
+| G7-1 | 模擬結果可重現 | test_engine |
+| G7-2 | Skills 可攜 | portability-report.md |
 
 ---
 

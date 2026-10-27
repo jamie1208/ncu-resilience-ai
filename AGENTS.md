@@ -4,10 +4,10 @@
 
 ## 專案
 
-NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系統。個人使用的專題，非校方官方系統；只供使用者本人使用，不提供給學校，也不對外公開（ADR-0008）。
+NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系統。個人專題，非校方官方系統。管理端只有使用者本人；P5 起有對外的公開網站與匿名回報入口，公開內容受 ADR-0015 的硬性邊界限制（ADR-0008 的「不對外公開」已被 ADR-0015 部分取代）。
 
 - 規格書：`docs/requirements/NCU_Resilience_AI_System_Plan_v1.pdf`（需求的最終依據）
-- 執行計畫：`docs/plan/execution-plan.md`（63 個任務的檔案清單、驗證方式與閘門）
+- 執行計畫：`docs/plan/execution-plan.md`（73 個任務的檔案清單、驗證方式與閘門）
 - 目標架構：`docs/architecture/project-structure.md`
 - 進度：`docs/progress/state.yaml`，透過 `ncu-resilience-tracker` skill 操作
 
@@ -67,8 +67,10 @@ NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系�
 - 數值計算（風險加權、What-if）由程式完成，模型只提供分項判斷與解釋。
 - 每個產品 Skill 依執行計畫的「Skill 開發標準循環」開發；SKILL.md 改動後必須重跑評測並升版本。
 - CI 使用 fake provider 與錄製回應，不呼叫真實 API。
-- 系統不對外發布；通知只送給使用者本人，且只能經 `app/alerts/policy.py` 的確定性規則。未核實的具體指控不得呈現為已核實。
-- Facebook 擷取只讀不互動、每天最多一次，不保存發文者資訊與 Facebook 登入資料（`docs/governance/source-inventory.md`）。
+- 通知只送給使用者本人，且只能經 `app/alerts/policy.py` 的確定性規則；系統不寄信給任何處室。
+- 公開與否只能經公開規則引擎（P5-T10）的確定性規則判斷，不由模型決定。硬性邊界寫在程式裡、設定無法關閉：未查證只公開中性提醒；疑似指控永不自動公開；推測原因（S07 `hypothesized`）不公開；Facebook 來源只公開 AI 摘要；匿名投稿原文永不公開；公開內容一律經 PII 遮蔽。未核實的具體指控不得呈現為已核實。
+- 管理端（`/admin`、`/api/v1/admin/*`、登入）不經通道對外（ADR-0015）。
+- Facebook 擷取只讀不互動、每天最多一次，不保存發文者資訊與 Facebook 登入資料；公開端只可顯示 AI 摘要，不顯示原文與連結（`docs/governance/source-inventory.md`、ADR-0015）。
 
 ## 常用指令
 

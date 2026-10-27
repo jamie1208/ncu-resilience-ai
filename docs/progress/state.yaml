@@ -163,33 +163,13 @@ tasks:
     status: done
     updated_at: '2026-10-26T22:34:14+08:00'
     evidence: docs/progress/records/P3-T10-20261026.md
-  P4-T01:
-    status: pending
-  P4-T02:
-    status: pending
-  P4-T03:
-    status: pending
-  P4-T04:
-    status: pending
   P4-T05:
-    status: pending
-  P4-T06:
-    status: pending
-  P5-T01:
-    status: pending
-  P5-T02:
-    status: pending
-  P5-T03:
     status: pending
   P5-T04:
     status: pending
   P5-T05:
     status: pending
   P5-T06:
-    status: pending
-  P5-T08:
-    status: pending
-  P5-T09:
     status: pending
   P0-T11:
     status: done
@@ -228,6 +208,46 @@ tasks:
     updated_at: '2026-10-21T21:26:58+08:00'
     note: 使用者決定新增雙設計系統（ADR-0014）
     evidence: docs/progress/records/P3-T11-20261021.md
+  P4-T07:
+    status: pending
+  P4-T08:
+    status: pending
+  P4-T09:
+    status: pending
+  P4-T10:
+    status: pending
+  P5-T10:
+    status: pending
+  P5-T11:
+    status: pending
+  P5-T14:
+    status: pending
+  P5-T12:
+    status: pending
+  P5-T13:
+    status: pending
+  P5-T15:
+    status: pending
+  P6-T01:
+    status: pending
+  P6-T02:
+    status: pending
+  P6-T03:
+    status: pending
+  P6-T04:
+    status: pending
+  P6-T05:
+    status: pending
+  P7-T01:
+    status: pending
+  P7-T02:
+    status: pending
+  P7-T03:
+    status: pending
+  P7-T04:
+    status: pending
+  P7-T05:
+    status: pending
 gates:
   G0-1:
     status: pass
@@ -313,26 +333,68 @@ gates:
 
       29 passed in 0.26s'
   G3-2:
-    status: pending
+    status: pass
+    last_run: '2026-10-27T12:37:23+08:00'
+    last_output: '.................                                                        [100%]
+
+      17 passed in 2.57s
+
+      warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will be ignored;
+      use `--active` to target the active environment instead'
   G3-3:
-    status: pending
+    status: pass
+    last_run: '2026-10-27T12:37:28+08:00'
+    last_output: '......................                                                   [100%]
+
+      22 passed in 3.91s
+
+      warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will be ignored;
+      use `--active` to target the active environment instead'
   G3-4:
-    status: pending
+    status: pass
+    last_run: '2026-10-27T12:37:44+08:00'
+    last_output: ' Container ncu-resilience-db-1  Healthy
+
+      [WebServer] warning: [WebServer] `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv`
+      and will be ignored; use `--active` to target the active environment instead
+
+      [WebServer] INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+
+      [WebServer] INFO  [alembic.runtime.migration] Will assume transactional DDL.
+
+      [WebServer] warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will
+      be ignored; use `--active` to target the active environment instead'
   G3-5:
-    status: pending
-  G4-1:
-    status: pending
-  G4-2:
-    status: pending
-  G4-3:
     status: pending
   G4-4:
     status: pending
-  G5-1:
-    status: pending
   G5-2:
     status: pending
-  G5-4:
+  G4-5:
+    status: pending
+  G4-6:
+    status: pending
+  G4-7:
+    status: pending
+  G4-8:
+    status: pending
+  G5-5:
+    status: pending
+  G5-6:
+    status: pending
+  G5-7:
+    status: pending
+  G5-8:
+    status: pending
+  G6-1:
+    status: pending
+  G6-2:
+    status: pending
+  G6-3:
+    status: pending
+  G7-1:
+    status: pending
+  G7-2:
     status: pending
 history:
 - at: '2026-10-17T00:16:59+08:00'
@@ -877,4 +939,4 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-26T22:34:14+08:00'
+updated_at: '2026-10-27T13:28:33+08:00'
