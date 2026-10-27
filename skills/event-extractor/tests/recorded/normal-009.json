@@ -1,17 +1,23 @@
 {
   "case_id": "normal-009",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "工一電梯故障並有人受困",
+    "title": "工程一館電梯故障致人受困",
     "occurrence_start_date": "2026-10-20",
     "occurrence_start_time": null,
     "occurrence_end_date": null,
     "occurrence_end_time": null,
     "location": "工程一館",
     "mentions_person": false,
+    "summary": {
+      "text": "工程一館的電梯 10/20 上午發生卡住事件，貼文指出有人被關在電梯約十分鐘，建議改走樓梯。",
+      "evidence_ids": [
+        "e1"
+      ]
+    },
     "evidence_ids": [
       "e1"
     ],
@@ -32,8 +38,8 @@
         "quote": "工一的電梯"
       }
     ],
-    "reason": "貼文描述工一電梯卡住且有人被關在裡面，寫出發生時間為「今天早上」並指明為工一。",
-    "confidence": 0.85,
+    "reason": "貼文描述工程一館電梯在今天早上卡住並有人被困約十分鐘，包含地點與影響對象，符合事件定義。",
+    "confidence": 0.8,
     "abstain_reason": null
   }
 }

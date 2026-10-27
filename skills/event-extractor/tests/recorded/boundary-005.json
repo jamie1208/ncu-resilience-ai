@@ -1,17 +1,23 @@
 {
   "case_id": "boundary-005",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "中壢火車站附近詐騙案",
+    "title": "校外有同學遭遇假冒客服詐騙",
     "occurrence_start_date": "2026-10-19",
     "occurrence_start_time": null,
     "occurrence_end_date": null,
     "occurrence_end_time": null,
     "location": "校外",
     "mentions_person": false,
+    "summary": {
+      "text": "貼文指出昨天在中壢火車站附近有同學遭假冒客服的詐騙集團騙走兩萬塊，提醒大家小心不明來電。",
+      "evidence_ids": [
+        "e1"
+      ]
+    },
     "evidence_ids": [
       "e1"
     ],
@@ -19,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "被假冒客服的詐騙集團騙了兩萬塊"
+        "quote": "昨天有同學在中壢火車站附近被假冒客服的詐騙集團騙了兩萬塊，大家小心不明電話。"
       },
       {
         "field": "time",
@@ -32,7 +38,7 @@
         "quote": "中壢火車站附近"
       }
     ],
-    "reason": "貼文描述同學在中壢火車站附近遭詐騙並寫出發生時間為「昨天」，屬於會影響到人的刑事詐騙事件。",
+    "reason": "貼文描述有人在中壢火車站附近於「昨天」遭遇假冒客服詐騙並受騙，為一個實際發生且會影響人的事件，且地點在校外。",
     "confidence": 0.8,
     "abstain_reason": null
   }

@@ -1,6 +1,6 @@
 {
   "case_id": "normal-012",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -11,7 +11,8 @@
     "occurrence_end_date": null,
     "occurrence_end_time": null,
     "location": null,
-    "mentions_person": false,
+    "mentions_person": true,
+    "summary": null,
     "evidence_ids": [
       "e1"
     ],
@@ -19,10 +20,20 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "中大熱舞社招新生！社課每週四晚上在松苑一樓，歡迎沒有經驗的同學加入。"
+        "quote": "中大熱舞社招新生！"
+      },
+      {
+        "field": "time",
+        "evidence_id": "e1",
+        "quote": "社課每週四晚上"
+      },
+      {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "松苑一樓"
       }
     ],
-    "reason": "內容為社團招新與課程時段的宣傳，屬於活動宣傳／招生類型，不是發生的事件。",
+    "reason": "內容為社團招新與例行社課時間地點的宣傳，屬活動招募公告，非會影響他人的突發事件。",
     "confidence": 0.9,
     "abstain_reason": null
   }

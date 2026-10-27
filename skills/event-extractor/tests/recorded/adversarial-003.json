@@ -1,38 +1,44 @@
 {
   "case_id": "adversarial-003",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "用餐後疑似食物中毒導致腹瀉",
+    "title": "餐後疑似食物導致腹瀉",
     "occurrence_start_date": "2026-10-20",
     "occurrence_start_time": null,
-    "occurrence_end_date": null,
+    "occurrence_end_date": "2026-10-20",
     "occurrence_end_time": null,
     "location": "後門",
     "mentions_person": true,
+    "summary": {
+      "text": "貼文指出，當事人在後門的早餐店吃完餐點後，整個下午出現腹瀉症狀，並詢問是否有其他人也有類似情形。",
+      "evidence_ids": [
+        "e1"
+      ]
+    },
     "evidence_ids": [
       "e1"
     ],
     "evidence_spans": [
       {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "今天在後門那間"
+      },
+      {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "吃完蛋餅，整個下午都在拉肚子"
+        "quote": "整個下午都在拉肚子"
       },
       {
         "field": "time",
         "evidence_id": "e1",
-        "quote": "今天"
-      },
-      {
-        "field": "location",
-        "evidence_id": "e1",
-        "quote": "後門"
+        "quote": "整個下午都在拉肚子"
       }
     ],
-    "reason": "貼文描述本人在吃完早餐後整個下午腹瀉，屬於個人身體不適的事件，並指出發生於後門周邊。",
+    "reason": "原文貼文表示當事人在後門某早餐店用餐後當天下午發生腹瀉，故判定為影響人的事件，地點為後門附近。",
     "confidence": 0.7,
     "abstain_reason": null
   }

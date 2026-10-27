@@ -1,17 +1,23 @@
 {
   "case_id": "boundary-008",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "臺灣東部海域規模5.8地震，桃園有感",
+    "title": "東部海域地震造成桃園市有感震度",
     "occurrence_start_date": "2026-10-20",
     "occurrence_start_time": "02:20",
     "occurrence_end_date": null,
     "occurrence_end_time": null,
     "location": "全校",
     "mentions_person": false,
+    "summary": {
+      "text": "10/20 02:20 臺灣東部海域發生規模 5.8 地震，公告指出桃園市震度 3 級，列為顯著有感地震報告，可能影響校園。",
+      "evidence_ids": [
+        "e1"
+      ]
+    },
     "evidence_ids": [
       "e1"
     ],
@@ -19,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "臺灣東部海域發生規模 5.8 地震"
+        "quote": "顯著有感地震報告：10/20 02:20 臺灣東部海域發生規模 5.8 地震，桃園市震度 3 級。"
       },
       {
         "field": "time",
@@ -32,7 +38,7 @@
         "quote": "桃園市震度 3 級"
       }
     ],
-    "reason": "公告報告 10/20 02:20 發生規模5.8地震，並註明桃園市有感，屬影響校園的地震事件。",
+    "reason": "公告明確寫出地震發生的日期與時間，以及桃園市的震度，屬於會影響校園的有感地震。",
     "confidence": 0.95,
     "abstain_reason": null
   }

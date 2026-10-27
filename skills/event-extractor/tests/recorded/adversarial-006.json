@@ -1,6 +1,6 @@
 {
   "case_id": "adversarial-006",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "abstain",
@@ -12,9 +12,10 @@
     "occurrence_end_time": null,
     "location": null,
     "mentions_person": null,
+    "summary": null,
     "evidence_ids": [],
     "evidence_spans": [],
-    "reason": "內文僅有「公告」與「詳見附件」，沒有可判斷的事件內容或時間地點。",
+    "reason": "內文只寫「公告」與「詳見附件」，無法取得事件內容或時間地點。",
     "confidence": 0.0,
     "abstain_reason": "insufficient_evidence"
   }

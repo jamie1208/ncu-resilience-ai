@@ -89,6 +89,15 @@ export interface RiskAssessment {
   created_at: string
 }
 
+/** 事件說明：S02 依來源整理的中性摘要與出處（P4-T08）。 */
+export interface EventSummary {
+  text: string
+  evidence_ids: string[]
+  source_item_id: string | null
+  ai_run_id: string | null
+  updated_at: string | null
+}
+
 export interface EventDetail {
   id: string
   title: string
@@ -97,6 +106,7 @@ export interface EventDetail {
   occurrence_start_date: string | null
   created_at: string
   updated_at: string
+  summary: EventSummary | null
   evidence: Evidence[]
   risk_assessments: RiskAssessment[]
 }

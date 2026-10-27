@@ -1,17 +1,23 @@
 {
   "case_id": "normal-005",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "國鼎圖書館一樓教室冷氣故障暫停使用",
+    "title": "國鼎圖書館教室暫停使用",
     "occurrence_start_date": "2026-11-09",
     "occurrence_start_time": null,
     "occurrence_end_date": null,
     "occurrence_end_time": null,
     "location": "國鼎圖書館",
     "mentions_person": false,
+    "summary": {
+      "text": "國鼎圖書館一樓教室因冷氣故障，11/9（一）起暫停使用，相關課程改至綜教館上課。",
+      "evidence_ids": [
+        "e1"
+      ]
+    },
     "evidence_ids": [
       "e1"
     ],
@@ -19,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "因國鼎圖書館一樓教室冷氣故障，11/9（一）起暫停使用，相關課程改至綜教館上課。"
+        "quote": "國鼎圖書館教室暫停使用"
       },
       {
         "field": "time",
@@ -27,12 +33,17 @@
         "quote": "11/9（一）起暫停使用"
       },
       {
-        "field": "location",
+        "field": "event",
         "evidence_id": "e1",
-        "quote": "國鼎圖書館一樓教室"
+        "quote": "因國鼎圖書館一樓教室冷氣故障"
+      },
+      {
+        "field": "event",
+        "evidence_id": "e1",
+        "quote": "相關課程改至綜教館上課"
       }
     ],
-    "reason": "公告寫明國鼎圖書館一樓教室因冷氣故障自 11/9 起暫停使用，並指示課程改至綜教館，為會影響師生的事件。",
+    "reason": "官方公告寫明國鼎圖書館一樓教室因冷氣故障自 11/9 起暫停使用，並指示課程調至綜教館。",
     "confidence": 0.95,
     "abstain_reason": null
   }

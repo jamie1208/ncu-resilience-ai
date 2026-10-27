@@ -122,6 +122,9 @@ def extraction(eid: str, *, is_event: bool = True, location: str = "科學一館
         "occurrence_end_time": None,
         "location": location if is_event else None,
         "mentions_person": False,
+        "summary": (
+            {"text": "科學一館 10/22 上午停電檢修。", "evidence_ids": [eid]} if is_event else None
+        ),
         "evidence_ids": [eid],
         "evidence_spans": [{"field": "location", "evidence_id": eid, "quote": "科學一館"}],
         "reason": "寫明停電的時間與地點。",

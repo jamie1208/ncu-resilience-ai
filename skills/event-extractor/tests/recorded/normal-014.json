@@ -1,6 +1,6 @@
 {
   "case_id": "normal-014",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -12,6 +12,7 @@
     "occurrence_end_time": null,
     "location": null,
     "mentions_person": true,
+    "summary": null,
     "evidence_ids": [
       "e1"
     ],
@@ -19,10 +20,20 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "約 60 分鐘，酬勞 200 元。"
+        "quote": "徵求受試者"
+      },
+      {
+        "field": "location",
+        "evidence_id": "e1",
+        "quote": "實驗地點在科學五館"
+      },
+      {
+        "field": "time",
+        "evidence_id": "e1",
+        "quote": "約 60 分鐘"
       }
     ],
-    "reason": "內容為徵求受試者的招募廣告，屬於活動宣傳而非已發生或會影響他人的事件。",
+    "reason": "內容為徵求受試者的招募資訊（研究受試者徵求），屬於徵才/招募公告而非會影響多人之事件。",
     "confidence": 0.9,
     "abstain_reason": null
   }

@@ -168,6 +168,7 @@ function EventPanel({ eventId }: { eventId: string }) {
               <span>{`更新 ${formatTime(event.updated_at)}`}</span>
             </div>
           </Card>
+          <SummaryCard event={event} />
           <SourceComparison event={event} />
           <RiskBreakdown assessments={event.risk_assessments} />
           <VerifyForm
@@ -177,6 +178,30 @@ function EventPanel({ eventId }: { eventId: string }) {
         </>
       )}
     </div>
+  )
+}
+
+/** 事件說明：AI 依來源整理的摘要（只當純文字顯示），標明出處來源與更新時間。 */
+function SummaryCard({ event }: { event: EventDetail }) {
+  const summary = event.summary
+  const source = event.evidence.find((ev) => ev.source_item_id === summary?.source_item_id)
+  return (
+    <Card>
+      <Section id="summary-heading" title="事件說明">
+        {!summary ? (
+          <Muted>尚未產生事件說明。</Muted>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">{summary.text}</p>
+            <p className="text-xs text-muted-foreground">
+              {'AI 依來源整理'}
+              {source && <span className="font-mono">{` · ${source.source_code}`}</span>}
+              {summary.updated_at && <span className="font-mono">{` · ${formatTime(summary.updated_at)}`}</span>}
+            </p>
+          </div>
+        )}
+      </Section>
+    </Card>
   )
 }
 

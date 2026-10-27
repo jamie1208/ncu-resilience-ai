@@ -1,17 +1,23 @@
 {
   "case_id": "normal-008",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "Portal 系統升級停機",
+    "title": "校務系統停機進行升級",
     "occurrence_start_date": "2026-11-01",
     "occurrence_start_time": "00:00",
     "occurrence_end_date": "2026-11-01",
     "occurrence_end_time": "04:00",
     "location": "全校",
     "mentions_person": false,
+    "summary": {
+      "text": "校務系統於 11/1（日）00:00–04:00 進行系統升級並暫停服務，將影響 Portal 使用者與相關校務功能。",
+      "evidence_ids": [
+        "e1"
+      ]
+    },
     "evidence_ids": [
       "e1"
     ],
@@ -19,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "校務系統 Portal 於 11/1（日）00:00–04:00 進行系統升級，期間暫停服務。"
+        "quote": "Portal 系統維護"
       },
       {
         "field": "time",
@@ -29,10 +35,10 @@
       {
         "field": "location",
         "evidence_id": "e1",
-        "quote": "校務系統 Portal"
+        "quote": "校務系統 Portal 於 11/1（日）00:00–04:00 進行系統升級，期間暫停服務。"
       }
     ],
-    "reason": "公告寫明校務系統 Portal 將於指定時段升級並暫停服務，影響整體校務系統。",
+    "reason": "公告寫明校務系統（Portal）在 11/1 的停機維護時段，屬於會影響校內使用者的事件。",
     "confidence": 0.95,
     "abstain_reason": null
   }
