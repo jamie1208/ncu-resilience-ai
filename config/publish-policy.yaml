@@ -1,0 +1,16 @@
+# 公開規則（P5-T10，ADR-0015）
+# 由 backend/app/publishing/policy.py 讀取；規則是確定性的，不呼叫模型。
+# 這裡只有可調整的門檻。硬性邊界寫在程式裡，這個檔案無法關閉，加上任何其他欄位都會被拒絕：
+# - 只有官方來源證實或使用者查證為 true 的事件才公開事件內容，其他只公開中性安全提醒；
+# - 疑似指控永不自動公開（指控規則沿用 config/notification-policy.yaml）；
+# - S07 的推測原因不公開；Facebook 與匿名投稿只公開 AI 摘要，不放原文與連結；
+# - 公開內容一律經 PII 遮蔽。
+# 修改後請更新 policy_version，公開紀錄會記下判斷時使用的版本。
+
+policy_version: "2026-10-27.1"
+
+# 未經證實的事件，風險分級在這些等級才公開中性安全提醒；沒有風險評估時不公開
+safety_notice_levels: [high, critical]
+
+# 不公開的事件類別（none 表示非事件）
+excluded_event_types: [none]

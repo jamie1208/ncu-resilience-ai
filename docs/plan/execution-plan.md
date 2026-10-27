@@ -376,6 +376,8 @@ uv run python ../scripts/eval/run_eval.py --skill event-extractor
   - 檔案：`app/publishing/policy.py`（純函式，不呼叫模型）、`config/publish-policy.yaml`（可調整的門檻；硬性邊界寫在程式裡，設定無法關閉）、`infra/migrations/versions/<下一個編號>_publications.py`（公開狀態、版本、下架紀錄）
   - 規則：已查證（官方來源證實或使用者查證為 true）才公開事件內容；未查證只公開 P3-T07 的中性安全提醒；疑似指控永不自動公開；S07 `hypothesized` 不公開；Facebook 來源只公開 AI 摘要，不放原文與連結；公開內容一律經 PII 遮蔽
   - 驗證：`tests/unit/publishing/test_publish_policy.py`（每條硬性邊界各有正反案例；附錄 A 的 A02、A05 不會公開事件內容）
+  - 範圍調整（AI 自行決定，2026-10-27）：使用者同意在 G4-7、G4-8 尚未通過時超前開始；另外新增 `app/publishing/__init__.py`、`app/models/publication.py` 與 `app/models/__init__.py` 的匯入（`test_models_match_migrations` 要求 ORM 與 migration 一致）、`config/README.md` 加一行說明
+  - 實作調整（AI 自行決定，2026-10-27）：migration 為 `0013_publications.py`（publications 每事件一筆：level content／safety_notice／none、state published／withdrawn／taken_down、version、needs_review；publication_versions 為已遮蔽 PII 的內容快照；publication_takedowns 為下架紀錄）；「官方證實」與「使用者查證」以輸入 `confirmed_by` 表示，只有兩份第一手來源支持的 verified 不公開內容；疑似指控比對所有會公開的文字（標題、摘要、影響理由、措施），命中時只公開不寫地點的中性提醒並標記 needs_review（A02 允許中性防竊提醒）；公開版小報告不放任何 S07 原因（ADR-0015：只放影響與建議），依據推測原因的 S08 措施也不公開；來源只列官方來源（`is_official_source`）的名稱與連結；類別名稱、防護建議、指控規則與中性模板沿用 P3-T07 的 notification-policy.yaml 與 general_safety 模板；未經證實事件的安全提醒門檻預設 high、critical（與個人通知相同），沒有風險評估不公開
 - **P5-T11 公開唯讀 API 與威脅模型**
   - 檔案：`app/api/v1/public/`（最新動態、安全提醒、事件分類查詢、公開版小報告、改善進度；只讀取 P5-T10 判定可公開的版本；cursor 分頁、rate limit、快取標頭）、`docs/architecture/threat-model-public.md`（每個公開端點的資料、濫用方式與防護）、`docs/architecture/rbac.md`（加入公開端點）
   - 驗證：`tests/security/test_public_exposure.py`（以附錄 A 與對抗案例確認疑似指控、推測原因、FB 原文、投稿原文、個資不出現在任何公開回應）；`tests/integration/test_public_api.py`
