@@ -5,6 +5,7 @@
   不要直接載入這個範本：用 scripts/facebook/install_schedule.sh install 安裝，
   腳本會把 __REPO__ 換成 repo 路徑、__CLAUDE__ 換成 claude 執行檔路徑，複製到 ~/Library/LaunchAgents/。
   只允許 Claude in Chrome 工具、讀檔與寫入 data/raw/facebook/；禁止 WebFetch、WebSearch、Bash。
+  經 scripts/facebook/run_capture.sh 執行（P4-T07）：等網路可連線才啟動，API Error 時重試。
   日誌在 data/raw/facebook/logs/（不進 git）；skill 的最後回報不含貼文內容。
 -->
 <plist version="1.0">
@@ -15,6 +16,8 @@
   <string>__REPO__</string>
   <key>ProgramArguments</key>
   <array>
+    <string>/bin/bash</string>
+    <string>__REPO__/scripts/facebook/run_capture.sh</string>
     <string>__CLAUDE__</string>
     <string>-p</string>
     <string>--chrome</string>

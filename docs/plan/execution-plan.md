@@ -328,6 +328,9 @@ make e2e   # 啟動資料庫，在獨立 e2e 資料庫建立附錄 A 案例並�
   - 背景：P1–P3 完成後主資料庫仍是 0 個事件（2026-10-27）。
   - 檔案：先診斷，從擷取、標準化、`analyze_item` 觸發、S01 過濾到事件建立逐段確認，把原因與要修改的檔案提給使用者後再修；`docs/runbooks/pipeline-health.md`（怎麼確認每天有事件產生、常見故障與處理）
   - 驗證：修正處先有失敗的測試；真實來源跑一輪後主資料庫有事件；之後連續 3 天每天都有新事件（G4-7）
+  - 診斷結果（2026-10-27）：擷取正常（288 篇），但沒有任何程式把文章排入 `pipeline.analyze_item`（ai_analysis_runs 為 0）；修好後又發現容器沒有掛載 `skills/`，容器內分析一律失敗；Facebook 08:00 擷取因喚醒後網路未就緒（ENOTFOUND）自 10-20 起沒有新檔
+  - 範圍調整（使用者決定，2026-10-27）：以定期掃描未分析文章銜接擷取與分析——`infra/migrations/versions/0009_source_item_analysis.py`（source_items 加 analysis_status／analysis_attempts／analysis_queued_at）、`app/models/source.py`、`app/pipeline/analyze_item.py`（掃描任務與結束時更新狀態）、`app/worker/celery_app.py`（beat 排程）、`app/ingestion/store.py`（內容改變時重置）、`tests/integration/test_analysis_dispatch.py`；既有文章只分析近 14 天發布的，較舊的標為 skipped；`infra/docker/docker-compose.yml` 唯讀掛載 `skills/`；`tests/unit/worker/test_ingest_tasks.py` 的 beat 斷言改為逐項比對；Facebook 擷取加上等網路與重試（`scripts/facebook/run_capture.sh`、`infra/launchd/tw.ncu-resilience.fb-capture.plist.template`、`tests/unit/ingestion/test_facebook_capture_retry.py`）
+  - 實作調整（AI 自行決定，2026-10-27）：掃描每分鐘一次，排隊中最多 3 篇、新的先做；時間依 published_at，沒有時用 fetched_at；台北日已花費達 daily_usd 時不排；queued 超過 60 分鐘重排；管線完成或 abstain → done，費用上限 → pending 不計次，其他失敗計次、3 次 → failed；FB 包裝腳本等網路最多 15 分鐘、API Error 或結束碼非 0 時隔 10 分鐘重試最多 3 次，「需要使用者處理」不重試
 - **P4-T08 事件說明（摘要）**
   - 檔案：`skills/event-extractor/`（輸出加 `summary`：一到三句中性說明，不含人名、店名與個資，附 evidence_ids；SKILL.md 升版並重跑評測，門檻不得調低）、`infra/migrations/versions/<下一個編號>_event_summary.py`、`app/pipeline/analyze_item.py`（寫入摘要；同事件多篇來源時以最新、證據最強的一篇為準）、`app/api/v1/admin/events.py`（詳情回傳摘要）、後台事件頁顯示
   - 驗證：`tests/integration/test_event_summary.py`（摘要寫入與更新、含個資時被遮蔽或拒絕）；S02 評測維持 P2 門檻

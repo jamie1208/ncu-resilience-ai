@@ -209,7 +209,9 @@ tasks:
     note: 使用者決定新增雙設計系統（ADR-0014）
     evidence: docs/progress/records/P3-T11-20261021.md
   P4-T07:
-    status: pending
+    status: done
+    updated_at: '2026-10-27T15:42:59+08:00'
+    evidence: docs/progress/records/P4-T07-20261027.md
   P4-T08:
     status: pending
   P4-T09:
@@ -947,4 +949,14 @@ history:
   to: pass
   note: 使用者 2026-10-27 於對話中確認通過；已以附錄 A 案例資料走過展示路徑，未附錄影（使用者決定不錄影直接結案）
   confirmed_by_user: true
-updated_at: '2026-10-27T13:36:59+08:00'
+- at: '2026-10-27T13:38:52+08:00'
+  id: P4-T07
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-27T15:42:59+08:00'
+  id: P4-T07
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-27T15:42:59+08:00'

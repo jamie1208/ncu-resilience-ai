@@ -8,10 +8,12 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from enum import StrEnum
 from typing import Any
 
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     DateTime,
     ForeignKey,
     Index,
@@ -26,6 +28,16 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, created_at_col, updated_at_col, uuid_pk
+
+
+class AnalysisStatus(StrEnum):
+    """source_items.analysis_status（P4-T07）。"""
+
+    PENDING = "pending"  # 等待掃描排入
+    QUEUED = "queued"  # 已排入 Celery
+    DONE = "done"  # 管線已完成（含 S01 判斷無關、abstain）
+    SKIPPED = "skipped"  # 超過分析時間窗，不分析
+    FAILED = "failed"  # 失敗次數達上限
 
 
 class Source(Base):
@@ -83,6 +95,15 @@ class SourceItem(Base):
             unique=True,
             postgresql_where=text("external_id IS NULL"),
         ),
+        CheckConstraint(
+            f"analysis_status IN ({', '.join(repr(s.value) for s in AnalysisStatus)})",
+            name="analysis_status",
+        ),
+        Index(
+            "ix_source_items_analysis_pending",
+            "analysis_status",
+            postgresql_where=text("analysis_status IN ('pending', 'queued')"),
+        ),
     )
 
     id: Mapped[uuid.UUID] = uuid_pk()
@@ -96,6 +117,15 @@ class SourceItem(Base):
         server_default=text("'{}'"),
         comment="來源分類標籤（P1-T15），依字母排序、不重複",
     )
+    analysis_status: Mapped[str] = mapped_column(
+        String(16),
+        server_default=text("'pending'"),
+        comment="分析管線狀態（P4-T07）：pending、queued、done、skipped、failed",
+    )
+    analysis_attempts: Mapped[int] = mapped_column(
+        Integer, server_default=text("0"), comment="分析失敗次數（費用上限不計）"
+    )
+    analysis_queued_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class SourceItemVersion(Base):
