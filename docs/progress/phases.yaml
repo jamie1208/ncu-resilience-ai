@@ -6,7 +6,7 @@
 # - human：true 表示需要你親自決定，AI 只能準備資料。
 # - gates.command：可自動執行的驗證指令（--run-gates 時執行）；
 #   manual：true 表示需人工確認，tracker 只會提示。
-# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12、ADR-0012 G1-2 改為人工閘門、ADR-0010 新增 P1-T16、ADR-0009 P1-T09 檔案調整、ADR-0008 個人使用：新增 P1-T13／P1-T14／P1-T15，刪除 P3-T02／P3-T04／P3-T06／P3-T09／P5-T07 與 G3-1／G5-3，ID 不重複使用、ADR-0014 新增 P3-T11 雙設計系統），tracker 優先讀取本檔。
+# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12、ADR-0012 G1-2 改為人工閘門、ADR-0010 新增 P1-T16、ADR-0009 P1-T09 檔案調整、ADR-0008 個人使用：新增 P1-T13／P1-T14／P1-T15，刪除 P3-T02／P3-T04／P3-T06／P3-T09／P5-T07 與 G3-1／G5-3，ID 不重複使用、ADR-0014 新增 P3-T11 雙設計系統、ADR-0015 對外公開並重排 P4–P7：舊 P4-T01–T04／P4-T06／P5-T01–T03／P5-T08／P5-T09 與 G4-1–G4-3／G5-1／G5-4 改以 P6／P7 新 ID 重建），tracker 優先讀取本檔。
 # 修改計畫時：只改這個檔案，再執行 `tracker.py sync` 讓 state.yaml 補上新任務。
 
 version: 1
@@ -293,65 +293,70 @@ phases:
         manual: true
 
   - id: P4
-    name: 關聯、趨勢與韌性追蹤
-    goal: 關聯可用、回測無洩漏、韌性指標不假精確
+    name: 真實資料、事件小報告與追蹤到底
+    goal: 真實資料每天產生事件；後台事件小報告可回溯證據、推測不呈現為事實；改善措施與再發生可追蹤（ADR-0015）
     tasks:
-      - id: P4-T01
-        title: 關聯圖資料與 API
-        deps: [P3-T03]
-        paths: [backend/app/relations/service.py, backend/app/api/v1/admin/relations.py]
-      - id: P4-T02
-        title: 關聯圖介面
-        deps: [P4-T01, P3-T05]
-        paths: [frontend/src/admin/pages/RelationGraph.tsx]
-      - id: P4-T03
-        title: 時序統計與異常偵測
-        deps: [P3-T03]
-        paths: [backend/app/analytics/timeseries.py, backend/tests/unit/analytics/test_timeseries.py]
-      - id: P4-T04
-        title: 趨勢回測
-        deps: [P4-T03]
-        paths: [scripts/eval/backtest_trends.py, backend/tests/unit/analytics/test_no_leakage.py]
+      - id: P4-T07
+        title: 真實資料管線診斷與修復
+        deps: [P3-T10]
+        paths: [docs/runbooks/pipeline-health.md]
+      - id: P4-T08
+        title: 事件說明（摘要）
+        deps: [P4-T07]
+        paths: [backend/tests/integration/test_event_summary.py]
+      - id: P4-T09
+        title: 事件小報告（接上 S07／S08）
+        deps: [P4-T08]
+        paths: [backend/app/reports/service.py, backend/tests/integration/test_event_report.py]
       - id: P4-T05
         title: 改善措施追蹤（F10）
-        deps: [P3-T03]
+        deps: [P4-T09]
         paths: [backend/app/resilience/actions.py, backend/tests/integration/test_response_actions.py]
-      - id: P4-T06
-        title: 校園韌性指數 CRI 與報告頁
-        deps: [P4-T05, P4-T03]
-        paths: [backend/app/resilience/cri.py, backend/tests/unit/resilience/test_cri.py]
+      - id: P4-T10
+        title: 再發生偵測與提醒
+        deps: [P4-T05]
+        paths: [backend/app/resilience/recurrence.py, backend/tests/unit/resilience/test_recurrence.py]
     gates:
-      - id: G4-1
-        title: 抽 50 組關聯人工審閱正確率 ≥ 0.85
-        manual: true
-      - id: G4-2
-        title: 回測無未來資料
-        command: cd backend && uv run pytest tests/unit/analytics/test_no_leakage.py -q
-      - id: G4-3
-        title: 韌性指標不假精確
-        command: cd backend && uv run pytest tests/unit/resilience/test_cri.py -q
       - id: G4-4
         title: 改善生命週期完整
         command: cd backend && uv run pytest tests/integration/test_response_actions.py -q
+      - id: G4-5
+        title: 小報告每項可回溯證據、推測不呈現為事實
+        command: cd backend && uv run pytest tests/integration/test_event_report.py -q
+      - id: G4-6
+        title: 同地點同類事件再發生可被偵測
+        command: cd backend && uv run pytest tests/unit/resilience/test_recurrence.py -q
+      - id: G4-7
+        title: 真實資料連續 3 天產生事件
+        manual: true
+      - id: G4-8
+        title: 真實資料展示路徑可運作
+        manual: true
 
   - id: P5
-    name: 情境模擬與部署維運
-    goal: S09–S10 與 What-if 完成；可監控、可還原、本機常駐、Skills 可攜
+    name: 公開網站與上線
+    goal: 公開網站依確定性規則自動公開，疑似指控與推測原因永不外流，可一鍵下架，經通道上線（ADR-0015）
     tasks:
-      - id: P5-T01
-        title: S09 trend-forecaster
-        skill: trend-forecaster
-        deps: [P4-T04]
-        paths: [skills/trend-forecaster/SKILL.md, skills/trend-forecaster/tests/cases.jsonl]
-      - id: P5-T02
-        title: What-if 引擎 + S10 scenario-simulator
-        skill: scenario-simulator
-        deps: [P4-T06]
-        paths: [backend/app/simulations/engine.py, skills/scenario-simulator/SKILL.md, backend/tests/unit/simulations/test_engine.py]
-      - id: P5-T03
-        title: What-if 介面
-        deps: [P5-T02]
-        paths: [frontend/src/admin/pages/Scenario.tsx]
+      - id: P5-T10
+        title: 公開規則引擎
+        deps: [P4-T09]
+        paths: [backend/app/publishing/policy.py, config/publish-policy.yaml, backend/tests/unit/publishing/test_publish_policy.py]
+      - id: P5-T11
+        title: 公開唯讀 API 與威脅模型
+        deps: [P5-T10]
+        paths: [backend/app/api/v1/public, docs/architecture/threat-model-public.md, backend/tests/security/test_public_exposure.py]
+      - id: P5-T14
+        title: 一鍵下架
+        deps: [P5-T10]
+        paths: [backend/tests/integration/test_takedown.py]
+      - id: P5-T12
+        title: 公開前端
+        deps: [P5-T11, P4-T05]
+        paths: [frontend/src/public]
+      - id: P5-T13
+        title: 匿名回報入口
+        deps: [P5-T11]
+        paths: [backend/app/api/v1/public/reports.py, backend/tests/security/test_anonymous_report.py]
       - id: P5-T04
         title: 可觀測性
         deps: [P3-T10]
@@ -364,21 +369,93 @@ phases:
         title: 本機常駐運行
         deps: [P5-T04, P5-T05]
         paths: [infra/docker/docker-compose.local.yml, docs/runbooks/local-operation.md]
-      - id: P5-T08
-        title: Skills 可攜性驗證
-        deps: [P5-T01, P5-T02]
-        paths: [docs/portability-report.md]
-      - id: P5-T09
-        title: 規格書 v1.1 更新
-        deps: [P5-T08]
-        paths: [docs/requirements/spec-v1.1.md]
+      - id: P5-T15
+        title: 通道對外上線（需你決定）
+        human: true
+        deps: [P5-T06, P5-T12, P5-T13, P5-T14]
+        paths: [infra/tunnel, docs/runbooks/deploy.md]
     gates:
-      - id: G5-1
-        title: 模擬結果可重現
-        command: cd backend && uv run pytest tests/unit/simulations -q
       - id: G5-2
         title: 備份可完整還原
         manual: true
-      - id: G5-4
+      - id: G5-5
+        title: 疑似指控、推測原因、FB 原文與投稿原文不出現在公開端
+        command: cd backend && uv run pytest tests/security/test_public_exposure.py tests/security/test_anonymous_report.py -q
+      - id: G5-6
+        title: 公開端與附錄 A 端到端測試全過
+        command: make e2e
+      - id: G5-7
+        title: 下架即時生效並留稽核
+        command: cd backend && uv run pytest tests/integration/test_takedown.py -q
+      - id: G5-8
+        title: 上線前確認威脅模型與公開端點清單
+        manual: true
+
+  - id: P6
+    name: 把點連成線與韌性成績單
+    goal: 關聯可用、回測無洩漏、韌性成績單不假精確（原 P4，ADR-0015）
+    tasks:
+      - id: P6-T01
+        title: 關聯圖資料與 API
+        deps: [P4-T09]
+        paths: [backend/app/relations/service.py, backend/app/api/v1/admin/relations.py]
+      - id: P6-T02
+        title: 關聯圖介面
+        deps: [P6-T01]
+        paths: [frontend/src/admin/pages/RelationGraph.tsx]
+      - id: P6-T03
+        title: 時序統計與異常偵測
+        deps: [P4-T07]
+        paths: [backend/app/analytics/timeseries.py, backend/tests/unit/analytics/test_timeseries.py]
+      - id: P6-T04
+        title: 趨勢回測
+        deps: [P6-T03]
+        paths: [scripts/eval/backtest_trends.py, backend/tests/unit/analytics/test_no_leakage.py]
+      - id: P6-T05
+        title: 校園韌性成績單 CRI（後台與公開版）
+        deps: [P4-T05, P6-T03, P5-T12]
+        paths: [backend/app/resilience/cri.py, backend/tests/unit/resilience/test_cri.py]
+    gates:
+      - id: G6-1
+        title: 抽 50 組關聯人工審閱正確率 ≥ 0.85
+        manual: true
+      - id: G6-2
+        title: 回測無未來資料
+        command: cd backend && uv run pytest tests/unit/analytics/test_no_leakage.py -q
+      - id: G6-3
+        title: 韌性成績單不假精確
+        command: cd backend && uv run pytest tests/unit/resilience/test_cri.py -q
+
+  - id: P7
+    name: What-if 模擬與收尾
+    goal: S09–S10 與 What-if 完成；Skills 可攜；規格書 v1.1（原 P5，ADR-0015）
+    tasks:
+      - id: P7-T01
+        title: S09 trend-forecaster
+        skill: trend-forecaster
+        deps: [P6-T04]
+        paths: [skills/trend-forecaster/SKILL.md, skills/trend-forecaster/tests/cases.jsonl]
+      - id: P7-T02
+        title: What-if 引擎 + S10 scenario-simulator
+        skill: scenario-simulator
+        deps: [P6-T05]
+        paths: [backend/app/simulations/engine.py, skills/scenario-simulator/SKILL.md, backend/tests/unit/simulations/test_engine.py]
+      - id: P7-T03
+        title: What-if 介面
+        deps: [P7-T02]
+        paths: [frontend/src/admin/pages/Scenario.tsx]
+      - id: P7-T04
+        title: Skills 可攜性驗證
+        deps: [P7-T01, P7-T02]
+        paths: [docs/portability-report.md]
+      - id: P7-T05
+        title: 規格書 v1.1 更新
+        deps: [P7-T04]
+        paths: [docs/requirements/spec-v1.1.md]
+    gates:
+      - id: G7-1
+        title: 模擬結果可重現
+        command: cd backend && uv run pytest tests/unit/simulations -q
+      - id: G7-2
         title: Skills 可攜性報告完成
         manual: true
