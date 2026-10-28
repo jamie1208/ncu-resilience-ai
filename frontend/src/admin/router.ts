@@ -38,7 +38,7 @@ export type Route =
 /** 路徑 → 頁面。 */
 export function matchRoute(path: string): Route {
   const clean = path.replace(/\/+$/, '') || '/'
-  if (clean === '/' || clean === '/admin') return { page: 'root' }
+  if (clean === '/admin') return { page: 'root' }
   if (clean === '/admin/events') return { page: 'events', eventId: null }
   const event = /^\/admin\/events\/([^/]+)$/.exec(clean)
   if (event) return { page: 'events', eventId: decodeURIComponent(event[1]) }
