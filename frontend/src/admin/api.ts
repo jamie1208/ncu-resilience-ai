@@ -288,6 +288,46 @@ export interface PublicationChange {
   previous: PublicationState
 }
 
+export type RelationType = 'same_event' | 'related_event' | 'hypothesized_cause'
+export type RelationMethod = 'ai' | 'rule' | 'manual'
+export type RelationDecision = 'pending' | 'confirmed' | 'rejected'
+
+/** 關聯圖的節點（事件）。 */
+export interface RelationNode {
+  id: string
+  title: string
+  type: string
+  status: EventStatus
+  occurrence_start_date: string | null
+}
+
+/** 關聯圖的邊（P6-T01）；hypothesized_cause 由 source（推測的原因）指向 target（結果）。 */
+export interface RelationEdge {
+  id: string
+  source: string
+  target: string
+  type: RelationType
+  method: RelationMethod
+  score: number | null
+  evidence_ids: string[]
+  ai_run_id: string | null
+  decision: RelationDecision
+  decided_by: string | null
+  decided_at: string | null
+  decision_note: string | null
+  created_at: string
+}
+
+export interface RelationGraph {
+  nodes: RelationNode[]
+  edges: RelationEdge[]
+}
+
+export interface RelationDetail {
+  edge: RelationEdge
+  nodes: RelationNode[]
+}
+
 export interface AiRunStats {
   skill_name: string
   runs: number
@@ -569,6 +609,33 @@ export async function takeDownPublication(publicationId: string, reason = ''): P
 /** 重新上架：交回公開規則判斷，不一定會再公開。 */
 export async function restorePublication(publicationId: string): Promise<PublicationChange> {
   return (await post<PublicationChange>(`/admin/publications/${id(publicationId)}/restore`)).data
+}
+
+// ---- 事件關聯 ----
+
+/** 關聯圖；預設不含被駁回的邊。 */
+export async function listRelations(
+  filters: {
+    event_id?: string
+    type?: RelationType | ''
+    decision?: RelationDecision | ''
+    include_rejected?: boolean
+  } = {},
+): Promise<RelationGraph> {
+  const { include_rejected, ...rest } = filters
+  const params = { ...rest, include_rejected: include_rejected ? 'true' : null }
+  return (await apiGet<RelationGraph>(`${V1}/admin/relations${query(params)}`)).data
+}
+
+/** 確認、駁回，或回滾到待確認（pending）；備註可省略（空白不送），會寫入稽核紀錄。 */
+export async function decideRelation(
+  relationId: string,
+  decision: RelationDecision,
+  note = '',
+): Promise<RelationDetail> {
+  const trimmed = note.trim()
+  const body = trimmed ? { decision, note: trimmed } : { decision }
+  return (await post<RelationDetail>(`/admin/relations/${id(relationId)}/decision`, body)).data
 }
 
 // ---- 儀表板與運維 ----

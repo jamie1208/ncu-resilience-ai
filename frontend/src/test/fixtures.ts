@@ -8,6 +8,7 @@ import type {
   EventReport,
   IngestionRun,
   PublicationItem,
+  RelationGraph,
   RecurrenceGroup,
   ResponseActionDetail,
   ResponseActionItem,
@@ -475,3 +476,45 @@ export const PUBLICATIONS: PublicationItem[] = [
     updated_at: '2026-10-19T10:00:00Z',
   },
 ]
+
+export const EVENT_ID_3 = '0b4f2a52-6a43-4c55-9d43-1d2a2b0e0003'
+
+export const RELATION_GRAPH: RelationGraph = {
+  nodes: [
+    { id: EVENT_ID, title: '工程一館停電', type: 'infrastructure', status: 'verified', occurrence_start_date: '2026-10-20' },
+    { id: EVENT_ID_2, title: '圖書館網路維護', type: 'infrastructure', status: 'unverified', occurrence_start_date: '2026-10-20' },
+    { id: EVENT_ID_3, title: '工程一館旁道路施工', type: 'construction', status: 'monitoring', occurrence_start_date: '2026-10-18' },
+  ],
+  edges: [
+    {
+      id: 'rel-1',
+      source: EVENT_ID,
+      target: EVENT_ID_2,
+      type: 'related_event',
+      method: 'ai',
+      score: 0.82,
+      evidence_ids: ['src-1', 'src-3'],
+      ai_run_id: 'run-1',
+      decision: 'pending',
+      decided_by: null,
+      decided_at: null,
+      decision_note: null,
+      created_at: '2026-10-21T01:00:00Z',
+    },
+    {
+      id: 'rel-2',
+      source: EVENT_ID_3,
+      target: EVENT_ID,
+      type: 'hypothesized_cause',
+      method: 'ai',
+      score: 0.61,
+      evidence_ids: ['src-4'],
+      ai_run_id: 'run-2',
+      decision: 'confirmed',
+      decided_by: 'admin:u-1',
+      decided_at: '2026-10-21T02:00:00Z',
+      decision_note: '施工時間吻合',
+      created_at: '2026-10-21T01:30:00Z',
+    },
+  ],
+}

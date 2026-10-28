@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@design'
 
@@ -16,10 +16,14 @@ import { SkillsDashboard } from './pages/SkillsDashboard'
 import { matchRoute, navigate, usePath, type Route } from './router'
 import { Disclaimer, Muted, PageHeader } from './ui'
 
+// Cytoscape.js 體積大，只在開啟關聯圖時載入（不進公開網站與其他頁面的 bundle）
+const RelationGraph = lazy(() => import('./pages/RelationGraph').then((m) => ({ default: m.RelationGraph })))
+
 const NAV = [
   { to: '/admin/events', label: '事件工作台', page: 'events' },
   { to: '/admin/alerts', label: '通知中心', page: 'alerts' },
   { to: '/admin/actions', label: '改善追蹤', page: 'actions' },
+  { to: '/admin/relations', label: '事件關聯', page: 'relations' },
   { to: '/admin/publications', label: '公開內容', page: 'publications' },
   { to: '/admin/skills', label: 'Skills', page: 'skills' },
   { to: '/admin/ops', label: '運維', page: 'ops' },
@@ -136,6 +140,12 @@ function Page({ route }: { route: Route }) {
       return <AlertCenter />
     case 'actions':
       return <ResponseActions />
+    case 'relations':
+      return (
+        <Suspense fallback={<Muted>載入中…</Muted>}>
+          <RelationGraph />
+        </Suspense>
+      )
     case 'publications':
       return <Publications />
     case 'skills':
