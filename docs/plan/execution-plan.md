@@ -450,6 +450,7 @@ bash infra/scripts/backup.sh && bash infra/scripts/restore.sh --target local
 - **P6-T04 趨勢回測**（原 P4-T04）
   - 檔案：`scripts/eval/backtest_trends.py`（滾動切點，只用切點前資料）、`tests/unit/analytics/test_no_leakage.py`
   - 驗證：洩漏測試通過；回測報告寫入 `eval/reports/trends/`
+  - 實作調整（AI 自行決定，2026-10-28）：邏輯放在新增的 `app/analytics/backtest.py`，腳本只解析參數、讀資料庫、寫報告（沿用 `run_eval.py` 慣例，測試可直接匯入）；切點對齊週期起日，代表台北時間當天 00:00 當下，只用已建立（created_at 早於切點）且發生日期早於切點的事件，晚到的回報不算；每個切點以 EWMA 預測從切點開始那一期的件數（歷史不足 `min_history` 期時不預測），並以 `detect_changes` 判定前一期是否突增；評分用 `as_of`（執行當天）已知的全部事件：預測 MAE（只對已結束的週期）、線上與事後突增的一致（precision／recall，分母為 0 時為 null）、切點當下對前一期件數的完整度；範圍為全部與各類別；報告 `eval/reports/trends/backtest-<step>-<start>.json` 只含件數與統計，不含地點與內文；查證狀態與類別沿用目前值（事件無逐版歷史），列為已知限制
 - **P6-T05 校園韌性成績單 CRI（後台與公開版）**（原 P4-T06）
   - 檔案：`app/resilience/cri.py`（四構面標準化，資料不足回傳 None）；後台報告頁加入資料覆蓋率、時間窗、樣本量、來源限制；公開版成績單頁標明「回報變多不等於校園變危險」
   - 驗證：`tests/unit/resilience/test_cri.py`（缺資料顯示 N/A，不產生假精確分數）
