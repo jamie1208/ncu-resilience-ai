@@ -19,7 +19,7 @@ export const test = base.extend({
 export { expect }
 
 export async function signIn(page: Page) {
-  await page.goto('/')
+  await page.goto('/admin')
   await page.getByLabel('帳號').fill(USERNAME)
   await page.getByLabel('密碼').fill(PASSWORD)
   await page.getByRole('button', { name: '登入' }).click()

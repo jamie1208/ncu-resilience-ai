@@ -19,8 +19,8 @@ async function expectNoHorizontalScroll(page: Page) {
 test('管理流程：登入 → 事件查證 → 撤回通知 → Skills → 運維 → 登出', async ({ page }) => {
   const { calls } = await mockBackend(page)
 
-  // 根路徑是登入頁，沒有公開網站
-  await page.goto('/')
+  // 管理端從 /admin 進入（根路徑是公開網站，P5-T12）
+  await page.goto('/admin')
   await expect(page.getByRole('heading', { level: 1, name: '登入管理後台' })).toBeVisible()
   await expect(page.getByText(/非校方官方系統/)).toBeVisible()
   await expect(page.getByText(/110/)).toBeVisible()
@@ -131,7 +131,7 @@ test.describe('手機寬度 375px', () => {
 
   test('各頁沒有水平捲動，事件詳細可回到列表', async ({ page }) => {
     await mockBackend(page)
-    await page.goto('/')
+    await page.goto('/admin')
     await expectNoHorizontalScroll(page)
     await signIn(page)
     await expect(page.getByRole('heading', { level: 1, name: '事件工作台' })).toBeVisible()

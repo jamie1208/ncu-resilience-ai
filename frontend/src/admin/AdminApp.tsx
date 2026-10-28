@@ -28,8 +28,8 @@ const NAV = [
 type AuthState = { state: 'checking' } | { state: 'anonymous' } | { state: 'signed_in'; me: Me }
 
 /**
- * 管理前端（唯一的前端，ADR-0008）：先以 /auth/me 確認登入，未登入一律顯示登入頁；
- * 根路徑登入後導向事件工作台。
+ * 管理前端（`/admin` 以下，ADR-0015）：先以 /auth/me 確認登入，未登入一律顯示登入頁；
+ * `/admin` 登入後導向事件工作台。
  */
 export function AdminApp() {
   const path = usePath()

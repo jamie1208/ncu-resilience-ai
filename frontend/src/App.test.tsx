@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App'
 import { ANONYMOUS, ME, mockApi } from './test/mockApi'
+import { PUBLIC_EVENT } from './test/publicFixtures'
 
 function at(path: string) {
   window.history.pushState({}, '', path)
@@ -14,11 +15,23 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-// P3-T05：系統只有管理前端（ADR-0008），根路徑是登入頁，沒有公開網站
+// P5-T12（ADR-0015）：根路徑是公開網站，管理端從 /admin 進入
 describe('App', () => {
-  it('根路徑是登入頁，清楚顯示非官方免責聲明與 110／119 提示，沒有公開網站連結', async () => {
-    mockApi({ 'GET /api/v1/auth/me': ANONYMOUS })
+  it('根路徑是公開網站首頁，不檢查登入狀態', async () => {
+    const { calls } = mockApi({
+      'GET /api/v1/public/feed': { data: [PUBLIC_EVENT], meta: { next_cursor: null } },
+    })
     at('/')
+    render(<App />)
+    expect(await screen.findByRole('heading', { level: 1, name: /最新動態/ })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: /工程五館外牆整修施工/ })).toBeInTheDocument()
+    expect(screen.queryByLabelText('密碼')).not.toBeInTheDocument()
+    expect(calls.every((c) => c.path.startsWith('/api/v1/public/'))).toBe(true)
+  })
+
+  it('/admin 是登入頁，清楚顯示非官方免責聲明與 110／119 提示，沒有公開網站連結', async () => {
+    mockApi({ 'GET /api/v1/auth/me': ANONYMOUS })
+    at('/admin')
     render(<App />)
     expect(await screen.findByRole('heading', { level: 1, name: /登入/ })).toBeInTheDocument()
     expect(screen.getByText(/非校方官方系統/)).toBeVisible()
@@ -55,6 +68,7 @@ describe('App', () => {
         error: { code: 'UNAUTHORIZED', message: '帳號或密碼錯誤' },
       },
     })
+    at('/admin')
     render(<App />)
     const user = userEvent.setup()
     await user.type(await screen.findByLabelText('帳號'), 'jamie')
@@ -64,9 +78,9 @@ describe('App', () => {
     expect(screen.getByLabelText('帳號')).toHaveValue('jamie')
   })
 
-  it('已登入時根路徑導向事件工作台', async () => {
+  it('已登入時 /admin 導向事件工作台', async () => {
     mockApi({ 'GET /api/v1/auth/me': ME, 'GET /api/v1/admin/events': { data: [] } })
-    at('/')
+    at('/admin')
     render(<App />)
     expect(await screen.findByRole('heading', { level: 1, name: '事件工作台' })).toBeInTheDocument()
     expect(window.location.pathname).toBe('/admin/events')

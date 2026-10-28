@@ -5,6 +5,7 @@
 2. 建立唯一的使用者（帳號、密碼來自 `E2E_USERNAME`／`E2E_PASSWORD`，只供這個測試資料庫使用）；
 3. 以真實的冪等寫入（`store_items`）與分析管線（`analyze_item`，含 S05 規則、S06 引擎、
    P3-T08 通知同步）建立各案例；模型以腳本化的假供應商代替，不呼叫真實 API；
+   最後以 P5-T11 的 `sync_all` 依公開規則同步公開狀態，供公開網站的測試使用；
 4. 檢查只有資料庫看得到的不變量（A03 證據數、A07 冪等），不符合時以非零結束碼失敗，
    讓 Playwright 的 webServer 啟動失敗。
 
@@ -45,6 +46,7 @@ from app.models.alert import Alert, AlertDelivery  # noqa: E402
 from app.models.event import Event, EventEvidence  # noqa: E402
 from app.models.source import Source, SourceItem, SourceItemVersion  # noqa: E402
 from app.pipeline.analyze_item import Outcome, PipelineDeps, analyze_item  # noqa: E402
+from app.publishing.sync import sync_all  # noqa: E402
 from app.risk.engine import load_policy  # noqa: E402
 from app.services.auth import create_or_reset_admin  # noqa: E402
 from sqlalchemy import URL, func, select, text  # noqa: E402
@@ -545,6 +547,8 @@ async def main() -> None:
             await create_or_reset_admin(session, username, password)
             await session.commit()
             await seed(session)
+            # 公開網站（P5-T12）：與 beat 排程相同，依公開規則同步所有事件的公開狀態
+            await sync_all(session)
     finally:
         await engine.dispose()
     print(f"附錄 A 種子資料完成（{url.database}）")

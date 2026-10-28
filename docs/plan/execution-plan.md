@@ -390,6 +390,8 @@ uv run python ../scripts/eval/run_eval.py --skill event-extractor
 - **P5-T12 公開前端**
   - 檔案：`frontend/src/public/`（首頁最新動態與安全提醒、事件分類查詢、事件頁（公開版小報告）、改善進度、關於本站）；每頁頁尾標明「個人專題，非國立中央大學官方系統」並列出校安中心、110、119；兩套設計系統都要實作（ADR-0014）
   - 驗證：Vitest 元件測試；Playwright 公開瀏覽流程（納入 `make e2e`）
+  - 範圍調整（使用者同意，2026-10-28）：公開網站放在根路徑，管理端與登入改從 `/admin` 進入（`App.tsx` 依路徑分流、`src/admin/router.ts`）；既有測試 `src/App.test.tsx`、`frontend/e2e/admin.e2e.ts`、`tests/e2e/fixtures.ts` 的登入入口改為 `/admin`；`tests/e2e/seed_appendix_a.py` 最後執行 `sync_all`；新增 `src/test/publicFixtures.ts`、`frontend/e2e/public.e2e.ts`、`tests/e2e/public.e2e.ts`
+  - 實作調整（AI 自行決定，2026-10-28）：頁面只用 `@design` 既有元件與語意 token，不新增設計元件（兩套設計直接適用）；首頁以 `/feed` 呈現時間軸，可切換只看 `/notices`；安全提醒沒有連結；小報告的影響只顯示面向與理由、不顯示分數；來源連結只接受 http(s)；類別篩選放在元件狀態
 - **P5-T13 匿名回報入口**
   - 檔案：`app/api/v1/public/reports.py`（不保存 IP 與裝置資訊；速率限制只用短期雜湊；長度與格式限制）、`app/ingestion/adapters/anonymous_report.py`（以 `<untrusted_source>` 進入既有管線，視為獨立來源）、公開前端回報表單（說明投稿不會公開原文）
   - 驗證：`tests/security/test_anonymous_report.py`（不落地 IP、prompt injection 無法改變分析指令、投稿原文不出現在公開端、洪水投稿被限速）
