@@ -401,27 +401,30 @@ gates:
     note: 使用者 2026-10-27 於對話中確認通過；已以附錄 A 案例資料走過展示路徑，未附錄影（使用者決定不錄影直接結案）
   G4-4:
     status: pass
-    last_run: '2026-10-27T23:17:25+08:00'
+    last_run: '2026-10-28T19:32:37+08:00'
     last_output: '..................                                                       [100%]
 
-      18 passed in 2.77s
+      18 passed in 3.82s
 
       warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will be ignored;
       use `--active` to target the active environment instead'
   G5-2:
-    status: pending
+    status: pass
+    updated_at: '2026-10-28T19:38:57+08:00'
+    note: 使用者確認還原演練通過（2026-10-28）
+    evidence: docs/progress/records/P5-restore-drill.md
   G4-5:
     status: pass
-    last_run: '2026-10-27T23:17:28+08:00'
+    last_run: '2026-10-28T19:32:41+08:00'
     last_output: '...................                                                      [100%]
 
-      19 passed in 2.58s
+      19 passed in 3.20s
 
       warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will be ignored;
       use `--active` to target the active environment instead'
   G4-6:
     status: pass
-    last_run: '2026-10-27T23:17:28+08:00'
+    last_run: '2026-10-28T19:32:41+08:00'
     last_output: '......................                                                   [100%]
 
       22 passed in 0.21s
@@ -431,15 +434,45 @@ gates:
   G4-7:
     status: pending
   G4-8:
-    status: pending
+    status: pass
+    updated_at: '2026-10-28T19:32:13+08:00'
+    note: 使用者確認真實資料展示路徑可運作（2026-10-28）
   G5-5:
-    status: pending
+    status: pass
+    last_run: '2026-10-28T19:32:57+08:00'
+    last_output: '......................................                                   [100%]
+
+      38 passed in 5.67s
+
+      warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will be ignored;
+      use `--active` to target the active environment instead'
   G5-6:
-    status: pending
+    status: pass
+    last_run: '2026-10-28T19:33:36+08:00'
+    last_output: ' Container ncu-resilience-redis-1  Healthy
+
+      [WebServer] warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will
+      be ignored; use `--active` to target the active environment instead
+
+      [WebServer] INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+
+      [WebServer] INFO  [alembic.runtime.migration] Will assume transactional DDL.
+
+      [WebServer] warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will
+      be ignored; use `--active` to target the active environment instead'
   G5-7:
-    status: pending
+    status: pass
+    last_run: '2026-10-28T19:33:41+08:00'
+    last_output: '..................                                                       [100%]
+
+      18 passed in 4.06s
+
+      warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will be ignored;
+      use `--active` to target the active environment instead'
   G5-8:
-    status: pending
+    status: pass
+    updated_at: '2026-10-28T19:32:13+08:00'
+    note: 使用者審閱 threat-model-public.md 並同意上線（2026-10-28）
   G6-1:
     status: pending
   G6-2:
@@ -1140,4 +1173,22 @@ history:
   to: done
   note: ''
   confirmed_by_user: true
-updated_at: '2026-10-28T18:06:53+08:00'
+- at: '2026-10-28T19:32:13+08:00'
+  id: G5-8
+  from: pending
+  to: pass
+  note: 使用者審閱 threat-model-public.md 並同意上線（2026-10-28）
+  confirmed_by_user: true
+- at: '2026-10-28T19:32:13+08:00'
+  id: G4-8
+  from: pending
+  to: pass
+  note: 使用者確認真實資料展示路徑可運作（2026-10-28）
+  confirmed_by_user: true
+- at: '2026-10-28T19:38:57+08:00'
+  id: G5-2
+  from: pending
+  to: pass
+  note: 使用者確認還原演練通過（2026-10-28）
+  confirmed_by_user: true
+updated_at: '2026-10-28T19:38:57+08:00'
