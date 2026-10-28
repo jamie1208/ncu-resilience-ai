@@ -260,7 +260,9 @@ tasks:
     updated_at: '2026-10-28T18:06:53+08:00'
     evidence: docs/progress/records/P5-T15-20261028.md
   P6-T01:
-    status: pending
+    status: done
+    updated_at: '2026-10-28T19:48:48+08:00'
+    evidence: docs/progress/records/P6-T01-20261028.md
   P6-T02:
     status: pending
   P6-T03:
@@ -1199,4 +1201,14 @@ history:
   to: pass
   note: 使用者確認真實資料連續 3 天產生事件（2026-10-28）
   confirmed_by_user: true
-updated_at: '2026-10-28T19:40:11+08:00'
+- at: '2026-10-28T19:42:06+08:00'
+  id: P6-T01
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-28T19:48:48+08:00'
+  id: P6-T01
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-28T19:48:48+08:00'

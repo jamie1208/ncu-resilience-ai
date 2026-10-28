@@ -438,6 +438,7 @@ bash infra/scripts/backup.sh && bash infra/scripts/restore.sh --target local
 - **P6-T01 關聯圖資料與 API**（原 P4-T01）
   - 檔案：`app/relations/service.py`（same_event／related_event／hypothesized_cause，邊存 evidence_ids、方法、分數、人工決策）、`app/api/v1/admin/relations.py`（查詢、確認、駁回）
   - 驗證：`tests/integration/test_relations.py`（禁止 self-loop、人工駁回可回滾）
+  - 實作調整（AI 自行決定，2026-10-28）：新增 migration `0015_relation_decisions.py`（type 加入 hypothesized_cause；新增 method（ai／rule／manual，既有列回填 ai）、decision（pending／confirmed／rejected）、decided_at、decided_by、decision_note，並約束 pending ⇔ 無決策者與時間；順便把 0005 雙重前綴的 type 約束改為與 model 一致的名稱，降版還原並刪除 hypothesized_cause 列）、`app/relations/__init__.py`，修改 `app/models/ai.py`（EventRelation）、`app/api/v1/admin/__init__.py`（掛上路由）；邊沿用既有 `evidence` 欄位，API 以 `evidence_ids` 輸出；決策只能 pending → confirmed／rejected，已決定的只能回到 pending（回滾，清除決策者、時間、備註，邊與證據不變），不能直接翻轉；確認、駁回、回滾共用 `POST /api/v1/admin/relations/{id}/decision`，稽核 `relation.decide`（from／to／type）即決策歷史；查詢 `GET /api/v1/admin/relations`（event_id、type、decision、include_rejected，預設不含駁回）與 `GET /api/v1/admin/relations/{id}`，回傳 Cytoscape 用的 nodes／edges；新增關聯只在 service（`add_relation`：禁止 self-loop、同一對事件同類型不論方向只能一條、evidence_ids 必須屬於兩端事件、hypothesized_cause 至少一個證據），不開新增端點
 - **P6-T02 關聯圖介面**（原 P4-T02）
   - 檔案：`frontend/src/admin/pages/RelationGraph.tsx`（Cytoscape.js）
   - 驗證：Playwright 確認／駁回流程
