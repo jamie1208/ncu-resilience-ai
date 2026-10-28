@@ -19,6 +19,7 @@ describe('matchPublicRoute', () => {
     expect(matchPublicRoute('/events/a%20b')).toEqual({ page: 'event', id: 'a b' })
     expect(matchPublicRoute('/progress')).toEqual({ page: 'progress' })
     expect(matchPublicRoute('/about')).toEqual({ page: 'about' })
+    expect(matchPublicRoute('/report/')).toEqual({ page: 'report' })
   })
 
   it('其他路徑都是找不到頁面', () => {

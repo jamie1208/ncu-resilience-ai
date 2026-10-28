@@ -28,4 +28,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=5 \
   CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=2).status == 200 else 1)"
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 關閉存取日誌：uvicorn 預設會記錄用戶端位址（P5-T13：匿名回報不落地 IP）
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]

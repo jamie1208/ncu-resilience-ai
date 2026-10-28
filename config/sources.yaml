@@ -111,3 +111,10 @@ sources:
     poll_interval: 600  # 來源盤點建議：每 10 分鐘
     options:
       county: 桃園市  # 授權碼由環境變數 CWA_API_KEY 提供，不寫在這裡
+
+  anonymous-report:  # 匿名回報（P5-T13、ADR-0015）：公開網站的回報表單寫入收件匣，worker 拉進管線；不是官方來源，原文永不公開
+    type: anonymous_report
+    name: 匿名回報
+    poll_interval: 600  # 每 10 分鐘讀一次收件匣（擷取間隔下限，test_source_settings）
+    options:
+      report_url: http://127.0.0.1:8088/report  # 只作為內部識別；P5-T15 上線後可改為公開網址

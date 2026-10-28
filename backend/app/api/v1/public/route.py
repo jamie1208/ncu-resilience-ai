@@ -76,7 +76,8 @@ class RateLimiter:
         return max(1, math.ceil((window + 1) * self._window_seconds - now))
 
 
-def _client(request: Request) -> str:
+def client_host(request: Request) -> str:
+    """限速用的用戶端位址；只拿來計算加鹽雜湊，不保存、不寫日誌。"""
     return request.client.host if request.client else "unknown"
 
 
@@ -106,7 +107,7 @@ class PublicRoute(APIRoute):
 
         async def handler(request: Request) -> Response:
             limiter: RateLimiter = request.app.state.public_rate_limiter
-            retry_after = limiter.hit(_client(request))
+            retry_after = limiter.hit(client_host(request))
             if retry_after is not None:
                 limited = error_response(ApiError(ErrorCode.RATE_LIMITED, "請求太頻繁，請稍後再試"))
                 limited.headers["Retry-After"] = str(retry_after)
