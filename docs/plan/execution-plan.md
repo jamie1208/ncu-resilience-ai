@@ -446,6 +446,7 @@ bash infra/scripts/backup.sh && bash infra/scripts/restore.sh --target local
 - **P6-T03 時序統計與異常偵測**（原 P4-T03）
   - 檔案：`app/analytics/timeseries.py`（週／月頻率、地點分布、EWMA、Poisson 變化偵測）、`infra/migrations/versions/<下一個編號>_analytics_views.py`（materialized views）
   - 驗證：`tests/unit/analytics/test_timeseries.py`（合成資料注入突增可被偵測）
+  - 實作調整（AI 自行決定，2026-10-28）：migration 為 `0016_analytics_views.py`（`analytics_event_counts_week`／`_month`，依週期起日、類別、地點名稱計數；事件日期與再發生偵測一致：S02 發生日期，沒有時用建立時間的台北日期；排除 false 與類別 none；週以 ISO 週一起算；不自動更新，由 `refresh_views` 在目前交易內整理）；新增 `app/analytics/__init__.py` 與 `tests/integration/test_analytics_views.py`（views 與 Python `bucket()` 結果一致、只在整理後變動、日期範圍篩選）；變化偵測只看突增：第 t 期期望值為之前各期的 EWMA（不看當期與未來，供 P6-T04 回測），Poisson 右尾 p 值 < 0.001 且當期至少 5 件才判定、至少 4 期歷史、期望值下限 0.5；參數為 `DetectionParams` 預設值（純統計參數，不放設定檔）；`load_counts` 讀出的地點名稱經 `mask_pii()`；本任務不加排程與 API，由 P6-T04／P6-T05／P7-T01 呼叫
 - **P6-T04 趨勢回測**（原 P4-T04）
   - 檔案：`scripts/eval/backtest_trends.py`（滾動切點，只用切點前資料）、`tests/unit/analytics/test_no_leakage.py`
   - 驗證：洩漏測試通過；回測報告寫入 `eval/reports/trends/`
