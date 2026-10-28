@@ -2,11 +2,13 @@
 SHELL := /bin/bash
 
 COMPOSE := docker compose -f infra/docker/docker-compose.yml --env-file .env
+# 本機常駐運行（P5-T06）：疊上 docker-compose.local.yml
+COMPOSE_LOCAL := docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.local.yml --env-file .env
 API_PORT ?= 8000
 WEB_PORT ?= 8088
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps logs smoke test e2e migrate sources health reset
+.PHONY: help up up-local listen down ps logs smoke test e2e migrate sources health reset
 
 help: ## 列出可用指令
 	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  make %-8s %s\n", $$1, $$2}'
@@ -18,6 +20,12 @@ help: ## 列出可用指令
 
 up: .env ## 建置並啟動 db、redis、api、web、worker、beat，等待健康檢查通過
 	$(COMPOSE) up -d --build --wait
+
+up-local: .env ## 本機常駐運行（P5-T06）：自動重啟、日誌輪替、埠號只綁 127.0.0.1；見 docs/runbooks/local-operation.md
+	$(COMPOSE_LOCAL) up -d --build --wait
+
+listen: ## 列出 Docker 在主機上監聽的 TCP 埠（應全部是 127.0.0.1）
+	@lsof -nP -iTCP -sTCP:LISTEN | awk 'NR == 1 || /com\.docke|vpnkit/'
 
 down: ## 停止並移除容器（保留資料庫資料）
 	$(COMPOSE) down
