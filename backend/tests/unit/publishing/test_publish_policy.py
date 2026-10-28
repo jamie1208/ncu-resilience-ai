@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 import uuid
 from dataclasses import replace
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +26,7 @@ from app.ai.runner.validate import find_pii
 from app.alerts.pii import MASK
 from app.domain.states import VerificationStatus
 from app.publishing.policy import (
+    ActionInput,
     ConfirmedBy,
     PublicationInput,
     PublicLevel,
@@ -490,3 +491,72 @@ def test_clean_content_is_unchanged_by_masking(policy: PublishPolicy) -> None:
 def test_evaluate_is_deterministic(policy: PublishPolicy) -> None:
     item = make_input()
     assert evaluate(item, policy) == evaluate(item, policy)
+
+
+# --- 改善進度（P5-T11）：同樣經過硬性邊界 ---
+
+UPDATED = datetime(2026, 10, 28, 2, 0, tzinfo=UTC)
+
+
+def make_action(**overrides: Any) -> ActionInput:
+    values: dict[str, Any] = {
+        "title": "更換三樓天花板防水層",
+        "state": "handling",
+        "due_date": date(2026, 11, 15),
+        "updated_at": UPDATED,
+        "cause_basis": "confirmed",
+    }
+    values.update(overrides)
+    return ActionInput(**values)
+
+
+def test_content_lists_progress_with_public_fields_only(policy: PublishPolicy) -> None:
+    decision = evaluate(make_input(actions=(make_action(),)), policy)
+    assert decision.level is PublicLevel.CONTENT
+    assert decision.content is not None
+    assert decision.content["progress"] == [
+        {
+            "title": "更換三樓天花板防水層",
+            "state": "handling",
+            "due_date": "2026-11-15",
+            "updated_at": "2026-10-28T02:00:00+00:00",
+        }
+    ]
+
+
+def test_progress_based_on_hypothesized_cause_is_not_public(policy: PublishPolicy) -> None:
+    hypothesized = make_action(title="確認是否為施工挖斷水管", cause_basis="hypothesized")
+    decision = evaluate(make_input(actions=(make_action(), hypothesized)), policy)
+    assert decision.content is not None
+    assert [a["title"] for a in decision.content["progress"]] == ["更換三樓天花板防水層"]
+    assert "施工" not in dumped(decision)
+
+
+def test_allegation_in_action_title_blocks_content(policy: PublishPolicy) -> None:
+    accusation = "調查警衛偷竊座位上的筆電"
+    decision = evaluate(make_input(actions=(make_action(title=accusation),)), policy)
+    assert decision.level is not PublicLevel.CONTENT
+    assert decision.needs_review
+    assert accusation not in dumped(decision)
+
+
+def test_progress_is_pii_masked(policy: PublishPolicy) -> None:
+    decision = evaluate(
+        make_input(actions=(make_action(title="聯絡承包商 0912-345-678 排定維修"),)), policy
+    )
+    assert decision.level is PublicLevel.CONTENT
+    assert find_pii(dumped(decision)) == []
+
+
+def test_safety_notice_has_no_progress(policy: PublishPolicy) -> None:
+    decision = evaluate(
+        make_input(
+            verification=VerificationStatus.UNVERIFIED,
+            confirmed_by=None,
+            risk_level="high",
+            actions=(make_action(),),
+        ),
+        policy,
+    )
+    assert decision.level is PublicLevel.SAFETY_NOTICE
+    assert "更換" not in dumped(decision)

@@ -232,7 +232,10 @@ tasks:
     note: 使用者同意在 G4-7、G4-8 尚未通過時超前開始（2026-10-27）
     evidence: docs/progress/records/P5-T10-20261027.md
   P5-T11:
-    status: pending
+    status: done
+    updated_at: '2026-10-28T11:03:43+08:00'
+    note: 沿用使用者對 P5 在 G4-7、G4-8 未過時超前開始的同意（2026-10-27）
+    evidence: docs/progress/records/P5-T11-20261028.md
   P5-T14:
     status: pending
   P5-T12:
@@ -1041,4 +1044,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-27T23:40:31+08:00'
+- at: '2026-10-28T00:16:18+08:00'
+  id: P5-T11
+  from: pending
+  to: in_progress
+  note: 沿用使用者對 P5 在 G4-7、G4-8 未過時超前開始的同意（2026-10-27）
+- at: '2026-10-28T11:03:43+08:00'
+  id: P5-T11
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-28T11:03:43+08:00'

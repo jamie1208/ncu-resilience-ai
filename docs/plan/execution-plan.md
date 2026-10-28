@@ -381,6 +381,8 @@ uv run python ../scripts/eval/run_eval.py --skill event-extractor
 - **P5-T11 公開唯讀 API 與威脅模型**
   - 檔案：`app/api/v1/public/`（最新動態、安全提醒、事件分類查詢、公開版小報告、改善進度；只讀取 P5-T10 判定可公開的版本；cursor 分頁、rate limit、快取標頭）、`docs/architecture/threat-model-public.md`（每個公開端點的資料、濫用方式與防護）、`docs/architecture/rbac.md`（加入公開端點）
   - 驗證：`tests/security/test_public_exposure.py`（以附錄 A 與對抗案例確認疑似指控、推測原因、FB 原文、投稿原文、個資不出現在任何公開回應）；`tests/integration/test_public_api.py`
+  - 範圍調整（使用者同意，2026-10-28）：新增 `app/publishing/sync.py`（從資料庫組出 P5-T10 的輸入、寫入 publications 與版本快照、Celery 任務）與 `app/worker/celery_app.py` 的每分鐘 beat 排程；`app/main.py` 掛上公開 router；`tests/integration/test_auth.py` 允許 `/api/v1/public/` 下的 GET 免登入（其他方法不得存在）；`tests/unit/worker/test_ingest_tasks.py` 的 beat 排程集合加入 `sync-publications`
+  - 實作調整（AI 自行決定，2026-10-28）：改善進度也經公開規則（`policy.py` 新增 `ActionInput`，只放名稱、狀態、預計完成日、更新時間；依據推測原因的不公開；名稱納入指控比對），存在快照內，公開 API 不讀原始資料表；查證依據 user 取自最近一次有效的 `event.verify` 稽核、official 沿用個人通知的 S05 判斷；monitoring、resolved 沿用進入前的查證結果；封存事件撤下；已下架不覆蓋；端點為 feed、notices、categories、events、events/{id}、progress，`id` 為 publication ID；rate limit 為行程內固定時間窗（每用戶端 60 秒 60 次，加鹽雜湊識別）；快取 `public, max-age=30` + 弱 ETag，錯誤 `no-store`
 - **P5-T14 一鍵下架**
   - 檔案：`app/publishing/takedown.py`、`app/api/v1/admin/publications.py`、後台事件頁與公開內容列表的下架按鈕
   - 驗證：`tests/integration/test_takedown.py`（下架後公開 API 立即不再回傳、快取失效、寫入稽核）
