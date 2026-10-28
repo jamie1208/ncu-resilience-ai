@@ -16,6 +16,7 @@ from typing import Any
 
 from sqlalchemy import (
     CheckConstraint,
+    DateTime,
     Double,
     ForeignKey,
     Integer,
@@ -31,7 +32,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import Base, created_at_col, uuid_pk
 
 RUN_STATUSES = ("succeeded", "abstained", "failed")
-RELATION_TYPES = ("same_event", "related_event")
+RELATION_TYPES = ("same_event", "related_event", "hypothesized_cause")
+RELATION_METHODS = ("ai", "rule", "manual")
+RELATION_DECISIONS = ("pending", "confirmed", "rejected")
 
 
 def _in(values: tuple[str, ...]) -> str:
@@ -95,12 +98,21 @@ class RiskAssessment(Base):
 
 
 class EventRelation(Base):
-    """兩個事件的關聯（P2-T09 寫入）；禁止關聯到自己。"""
+    """兩個事件的關聯（P2-T09 寫入 related_event，P6-T01 加入人工決策）；禁止關聯到自己。
+
+    hypothesized_cause 表示 from 可能是 to 的原因（推測，尚未查證）。決策只記目前狀態，
+    歷史在稽核紀錄；規則見 app/relations/service.py。
+    """
 
     __tablename__ = "event_relations"
     __table_args__ = (
         CheckConstraint("from_event_id <> to_event_id", name="no_self_loop"),
         CheckConstraint(f"type IN ({_in(RELATION_TYPES)})", name="type"),
+        CheckConstraint(f"method IN ({_in(RELATION_METHODS)})", name="method"),
+        CheckConstraint(f"decision IN ({_in(RELATION_DECISIONS)})", name="decision"),
+        CheckConstraint(
+            "(decision = 'pending') = (decided_at IS NULL AND decided_by IS NULL)", name="decided"
+        ),
         UniqueConstraint("from_event_id", "to_event_id", "type"),
     )
 
@@ -116,6 +128,15 @@ class EventRelation(Base):
     evidence: Mapped[list[str]] = mapped_column(
         JSONB, server_default=text("'[]'::jsonb"), comment="支持關聯的 evidence_ids"
     )
+    method: Mapped[str] = mapped_column(
+        String(16),
+        server_default=text("'ai'"),
+        comment="關聯由誰提出：ai（Skill）、rule（確定性規則）、manual（人工）",
+    )
+    decision: Mapped[str] = mapped_column(String(16), server_default=text("'pending'"), index=True)
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    decided_by: Mapped[str | None] = mapped_column(String(100))
+    decision_note: Mapped[str | None] = mapped_column(String(200), comment="已遮蔽個資")
     ai_run_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("ai_analysis_runs.id", ondelete="SET NULL")
     )
