@@ -432,7 +432,9 @@ gates:
       warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will be ignored;
       use `--active` to target the active environment instead'
   G4-7:
-    status: pending
+    status: pass
+    updated_at: '2026-10-28T19:40:11+08:00'
+    note: 使用者確認真實資料連續 3 天產生事件（2026-10-28）
   G4-8:
     status: pass
     updated_at: '2026-10-28T19:32:13+08:00'
@@ -1191,4 +1193,10 @@ history:
   to: pass
   note: 使用者確認還原演練通過（2026-10-28）
   confirmed_by_user: true
-updated_at: '2026-10-28T19:38:57+08:00'
+- at: '2026-10-28T19:40:11+08:00'
+  id: G4-7
+  from: pending
+  to: pass
+  note: 使用者確認真實資料連續 3 天產生事件（2026-10-28）
+  confirmed_by_user: true
+updated_at: '2026-10-28T19:40:11+08:00'
