@@ -1,0 +1,499 @@
+{
+  "uid": "ncu-resilience-overview",
+  "title": "NCU Resilience AI 概覽",
+  "tags": [
+    "ncu-resilience"
+  ],
+  "timezone": "Asia/Taipei",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "refresh": "30s",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "服務",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "抓取狀態（1 = 正常）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "up{job=~\"api|worker\"}",
+          "legendFormat": "{{job}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {},
+      "description": "api 與 worker 的 /metrics 是否抓得到"
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "API 請求數（每秒，依介面）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 16,
+        "x": 8,
+        "y": 1
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "sum by (surface) (rate(ncu_http_requests_total[5m]))",
+          "legendFormat": "{{surface}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 4,
+      "type": "row",
+      "title": "任務",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "panels": []
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "任務成功率（30 分鐘）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "sum by (task) (rate(ncu_task_runs_total{outcome=\"success\"}[30m])) / sum by (task) (rate(ncu_task_runs_total[30m]))",
+          "legendFormat": "{{task}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "Celery 任務成功次數 ÷ 全部次數；擷取、分析、小報告、公開同步各自一條線"
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "任務結果（每小時次數）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "sum by (task, outcome) (increase(ncu_task_runs_total[1h]))",
+          "legendFormat": "{{task}} {{outcome}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 7,
+      "type": "row",
+      "title": "AI",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "panels": []
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Skill 延遲 p50／p95",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (skill, le) (rate(ncu_ai_run_latency_seconds_bucket[30m])))",
+          "legendFormat": "p95 {{skill}}"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "histogram_quantile(0.5, sum by (skill, le) (rate(ncu_ai_run_latency_seconds_bucket[30m])))",
+          "legendFormat": "p50 {{skill}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "模型呼叫延遲（含重試），30 分鐘窗"
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "AI 費用（24 小時）與每日上限",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 16
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "sum(increase(ncu_ai_cost_usd_total[24h])) or vector(0)",
+          "legendFormat": "24 小時費用"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "max(ncu_ai_daily_cost_limit_usd)",
+          "legendFormat": "每日上限（config/llm.yaml）"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "24 小時滾動加總；上限依台北日界線執行"
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Skill 執行結果（每小時）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 16
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "sum by (status) (increase(ncu_ai_runs_total[1h]))",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "AI 費用（每小時，依 Skill）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "sum by (skill) (increase(ncu_ai_cost_usd_total[1h]))",
+          "legendFormat": "{{skill}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 12,
+      "type": "row",
+      "title": "公開 API",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "panels": []
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "公開 API 錯誤率（10 分鐘）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 33
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "(sum(rate(ncu_http_requests_total{surface=\"public\",status_class=\"5xx\"}[10m])) or vector(0)) / sum(rate(ncu_http_requests_total{surface=\"public\"}[10m]))",
+          "legendFormat": "5xx"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "sum(rate(ncu_http_requests_total{surface=\"public\",status_class=\"4xx\"}[10m])) / sum(rate(ncu_http_requests_total{surface=\"public\"}[10m]))",
+          "legendFormat": "4xx（含 429）"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "/api/v1/public/* 的錯誤比例；5xx 超過 5% 會告警"
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "限速次數（10 分鐘）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "sum by (limiter) (increase(ncu_public_rate_limited_total[10m]))",
+          "legendFormat": "{{limiter}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "public_read：公開唯讀 API；report：匿名回報"
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "公開 API 請求數（依路由）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 41
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "sum by (route, status_class) (rate(ncu_http_requests_total{surface=\"public\"}[5m]))",
+          "legendFormat": "{{route}} {{status_class}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "公開 API 回應時間 p95",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ncu-prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 41
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ncu-prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(ncu_http_request_duration_seconds_bucket{surface=\"public\"}[5m])))",
+          "legendFormat": "p95"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {}
+    }
+  ]
+}

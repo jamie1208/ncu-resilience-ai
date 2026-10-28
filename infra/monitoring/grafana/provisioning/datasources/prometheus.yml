@@ -1,0 +1,10 @@
+# Grafana 資料來源（P5-T04）：容器內以服務名稱連 Prometheus。
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    uid: ncu-prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false

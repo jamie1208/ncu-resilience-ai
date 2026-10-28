@@ -1,0 +1,81 @@
+# 告警規則（P5-T04）。閾值是營運判斷，不是業務規則；AI 費用以 config/llm.yaml 的每日上限
+# （指標 ncu_ai_daily_cost_limit_usd）比較，不在這裡寫死金額。
+# 指標是行程內累計，服務重啟會歸零；rate()／increase() 會處理計數器重設。
+groups:
+  - name: ncu-availability
+    rules:
+      - alert: NcuScrapeTargetDown
+        expr: up{job=~"api|worker"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} 的 /metrics 連續 5 分鐘抓不到"
+          description: "服務可能停擺或 NCU_METRICS_PORT 未設定；用 make ps 與 make logs S={{ $labels.job }} 檢查。"
+
+  - name: ncu-tasks
+    rules:
+      - alert: NcuTaskFailureRateHigh
+        expr: |
+          sum by (task) (rate(ncu_task_runs_total{outcome="failure"}[30m]))
+            / sum by (task) (rate(ncu_task_runs_total[30m])) > 0.2
+          and sum by (task) (increase(ncu_task_runs_total[30m])) >= 5
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "任務 {{ $labels.task }} 30 分鐘失敗率超過 20%"
+          description: "擷取失敗另見 make health；分析失敗查 ai_analysis_runs 的 error_type。"
+
+  - name: ncu-ai
+    rules:
+      - alert: NcuAiLatencyHigh
+        expr: |
+          histogram_quantile(0.95, sum by (skill, le) (rate(ncu_ai_run_latency_seconds_bucket[30m]))) > 60
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Skill {{ $labels.skill }} 的 p95 延遲超過 60 秒"
+      - alert: NcuAiFailureRateHigh
+        expr: |
+          sum by (skill) (rate(ncu_ai_runs_total{status="failed"}[1h]))
+            / sum by (skill) (rate(ncu_ai_runs_total[1h])) > 0.2
+          and sum by (skill) (increase(ncu_ai_runs_total[1h])) >= 5
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Skill {{ $labels.skill }} 1 小時失敗率超過 20%"
+      - alert: NcuAiDailyCostNearLimit
+        # 24 小時滾動加總（每日上限本身依台北日界線執行，見 app/ai/llm/cost.py）
+        expr: |
+          sum(increase(ncu_ai_cost_usd_total[24h])) > 0.8 * max(ncu_ai_daily_cost_limit_usd)
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "24 小時 AI 費用已超過每日上限的 80%"
+          description: "達上限後 Skill 會停止送出（cost_limit）；上限只能在 config/llm.yaml 修改，由使用者決定。"
+
+  - name: ncu-public
+    rules:
+      - alert: NcuPublicApiErrorRateHigh
+        expr: |
+          sum(rate(ncu_http_requests_total{surface="public",status_class="5xx"}[10m]))
+            / sum(rate(ncu_http_requests_total{surface="public"}[10m])) > 0.05
+          and sum(increase(ncu_http_requests_total{surface="public"}[10m])) >= 20
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "公開 API 10 分鐘 5xx 比例超過 5%"
+          description: "必要時依 docs/runbooks 暫停公開網站；下架個別內容用後台「公開內容」。"
+      - alert: NcuPublicRateLimitSpike
+        expr: sum by (limiter) (increase(ncu_public_rate_limited_total[10m])) > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.limiter }} 10 分鐘被限速超過 50 次"
+          description: "可能是爬蟲或洪水投稿；限速器已擋下，持續發生時考慮在通道端封鎖。"

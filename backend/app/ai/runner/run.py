@@ -39,6 +39,7 @@ from app.ai.llm.cost import CostLedger, CostLimitExceededError, call_cost, guard
 from app.ai.runner.loader import Skill
 from app.ai.runner.prompt import build_messages
 from app.ai.runner.validate import Issue, parse_output, validate_output
+from app.core.metrics import observe_ai_run
 from app.models.ai import AIAnalysisRun
 
 MAX_ATTEMPTS = 3
@@ -319,6 +320,14 @@ async def run_skill(
         created_at=now,
     )
     run_id = await store.save(record)
+    observe_ai_run(
+        skill.name,
+        record.model_id,
+        status.value,
+        latency_ms=tally.latency_ms,
+        cost_usd=tally.cost_usd,
+        daily_limit_usd=config.limits.daily_usd,
+    )
     return SkillRunResult(
         run_id=run_id,
         status=status,
