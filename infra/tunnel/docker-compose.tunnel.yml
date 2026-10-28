@@ -1,0 +1,54 @@
+# NCU Resilience AI 通道對外（P5-T15，ADR-0015）。疊在基礎檔與常駐覆寫檔之上，經 infra/tunnel/tunnel.sh 使用；
+# 上線、暫停、緊急下線步驟見 docs/runbooks/deploy.md。
+#
+# - public-gateway：公開閘道（nginx），只放行公開網站與 /api/v1/public/*，其他一律 404（nginx-public.conf）。
+#   主機埠號只綁 127.0.0.1，供上線前從本機驗證。
+# - tunnel：Cloudflare Quick Tunnel，只轉送到 public-gateway；不需帳號、網域或憑證，網址每次啟動都會變。
+#   放在 profile "tunnel"，沒有明確加 --profile tunnel 時不會啟動，平常的 up 不會意外對外。
+# - api：信任閘道轉送的 X-Forwarded-For，讓限速依每個用戶端計算，而不是全部算成閘道一個位址。
+#   閘道一律覆寫（不附加）這個標頭；api 的埠號只綁 127.0.0.1，外部無法直接帶入。
+# 相對路徑以第一個 compose 檔（infra/docker/）為基準。
+name: ncu-resilience
+
+services:
+  public-gateway:
+    image: nginx:1.29-alpine
+    depends_on:
+      web:
+        condition: service_started
+      api:
+        condition: service_healthy
+    volumes:
+      - ../tunnel/nginx-public.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "127.0.0.1:${PUBLIC_GATEWAY_PORT:-8090}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  tunnel:
+    image: cloudflare/cloudflared:2025.8.1
+    profiles: ["tunnel"]
+    # info 等級會印出 trycloudflare.com 網址；逐筆請求只在 debug 等級記錄，不要調到 debug
+    command: ["tunnel", "--no-autoupdate", "--loglevel", "info", "--url", "http://public-gateway:8080"]
+    depends_on:
+      public-gateway:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  api:
+    environment:
+      FORWARDED_ALLOW_IPS: "*"

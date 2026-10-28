@@ -16,7 +16,7 @@
   → 擷取、S01–S08 分析、使用者查證（管理端，不對外）
   → sync.py：組出輸入 → policy.evaluate()（確定性規則，不呼叫模型）→ publications／publication_versions（已遮蔽 PII 的快照）
   → /api/v1/public/*：只讀 state = published 的目前版本，以白名單挑欄位回傳
-  → 通道（P5-T15，只轉送公開網站與 /api/v1/public/*）→ 任何人
+  → 公開閘道（infra/tunnel/nginx-public.conf，白名單，其他一律 404）→ Cloudflare Quick Tunnel（P5-T15）→ 任何人
 ```
 
 - 公開 API **不讀** events、event_evidence、source_items、event_reports、response_actions、audit_logs 等原始資料表；能被讀到的只有 `content.py` 的 `_published()` 這一個查詢。
@@ -63,12 +63,12 @@
 | 個資外流 | 投稿中夾帶電話、Email、學號、身分證字號 | 所有公開文字經 `mask_pii()`；測試以 `find_pii` 檢查所有回應 | 不辨識人名與地址 |
 | 枚舉內部資料 | 以事件 ID、遞增 ID 或撤下的 publication 探測未公開事件 | 公開 ID 是 publication 的隨機 UUID；事件 ID 一律 404；只有提醒、撤下、下架都回相同的 404 | 可從 404 與 200 得知某個 publication ID 曾存在，但 ID 無法猜測 |
 | 透過篩選推測未公開資訊 | 以類別、cursor、limit 組合推測 | 篩選只作用在已公開快照；類別數量只算公開中的 | 無 |
-| 管理端被觸及 | 從公開端存取 `/api/v1/admin/*`、登入 | 公開 router 不帶 session；管理端仍需登入；P5-T15 的通道只轉送公開路徑 | 本機開發時同一個 API 行程同時提供兩者，由通道設定隔離 |
-| 洪水請求／爬蟲 | 大量請求拖垮本機服務或資料庫 | 每用戶端每 60 秒 60 次，超過回 429 與 `Retry-After`；`limit` 上限 50；回應帶 `Cache-Control: public, max-age=30` 與 ETag，可由瀏覽器或通道快取；`If-None-Match` 相符回 304 | 限速為行程內記憶體計數，多個 API 行程各自計算；經通道時用戶端位址可能都是通道本身（見下方待辦） |
+| 管理端被觸及 | 從公開端存取 `/api/v1/admin/*`、登入 | 公開 router 不帶 session；管理端仍需登入；通道只連到公開閘道，閘道白名單以外（含 `/admin`、`/api/v1/admin/*`、`/api/v1/auth/*`、`/docs`）一律 404，路徑含編碼點／斜線也 404，並清掉 Cookie 與 Authorization（P5-T15，`tunnel.sh check` 驗證） | 同一個 API 行程同時提供兩者，隔離靠閘道設定；新增公開頁面時需同步更新白名單 |
+| 洪水請求／爬蟲 | 大量請求拖垮本機服務或資料庫 | 每用戶端每 60 秒 60 次，超過回 429 與 `Retry-After`；`limit` 上限 50；回應帶 `Cache-Control: public, max-age=30` 與 ETag，可由瀏覽器或通道快取；`If-None-Match` 相符回 304 | 限速為行程內記憶體計數，多個 API 行程各自計算；經通道時閘道以 `CF-Connecting-IP` 覆寫 `X-Forwarded-For`、api 信任該標頭（`FORWARDED_ALLOW_IPS`），依每個用戶端計算，閘道另有每秒 10 次限速（P5-T15） |
 | 限速追蹤使用者 | 限速資料成為訪客紀錄 | 只存「隨機鹽 + 位址」的雜湊，鹽在行程啟動時產生，計數每個時間窗清空，不落地、不寫日誌 | 無 |
-| 快取殘留 | 撤下或下架後，舊內容仍留在瀏覽器或通道快取 | max-age 只有 30 秒；錯誤回應 `no-store`；API 每次請求都查目前狀態，沒有伺服器端快取；ETag 依內容計算，下架後舊 ETag 不再得到 304（`test_takedown`） | 已拿到回應的瀏覽器最多再顯示 30 秒；通道若另有邊緣快取，需在 P5-T15 設定為不快取 `/api/v1/public/*` 或於緊急下線步驟加上清除快取 |
+| 快取殘留 | 撤下或下架後，舊內容仍留在瀏覽器或通道快取 | max-age 只有 30 秒；錯誤回應 `no-store`；API 每次請求都查目前狀態，沒有伺服器端快取；ETag 依內容計算，下架後舊 ETag 不再得到 304（`test_takedown`） | 已拿到回應的瀏覽器最多再顯示 30 秒；公開 API 回應帶 `Cloudflare-CDN-Cache-Control: no-store`，通道邊緣不快取（P5-T15） |
 | 匿名回報洪水 | 大量投稿塞爆收件匣、拖垮分析與模型費用 | 每用戶端 10 分鐘 3 則、全站 10 分鐘 30 則（在解析前計數，格式錯誤也算），超過回 429 與 `Retry-After`；請求本文最多 8 KiB；分析仍受每日費用上限限制 | 全站上限會讓洪水期間的正常投稿也被擋；換位址的攻擊者仍可用掉全站額度 |
-| 投稿者被追蹤 | 從資料庫、稽核或日誌反查投稿者 | 收件匣沒有 IP、User-Agent、轉送標頭、聯絡方式欄位；稽核只記字數與有無地點；request 日誌只有方法、路徑、狀態碼；uvicorn 存取日誌關閉；限速只存加鹽雜湊 | 投稿內容本身可能透露身分（使用者自行負責，表單有提醒）；反向代理或通道（P5-T15）若有自己的存取日誌需另外關閉 |
+| 投稿者被追蹤 | 從資料庫、稽核或日誌反查投稿者 | 收件匣沒有 IP、User-Agent、轉送標頭、聯絡方式欄位；稽核只記字數與有無地點；request 日誌只有方法、路徑、狀態碼；uvicorn 存取日誌關閉；限速只存加鹽雜湊 | 投稿內容本身可能透露身分（使用者自行負責，表單有提醒）；公開閘道不記存取日誌、不往內轉送 User-Agent／Referer，cloudflared 維持 info 等級不逐筆記錄（P5-T15）；Cloudflare 本身可見連線資訊，不在本系統控制範圍 |
 | 投稿注入 | 投稿中夾帶「忽略規則」、偽造 `<untrusted_source>` 區塊或官方證據 | 投稿與其他來源一樣以 `<untrusted_source>` 包裹並跳脫標籤；查證只依 source_code 判斷官方；公開與否由確定性規則決定 | 模型本身是否照做由各 Skill 的對抗 golden cases 評測 |
 | 以投稿灌出查證 | 同一人送兩則看似第一手的投稿，使事件被判為 verified | 只有兩份第一手來源支持的 verified 不公開內容（P5-T10），只會出現中性提醒 | 查證規則以每份證據計數，不以來源計數，事件在管理端仍可能顯示 verified、並可能觸發個人通知；使用者 2026-10-28 決定維持現狀，列為已知風險 |
 | 跨站代送投稿 | 惡意網站讓訪客的瀏覽器代送投稿 | 只接受 `application/json`，跨站請求需要 CORS 預檢，API 沒有開放 CORS；端點不讀 cookie | 非瀏覽器的直接請求不受影響（由限速處理） |
@@ -78,7 +78,7 @@
 
 ## 不在本任務範圍
 
-- 通道設定、網域、用戶端位址來源（P5-T15）：經通道時需改用通道提供的可信任標頭（例如通道服務的 client IP 標頭）作為限速識別，且只信任來自通道的請求。
+- 通道設定、網域、用戶端位址來源：已於 P5-T15 完成（Quick Tunnel、不使用網域，見 `docs/runbooks/deploy.md`）。
 - 可觀測性中的公開 API 錯誤率與限速次數（P5-T04）。
 
 ## 上線前確認清單（G5-8）

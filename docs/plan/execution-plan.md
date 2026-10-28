@@ -412,6 +412,8 @@ uv run python ../scripts/eval/run_eval.py --skill event-extractor
 - **P5-T15 通道對外上線**（需你決定：通道服務、網域、上線時間）
   - 檔案：`infra/tunnel/`（通道設定：只轉送公開網站與 `/api/v1/public/*`，管理端與登入不經通道）、`docs/runbooks/deploy.md`（上線、暫停、緊急下線步驟）
   - 驗證：從外部網路只能存取公開路徑；`/admin`、`/api/v1/admin/*`、登入從外部一律無法連線
+  - 決定（使用者，2026-10-28）：Cloudflare Quick Tunnel、不使用網域（網址每次啟動都會換）；本任務只完成設定、不上線，G5-8 通過後依 `docs/runbooks/deploy.md` 自行上線
+  - 實作調整（AI 自行決定，2026-10-28）：Quick Tunnel 不支援 ingress 路徑規則，改由公開閘道 `infra/tunnel/nginx-public.conf`（nginx，127.0.0.1:8090）做白名單，通道只連到閘道；`infra/tunnel/docker-compose.tunnel.yml` 疊在基礎檔與常駐覆寫檔上（tunnel 放在 profile `tunnel`，需明確啟動），並給 api 設 `FORWARDED_ALLOW_IPS`，閘道以 `CF-Connecting-IP` 覆寫 `X-Forwarded-For`，讓既有限速依每個用戶端計算；閘道不記存取日誌、清掉 Cookie／Authorization／UA／Referer、公開 API 加 `Cloudflare-CDN-Cache-Control: no-store`；`infra/tunnel/tunnel.sh` 提供 gateway／check／up／url／down／status，`check` 對運行中的閘道（或外部網址）逐一驗證放行與拒絕的路徑；另新增 `backend/tests/unit/test_tunnel_config.py`（設定檔不變條件），更新 `threat-model-public.md` 中交給 P5-T15 的待辦
 
 ```bash
 cd backend && uv run pytest tests/unit/publishing tests/security tests/integration/test_public_api.py tests/integration/test_takedown.py -q
