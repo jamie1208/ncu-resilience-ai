@@ -14,6 +14,7 @@ from app.api.errors import register_error_handlers
 from app.api.v1 import admin, auth, health, public
 from app.api.v1.public.reports import ReportRateLimiter
 from app.api.v1.public.route import RateLimiter
+from app.core import metrics
 from app.core.config import get_settings
 from app.core.logging import configure_logging, request_id_var
 
@@ -28,6 +29,15 @@ def _resolve_request_id(incoming: str | None) -> str:
     if incoming and _VALID_REQUEST_ID.fullmatch(incoming):
         return incoming
     return str(uuid.uuid4())
+
+
+def _route_template(request: Request) -> str | None:
+    """指標用的路由樣板：路徑參數換回 `{名稱}`；沒有對應路由時回傳 None（不記原始路徑）。"""
+    if request.scope.get("route") is None:
+        return None
+    values = {str(v): k for k, v in request.scope.get("path_params", {}).items()}
+    segments = request.url.path.split("/")
+    return "/".join(f"{{{values[s]}}}" if s in values else s for s in segments)
 
 
 def create_app() -> FastAPI:
@@ -52,8 +62,10 @@ def create_app() -> FastAPI:
         rid = _resolve_request_id(request.headers.get(REQUEST_ID_HEADER))
         token = request_id_var.set(rid)
         start = time.perf_counter()
+        status = 500
         try:
             response = await call_next(request)
+            status = response.status_code
             response.headers[REQUEST_ID_HEADER] = rid
             logger.info(
                 "request",
@@ -61,13 +73,20 @@ def create_app() -> FastAPI:
                     "fields": {
                         "method": request.method,
                         "path": request.url.path,
-                        "status": response.status_code,
+                        "status": status,
                         "duration_ms": round((time.perf_counter() - start) * 1000, 1),
                     }
                 },
             )
             return response
         finally:
+            metrics.observe_http(
+                request.url.path,
+                _route_template(request),
+                request.method,
+                status,
+                time.perf_counter() - start,
+            )
             request_id_var.reset(token)
 
     register_error_handlers(app)
@@ -77,6 +96,8 @@ def create_app() -> FastAPI:
     app.include_router(public.router, prefix=settings.api_prefix)
     app.state.public_rate_limiter = RateLimiter()
     app.state.report_rate_limiter = ReportRateLimiter()
+    if settings.metrics_port is not None:
+        metrics.start_metrics_server(settings.metrics_port)
     return app
 
 

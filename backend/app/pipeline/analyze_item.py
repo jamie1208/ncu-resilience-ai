@@ -71,6 +71,7 @@ from app.ai.runner.run import RunStatus, SkillRunResult, SqlRunStore, run_skill
 from app.alerts.pii import mask_pii
 from app.alerts.service import sync_event_alert
 from app.core.config import get_settings
+from app.core.logging import request_id_var
 from app.core.security import Permission, Principal, Role, require
 from app.domain.states import EventStatus, StateTransitionError, VerificationStatus, transition
 from app.models.ai import AIAnalysisRun, EventRelation
@@ -410,7 +411,8 @@ async def _verify_and_assess(
 
 
 def _trace(trace_id: str | None) -> str:
-    return trace_id or uuid.uuid4().hex
+    # 沒有指定時沿用 worker 由 Celery 標頭綁定的 trace（P5-T04）
+    return trace_id or request_id_var.get() or uuid.uuid4().hex
 
 
 async def _finish(

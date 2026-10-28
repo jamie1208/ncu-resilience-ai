@@ -1,0 +1,10 @@
+# Grafana dashboard 載入設定（P5-T04）：dashboard JSON 由 repo 管理，UI 上的修改不會保存。
+apiVersion: 1
+providers:
+  - name: ncu-resilience
+    folder: NCU Resilience AI
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards

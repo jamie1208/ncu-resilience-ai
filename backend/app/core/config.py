@@ -61,6 +61,8 @@ class Settings(BaseSettings):
     session_ttl_hours: int = Field(12, ge=1, le=24 * 7)
     # API 文件（/docs、/openapi.json）預設關閉，維持「除 health 與登入外沒有免登入端點」
     api_docs_enabled: bool = False
+    # Prometheus 指標埠（P5-T04）：設定時 api／worker 在此埠輸出 /metrics，只供 Docker 內部網路抓取
+    metrics_port: int | None = Field(None, ge=1, le=65535)
 
     @property
     def database_url(self) -> URL:

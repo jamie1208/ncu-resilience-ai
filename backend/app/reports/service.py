@@ -33,6 +33,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.runner.run import RunStatus, SkillRunResult
 from app.alerts.pii import mask_pii
+from app.core.logging import request_id_var
 from app.core.security import Permission, require
 from app.domain.states import EventStatus, VerificationStatus
 from app.models.ai import AIAnalysisRun, RiskAssessment
@@ -285,7 +286,7 @@ async def generate_report(
     事件不存在時拋出 LookupError。
     """
     require(PIPELINE_PRINCIPAL, Permission.AI_RUN)
-    ctx = _Context(session, deps, trace_id or uuid.uuid4().hex)
+    ctx = _Context(session, deps, trace_id or request_id_var.get() or uuid.uuid4().hex)
     event = await session.get(Event, event_id)
     if event is None:
         raise LookupError(f"事件 {event_id} 不存在")

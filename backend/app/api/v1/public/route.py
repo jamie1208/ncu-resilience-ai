@@ -26,6 +26,7 @@ from fastapi.routing import APIRoute
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.errors import ApiError, ErrorCode, error_response
+from app.core.metrics import count_rate_limited
 
 RATE_LIMIT = 60
 """每個用戶端每個時間窗的請求數上限。"""
@@ -109,6 +110,7 @@ class PublicRoute(APIRoute):
             limiter: RateLimiter = request.app.state.public_rate_limiter
             retry_after = limiter.hit(client_host(request))
             if retry_after is not None:
+                count_rate_limited("public_read")
                 limited = error_response(ApiError(ErrorCode.RATE_LIMITED, "請求太頻繁，請稍後再試"))
                 limited.headers["Retry-After"] = str(retry_after)
                 limited.headers["Cache-Control"] = NO_STORE

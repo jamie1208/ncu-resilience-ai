@@ -29,6 +29,7 @@ from app.api.deps import get_db_session
 from app.api.errors import ApiError, ErrorCode, error_response
 from app.api.responses import envelope
 from app.api.v1.public.route import PublicRoute, RateLimiter, client_host
+from app.core.metrics import count_rate_limited
 from app.core.security import ANONYMOUS
 from app.models.anonymous_report import (
     CONTENT_MAX_CHARS,
@@ -148,6 +149,7 @@ async def submit_report(
     limiter: ReportRateLimiter = request.app.state.report_rate_limiter
     retry_after = limiter.hit(client_host(request))
     if retry_after is not None:
+        count_rate_limited("report")
         limited = error_response(ApiError(ErrorCode.RATE_LIMITED, "回報太頻繁，請稍後再試"))
         limited.headers["Retry-After"] = str(retry_after)
         return limited
