@@ -1,6 +1,6 @@
 # RBAC 與稽核規格
 
-依據規格 §2（使用者與權限）、§10（API 與權限）、§9（audit_logs append-only）、AGENTS.md 與 ADR-0008（個人版：單一使用者、不對外公開）。
+依據規格 §2（使用者與權限）、§10（API 與權限）、§9（audit_logs append-only）、AGENTS.md、ADR-0008（個人版：單一使用者）與 ADR-0015（公開網站：公開唯讀 API，管理端不對外）。
 
 - 角色與權限、密碼與 token 工具：`backend/app/core/security.py`
 - 帳號與 session：`backend/app/services/auth.py`；資料表 `infra/migrations/versions/0007_users_roles.py`
@@ -21,7 +21,7 @@
 
 系統服務帳號依規格「最小權限」拆成三個：擷取程式不能改事件，AI 不能發布，通知服務不能查證。
 
-個人版（ADR-0008）移除了規格 §2 的訪客（公開閱讀）與匿名投稿者角色，以及 `public:read`、`reports:create`、`reports:followup` 權限（P3-T01）。
+個人版（ADR-0008）移除了規格 §2 的訪客（公開閱讀）與匿名投稿者角色，以及 `public:read`、`reports:create`、`reports:followup` 權限（P3-T01）。ADR-0015 恢復公開閱讀，但**不恢復角色或權限**：公開唯讀 API（P5-T11）不經 `Principal`，任何人都以 anonymous 身分讀取，能讀到的範圍完全由公開規則（P5-T10）寫入的公開狀態決定，見下方「公開唯讀 API」。
 
 `Principal` 建立時會檢查身分種類與角色是否一致（`KIND_ROLES`）：anonymous 不能有任何角色、admin 只能是 admin、service 只能是三種服務角色，且 admin 與 service 至少要有一個角色。不一致時直接拋出 ValueError，避免出現「anonymous 卻有管理權限」這種無法追溯的身分。
 
@@ -71,10 +71,25 @@
 | GET | `/api/v1/admin/ingestion-runs` | `ingestion_runs:read` | |
 | GET | `/api/v1/admin/ingestion-runs/health` | `ingestion_runs:read` | |
 | GET | `/api/v1/admin/audit-logs` | `audit_logs:read` | `audit_logs.read`（敏感讀取，經 `authorize()`） |
+| GET | `/api/v1/public/feed` | **免登入**（限速） | |
+| GET | `/api/v1/public/notices` | **免登入**（限速） | |
+| GET | `/api/v1/public/categories` | **免登入**（限速） | |
+| GET | `/api/v1/public/events` | **免登入**（限速） | |
+| GET | `/api/v1/public/events/{id}` | **免登入**（限速） | |
+| GET | `/api/v1/public/progress` | **免登入**（限速） | |
 
-個人版沒有公開 API（ADR-0008）：除上表兩個免登入端點外，所有端點都需要登入；`/api/v1/admin/*` 在 router 層就先擋未登入，新端點即使忘了加權限依賴也不會變成免登入。`/docs`、`/redoc`、`/openapi.json` 預設關閉（`NCU_API_DOCS_ENABLED=true` 才開，僅供本機開發）。`tests/integration/test_auth.py` 會列舉所有路由驗證這點。
+除 health、登入與 `/api/v1/public/*` 外，所有端點都需要登入；`/api/v1/admin/*` 在 router 層就先擋未登入，新端點即使忘了加權限依賴也不會變成免登入。`/docs`、`/redoc`、`/openapi.json` 預設關閉（`NCU_API_DOCS_ENABLED=true` 才開，僅供本機開發）。`tests/integration/test_auth.py` 會列舉所有路由驗證這點，並確認 `/api/v1/public/` 底下只有 GET。
 
 未登入存取需要權限的路由回 `UNAUTHORIZED`（401）；已登入但權限不足或 CSRF 驗證失敗回 `FORBIDDEN`（403）；登入鎖定回 `RATE_LIMITED`（429）（規格 §10.1）。
+
+## 公開唯讀 API（P5-T11，ADR-0015）
+
+- 程式：`backend/app/api/v1/public/`；威脅模型與每個端點的資料、濫用方式與防護：`docs/architecture/threat-model-public.md`。
+- 只讀取 `publications` 中 state 為 published 的目前版本（公開規則產生、已遮蔽 PII 的快照），不讀任何原始資料表；回傳欄位以白名單挑選，`id` 是 publication ID。
+- 不讀取 session cookie、不需要也不使用 CSRF；沒有寫入，所以不寫稽核。
+- 每用戶端每 60 秒 60 次，超過回 `RATE_LIMITED`（429）與 `Retry-After`；用戶端只以加鹽雜湊識別，不保存位址。
+- 公開狀態由 `backend/app/publishing/sync.py` 以 `service_notifier` 身分寫入（Celery beat 每分鐘），每次公開、更新、撤下寫入稽核 `publication.publish`／`publication.update`／`publication.withdraw`（metadata 只有事件 ID、版本、公開程度與規則代碼）。
+- 管理端（`/admin`、`/api/v1/admin/*`、登入）不經通道對外（P5-T15）。
 
 ## 驗證（P3-T01）
 

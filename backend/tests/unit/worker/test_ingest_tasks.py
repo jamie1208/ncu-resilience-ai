@@ -63,7 +63,12 @@ def test_beat_dispatches_due_sources_every_minute() -> None:
         "task": "pipeline.dispatch_pending_items",
         "schedule": 60.0,
     }
-    assert set(schedule) == {"dispatch-due-sources", "dispatch-pending-items"}
+    # P5-T11：公開狀態同步（使用者 2026-10-28 同意加入）
+    assert schedule["sync-publications"] == {
+        "task": "publishing.sync_publications",
+        "schedule": 60.0,
+    }
+    assert set(schedule) == {"dispatch-due-sources", "dispatch-pending-items", "sync-publications"}
 
 
 def test_tasks_are_registered() -> None:

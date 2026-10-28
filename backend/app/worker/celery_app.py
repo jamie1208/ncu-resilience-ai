@@ -20,12 +20,18 @@ ANALYZE_ITEM_TASK = "pipeline.analyze_item"  # P2-T13
 ANALYZE_EVENT_TASK = "pipeline.analyze_event"
 ANALYZE_DISPATCH_TASK = "pipeline.dispatch_pending_items"  # P4-T07
 REPORT_EVENT_TASK = "reports.generate_event_report"  # P4-T09
+SYNC_PUBLICATIONS_TASK = "publishing.sync_publications"  # P5-T11
 DISPATCH_EVERY_SECONDS = 60.0
 
 celery_app = Celery(
     "ncu_resilience",
     broker=get_settings().redis_url,
-    include=["app.worker.tasks.ingest", "app.pipeline.analyze_item", "app.reports.service"],
+    include=[
+        "app.worker.tasks.ingest",
+        "app.pipeline.analyze_item",
+        "app.reports.service",
+        "app.publishing.sync",
+    ],
 )
 celery_app.conf.update(
     timezone="UTC",
@@ -40,6 +46,11 @@ celery_app.conf.update(
         "dispatch-due-sources": {"task": DISPATCH_TASK, "schedule": DISPATCH_EVERY_SECONDS},
         "dispatch-pending-items": {
             "task": ANALYZE_DISPATCH_TASK,
+            "schedule": DISPATCH_EVERY_SECONDS,
+        },
+        # 公開狀態同步（P5-T11）：不再符合公開規則的事件最晚一分鐘內撤下
+        "sync-publications": {
+            "task": SYNC_PUBLICATIONS_TASK,
             "schedule": DISPATCH_EVERY_SECONDS,
         },
     },

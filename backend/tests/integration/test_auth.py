@@ -38,6 +38,8 @@ CSRF_HEADER = "X-CSRF-Token"
 
 # 唯一允許免登入的端點（方法, 路徑）
 PUBLIC_ROUTES = {("GET", "/api/v1/health"), ("POST", LOGIN)}
+# 公開唯讀 API（P5-T11，ADR-0015）：只允許 GET；這個前綴下的其他方法一律不得存在
+PUBLIC_READ_PREFIX = "/api/v1/public/"
 
 
 @pytest.fixture()
@@ -92,6 +94,9 @@ async def test_every_other_endpoint_requires_login(client: httpx2.AsyncClient) -
         path = re.sub(r"\{[^}]+\}", str(uuid.uuid4()), template)
         for method in (m.upper() for m in operations):
             if (method, template) in PUBLIC_ROUTES:
+                continue
+            if template.startswith(PUBLIC_READ_PREFIX):
+                assert method == "GET", f"公開端點只能是 GET：{method} {template}"
                 continue
             res = await client.request(method, path, json={})
             assert res.status_code == 401, f"{method} {template} 未登入卻回 {res.status_code}"

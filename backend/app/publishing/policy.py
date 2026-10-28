@@ -9,10 +9,13 @@
 2. 疑似指控（P3-T07 的指控規則，比對所有會公開的文字）永不自動公開事件內容：只公開不寫地點的
    中性提醒，並標記 `needs_review` 留給使用者在後台判斷。
 3. S07 的原因一律不公開（ADR-0015：公開版小報告只放影響與建議）；依據推測原因（hypothesized）
-   的 S08 措施也不公開，避免措施文字間接把推測寫成事實。
+   的 S08 措施，以及由這類措施建立的改善措施（P4-T05）也不公開，避免措施文字間接把推測寫成事實。
 4. 來源只列官方來源（`is_official_source`）的名稱與連結；Facebook、匿名投稿等其他來源不列出，
    只透過 S02 的 AI 摘要呈現，原文與連結永不公開。
 5. 所有公開文字一律經 `mask_pii()`。
+
+改善進度（P5-T11）只隨事件內容公開，只放措施名稱、狀態、預計完成日與更新時間；負責人與佐證
+不公開。措施名稱同樣納入疑似指控比對。
 """
 
 from __future__ import annotations
@@ -20,7 +23,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from enum import StrEnum
 from functools import cache
 from pathlib import Path
@@ -101,6 +104,19 @@ class ReportInput:
 
 
 @dataclass(frozen=True)
+class ActionInput:
+    """一項改善措施（P4-T05 `response_actions`）；只含可能公開的欄位。"""
+
+    title: str
+    state: str
+    due_date: date | None
+    """台北時間的日期。"""
+    updated_at: datetime
+    cause_basis: str | None = None
+    """由 S08 措施建立時，該措施依據的原因性質；手動建立為 None。"""
+
+
+@dataclass(frozen=True)
 class PublicationInput:
     """判斷一個事件能公開什麼所需的資料。"""
 
@@ -118,6 +134,7 @@ class PublicationInput:
     """台北時間的日期。"""
     sources: Sequence[PublicSource] = ()
     report: ReportInput | None = None
+    actions: Sequence[ActionInput] = ()
 
 
 @dataclass(frozen=True)
@@ -158,7 +175,9 @@ def evaluate(
 
     reasons: list[str] = []
     measures = _public_measures(item.report)
-    allegation = any(texts.allegation.matches(t) for t in _public_texts(item, measures))
+    actions = [a for a in item.actions if a.cause_basis != "hypothesized"]
+    public_texts = _public_texts(item, measures) + [a.title for a in actions]
+    allegation = any(texts.allegation.matches(t) for t in public_texts)
     if allegation:
         reasons.append("possible_allegation")
 
@@ -179,7 +198,7 @@ def evaluate(
         ConfirmedBy.USER,
     )
     if confirmed and not allegation:
-        return decide(PublicLevel.CONTENT, _content(item, texts, measures))
+        return decide(PublicLevel.CONTENT, _content(item, texts, measures, actions))
     if not confirmed:
         reasons.append("not_confirmed")
 
@@ -214,7 +233,10 @@ def _mask(value: Any) -> Any:
 
 
 def _content(
-    item: PublicationInput, texts: NotificationPolicy, measures: Sequence[Mapping[str, Any]]
+    item: PublicationInput,
+    texts: NotificationPolicy,
+    measures: Sequence[Mapping[str, Any]],
+    actions: Sequence[ActionInput],
 ) -> dict[str, Any]:
     report = None
     if item.report is not None:
@@ -240,6 +262,15 @@ def _content(
         "risk_level": item.risk_level,
         "report": report,
         "sources": sources,
+        "progress": [
+            {
+                "title": mask_pii(a.title),
+                "state": a.state,
+                "due_date": a.due_date.isoformat() if a.due_date else None,
+                "updated_at": a.updated_at.isoformat(),
+            }
+            for a in actions
+        ],
     }
 
 
