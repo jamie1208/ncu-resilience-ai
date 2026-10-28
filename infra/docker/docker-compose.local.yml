@@ -1,0 +1,55 @@
+# NCU Resilience AI 本機常駐運行（P5-T06）。疊在 docker-compose.yml 之上使用：
+#   make up-local
+#   （等同 docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.local.yml --env-file .env up -d --build --wait）
+# 開機自動啟動與排程檢查見 docs/runbooks/local-operation.md。
+#
+# - restart: unless-stopped：Docker Desktop 啟動後自動恢復所有服務；手動 docker stop 的服務不會被拉起。
+# - ports 以 !override 取代基礎檔（compose 預設會合併清單），常駐模式只發布這裡列出的埠號，全部綁定 127.0.0.1。
+#   通道對外（P5-T15）另外設定，不靠這裡開放任何埠號（ADR-0015）。
+# - 日誌以 json-file 輪替限制大小，長期運行不會塞滿磁碟。
+name: ncu-resilience
+
+x-resident: &resident
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "5"
+
+services:
+  db:
+    <<: *resident
+    ports: !override
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+
+  redis:
+    <<: *resident
+    ports: !override
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+
+  api:
+    <<: *resident
+    ports: !override
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+
+  worker:
+    <<: *resident
+
+  beat:
+    <<: *resident
+
+  web:
+    <<: *resident
+    ports: !override
+      - "127.0.0.1:${WEB_PORT:-8088}:80"
+
+  prometheus:
+    <<: *resident
+    ports: !override
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+
+  grafana:
+    <<: *resident
+    ports: !override
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"

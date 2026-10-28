@@ -407,6 +407,8 @@ uv run python ../scripts/eval/run_eval.py --skill event-extractor
 - **P5-T06 本機常駐運行**
   - 檔案：`infra/docker/docker-compose.local.yml`（restart 策略、所有服務只綁定 127.0.0.1）、`docs/runbooks/local-operation.md`（開機自動啟動、P1-T13 排程檢查）
   - 驗證：重新開機後服務自動恢復，所有服務只監聽 127.0.0.1
+  - 實作調整（AI 自行決定，2026-10-28）：覆寫檔對 8 個服務設 `restart: unless-stopped` 與 json-file 日誌輪替（10 MB × 5），有發布的埠號以 `!override` 取代基礎檔並只綁 127.0.0.1；新增 `backend/tests/unit/test_local_compose.py`（解析兩份 compose 檢查上述規則）、`Makefile` 的 `up-local`（疊上覆寫檔啟動）與 `listen`（列出 Docker 監聽的主機埠）；開機自動啟動靠 Docker Desktop 的登入時啟動，不另寫 launchd；更正 `infra/README.md`、`docs/runbooks/README.md` 過時的 prod.yml／caddy／deploy.md 敘述
+  - 範圍（使用者決定，2026-10-28）：資料庫角色分離與備份排程不併入本任務
 - **P5-T15 通道對外上線**（需你決定：通道服務、網域、上線時間）
   - 檔案：`infra/tunnel/`（通道設定：只轉送公開網站與 `/api/v1/public/*`，管理端與登入不經通道）、`docs/runbooks/deploy.md`（上線、暫停、緊急下線步驟）
   - 驗證：從外部網路只能存取公開路徑；`/admin`、`/api/v1/admin/*`、登入從外部一律無法連線
