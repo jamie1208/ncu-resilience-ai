@@ -1,8 +1,8 @@
 /**
- * 公開唯讀 API（P5-T11，`/api/v1/public/*`）的型別與呼叫函式。
+ * 公開 API（`/api/v1/public/*`）的型別與呼叫函式：P5-T11 唯讀內容、P5-T13 匿名回報。
  * 只讀取公開規則（P5-T10）判定可公開、已遮蔽 PII 的快照；`id` 是 publication ID，不是事件 ID。
  */
-import { apiGet } from '../api/client'
+import { apiGet, apiRequest } from '../api/client'
 
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
 export type ActionState = 'discovered' | 'handling' | 'recovered' | 'improved' | 'dropped'
@@ -124,4 +124,20 @@ export async function fetchCategories(): Promise<PublicCategory[]> {
 
 export async function fetchEvent(id: string): Promise<PublicEventDetail> {
   return (await apiGet<PublicEventDetail>(`${BASE}/events/${encodeURIComponent(id)}`)).data
+}
+
+/** 匿名回報（P5-T13）：`content` 10–2000 字，`location` 選填、最多 100 字。 */
+export interface ReportInput {
+  content: string
+  location?: string
+}
+
+/** 送出匿名回報；不帶 cookie（端點不需要登入，也不讀取任何身分資訊）。 */
+export async function submitReport(input: ReportInput): Promise<void> {
+  await apiRequest<{ status: string }>(`${BASE}/reports`, {
+    method: 'POST',
+    credentials: 'omit',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
 }

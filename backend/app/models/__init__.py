@@ -2,6 +2,7 @@
 
 from app.models.ai import AIAnalysisRun, EventRelation, RiskAssessment
 from app.models.alert import Alert, AlertDelivery
+from app.models.anonymous_report import AnonymousReport
 from app.models.audit import AuditLog
 from app.models.base import Base
 from app.models.event import Event, EventEvidence, Location
@@ -21,6 +22,7 @@ __all__ = [
     "AIAnalysisRun",
     "Alert",
     "AlertDelivery",
+    "AnonymousReport",
     "AuditLog",
     "Base",
     "Event",

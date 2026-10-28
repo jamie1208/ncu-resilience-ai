@@ -40,6 +40,8 @@ CSRF_HEADER = "X-CSRF-Token"
 PUBLIC_ROUTES = {("GET", "/api/v1/health"), ("POST", LOGIN)}
 # 公開唯讀 API（P5-T11，ADR-0015）：只允許 GET；這個前綴下的其他方法一律不得存在
 PUBLIC_READ_PREFIX = "/api/v1/public/"
+# 唯一的例外：匿名回報入口（P5-T13，使用者 2026-10-28 同意）
+PUBLIC_WRITE_ROUTES = {("POST", "/api/v1/public/reports")}
 
 
 @pytest.fixture()
@@ -96,7 +98,9 @@ async def test_every_other_endpoint_requires_login(client: httpx2.AsyncClient) -
             if (method, template) in PUBLIC_ROUTES:
                 continue
             if template.startswith(PUBLIC_READ_PREFIX):
-                assert method == "GET", f"公開端點只能是 GET：{method} {template}"
+                assert method == "GET" or (method, template) in PUBLIC_WRITE_ROUTES, (
+                    f"公開端點只能是 GET：{method} {template}"
+                )
                 continue
             res = await client.request(method, path, json={})
             assert res.status_code == 401, f"{method} {template} 未登入卻回 {res.status_code}"

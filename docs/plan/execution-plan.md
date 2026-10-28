@@ -395,6 +395,8 @@ uv run python ../scripts/eval/run_eval.py --skill event-extractor
 - **P5-T13 匿名回報入口**
   - 檔案：`app/api/v1/public/reports.py`（不保存 IP 與裝置資訊；速率限制只用短期雜湊；長度與格式限制）、`app/ingestion/adapters/anonymous_report.py`（以 `<untrusted_source>` 進入既有管線，視為獨立來源）、公開前端回報表單（說明投稿不會公開原文）
   - 驗證：`tests/security/test_anonymous_report.py`（不落地 IP、prompt injection 無法改變分析指令、投稿原文不出現在公開端、洪水投稿被限速）
+  - 範圍調整（使用者同意，2026-10-28）：新增公開寫入端點 `POST /api/v1/public/reports`，`tests/integration/test_auth.py` 的公開路由規則改為「GET，另外只允許這一條 POST」；投稿先寫入收件匣表再由 Adapter 拉取（`infra/migrations/versions/0014_anonymous_reports.py`、`app/models/anonymous_report.py`、`app/models/__init__.py`）；`docs/governance/source-inventory.md` 登記 `anonymous-report` 為核准來源、`config/sources.yaml` 加入該來源；`backend/Dockerfile` 加 `--no-access-log`；`app/api/v1/public/__init__.py`、`route.py`（`client_host` 改為公開函式）、`app/main.py`（限速器）、`app/ingestion/adapters/__init__.py`；前端 `routes.ts`、`api.ts`、`PublicApp.tsx`（導覽列）、`routes.test.ts`；`threat-model-public.md`、`rbac.md`
+  - 實作調整（AI 自行決定，2026-10-28）：收件匣只有 id（遞增，作為 cursor）、內容、地點、收到時間，資料不刪除；限速為每用戶端 10 分鐘 3 則、全站 10 分鐘 30 則，在解析前計數（格式錯誤也算）；只收 `application/json`、本文最多 8 KiB、內容 10–2000 字、地點最多 100 字、只允許 `content`／`location`，拒絕控制字元與雙向文字控制字元；回 202 與固定內容、不回顯也不回傳 id；稽核 `anonymous_report.submit` 只記字數與有無地點；來源代碼 `anonymous-report`（非 `ncu-*`，不是官方來源），每 10 分鐘拉取（既有測試的擷取間隔下限），內容為「地點：…」加本文，網址為 `report_url?id=<id>` 作為內部識別；前端 `/report` 頁，送出時不帶 cookie
 - **P5-T04 可觀測性**
   - 檔案：`app/core/metrics.py`（Prometheus：任務成功率、AI 延遲與費用、公開 API 錯誤率與限速次數）、`infra/monitoring/`（Prometheus、Grafana dashboard JSON、告警規則）
   - 驗證：Grafana 顯示上述指標；trace_id 貫穿 API→worker→AI run

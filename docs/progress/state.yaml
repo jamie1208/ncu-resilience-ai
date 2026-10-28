@@ -246,7 +246,9 @@ tasks:
     note: 使用者同意公開站放在 /，管理端登入改從 /admin 進入（需改 App.test.tsx、e2e fixtures 與 admin.e2e.ts 的登入入口）
     evidence: docs/progress/records/P5-T12-20261028.md
   P5-T13:
-    status: pending
+    status: done
+    updated_at: '2026-10-28T13:48:54+08:00'
+    evidence: docs/progress/records/P5-T13-20261028.md
   P5-T15:
     status: pending
   P6-T01:
@@ -1079,4 +1081,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-10-28T12:55:57+08:00'
+- at: '2026-10-28T13:31:08+08:00'
+  id: P5-T13
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-10-28T13:48:54+08:00'
+  id: P5-T13
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-10-28T13:48:54+08:00'

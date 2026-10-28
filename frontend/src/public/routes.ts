@@ -6,6 +6,7 @@ export type PublicRoute =
   | { page: 'event'; id: string }
   | { page: 'progress' }
   | { page: 'about' }
+  | { page: 'report' }
   | { page: 'not_found' }
 
 /** 管理端路徑：`/admin` 與其子路徑。 */
@@ -22,5 +23,6 @@ export function matchPublicRoute(path: string): PublicRoute {
   if (event) return { page: 'event', id: decodeURIComponent(event[1]) }
   if (clean === '/progress') return { page: 'progress' }
   if (clean === '/about') return { page: 'about' }
+  if (clean === '/report') return { page: 'report' }
   return { page: 'not_found' }
 }
