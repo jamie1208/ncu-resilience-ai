@@ -45,7 +45,8 @@
 | Facebook、匿名投稿只透過 AI 摘要呈現；原文、摘錄、連結永不公開 | 來源只列 `is_official_source()`；快照不含證據摘錄 | `test_public_exposure`（FB 原文與連結、匿名投稿原文） |
 | 公開內容一律經 PII 遮蔽 | `mask_pii()` | `test_public_exposure`（`find_pii` 為空） |
 | 事件不實、封存或不再符合規則時撤下 | `sync_publication()`（beat 每分鐘） | `test_public_api` |
-| 已下架（P5-T14）不被同步覆蓋 | `sync_publication()` 遇 `taken_down` 直接略過 | `test_public_api` |
+| 已下架（P5-T14）不被同步覆蓋；下架與同步互斥 | `sync_publication()` 遇 `taken_down` 直接略過；`take_down()` 與同步都以 `SELECT ... FOR UPDATE` 鎖住 publication | `test_public_api`、`test_takedown` |
+| 一鍵下架後公開 API 立即不再回傳、舊 ETag 失效、寫入稽核；重新上架交回公開規則判斷 | `app/publishing/takedown.py`、`/api/v1/admin/publications` | `test_takedown` |
 
 ## 濫用方式與防護
 
@@ -60,7 +61,7 @@
 | 管理端被觸及 | 從公開端存取 `/api/v1/admin/*`、登入 | 公開 router 不帶 session；管理端仍需登入；P5-T15 的通道只轉送公開路徑 | 本機開發時同一個 API 行程同時提供兩者，由通道設定隔離 |
 | 洪水請求／爬蟲 | 大量請求拖垮本機服務或資料庫 | 每用戶端每 60 秒 60 次，超過回 429 與 `Retry-After`；`limit` 上限 50；回應帶 `Cache-Control: public, max-age=30` 與 ETag，可由瀏覽器或通道快取；`If-None-Match` 相符回 304 | 限速為行程內記憶體計數，多個 API 行程各自計算；經通道時用戶端位址可能都是通道本身（見下方待辦） |
 | 限速追蹤使用者 | 限速資料成為訪客紀錄 | 只存「隨機鹽 + 位址」的雜湊，鹽在行程啟動時產生，計數每個時間窗清空，不落地、不寫日誌 | 無 |
-| 快取殘留 | 撤下或下架後，舊內容仍留在瀏覽器或通道快取 | max-age 只有 30 秒；錯誤回應 `no-store`；API 每次請求都查目前狀態 | 最多 30 秒的瀏覽器快取；P5-T14 需確認通道快取的清除方式 |
+| 快取殘留 | 撤下或下架後，舊內容仍留在瀏覽器或通道快取 | max-age 只有 30 秒；錯誤回應 `no-store`；API 每次請求都查目前狀態，沒有伺服器端快取；ETag 依內容計算，下架後舊 ETag 不再得到 304（`test_takedown`） | 已拿到回應的瀏覽器最多再顯示 30 秒；通道若另有邊緣快取，需在 P5-T15 設定為不快取 `/api/v1/public/*` 或於緊急下線步驟加上清除快取 |
 | 注入 | 以 `type`、`cursor` 注入 SQL | `type` 只接受已知類別；cursor 解碼失敗回 422；查詢全部參數化 | 無 |
 | 錯誤訊息洩漏 | 從錯誤訊息取得內部資訊 | 統一錯誤格式，不帶例外細節；未預期錯誤只記例外類型 | 無 |
 | API 文件 | 從 `/docs`、`/openapi.json` 取得端點清單 | 預設關閉（`NCU_API_DOCS_ENABLED`） | 公開端點清單本身就在本文件，不視為秘密 |
@@ -68,7 +69,6 @@
 ## 不在本任務範圍
 
 - 匿名回報入口 `POST /api/v1/public/reports`（P5-T13）：加入時需更新本文件與 `test_auth.py` 的公開路由規則（目前只允許 GET）。
-- 一鍵下架與快取失效（P5-T14）。
 - 通道設定、網域、用戶端位址來源（P5-T15）：經通道時需改用通道提供的可信任標頭（例如通道服務的 client IP 標頭）作為限速識別，且只信任來自通道的請求。
 - 可觀測性中的公開 API 錯誤率與限速次數（P5-T04）。
 

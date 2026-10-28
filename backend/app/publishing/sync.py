@@ -263,7 +263,13 @@ async def sync_publication(
     event = await session.get(Event, event_id)
     if event is None:
         return SyncAction.NONE
-    pub = await session.scalar(select(Publication).where(Publication.event_id == event_id))
+    # 鎖住公開狀態：與一鍵下架（takedown.py）互斥，避免把剛下架的狀態寫回 published
+    pub = await session.scalar(
+        select(Publication)
+        .where(Publication.event_id == event_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
     if pub is not None and pub.state == "taken_down":
         return SyncAction.KEPT_DOWN
     decision = await _decide(session, event, policy or load_policy())

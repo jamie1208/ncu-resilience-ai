@@ -7,6 +7,7 @@ import type {
   EventItem,
   EventReport,
   IngestionRun,
+  PublicationItem,
   RecurrenceGroup,
   ResponseActionDetail,
   ResponseActionItem,
@@ -443,3 +444,34 @@ export const ACTION_DETAIL: ResponseActionDetail = {
     },
   ],
 }
+
+export const PUBLICATIONS: PublicationItem[] = [
+  {
+    id: 'pub-1',
+    event_id: EVENT_ID,
+    event_title: '工程一館停電',
+    level: 'content',
+    state: 'published',
+    version: 2,
+    needs_review: false,
+    reasons: ['verified_by_user'],
+    preview: '工程一館停電',
+    taken_down_at: null,
+    takedown_reason: null,
+    updated_at: '2026-10-20T02:31:00Z',
+  },
+  {
+    id: 'pub-2',
+    event_id: EVENT_ID_2,
+    event_title: '圖書館網路維護',
+    level: 'safety_notice',
+    state: 'taken_down',
+    version: 1,
+    needs_review: true,
+    reasons: ['possible_allegation'],
+    preview: '近期請留意圖書館網路服務。',
+    taken_down_at: '2026-10-19T10:00:00Z',
+    takedown_reason: '內容待確認',
+    updated_at: '2026-10-19T10:00:00Z',
+  },
+]

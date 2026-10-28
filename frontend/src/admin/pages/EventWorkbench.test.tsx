@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from '../../App'
-import { ACTION_DETAIL, EVENT_DETAIL, EVENT_ID, EVENT_REPORT, EVENTS } from '../../test/fixtures'
+import { ACTION_DETAIL, EVENT_DETAIL, EVENT_ID, EVENT_REPORT, EVENTS, PUBLICATIONS } from '../../test/fixtures'
 import { ME, mockApi, type MockRoute } from '../../test/mockApi'
 
 const DETAIL = `GET /api/v1/admin/events/${EVENT_ID}`
@@ -296,6 +296,34 @@ describe('EventWorkbench', () => {
 
     expect(await within(section).findByRole('status')).toHaveTextContent('已新增')
     expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ title: '請總務處說明復電流程', owner: '總務處' })
+  })
+
+  it('公開狀態：顯示公開中的內容並可一鍵下架', async () => {
+    const { calls, user } = open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: EVENT_DETAIL },
+      [`GET /api/v1/admin/publications?event_id=${EVENT_ID}`]: { data: [PUBLICATIONS[0]] },
+      'POST /api/v1/admin/publications/pub-1/takedown': {
+        data: { id: 'pub-1', state: 'taken_down', previous: 'published' },
+      },
+    })
+    const section = await screen.findByRole('region', { name: '公開狀態' })
+    expect(await within(section).findByText('公開中')).toBeInTheDocument()
+    await user.click(within(section).getByRole('button', { name: '下架' }))
+    await user.click(within(section).getByRole('button', { name: '確認下架' }))
+    expect(await within(section).findByText('已下架')).toBeInTheDocument()
+    expect(calls.some((c) => c.method === 'POST' && c.path.endsWith('/pub-1/takedown'))).toBe(true)
+  })
+
+  it('公開狀態：沒有公開過時說明由公開規則決定', async () => {
+    open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: EVENT_DETAIL },
+      [`GET /api/v1/admin/publications?event_id=${EVENT_ID}`]: { data: [] },
+    })
+    const section = await screen.findByRole('region', { name: '公開狀態' })
+    expect(await within(section).findByText(/尚未公開/)).toBeInTheDocument()
+    expect(within(section).queryByRole('button', { name: '下架' })).not.toBeInTheDocument()
   })
 
   it('事件不存在時顯示錯誤', async () => {

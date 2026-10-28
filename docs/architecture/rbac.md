@@ -66,6 +66,9 @@
 | POST | `/api/v1/admin/events/{id}/analyze` | `events:analyze` | `event.analyze` |
 | GET | `/api/v1/admin/alerts` | `alerts:read_all` | |
 | POST | `/api/v1/admin/alerts/{id}/retract` | `alerts:retract` | `alert.retract`（含原因） |
+| GET | `/api/v1/admin/publications` | `alerts:read_all` | |
+| POST | `/api/v1/admin/publications/{id}/takedown` | `alerts:retract` | `publication.take_down`（原因選填） |
+| POST | `/api/v1/admin/publications/{id}/restore` | `events:verify` | `publication.restore` |
 | GET | `/api/v1/admin/dashboard` | `events:read_all` | |
 | POST | `/api/v1/admin/scenarios` | `scenarios:create` | `scenario.create` |
 | GET | `/api/v1/admin/ingestion-runs` | `ingestion_runs:read` | |
@@ -89,6 +92,7 @@
 - 不讀取 session cookie、不需要也不使用 CSRF；沒有寫入，所以不寫稽核。
 - 每用戶端每 60 秒 60 次，超過回 `RATE_LIMITED`（429）與 `Retry-After`；用戶端只以加鹽雜湊識別，不保存位址。
 - 公開狀態由 `backend/app/publishing/sync.py` 以 `service_notifier` 身分寫入（Celery beat 每分鐘），每次公開、更新、撤下寫入稽核 `publication.publish`／`publication.update`／`publication.withdraw`（metadata 只有事件 ID、版本、公開程度與規則代碼）。
+- 一鍵下架（P5-T14）：使用者以 `alerts:retract` 把公開內容改為 taken_down，公開 API 下一個請求起就不再回傳，同步不會覆蓋；重新上架（`events:verify`）只把狀態交回公開規則重新判斷，管理者仍不能直接公開。
 - 管理端（`/admin`、`/api/v1/admin/*`、登入）不經通道對外（P5-T15）。
 
 ## 驗證（P3-T01）

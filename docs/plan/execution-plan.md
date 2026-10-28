@@ -386,6 +386,7 @@ uv run python ../scripts/eval/run_eval.py --skill event-extractor
 - **P5-T14 一鍵下架**
   - 檔案：`app/publishing/takedown.py`、`app/api/v1/admin/publications.py`、後台事件頁與公開內容列表的下架按鈕
   - 驗證：`tests/integration/test_takedown.py`（下架後公開 API 立即不再回傳、快取失效、寫入稽核）
+  - 實作調整（AI 自行決定，2026-10-28）：端點為 `GET /api/v1/admin/publications`（`alerts:read_all`）、`POST …/{id}/takedown`（`alerts:retract`，原因選填、經 PII 檢查，寫入 publication_takedowns 與稽核 `publication.take_down`）、`POST …/{id}/restore`（`events:verify`，只改回 withdrawn 後交回公開規則判斷，不直接公開，稽核 `publication.restore`）；published 與 withdrawn 都可下架（撤下中的也能阻止日後自動重新公開）；`sync.py` 讀 publication 改為 `SELECT … FOR UPDATE` 與下架互斥；快取失效＝API 無伺服器端快取、ETag 依內容計算，下架後舊 ETag 不再 304（瀏覽器最多殘留 30 秒，通道邊緣快取留給 P5-T15）；後台新增「公開內容」頁（`/admin/publications`），事件頁新增「公開狀態」卡片，兩者共用下架元件；另更新 `rbac.md`、`threat-model-public.md`
 - **P5-T12 公開前端**
   - 檔案：`frontend/src/public/`（首頁最新動態與安全提醒、事件分類查詢、事件頁（公開版小報告）、改善進度、關於本站）；每頁頁尾標明「個人專題，非國立中央大學官方系統」並列出校安中心、110、119；兩套設計系統都要實作（ADR-0014）
   - 驗證：Vitest 元件測試；Playwright 公開瀏覽流程（納入 `make e2e`）

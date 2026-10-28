@@ -9,6 +9,7 @@ import {
   generateReport,
   getEvent,
   listEvents,
+  listPublications,
   VERIFY_STATUSES,
   verifyEvent,
   type DimensionScore,
@@ -38,6 +39,7 @@ import {
 import { Link } from '../Link'
 import { useErrorMessage, useLoad } from '../useLoad'
 import { ErrorText, LoadState, Muted, Notice, PageHeader, Section } from '../ui'
+import { PublicationControls } from './Publications'
 
 const FILTER_STATUSES = Object.keys(STATUS_LABELS) as EventStatus[]
 const RULE_LABELS: Record<string, string> = {
@@ -189,6 +191,7 @@ function EventPanel({ eventId }: { eventId: string }) {
           <SummaryCard event={event} />
           <ReportCard event={event} />
           <ActionsCard event={event} />
+          <PublicCard event={event} />
           <SourceComparison event={event} />
           <RiskBreakdown assessments={event.risk_assessments} />
           <VerifyForm
@@ -198,6 +201,31 @@ function EventPanel({ eventId }: { eventId: string }) {
         </>
       )}
     </div>
+  )
+}
+
+/** 公開狀態（P5-T14）：公開規則判定的公開內容，可一鍵下架或交回規則重新判斷。 */
+function PublicCard({ event }: { event: EventDetail }) {
+  const list = useLoad(() => listPublications({ event_id: event.id }), `publications:${event.id}`)
+  const pub = list.data?.[0]
+
+  return (
+    <Card>
+      <Section id="public-heading" title="公開狀態">
+        {list.error ? (
+          <ErrorText>{`公開狀態載入失敗：${list.error}`}</ErrorText>
+        ) : list.loading && !list.data ? (
+          <Muted>載入中…</Muted>
+        ) : pub ? (
+          <PublicationControls
+            publication={pub}
+            onChange={(updated) => list.setData(() => [updated])}
+          />
+        ) : (
+          <Muted>尚未公開；是否公開由公開規則決定。</Muted>
+        )}
+      </Section>
+    </Card>
   )
 }
 
