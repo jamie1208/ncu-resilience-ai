@@ -84,6 +84,23 @@ export const ALERT_TONES: Record<string, BadgeTone> = {
   retracted: 'danger',
 }
 
+export const PUBLICATION_LABELS: Record<string, string> = {
+  published: '公開中',
+  withdrawn: '已撤下',
+  taken_down: '已下架',
+}
+
+export const PUBLICATION_TONES: Record<string, BadgeTone> = {
+  published: 'info',
+  taken_down: 'danger',
+}
+
+export const PUBLICATION_LEVEL_LABELS: Record<string, string> = {
+  content: '事件內容',
+  safety_notice: '安全提醒',
+  none: '不公開',
+}
+
 export const HEALTH_LABELS: Record<string, string> = {
   healthy: '正常',
   degraded: '不穩定',

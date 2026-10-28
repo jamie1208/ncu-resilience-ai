@@ -263,6 +263,31 @@ export interface RecurrenceGroup {
   events: RecurrenceEvent[]
 }
 
+export type PublicationState = 'published' | 'withdrawn' | 'taken_down'
+export type PublicationLevel = 'content' | 'safety_notice' | 'none'
+
+/** 公開內容（P5-T14）：公開規則判定的公開狀態；preview 為目前版本的公開標題或提醒文字。 */
+export interface PublicationItem {
+  id: string
+  event_id: string
+  event_title: string
+  level: PublicationLevel
+  state: PublicationState
+  version: number
+  needs_review: boolean
+  reasons: string[]
+  preview: string | null
+  taken_down_at: string | null
+  takedown_reason: string | null
+  updated_at: string
+}
+
+export interface PublicationChange {
+  id: string
+  state: PublicationState
+  previous: PublicationState
+}
+
 export interface AiRunStats {
   skill_name: string
   runs: number
@@ -520,6 +545,30 @@ export async function retractAlert(alertId: string, reason: string) {
   return (await post<{ id: string; state: AlertState }>(`/admin/alerts/${id(alertId)}/retract`, {
     reason: reason.trim(),
   })).data
+}
+
+// ---- 公開內容 ----
+
+export async function listPublications(
+  filters: { state?: PublicationState | ''; event_id?: string } = {},
+): Promise<PublicationItem[]> {
+  return (await apiGet<PublicationItem[]>(`${V1}/admin/publications${query(filters)}`)).data
+}
+
+/** 一鍵下架；原因可省略（空白不送），會寫入稽核紀錄。 */
+export async function takeDownPublication(publicationId: string, reason = ''): Promise<PublicationChange> {
+  const trimmed = reason.trim()
+  return (
+    await post<PublicationChange>(
+      `/admin/publications/${id(publicationId)}/takedown`,
+      trimmed ? { reason: trimmed } : {},
+    )
+  ).data
+}
+
+/** 重新上架：交回公開規則判斷，不一定會再公開。 */
+export async function restorePublication(publicationId: string): Promise<PublicationChange> {
+  return (await post<PublicationChange>(`/admin/publications/${id(publicationId)}/restore`)).data
 }
 
 // ---- 儀表板與運維 ----
