@@ -101,6 +101,30 @@ export const PUBLICATION_LEVEL_LABELS: Record<string, string> = {
   none: '不公開',
 }
 
+export const RELATION_TYPE_LABELS: Record<string, string> = {
+  same_event: '同一事件',
+  related_event: '相關事件',
+  hypothesized_cause: '推測原因',
+}
+
+export const RELATION_METHOD_LABELS: Record<string, string> = {
+  ai: 'AI',
+  rule: '規則',
+  manual: '人工',
+}
+
+export const RELATION_DECISION_LABELS: Record<string, string> = {
+  pending: '待確認',
+  confirmed: '已確認',
+  rejected: '已駁回',
+}
+
+export const RELATION_DECISION_TONES: Record<string, BadgeTone> = {
+  pending: 'warning',
+  confirmed: 'success',
+  rejected: 'danger',
+}
+
 export const HEALTH_LABELS: Record<string, string> = {
   healthy: '正常',
   degraded: '不穩定',

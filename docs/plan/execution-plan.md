@@ -442,6 +442,7 @@ bash infra/scripts/backup.sh && bash infra/scripts/restore.sh --target local
 - **P6-T02 關聯圖介面**（原 P4-T02）
   - 檔案：`frontend/src/admin/pages/RelationGraph.tsx`（Cytoscape.js）
   - 驗證：Playwright 確認／駁回流程
+  - 實作調整（AI 自行決定，2026-10-28）：新增依賴 `cytoscape`（自帶型別），`AdminApp.tsx` 以 `React.lazy` 載入關聯圖頁，Cytoscape 不進主 bundle；修改 `admin/api.ts`（`listRelations`、`decideRelation` 與型別）、`admin/format.ts`（類型／方法／決策標籤）、`admin/router.ts` 與 `AdminApp.tsx`（`/admin/relations`、導覽「事件關聯」）；測試新增 `RelationGraph.test.tsx`（vitest，Cytoscape 以假模組替代）、`e2e/relations.e2e.ts`，並擴充 `e2e/mockApi.ts`、`src/test/fixtures.ts`。圖只呈現結構（點邊可選取），確認、駁回、回滾一律在可鍵盤操作的清單與詳情中進行；已決定的只顯示「回滾到待確認」，不能直接翻轉；駁回後留在畫面上可立即回滾，重新載入後預設隱藏，勾選「包含已駁回」才顯示；推測原因標示「推測，尚未查證」與「只在後台」。顏色取自設計 token，兩套設計通用
 - **P6-T03 時序統計與異常偵測**（原 P4-T03）
   - 檔案：`app/analytics/timeseries.py`（週／月頻率、地點分布、EWMA、Poisson 變化偵測）、`infra/migrations/versions/<下一個編號>_analytics_views.py`（materialized views）
   - 驗證：`tests/unit/analytics/test_timeseries.py`（合成資料注入突增可被偵測）

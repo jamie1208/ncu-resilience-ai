@@ -30,6 +30,7 @@ export type Route =
   | { page: 'events'; eventId: string | null }
   | { page: 'alerts' }
   | { page: 'actions' }
+  | { page: 'relations' }
   | { page: 'publications' }
   | { page: 'skills' }
   | { page: 'ops' }
@@ -44,6 +45,7 @@ export function matchRoute(path: string): Route {
   if (event) return { page: 'events', eventId: decodeURIComponent(event[1]) }
   if (clean === '/admin/alerts') return { page: 'alerts' }
   if (clean === '/admin/actions') return { page: 'actions' }
+  if (clean === '/admin/relations') return { page: 'relations' }
   if (clean === '/admin/publications') return { page: 'publications' }
   if (clean === '/admin/skills') return { page: 'skills' }
   if (clean === '/admin/ops') return { page: 'ops' }
