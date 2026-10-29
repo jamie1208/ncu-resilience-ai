@@ -5,6 +5,7 @@ export type PublicRoute =
   | { page: 'events' }
   | { page: 'event'; id: string }
   | { page: 'progress' }
+  | { page: 'resilience' }
   | { page: 'about' }
   | { page: 'report' }
   | { page: 'not_found' }
@@ -22,6 +23,7 @@ export function matchPublicRoute(path: string): PublicRoute {
   const event = /^\/events\/([^/]+)$/.exec(clean)
   if (event) return { page: 'event', id: decodeURIComponent(event[1]) }
   if (clean === '/progress') return { page: 'progress' }
+  if (clean === '/resilience') return { page: 'resilience' }
   if (clean === '/about') return { page: 'about' }
   if (clean === '/report') return { page: 'report' }
   return { page: 'not_found' }

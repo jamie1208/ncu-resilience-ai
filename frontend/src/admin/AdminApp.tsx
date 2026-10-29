@@ -11,6 +11,7 @@ import { EventWorkbench } from './pages/EventWorkbench'
 import { LoginPage } from './pages/LoginPage'
 import { Ops } from './pages/Ops'
 import { Publications } from './pages/Publications'
+import { Resilience } from './pages/Resilience'
 import { ResponseActions } from './pages/ResponseActions'
 import { SkillsDashboard } from './pages/SkillsDashboard'
 import { matchRoute, navigate, usePath, type Route } from './router'
@@ -24,6 +25,7 @@ const NAV = [
   { to: '/admin/alerts', label: '通知中心', page: 'alerts' },
   { to: '/admin/actions', label: '改善追蹤', page: 'actions' },
   { to: '/admin/relations', label: '事件關聯', page: 'relations' },
+  { to: '/admin/resilience', label: '韌性成績單', page: 'resilience' },
   { to: '/admin/publications', label: '公開內容', page: 'publications' },
   { to: '/admin/skills', label: 'Skills', page: 'skills' },
   { to: '/admin/ops', label: '運維', page: 'ops' },
@@ -146,6 +148,8 @@ function Page({ route }: { route: Route }) {
           <RelationGraph />
         </Suspense>
       )
+    case 'resilience':
+      return <Resilience />
     case 'publications':
       return <Publications />
     case 'skills':

@@ -13,7 +13,7 @@
 
 | 檔案 | 用途 |
 | --- | --- |
-| `infra/tunnel/nginx-public.conf` | 公開閘道白名單：`/`、`/events`、`/events/<id>`、`/progress`、`/about`、`/report`、`/assets/*`、`/api/v1/public/*`；其他一律 404 |
+| `infra/tunnel/nginx-public.conf` | 公開閘道白名單：`/`、`/events`、`/events/<id>`、`/progress`、`/resilience`、`/about`、`/report`、`/assets/*`、`/api/v1/public/*`；其他一律 404 |
 | `infra/tunnel/docker-compose.tunnel.yml` | `public-gateway`、`tunnel`（profile `tunnel`），以及讓 api 信任閘道轉送的用戶端位址 |
 | `infra/tunnel/tunnel.sh` | `gateway`／`check`／`up`／`url`／`down`／`status` |
 

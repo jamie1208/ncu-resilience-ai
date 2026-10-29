@@ -6,11 +6,12 @@
 
 from fastapi import APIRouter
 
-from app.api.v1.public import content, reports
+from app.api.v1.public import content, reports, resilience
 from app.api.v1.public.route import PublicRoute, RateLimiter
 
 router = APIRouter(prefix="/public", route_class=PublicRoute)
 router.include_router(content.router)
 router.include_router(reports.router)
+router.include_router(resilience.router)
 
 __all__ = ["RateLimiter", "router"]

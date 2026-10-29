@@ -3,6 +3,7 @@
  * 只讀取公開規則（P5-T10）判定可公開、已遮蔽 PII 的快照；`id` 是 publication ID，不是事件 ID。
  */
 import { apiGet, apiRequest } from '../api/client'
+import type { Resilience } from '../lib/resilience'
 
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
 export type ActionState = 'discovered' | 'handling' | 'recovered' | 'improved' | 'dropped'
@@ -140,4 +141,9 @@ export async function submitReport(input: ReportInput): Promise<void> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   })
+}
+
+/** 韌性成績單（P6-T05）：只統計公開中的事件，資料不足的分數為 null。 */
+export async function fetchResilience(): Promise<Resilience> {
+  return (await apiGet<Resilience>(`${BASE}/resilience`)).data
 }
