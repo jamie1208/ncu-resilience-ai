@@ -417,7 +417,7 @@ phases:
         paths: [backend/app/resilience/cri.py, backend/tests/unit/resilience/test_cri.py]
     gates:
       - id: G6-1
-        title: 抽 50 組關聯人工審閱正確率 ≥ 0.85
+        title: 人工審閱全部現有關聯正確率 ≥ 0.85（ADR-0016）
         manual: true
       - id: G6-2
         title: 回測無未來資料
