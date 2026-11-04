@@ -1,0 +1,44 @@
+{
+  "case_id": "normal-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "工學院在異常週期出現多起不同時段、不同地點的電力中斷或相關設施受影響，件數增加主要來自多起獨立事件。",
+        "driver": "incident_cluster",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "工學院在短期間內出現數次電力異常，值得留意供電與相關設備檢修情形，觀察修復後是否仍有後續回報。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3"
+    ],
+    "reason": "工學院本週被回報的事件數突增，來源顯示為多起不同時段的電力或設備異常；件數為被回報並彙整的事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

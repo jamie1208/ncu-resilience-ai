@@ -1,0 +1,61 @@
+{
+  "case_id": "normal-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "中大路在異常週期內於不同日出現多起交通碰撞與擦撞通報，增加主要來自多起獨立事件；路段施工也被通報為相關情況。",
+        "driver": "incident_cluster",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "中大路在不同日出現多起碰撞與擦撞，且有施工佔道的通報，值得留意施工期間路段安全與是否持續出現類似通報。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e3",
+          "e1",
+          "e2",
+          "e4",
+          "e5"
+        ]
+      },
+      {
+        "statement": "若後續仍有多個來源陸續回報同路段事故，可能表示同一區域的行車風險持續，需要關注是否有結構性風險或交通管理措施未落實。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e3",
+          "e1",
+          "e2",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5"
+    ],
+    "reason": "中大路在本週被回報的交通事件顯著增加，且來自多日不同通報；件數為被回報並彙整的事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

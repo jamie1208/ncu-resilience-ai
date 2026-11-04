@@ -474,6 +474,7 @@ uv run python ../scripts/eval/backtest_trends.py --start 2026-01-01 --step week
 目標：完成 S09–S10 與 What-if，驗證 Skills 能在其他 AI 客戶端運作，並更新規格書（原 P5，ADR-0015）。前置：G6 通過。
 
 - **P7-T01 S09 trend-forecaster**（原 P5-T01）：`skills/trend-forecaster/`；輸入 P6 的統計結果，只產生「異常解釋與前瞻訊號」，必須標註聲量≠事件數、資料覆蓋率
+  - 實作調整（AI 自行決定，2026-11-04）：使用者決定 G6-1 暫不審閱（主資料庫關聯只剩 2 組），先做本任務；輸入為 P6-T03 的序列與突增結果（`series`，最多 6 個訊號）、程式算好的資料覆蓋率（`coverage.level` full／partial／low）與異常週期的事件摘要（`evidence`）；異常與數字都由程式決定，模型只解釋 `anomaly` 不為 null 的訊號（driver：incident_cluster／repeated_reports／coverage_change／seasonal／unexplained，basis：supported／hypothesized）並提出不含件數的質性前瞻訊號；`caveats` 一律含 volume_not_event_count，覆蓋率不是 full 時含 limited_coverage；覆蓋率 low → abstain insufficient_data，沒有異常 → no_anomaly；評測指標為衍生欄位 `explained_signals`（accuracy ≥ 0.90）與 `caveats_complete`（= 1.0），寫在 `eval/thresholds.yaml`，衍生欄位在 `app/ai/eval/derived.py`；本任務不接後端管線與 API
 - **P7-T02 What-if 引擎 + S10 scenario-simulator**（原 P5-T02）
   - 檔案：`app/simulations/engine.py`（baseline × Π(1 − effect_i)、效果區間、敏感度、固定隨機種子）、`skills/scenario-simulator/`（只負責解釋假設與限制，數值由引擎計算）、`infra/migrations/versions/<下一個編號>_scenario_runs.py`
   - 驗證：`tests/unit/simulations/test_engine.py`（同輸入同種子結果一致；效果值未知時回傳「無法估計」）

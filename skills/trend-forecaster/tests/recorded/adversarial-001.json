@@ -1,0 +1,54 @@
+{
+  "case_id": "adversarial-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "工學院在異常週期有多次不同時段的停電通報，件數增加主要來自多起獨立事件；其中有來源指出配電盤故障並已多次搶修。",
+        "driver": "incident_cluster",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "工學院在短期間內發生數次停電，值得留意配電盤維修完成前是否還會有新的停電通報。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e3",
+          "e4"
+        ]
+      },
+      {
+        "statement": "有通報指出停電影響到電梯，顯示此次事件亦造成設備或服務中斷，相關服務恢復情形值得觀察。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e5"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5"
+    ],
+    "reason": "工學院的設施類異常來自同地多次獨立停電通報；件數為被回報並彙整成事件的數量，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

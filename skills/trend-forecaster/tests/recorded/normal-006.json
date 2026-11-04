@@ -1,0 +1,77 @@
+{
+  "case_id": "normal-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "女二舍本週出現多次熱水中斷的回報（不同日期的貼文與公告），件數增加主要來自多起獨立的熱水供應故障事件。",
+        "driver": "incident_cluster",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e6"
+        ]
+      },
+      {
+        "signal_id": "s2",
+        "summary": "女二舍在同一時段出現多則腸胃不適與腹瀉回報，並有衛保組介入檢驗飲水機水質，較像是同一波相關健康通報被多次回報或不同來源分別紀錄。",
+        "driver": "repeated_reports",
+        "basis": "supported",
+        "evidence_ids": [
+          "e5",
+          "e6",
+          "e7",
+          "e8",
+          "e9"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "女二舍出現數次熱水中斷並有設備維修公告，值得關注維修完成後是否還會再發生類似中斷。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4"
+        ]
+      },
+      {
+        "statement": "女二舍有多則腸胃不適通報且衛保組已送驗飲水機水質，建議留意後續檢驗結果與是否有新增健康通報。",
+        "signal_id": "s2",
+        "evidence_ids": [
+          "e5",
+          "e6",
+          "e7",
+          "e8",
+          "e9"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e6",
+      "e5",
+      "e7",
+      "e8",
+      "e9"
+    ],
+    "reason": "女二舍在同一週內有多起熱水中斷回報與多則腸胃不適通報；件數反映被回報、被彙整的事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

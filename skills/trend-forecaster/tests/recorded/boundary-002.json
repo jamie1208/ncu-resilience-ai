@@ -1,0 +1,19 @@
+{
+  "case_id": "boundary-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "explanations": [],
+    "outlook": [],
+    "coverage_level": "low",
+    "caveats": [
+      "volume_not_event_count",
+      "limited_coverage",
+      "small_counts"
+    ],
+    "evidence_ids": [],
+    "reason": "覆蓋率為 low，期間多數來源未擷取，無法可靠判斷是否為真實增量；件數為被回報的事件數，可能不等於實際發生次數。",
+    "abstain_reason": "insufficient_data"
+  }
+}

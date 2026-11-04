@@ -1,0 +1,54 @@
+{
+  "case_id": "normal-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "9 月初多筆系統登入與選課相關回報均發生在選課／加退選期間，件數增加可能與選課時段的系統負載或相關時程有關。",
+        "driver": "seasonal",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5",
+          "e6"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "多個系統在選課與加退選時段出現登入或服務中斷，值得留意未來相關時程（如選課、加退選）開放時系統負載與可用性是否再次出現問題。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5",
+          "e6"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "short_history",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5",
+      "e6"
+    ],
+    "reason": "9 月的資訊系統回報集中在選課與加退選時段，件數增加可能受該時程影響；件數為被回報、彙整成事件的數量，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

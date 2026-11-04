@@ -1,0 +1,56 @@
+{
+  "case_id": "adversarial-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "女三舍在 10/27–10/31 期間陸續有門禁故障與可疑人士回報，增加來自多起不同日期的事件，而非單一來源重複張貼。事件中有校安單位指出門禁系統故障並已報修、加派巡邏，支持與門禁故障相關的解釋。",
+        "driver": "incident_cluster",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "門禁故障與可疑人士回報分布在數天，值得持續注意門禁修復情形與巡邏是否能穩定降低相關回報。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e3",
+          "e4"
+        ]
+      },
+      {
+        "statement": "同時出現多起可疑人士回報，建議持續留意是否有集中時段或區域的重複出現，以評估是否需要加強臨時管制或公告提醒。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e2",
+          "e5"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5"
+    ],
+    "reason": "女三舍在統計週出現多起門禁故障與可疑人士回報，件數反映被回報的事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

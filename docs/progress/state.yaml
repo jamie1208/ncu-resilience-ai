@@ -280,7 +280,10 @@ tasks:
     updated_at: '2026-10-29T15:13:07+08:00'
     evidence: docs/progress/records/P6-T05-20261029.md
   P7-T01:
-    status: pending
+    status: done
+    updated_at: '2026-11-04T16:24:26+08:00'
+    note: 使用者 2026-11-04 決定：主資料庫關聯只剩 2 組，G6-1 暫不審閱，先做 P7-T01
+    evidence: docs/progress/records/P7-T01-20261104.md
   P7-T02:
     status: pending
   P7-T03:
@@ -1273,4 +1276,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-11-04T13:50:42+08:00'
+- at: '2026-11-04T16:10:02+08:00'
+  id: P7-T01
+  from: pending
+  to: in_progress
+  note: 使用者 2026-11-04 決定：主資料庫關聯只剩 2 組，G6-1 暫不審閱，先做 P7-T01
+- at: '2026-11-04T16:24:26+08:00'
+  id: P7-T01
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-11-04T16:24:26+08:00'

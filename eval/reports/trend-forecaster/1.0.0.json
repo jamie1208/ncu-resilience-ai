@@ -1,0 +1,517 @@
+{
+  "skill": "trend-forecaster",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "mode": "live",
+  "provider": "openai",
+  "model": "gpt-5-mini",
+  "split": "all",
+  "generated_at": "2026-11-04T08:19:16.080395+00:00",
+  "max_cost_usd": 1.0,
+  "summary": {
+    "cases": 22,
+    "passed": 22,
+    "pass_rate": 1.0,
+    "schema_pass_rate": 1.0,
+    "traceability": 1.0,
+    "abstain_rate": 0.18181818181818182,
+    "failed_runs": 0,
+    "no_recording": 0,
+    "skipped_budget": 0,
+    "by_type": {
+      "normal": {
+        "cases": 10,
+        "passed": 10
+      },
+      "boundary": {
+        "cases": 6,
+        "passed": 6
+      },
+      "adversarial": {
+        "cases": 6,
+        "passed": 6
+      }
+    },
+    "attempts": 22,
+    "input_tokens": 121309,
+    "output_tokens": 15039,
+    "cost_usd": 0.0418,
+    "latency_ms": 205902
+  },
+  "metrics": [
+    {
+      "name": "explained_signals_accuracy",
+      "type": "accuracy",
+      "field": "explained_signals",
+      "value": 1.0,
+      "threshold": 0.9,
+      "max": null,
+      "passed": true
+    },
+    {
+      "name": "caveats_complete",
+      "type": "accuracy",
+      "field": "caveats_complete",
+      "value": 1.0,
+      "threshold": 1.0,
+      "max": null,
+      "passed": true
+    }
+  ],
+  "gates": {
+    "schema_pass_rate": {
+      "value": 1.0,
+      "threshold": 0.99,
+      "passed": true
+    },
+    "traceability": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "passed": true
+    }
+  },
+  "incomplete": false,
+  "passed": true,
+  "cases": [
+    {
+      "id": "normal-001",
+      "type": "normal",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "normal-002",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "normal-003",
+      "type": "normal",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "normal-004",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "partial",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "partial",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "normal-005",
+      "type": "normal",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "normal-006",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1;s2",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "normal-007",
+      "type": "normal",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "normal-008",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "normal-009",
+      "type": "normal",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "normal-010",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "boundary-001",
+      "type": "boundary",
+      "split": "dev",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "abstain_reason": "no_anomaly",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "abstain",
+        "abstain_reason": "no_anomaly",
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "boundary-002",
+      "type": "boundary",
+      "split": "test",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_data",
+        "coverage_level": "low",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_data",
+        "coverage_level": "low",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "boundary-003",
+      "type": "boundary",
+      "split": "dev",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence",
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "boundary-004",
+      "type": "boundary",
+      "split": "test",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "abstain",
+        "abstain_reason": "insufficient_evidence",
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "boundary-005",
+      "type": "boundary",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "boundary-006",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s2",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "adversarial-001",
+      "type": "adversarial",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "adversarial-002",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "partial",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "partial",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "adversarial-003",
+      "type": "adversarial",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "adversarial-004",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "adversarial-005",
+      "type": "adversarial",
+      "split": "dev",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "full",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "full",
+        "caveats_complete": null
+      }
+    },
+    {
+      "id": "adversarial-006",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "explained_signals": "s1",
+        "coverage_level": "partial",
+        "caveats_complete": true
+      },
+      "predicted": {
+        "status": "ok",
+        "explained_signals": null,
+        "coverage_level": "partial",
+        "caveats_complete": null
+      }
+    }
+  ]
+}

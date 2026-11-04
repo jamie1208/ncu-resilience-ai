@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "trend-forecaster 輸出",
+  "description": "異常解釋與前瞻訊號。異常與數字都由程式計算，模型只解釋被標為異常的訊號、提出質性的留意事項，並標註聲量≠事件數與資料覆蓋率。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "explanations",
+    "outlook",
+    "coverage_level",
+    "caveats",
+    "evidence_ids",
+    "reason",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已解釋異常；abstain：沒有異常、資料不足或證據不足",
+      "type": "string",
+      "enum": [
+        "ok",
+        "abstain"
+      ]
+    },
+    "explanations": {
+      "description": "每個被程式標為異常的訊號一項；abstain 時為空陣列",
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "signal_id",
+          "summary",
+          "driver",
+          "basis",
+          "evidence_ids"
+        ],
+        "properties": {
+          "signal_id": {
+            "description": "被解釋的訊號（輸入 series 中 anomaly 不為 null 者）",
+            "type": "string",
+            "enum": [
+              "s1",
+              "s2",
+              "s3",
+              "s4",
+              "s5",
+              "s6"
+            ]
+          },
+          "summary": {
+            "description": "一兩句說明件數變多可能的原因；basis 為 hypothesized 時要寫「可能」；不得包含個資與人名、店名，不得出現預測件數",
+            "type": "string",
+            "maxLength": 200
+          },
+          "driver": {
+            "description": "incident_cluster：多起不同的事件；repeated_reports：同一件事被拆成多個事件；coverage_change：來源組成或擷取缺漏改變；seasonal：季節或學期時程；unexplained：證據看不出原因",
+            "type": "string",
+            "enum": [
+              "incident_cluster",
+              "repeated_reports",
+              "coverage_change",
+              "seasonal",
+              "unexplained"
+            ]
+          },
+          "basis": {
+            "description": "supported：引用的事件直接顯示這個原因；hypothesized：推測，尚待查證",
+            "type": "string",
+            "enum": [
+              "supported",
+              "hypothesized"
+            ]
+          },
+          "evidence_ids": {
+            "description": "支持這項解釋的事件；必須存在於輸入",
+            "type": "array",
+            "maxItems": 12,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "outlook": {
+      "description": "質性的前瞻訊號（接下來值得留意什麼），不含件數預測；可以是空陣列",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "statement",
+          "signal_id",
+          "evidence_ids"
+        ],
+        "properties": {
+          "statement": {
+            "description": "一句值得留意的事；不得寫成必然發生，不得給件數或機率",
+            "type": "string",
+            "maxLength": 150
+          },
+          "signal_id": {
+            "description": "相關的訊號；跨訊號的提醒為 null",
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "s1",
+              "s2",
+              "s3",
+              "s4",
+              "s5",
+              "s6",
+              null
+            ]
+          },
+          "evidence_ids": {
+            "description": "依據的事件；必須存在於輸入",
+            "type": "array",
+            "maxItems": 12,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "coverage_level": {
+      "description": "照抄輸入 coverage.level",
+      "type": "string",
+      "enum": [
+        "full",
+        "partial",
+        "low"
+      ]
+    },
+    "caveats": {
+      "description": "限制標註：volume_not_event_count 一律要有；覆蓋率不是 full 時要有 limited_coverage；short_history：序列少於 8 期；small_counts：異常週期件數少於 10",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "enum": [
+          "volume_not_event_count",
+          "limited_coverage",
+          "short_history",
+          "small_counts"
+        ]
+      }
+    },
+    "evidence_ids": {
+      "description": "所有用到的事件；ok 時至少 1 個",
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "string"
+      }
+    },
+    "reason": {
+      "description": "一兩句整體說明；不得包含個資與人名、店名，不得把推測寫成事實",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "no_anomaly",
+        "insufficient_data",
+        "insufficient_evidence",
+        null
+      ]
+    }
+  }
+}

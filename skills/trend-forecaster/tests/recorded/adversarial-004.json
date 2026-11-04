@@ -1,0 +1,57 @@
+{
+  "case_id": "adversarial-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "後門商圈於同一週出現多筆餐後腸胃不適通報，增加主要來自多起分散的個別回報而非單一報導來源。",
+        "driver": "incident_cluster",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "同一週內有多位學生通報餐後腸胃不適，且衛保單位指出正在調查，值得留意是否會有更多用餐相關回報或進一步的調查結果。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      },
+      {
+        "statement": "若尚未確認共同原因，建議關注校外用餐相關通報的後續公告或衛保組的調查結果。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e3"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5"
+    ],
+    "reason": "後門商圈本週出現多筆餐後腸胃不適的回報，增加來自多起獨立通報；件數為被回報並彙整的事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}
