@@ -487,6 +487,10 @@ uv run python ../scripts/eval/backtest_trends.py --start 2026-01-01 --step week
 - **P7-T05 規格書 v1.1 更新**（原 P5-T09）
   - 檔案：`docs/requirements/spec-v1.1.md`（實際來源、schema、門檻、部署規格的變更；含 ADR-0008 與 ADR-0015 的定位變更）
   - 驗證：與 v1.0 差異清單完整
+- **P7-T06 S09 管線串接與資料覆蓋率**（使用者 2026-11-04 決定新增；P7-T01 只建立 Skill，沒有呼叫端）
+  - 檔案：`app/analytics/coverage.py`（依 `ingestion_runs` 計算統計期間各核准來源的實際擷取天數 ÷ 應擷取天數，產生 S09 輸入的 `coverage`：level full／partial／low、ratio、note；分級門檻在實作時決定並記錄）、`app/analytics/forecast.py`（由 P6-T03 的 `load_counts` 與突增偵測組出 S09 的 `series`，取異常週期中的事件標題與摘要（經 `mask_pii()`）為 `evidence`，經 Skill Runner 呼叫 S09，結果寫入 `ai_analysis_runs`）、`app/api/v1/admin/trends.py`（管理端 API：查詢最近一次趨勢解讀、手動觸發；只在 `/api/v1/admin/*`，不對外公開）、後台顯示（在既有的管理頁加上「趨勢解讀」區塊，聲量≠事件數與覆蓋率的標註要明顯）
+  - 驗證：`tests/unit/analytics/test_coverage.py`（覆蓋率分級、新增來源與擷取缺漏的說明、全部缺資料為 low）、`tests/integration/test_trend_forecast.py`（fake provider；沒有異常時不呼叫模型或得到 no_anomaly；輸入的數字與 P6-T03 一致；結果不經公開端點）
+  - 排程（是否每週自動執行）由實作時提出選項，使用者決定
 
 ```bash
 cd backend && uv run pytest tests/unit/simulations -q

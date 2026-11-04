@@ -111,7 +111,7 @@ skills:
         field: basis_by_cause
         threshold: 0.90
 
-  # S09（P7-T01）：計畫沒有給數字門檻，AI 自行決定（2026-11-04），使用者可在驗收時調整。
+  # S09（P7-T01）：計畫沒有給數字門檻，AI 提出、使用者 2026-11-04 確認沿用。
   # 異常由程式（P6-T03）判定，模型只解釋；explained_signals（衍生欄位：有解釋的訊號，
   # 依 signal_id 排序成「s1;s3」）與標準答案完全相等的比例 ≥ 0.90，比照 S07／S08。
   # caveats_complete（標註聲量≠事件數，覆蓋率不是 full 時也標註 limited_coverage）是計畫的硬性要求，

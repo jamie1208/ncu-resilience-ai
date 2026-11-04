@@ -452,6 +452,10 @@ phases:
         title: 規格書 v1.1 更新
         deps: [P7-T04]
         paths: [docs/requirements/spec-v1.1.md]
+      - id: P7-T06
+        title: S09 管線串接與資料覆蓋率
+        deps: [P7-T01]
+        paths: [backend/app/analytics/coverage.py, backend/app/analytics/forecast.py, backend/app/api/v1/admin/trends.py, backend/tests/unit/analytics/test_coverage.py, backend/tests/integration/test_trend_forecast.py]
     gates:
       - id: G7-1
         title: 模擬結果可重現
