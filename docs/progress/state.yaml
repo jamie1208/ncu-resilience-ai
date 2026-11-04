@@ -293,7 +293,10 @@ tasks:
     updated_at: '2026-11-04T18:35:25+08:00'
     evidence: docs/progress/records/P7-T03-20261104.md
   P7-T04:
-    status: pending
+    status: done
+    updated_at: '2026-11-04T21:57:15+08:00'
+    note: Claude Code（sonnet）跑 test split；新增 scripts/eval/portability.py（使用者同意）
+    evidence: docs/progress/records/P7-T04-20261104.md
   P7-T05:
     status: pending
   P7-T06:
@@ -524,7 +527,10 @@ gates:
   G7-1:
     status: pending
   G7-2:
-    status: pending
+    status: pass
+    updated_at: '2026-11-04T21:56:16+08:00'
+    note: 使用者 2026-11-04 決定以 portability-report 判定通過，報告中的調整建議不處理
+    evidence: docs/portability-report.md
 history:
 - at: '2026-10-17T00:16:59+08:00'
   id: P0-T01
@@ -1339,4 +1345,20 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-11-04T20:57:42+08:00'
+- at: '2026-11-04T21:38:39+08:00'
+  id: P7-T04
+  from: pending
+  to: in_progress
+  note: Claude Code（sonnet）跑 test split；新增 scripts/eval/portability.py（使用者同意）
+- at: '2026-11-04T21:56:16+08:00'
+  id: G7-2
+  from: pending
+  to: pass
+  note: 使用者 2026-11-04 決定以 portability-report 判定通過，報告中的調整建議不處理
+  confirmed_by_user: true
+- at: '2026-11-04T21:57:15+08:00'
+  id: P7-T04
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-11-04T21:57:15+08:00'
