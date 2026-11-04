@@ -21,6 +21,7 @@ from fastapi import FastAPI
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import app.pipeline.analyze_item as pipeline
 from app.ai.embeddings import embedding_text
 from app.ai.llm.base import LLMAuthError, LLMError, LLMResult, Message, Usage
 from app.ai.llm.config import load_llm_config
@@ -716,5 +717,7 @@ async def test_skip_relevance_still_stops_non_events(session: AsyncSession) -> N
 
 
 def test_production_pipeline_skips_relevance(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-not-used")
+    # 不依賴 OPENAI_API_KEY（get_settings 有快取，CI 沒有 .env）
+    monkeypatch.setattr(pipeline, "create_provider", lambda *_: SkillScript({}))
+    monkeypatch.setattr(pipeline, "create_embedding_provider", lambda *_: FakeEmbeddingProvider())
     assert build_deps().check_relevance is False
