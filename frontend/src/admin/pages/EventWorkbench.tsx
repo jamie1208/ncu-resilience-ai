@@ -6,6 +6,7 @@ import { cn } from '../../lib/cn'
 import {
   analyzeEvent,
   createAction,
+  decideCause,
   generateReport,
   getEvent,
   listEvents,
@@ -189,7 +190,7 @@ function EventPanel({ eventId }: { eventId: string }) {
             </div>
           </Card>
           <SummaryCard event={event} />
-          <ReportCard event={event} />
+          <ReportCard event={event} onReport={(report) => detail.setData((d) => (d ? { ...d, report } : d))} />
           <ActionsCard event={event} />
           <PublicCard event={event} />
           <SourceComparison event={event} />
@@ -276,7 +277,7 @@ function useSources(event: EventDetail) {
  * 可以怎麼做（依同學／學校與短中長期分組）、建議轉給哪個單位（只供參考，系統不寄信）。
  * 所有文字來自 AI 與來源原句，只當純文字顯示。
  */
-function ReportCard({ event }: { event: EventDetail }) {
+function ReportCard({ event, onReport }: { event: EventDetail; onReport: (report: EventReport) => void }) {
   const report = event.report
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -305,7 +306,7 @@ function ReportCard({ event }: { event: EventDetail }) {
           {!report ? (
             <Muted>尚未產生事件小報告。</Muted>
           ) : (
-            <ReportBody event={event} report={report} />
+            <ReportBody event={event} report={report} onReport={onReport} />
           )}
           {error && <ErrorText>{error}</ErrorText>}
           {notice && <Notice>{notice}</Notice>}
@@ -320,8 +321,18 @@ function ReportCard({ event }: { event: EventDetail }) {
   )
 }
 
-function ReportBody({ event, report }: { event: EventDetail; report: EventReport }) {
+function ReportBody({
+  event,
+  report,
+  onReport,
+}: {
+  event: EventDetail
+  report: EventReport
+  onReport: (report: EventReport) => void
+}) {
   const sources = useSources(event)
+  // 人工確認原因（P7-T07）只限有效報告；事件詳細回傳的一定是最新一份
+  const decide = trackable(event, report) ? { eventId: event.id, reportId: report.id, onReport } : null
   const causes = report.causes.items
   const hypothesized = causes.filter((c) => c.basis === 'hypothesized')
   const confirmed = causes.filter((c) => c.basis === 'confirmed')
@@ -362,7 +373,7 @@ function ReportBody({ event, report }: { event: EventDetail; report: EventReport
             <SubSection id="report-hypotheses" title="值得查查看">
               <ul className="space-y-3">
                 {hypothesized.map((c) => (
-                  <CauseItem key={c.cause_id} cause={c} sources={sources} />
+                  <CauseItem key={c.cause_id} cause={c} sources={sources} decide={decide} />
                 ))}
               </ul>
             </SubSection>
@@ -410,7 +421,21 @@ function ReportBody({ event, report }: { event: EventDetail; report: EventReport
   )
 }
 
-function CauseItem({ cause, sources }: { cause: ReportCause; sources: (ids: string[]) => string }) {
+interface CauseDecide {
+  eventId: string
+  reportId: string
+  onReport: (report: EventReport) => void
+}
+
+function CauseItem({
+  cause,
+  sources,
+  decide = null,
+}: {
+  cause: ReportCause
+  sources: (ids: string[]) => string
+  decide?: CauseDecide | null
+}) {
   const guess = cause.basis === 'hypothesized'
   return (
     <li className="rounded-lg border border-border p-3 text-sm">
@@ -429,7 +454,90 @@ function CauseItem({ cause, sources }: { cause: ReportCause; sources: (ids: stri
         ))}
       {guess && cause.to_verify && <p className="mt-2 text-muted-foreground">{`待查：${cause.to_verify}`}</p>}
       <p className="mt-1 text-xs text-muted-foreground">{sources(cause.evidence_ids)}</p>
+      {guess && decide && <CauseConfirmation cause={cause} decide={decide} />}
     </li>
+  )
+}
+
+/**
+ * 人工確認原因（P7-T07，ADR-0017）：你已用其他管道確認推測原因時，填確認依據後標為人工確認，
+ * 依據它的學校措施會在下一次公開同步時公開（原因本身不公開）；也可以回滾為推測。
+ */
+function CauseConfirmation({ cause, decide }: { cause: ReportCause; decide: CauseDecide }) {
+  const manual = cause.manual_confirmation ?? null
+  const [open, setOpen] = useState(false)
+  const [basis, setBasis] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const message = useErrorMessage()
+
+  async function send(decision: 'confirmed' | 'hypothesized') {
+    setBusy(true)
+    setError(null)
+    try {
+      decide.onReport(await decideCause(decide.eventId, decide.reportId, cause.cause_id, decision, basis))
+      setOpen(false)
+      setBasis('')
+    } catch (e) {
+      setError(message(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    void send('confirmed')
+  }
+
+  if (manual) {
+    return (
+      <div className="mt-2 space-y-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone="success">已人工確認</Badge>
+          <span className="min-w-0 text-foreground">{`確認依據：${manual.basis}`}</span>
+          <span className="font-mono text-xs text-muted-foreground">{formatTime(manual.decided_at)}</span>
+        </div>
+        <p className="text-xs text-muted-foreground">依據這個原因的學校措施會隨公開規則公開，原因本身不公開。</p>
+        {error && <ErrorText>{error}</ErrorText>}
+        <Button variant="outline" size="sm" disabled={busy} onClick={() => void send('hypothesized')}>
+          回滾為推測
+        </Button>
+      </div>
+    )
+  }
+  if (!open) {
+    return (
+      <div className="mt-2">
+        <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+          確認原因
+        </Button>
+      </div>
+    )
+  }
+  return (
+    <form aria-label="確認原因" className="mt-2 space-y-2" onSubmit={submit}>
+      <label className="block space-y-1 text-foreground">
+        <span>確認依據</span>
+        <Textarea
+          value={basis}
+          maxLength={200}
+          required
+          placeholder="例如：11/5 電話向總務處確認；請勿填寫個資"
+          onChange={(e) => setBasis(e.target.value)}
+        />
+      </label>
+      <p className="text-xs text-muted-foreground">確認後，依據這個原因的學校措施會公開；重新產生小報告後需要重新確認。</p>
+      {error && <ErrorText>{error}</ErrorText>}
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" size="sm" disabled={busy || !basis.trim()}>
+          確認
+        </Button>
+        <Button variant="outline" size="sm" disabled={busy} onClick={() => setOpen(false)}>
+          取消
+        </Button>
+      </div>
+    </form>
   )
 }
 

@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, String, text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -69,3 +69,29 @@ class EventReport(Base):
     invalidated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     invalidated_reason: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = created_at_col(index=True)
+
+
+CAUSE_DECISIONS = ("confirmed", "hypothesized")
+
+
+class ReportCauseDecision(Base):
+    """小報告中一個推測原因的人工決策（P7-T07，0018，ADR-0017）。
+
+    只新增不修改：確認與回滾各新增一筆，同一份報告同一個原因最新的一筆是目前狀態，舊的筆保留
+    確認依據供回溯。確認依據必填（回滾為 NULL），已經過 PII 檢查。報告刪除時一併刪除。
+    """
+
+    __tablename__ = "report_cause_decisions"
+    __table_args__ = (
+        CheckConstraint(f"decision IN ({_in(CAUSE_DECISIONS)})", name="decision"),
+        CheckConstraint("(decision = 'confirmed') = (basis IS NOT NULL)", name="basis"),
+        Index("ix_report_cause_decisions_report_cause", "report_id", "cause_id", "decided_at"),
+    )
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("event_reports.id", ondelete="CASCADE"))
+    cause_id: Mapped[str] = mapped_column(String(32))
+    decision: Mapped[str] = mapped_column(String(16))
+    basis: Mapped[str | None] = mapped_column(String(200), comment="確認依據；不含個資")
+    decided_by: Mapped[str] = mapped_column(String(100))
+    decided_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
