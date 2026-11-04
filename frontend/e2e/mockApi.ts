@@ -1,6 +1,6 @@
 import type { Page, Request } from '@playwright/test'
 
-import type { EventReport, RelationEdge } from '../src/admin/api'
+import type { EventReport, RelationEdge, ScenarioRun } from '../src/admin/api'
 import {
   ALERTS,
   AUDIT_LOGS,
@@ -13,6 +13,7 @@ import {
   SKILLS,
   SOURCE_HEALTH,
 } from '../src/test/fixtures'
+import { SCENARIO } from '../src/test/scenarioFixtures'
 
 const CSRF = 'csrf-e2e'
 
@@ -27,13 +28,17 @@ export interface Recorded {
  * 以 page.route 模擬後端：登入前 /auth/me 回 401；登入後所有管理 API 可用。
  * 寫入請求沒有正確 CSRF token 時回 403（與後端行為一致）。
  */
-export async function mockBackend(page: Page, options: { report?: EventReport | null } = {}) {
+export async function mockBackend(
+  page: Page,
+  options: { report?: EventReport | null; scenarios?: 'empty' | 'seeded' } = {},
+) {
   const state = {
     signedIn: false,
     eventStatus: EVENT_DETAIL.status,
     alertState: ALERTS[0].state,
     report: options.report ?? null,
     relations: RELATION_GRAPH.edges.map((e) => ({ ...e })) as RelationEdge[],
+    scenarios: (options.scenarios === 'seeded' ? [SCENARIO] : []) as ScenarioRun[],
   }
   const calls: Recorded[] = []
 
@@ -140,6 +145,13 @@ export async function mockBackend(page: Page, options: { report?: EventReport | 
       })
       const nodes = RELATION_GRAPH.nodes.filter((n) => n.id === edge.source || n.id === edge.target)
       return reply(200, { edge, nodes })
+    }
+    if (method === 'GET' && path === '/admin/scenarios') return reply(200, state.scenarios)
+    if (method === 'POST' && path === '/admin/scenarios') {
+      // 引擎與 S10 的結果用固定的 fixture；只有 id 不同
+      const run = { ...SCENARIO, id: `sc-${state.scenarios.length + 1}` }
+      state.scenarios.unshift(run)
+      return reply(201, run)
     }
     if (method === 'GET' && path === '/admin/recurrences') return reply(200, RECURRENCES)
     if (method === 'GET' && path === '/admin/skills') return reply(200, SKILLS)

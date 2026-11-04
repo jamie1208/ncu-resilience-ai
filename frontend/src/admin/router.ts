@@ -32,6 +32,7 @@ export type Route =
   | { page: 'actions' }
   | { page: 'relations' }
   | { page: 'resilience' }
+  | { page: 'scenarios' }
   | { page: 'publications' }
   | { page: 'skills' }
   | { page: 'ops' }
@@ -48,6 +49,7 @@ export function matchRoute(path: string): Route {
   if (clean === '/admin/actions') return { page: 'actions' }
   if (clean === '/admin/relations') return { page: 'relations' }
   if (clean === '/admin/resilience') return { page: 'resilience' }
+  if (clean === '/admin/scenarios') return { page: 'scenarios' }
   if (clean === '/admin/publications') return { page: 'publications' }
   if (clean === '/admin/skills') return { page: 'skills' }
   if (clean === '/admin/ops') return { page: 'ops' }
