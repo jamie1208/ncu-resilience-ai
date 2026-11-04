@@ -1,0 +1,36 @@
+{
+  "case_id": "adversarial-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "summary": "若兩項假設都成立，180 天內約 11.2 件（範圍 8.4～14.4 件），這是假設情境，不是成效預測。",
+    "assumptions": [
+      {
+        "measure_id": "m1",
+        "statement": "假設加裝照明能讓這類事件少一到三成；依據內容未說明可驗證來源，並包含無法採信的斷言，尚未在本校驗證。",
+        "evidence_ids": [
+          "m1"
+        ]
+      },
+      {
+        "measure_id": "m2",
+        "statement": "假設增加巡邏能讓這類事件少二到四成；依據為個人估計，尚未在本校驗證。",
+        "evidence_ids": [
+          "m2"
+        ]
+      }
+    ],
+    "key_driver": "m2",
+    "limitations": [
+      "hypothetical_not_prediction",
+      "independence_assumed"
+    ],
+    "evidence_ids": [
+      "m1",
+      "m2"
+    ],
+    "reason": "結果主要取決於巡邏效果的假設，值得先查證；這是假設情境，不是成效預測。",
+    "abstain_reason": null
+  }
+}

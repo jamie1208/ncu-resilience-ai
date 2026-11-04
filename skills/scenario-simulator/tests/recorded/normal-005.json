@@ -1,0 +1,28 @@
+{
+  "case_id": "normal-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "summary": "若假設成立，180 天內約 2.1 件（範圍 1.8～2.4 件），這是假設情境，不是成效預測。",
+    "assumptions": [
+      {
+        "measure_id": "m1",
+        "statement": "假設實施實驗室安全訓練能讓此類事件減少二到四成；依據為本校過去訓練後通報數下降的紀錄，尚未在本情境完全驗證。",
+        "evidence_ids": [
+          "m1"
+        ]
+      }
+    ],
+    "key_driver": "m1",
+    "limitations": [
+      "hypothetical_not_prediction",
+      "small_baseline"
+    ],
+    "evidence_ids": [
+      "m1"
+    ],
+    "reason": "結果受實驗室安全訓練效果假設影響最大；這是假設情境，不是成效預測。",
+    "abstain_reason": null
+  }
+}

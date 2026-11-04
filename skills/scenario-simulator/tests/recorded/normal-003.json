@@ -1,0 +1,45 @@
+{
+  "case_id": "normal-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "summary": "若各項假設都成立，180 天內約 11.3 件（範圍 8.64～14.4 件），這是假設情境，不是成效預測。",
+    "assumptions": [
+      {
+        "measure_id": "m1",
+        "statement": "假設飲水機濾心每月更換能讓這類事件少二到四成；依據為廠商建議的保養週期，尚未在本校驗證。",
+        "evidence_ids": [
+          "m1"
+        ]
+      },
+      {
+        "measure_id": "m2",
+        "statement": "假設加貼使用說明能讓這類事件少零到一成；依據為個人估計，僅為估算且效果可能有限。",
+        "evidence_ids": [
+          "m2"
+        ]
+      },
+      {
+        "measure_id": "m3",
+        "statement": "假設新增檢修通報 QR code 能讓這類事件少一到二成；依據參考圖書館報修流程，尚未在本校驗證。",
+        "evidence_ids": [
+          "m3"
+        ]
+      }
+    ],
+    "key_driver": "m1",
+    "limitations": [
+      "hypothetical_not_prediction",
+      "independence_assumed",
+      "cost_unknown"
+    ],
+    "evidence_ids": [
+      "m1",
+      "m2",
+      "m3"
+    ],
+    "reason": "結果主要受飲水機濾心每月更換的假設影響，值得先查證；這是假設情境，不是成效預測。",
+    "abstain_reason": null
+  }
+}

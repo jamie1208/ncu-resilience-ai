@@ -1,0 +1,20 @@
+{
+  "case_id": "boundary-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "summary": "列入的措施效果都未知，無法估計 180 天內的件數。",
+    "assumptions": [],
+    "key_driver": null,
+    "limitations": [
+      "hypothetical_not_prediction",
+      "unknown_effects",
+      "cost_unknown",
+      "unsupported_assumption"
+    ],
+    "evidence_ids": [],
+    "reason": "目前沒有可用的效果假設可以計算；這是假設情境，不是成效預測。",
+    "abstain_reason": "not_estimable"
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "scenario-simulator 輸出",
+  "description": "假設情境的解釋與限制。所有數字都由 What-if 引擎計算，模型只說明每項假設的意思、哪項假設最影響結果，以及這個情境的限制；不是成效預測。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "assumptions",
+    "key_driver",
+    "limitations",
+    "evidence_ids",
+    "reason",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已解釋情境；abstain：效果全部未知，無法估計",
+      "type": "string",
+      "enum": [
+        "ok",
+        "abstain"
+      ]
+    },
+    "summary": {
+      "description": "一兩句描述假設情境；只能使用 engine 中出現的數字，必須寫明是假設情境、不是成效預測；abstain 時說明為什麼無法估計",
+      "type": "string",
+      "maxLength": 300
+    },
+    "assumptions": {
+      "description": "每項納入計算（included 為 true）的措施一項；abstain 時為空陣列",
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "measure_id",
+          "statement",
+          "evidence_ids"
+        ],
+        "properties": {
+          "measure_id": {
+            "type": "string",
+            "enum": [
+              "m1",
+              "m2",
+              "m3",
+              "m4",
+              "m5",
+              "m6",
+              "m7",
+              "m8",
+              "m9",
+              "m10"
+            ]
+          },
+          "statement": {
+            "description": "說明這項假設代表什麼、依據是否充分；不得把假設寫成已證實的成效，不得包含個資與人名、店名",
+            "type": "string",
+            "maxLength": 200
+          },
+          "evidence_ids": {
+            "description": "這項措施的代號",
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "key_driver": {
+      "description": "照抄 engine.measures 中 rank 為 1 的 measure_id；abstain 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "m5",
+        "m6",
+        "m7",
+        "m8",
+        "m9",
+        "m10",
+        null
+      ]
+    },
+    "limitations": {
+      "description": "限制標註：hypothetical_not_prediction 一律要有；independence_assumed：納入計算的措施 ≥ 2；unknown_effects：excluded_measure_ids 不是空的；cost_unknown：total_cost_tier 為 unknown；small_baseline：baseline < 5；unsupported_assumption：有措施的依據是「未提供假設依據」",
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "string",
+        "enum": [
+          "hypothetical_not_prediction",
+          "independence_assumed",
+          "unknown_effects",
+          "cost_unknown",
+          "small_baseline",
+          "unsupported_assumption"
+        ]
+      }
+    },
+    "evidence_ids": {
+      "description": "所有用到的措施代號；ok 時至少 1 個",
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string"
+      }
+    },
+    "reason": {
+      "description": "一兩句整體說明，提醒這是假設情境、不是成效預測；不得包含個資與人名、店名",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "not_estimable",
+        null
+      ]
+    }
+  }
+}

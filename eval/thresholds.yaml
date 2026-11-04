@@ -126,3 +126,27 @@ skills:
         type: accuracy
         field: caveats_complete
         threshold: 1.0
+
+  # S10（P7-T02）：計畫沒有給數字門檻，AI 提出（待使用者確認）。數字由 What-if 引擎計算，
+  # 模型只解釋假設與限制；explained_measures（衍生欄位：有解釋的措施，依 measure_id 排序成
+  # 「m1;m2」）、key_driver（照抄引擎敏感度排名第 1 的措施）、limitation_set（限制標註依代碼排序）
+  # 與標準答案完全相等的比例 ≥ 0.90，比照 S07–S09。hypothetical_flagged（標明假設情境、
+  # 不是成效預測）是規格 F09 的驗收條件，所以門檻為 1.0。
+  scenario-simulator:
+    metrics:
+      - name: explained_measures_accuracy
+        type: accuracy
+        field: explained_measures
+        threshold: 0.90
+      - name: key_driver_accuracy
+        type: accuracy
+        field: key_driver
+        threshold: 0.90
+      - name: limitation_set_accuracy
+        type: accuracy
+        field: limitation_set
+        threshold: 0.90
+      - name: hypothetical_flagged
+        type: accuracy
+        field: hypothetical_flagged
+        threshold: 1.0
