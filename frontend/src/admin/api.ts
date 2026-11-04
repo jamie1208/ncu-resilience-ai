@@ -776,3 +776,75 @@ export async function createScenario(body: ScenarioRequest): Promise<ScenarioRun
 export async function listScenarios(): Promise<ScenarioRun[]> {
   return (await apiGet<ScenarioRun[]>(`${V1}/admin/scenarios`)).data
 }
+
+// ---------- 趨勢解讀（P7-T06，S09 trend-forecaster） ----------
+
+export type TrendOutcome = 'explained' | 'abstained' | 'failed' | 'no_anomaly' | 'insufficient_data'
+export type CoverageLevel = 'full' | 'partial' | 'low'
+export type TrendCaveat = 'volume_not_event_count' | 'limited_coverage' | 'short_history' | 'small_counts'
+export type TrendDriver = 'incident_cluster' | 'repeated_reports' | 'coverage_change' | 'seasonal' | 'unexplained'
+
+export interface TrendSignal {
+  signal_id: string
+  event_type: string
+  location: string | null
+  counts: { period_start: string; count: number }[]
+  anomaly: { period_start: string; observed: number; expected: number; p_value: number } | null
+  evidence_ids: string[]
+}
+
+export interface TrendCoverage {
+  start: string
+  end: string
+  level: CoverageLevel
+  ratio: number | null
+  note: string | null
+  sources: { code: string; expected_days: number; ingested_days: number; missing_days: number; added_on: string | null }[]
+}
+
+export interface TrendForecastOutput {
+  status: 'ok' | 'abstain'
+  explanations: {
+    signal_id: string
+    summary: string
+    driver: TrendDriver
+    basis: 'supported' | 'hypothesized'
+    evidence_ids: string[]
+  }[]
+  outlook: { statement: string; signal_id: string | null; evidence_ids: string[] }[]
+  coverage_level: CoverageLevel
+  caveats: TrendCaveat[]
+  evidence_ids: string[]
+  reason: string
+  abstain_reason: string | null
+}
+
+export interface TrendForecast {
+  outcome: TrendOutcome
+  freq: 'week' | 'month'
+  as_of: string
+  start: string
+  series: TrendSignal[]
+  coverage: TrendCoverage
+  evidence: { evidence_id: string; event_id: string; title: string; source_code: string }[]
+  forecast: {
+    ai_run_id: string
+    status: 'succeeded' | 'abstained' | 'failed'
+    output: TrendForecastOutput | null
+    abstain_reason: string | null
+    error_type: string | null
+    skill_version: string
+  } | null
+  created_by: string
+  created_at: string
+}
+
+/** 最近一次趨勢解讀；從未執行時為 null。 */
+export async function getTrendForecast(): Promise<TrendForecast | null> {
+  return (await apiGet<TrendForecast | null>(`${V1}/admin/trends/forecast`)).data
+}
+
+/** 手動觸發一次趨勢解讀（截止日預設台北昨日）。 */
+export async function runTrendForecast(freq: 'week' | 'month'): Promise<TrendForecast> {
+  return (await post<TrendForecast>('/admin/trends/forecast', { freq })).data
+}

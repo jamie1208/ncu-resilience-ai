@@ -456,6 +456,10 @@ phases:
         title: S09 管線串接與資料覆蓋率
         deps: [P7-T01]
         paths: [backend/app/analytics/coverage.py, backend/app/analytics/forecast.py, backend/app/api/v1/admin/trends.py, backend/tests/unit/analytics/test_coverage.py, backend/tests/integration/test_trend_forecast.py]
+      - id: P7-T07
+        title: 人工確認原因
+        deps: [P5-T10]
+        paths: [backend/app/reports/cause_decisions.py, backend/tests/integration/test_cause_confirmation.py]
     gates:
       - id: G7-1
         title: 模擬結果可重現

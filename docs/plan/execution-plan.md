@@ -493,6 +493,11 @@ uv run python ../scripts/eval/backtest_trends.py --start 2026-01-01 --step week
   - 檔案：`app/analytics/coverage.py`（依 `ingestion_runs` 計算統計期間各核准來源的實際擷取天數 ÷ 應擷取天數，產生 S09 輸入的 `coverage`：level full／partial／low、ratio、note；分級門檻在實作時決定並記錄）、`app/analytics/forecast.py`（由 P6-T03 的 `load_counts` 與突增偵測組出 S09 的 `series`，取異常週期中的事件標題與摘要（經 `mask_pii()`）為 `evidence`，經 Skill Runner 呼叫 S09，結果寫入 `ai_analysis_runs`）、`app/api/v1/admin/trends.py`（管理端 API：查詢最近一次趨勢解讀、手動觸發；只在 `/api/v1/admin/*`，不對外公開）、後台顯示（在既有的管理頁加上「趨勢解讀」區塊，聲量≠事件數與覆蓋率的標註要明顯）
   - 驗證：`tests/unit/analytics/test_coverage.py`（覆蓋率分級、新增來源與擷取缺漏的說明、全部缺資料為 low）、`tests/integration/test_trend_forecast.py`（fake provider；沒有異常時不呼叫模型或得到 no_anomaly；輸入的數字與 P6-T03 一致；結果不經公開端點）
   - 排程（是否每週自動執行）由實作時提出選項，使用者決定
+- **P7-T07 人工確認原因**（使用者 2026-11-04 決定新增，ADR-0017；推測原因的學校措施在公開端全部被濾掉）
+  - 檔案：`infra/migrations/versions/<下一個編號>_report_cause_decisions.py`（小報告中各原因的人工決策：確認依據、決定者、時間）、`app/reports/cause_decisions.py`（確認、回滾；只限最新一份有效小報告中 basis 為 hypothesized 的原因；確認依據必填、經 PII 檢查；稽核 `report.cause_decide`）、管理端 API（掛在既有的 `app/api/v1/admin/events.py` 小報告路由下，只在 `/api/v1/admin/*`）、`app/publishing/policy.py` 與 `app/publishing/sync.py`（措施依據的原因經人工確認時視為 confirmed；疑似指控、PII 遮蔽規則不變）、後台 `frontend/src/admin/pages/EventWorkbench.tsx`（推測原因旁的「確認原因」與回滾，需填確認依據）、`docs/architecture/threat-model-public.md`
+  - 驗證：`tests/integration/test_cause_confirmation.py`（確認後相關措施進入公開快照、回滾後撤下；疑似指控事件確認後仍不公開內容；沒有確認依據或含個資時拒絕；重新產生小報告後需重新確認）、`tests/unit/publishing/` 新增案例（既有 G5-5 測試不修改）、前端 vitest
+  - 公開頁不標示「人工確認」（使用者決定）
+  - 實作調整（排程經使用者 2026-11-04 決定只手動觸發，其餘 AI 自行決定）：端點為 `GET`／`POST /api/v1/admin/trends/forecast`（events:read_all／events:analyze，稽核 `trend_forecast.run`），修改 `app/api/v1/admin/__init__.py`、`docs/architecture/rbac.md`；覆蓋率分級 low：ratio < 0.5 或無來源，full：ratio ≥ 0.95、每個來源 ≥ 0.9 且期間內沒有新增來源，其餘 partial；截止日預設台北昨日，往前 26 週／12 個月但不早於最早核准來源新增日；最近 4 期內的突增優先、最多 6 個訊號、12 個事件（evidence_id 為事件 id）；覆蓋率 low 或沒有異常時不呼叫模型；最近一次以稽核紀錄為準，不新增資料表；後台顯示放在韌性成績單頁（`Resilience.tsx`），修改 `admin/api.ts`，測試新增 `TrendForecast.test.tsx`
 
 ```bash
 cd backend && uv run pytest tests/unit/simulations -q

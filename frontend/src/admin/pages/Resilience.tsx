@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 
-import { Badge, Card, Select } from '@design'
+import { Badge, Button, Card, Select } from '@design'
+
+import type { BadgeTone } from '../../design/contract'
 
 import {
   DIMENSION_QUESTIONS,
@@ -11,9 +13,20 @@ import {
   type Resilience as Report,
   type ResilienceDimension,
 } from '../../lib/resilience'
-import { getResilience } from '../api'
-import { useLoad } from '../useLoad'
-import { LoadState, PageHeader, Section } from '../ui'
+import {
+  getResilience,
+  getTrendForecast,
+  runTrendForecast,
+  type CoverageLevel,
+  type TrendCaveat,
+  type TrendDriver,
+  type TrendForecast,
+  type TrendOutcome,
+  type TrendSignal,
+} from '../api'
+import { formatPercent, formatTime, label } from '../format'
+import { useErrorMessage, useLoad } from '../useLoad'
+import { ErrorText, LoadState, Muted, PageHeader, Section } from '../ui'
 
 const WINDOWS = [30, 90, 180, 365] as const
 
@@ -46,6 +59,7 @@ export function Resilience() {
       />
       <LoadState loading={report.loading && !r} error={report.error} />
       {r && <ReportBody report={r} />}
+      <TrendForecastCard />
     </div>
   )
 }
@@ -134,6 +148,215 @@ function Fact({ term, value }: { term: string; value: string }) {
     <div className="flex gap-2">
       <dt className="text-muted-foreground">{term}</dt>
       <dd className="text-foreground">{value}</dd>
+    </div>
+  )
+}
+
+// ---------- 趨勢解讀（P7-T06，S09 trend-forecaster） ----------
+
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  facility: '設施',
+  weather: '天氣',
+  security: '治安',
+  traffic: '交通',
+  health: '健康',
+  fire: '火災',
+  academic: '學務',
+  infosec: '資安',
+}
+
+const COVERAGE_LABELS: Record<CoverageLevel, string> = { full: '完整', partial: '部分缺漏', low: '大部分缺資料' }
+const COVERAGE_TONES: Record<CoverageLevel, BadgeTone> = { full: 'success', partial: 'warning', low: 'danger' }
+
+const DRIVER_LABELS: Record<TrendDriver, string> = {
+  incident_cluster: '多起不同事件',
+  repeated_reports: '同一件事被拆成多個事件',
+  coverage_change: '來源組成或擷取缺漏改變',
+  seasonal: '季節或學期時程',
+  unexplained: '證據看不出原因',
+}
+
+const CAVEAT_LABELS: Record<TrendCaveat, string> = {
+  volume_not_event_count: '聲量≠事件數',
+  limited_coverage: '資料覆蓋不完整',
+  short_history: '序列少於 8 期',
+  small_counts: '異常週期件數少於 10',
+}
+
+const OUTCOME_TEXT: Partial<Record<TrendOutcome, string>> = {
+  no_anomaly: '沒有偵測到突增，未呼叫模型。',
+  insufficient_data: '資料覆蓋率過低，不做解讀，也未呼叫模型。',
+  abstained: 'S09 判斷證據不足，未提出解釋。',
+  failed: 'S09 解讀失敗；下方仍列出程式計算的數字。',
+}
+
+const FREQ_LABELS = { week: '每週', month: '每月' } as const
+
+function signalName(s: Pick<TrendSignal, 'event_type' | 'location'>): string {
+  return `${label(EVENT_TYPE_LABELS, s.event_type)}・${s.location ?? '全校'}`
+}
+
+/**
+ * 趨勢解讀：數字（件數、突增、覆蓋率）由程式計算，S09 只解釋被標為異常的訊號。
+ * 只手動觸發；一律標註聲量≠事件數與資料覆蓋率。只在管理端。
+ */
+function TrendForecastCard() {
+  const latest = useLoad(getTrendForecast, 'trend-forecast')
+  const message = useErrorMessage()
+  const [freq, setFreq] = useState<'week' | 'month'>('week')
+  const [running, setRunning] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function run() {
+    setRunning(true)
+    setError(null)
+    try {
+      const result = await runTrendForecast(freq)
+      latest.setData(() => result)
+    } catch (e) {
+      setError(message(e))
+    } finally {
+      setRunning(false)
+    }
+  }
+
+  const f = latest.data
+  return (
+    <Card>
+      <Section id="trend-forecast" title="趨勢解讀">
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              解讀週期
+              <Select value={freq} onChange={(e) => setFreq(e.target.value as 'week' | 'month')}>
+                <option value="week">每週</option>
+                <option value="month">每月</option>
+              </Select>
+            </label>
+            <Button type="button" disabled={running} onClick={run}>
+              {running ? '解讀中…' : '執行趨勢解讀'}
+            </Button>
+            <Muted>截止日為昨日；只在手動執行時更新。</Muted>
+          </div>
+          {error && <ErrorText>{error}</ErrorText>}
+          <LoadState loading={latest.loading && !f} error={latest.error} />
+          {!latest.loading && !latest.error && !f && <Muted>尚未執行趨勢解讀。</Muted>}
+          {f && <TrendForecastBody forecast={f} />}
+        </div>
+      </Section>
+    </Card>
+  )
+}
+
+function LimitsNote({ forecast: f }: { forecast: TrendForecast }) {
+  const id = useId()
+  const cov = f.coverage
+  return (
+    <div role="note" aria-labelledby={id} className="space-y-1 rounded-lg border border-warning/40 bg-warning-muted px-4 py-3 text-sm">
+      <p id={id} className="font-semibold text-warning">
+        解讀限制
+      </p>
+      <p className="text-foreground">聲量≠事件數：件數是被回報、被彙整成事件的數量，不等於實際發生次數。</p>
+      <p className="flex flex-wrap items-center gap-2 text-foreground">
+        <span>{`資料覆蓋率：${COVERAGE_LABELS[cov.level]}（${formatPercent(cov.ratio)}）`}</span>
+        <Badge tone={COVERAGE_TONES[cov.level]}>{cov.level}</Badge>
+        <span className="text-muted-foreground">{`${cov.start} 至 ${cov.end}`}</span>
+      </p>
+      {cov.note && <p className="text-foreground">{cov.note}</p>}
+    </div>
+  )
+}
+
+function TrendForecastBody({ forecast: f }: { forecast: TrendForecast }) {
+  const output = f.forecast?.output ?? null
+  const titles = Object.fromEntries(f.evidence.map((e) => [e.evidence_id, e.title]))
+  const bySignal = Object.fromEntries(f.series.map((s) => [s.signal_id, s]))
+  const outcomeText = OUTCOME_TEXT[f.outcome]
+
+  return (
+    <div className="space-y-4">
+      <LimitsNote forecast={f} />
+      <p className="text-sm text-muted-foreground">
+        {`截至 ${f.as_of}（${f.start} 起，${FREQ_LABELS[f.freq]}）・${formatTime(f.created_at)} 執行`}
+        {f.forecast && `・S09 ${f.forecast.skill_version}`}
+      </p>
+      {outcomeText && <p className="text-sm text-foreground">{outcomeText}</p>}
+
+      {output && output.explanations.length > 0 && (
+        <ul aria-label="異常解釋" className="space-y-3">
+          {output.explanations.map((x) => {
+            const s = bySignal[x.signal_id]
+            return (
+              <li key={x.signal_id} className="space-y-1 rounded-lg border border-border px-3 py-2 text-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium text-foreground">{s ? signalName(s) : x.signal_id}</span>
+                  <Badge tone="info">{DRIVER_LABELS[x.driver]}</Badge>
+                  {x.basis === 'hypothesized' ? (
+                    <Badge tone="warning">推測，尚待查證</Badge>
+                  ) : (
+                    <Badge tone="neutral">有事件佐證</Badge>
+                  )}
+                </div>
+                <p className="text-foreground">{x.summary}</p>
+                {x.evidence_ids.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {`依據：${x.evidence_ids.map((id) => titles[id] ?? id).join('、')}`}
+                  </p>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      {output && output.outlook.length > 0 && (
+        <div>
+          <h3 className="mb-1 text-sm font-semibold text-foreground">值得留意（質性，不是件數預測）</h3>
+          <ul className="list-disc space-y-1 pl-5 text-sm text-foreground">
+            {output.outlook.map((o) => (
+              <li key={o.statement}>{o.statement}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {output && (
+        <ul aria-label="限制標註" className="flex flex-wrap gap-2">
+          {output.caveats.map((c) => (
+            <li key={c}>
+              <Badge tone="warning">{CAVEAT_LABELS[c]}</Badge>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <table aria-label="件數序列" className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-border text-xs text-muted-foreground">
+            <th scope="col" className="py-1 font-medium">訊號</th>
+            <th scope="col" className="py-1 font-medium">最近各期件數</th>
+            <th scope="col" className="py-1 font-medium">突增（程式判定）</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {f.series.map((s) => (
+            <tr key={s.signal_id}>
+              <td className="py-1">{signalName(s)}</td>
+              <td className="py-1 font-mono text-xs">
+                {s.counts
+                  .slice(-8)
+                  .map((c) => c.count)
+                  .join('・')}
+              </td>
+              <td className="py-1 font-mono text-xs">
+                {s.anomaly
+                  ? `${s.anomaly.observed}（期望 ${s.anomaly.expected.toFixed(1)}，p = ${Number(s.anomaly.p_value.toPrecision(2))}）`
+                  : '—'}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

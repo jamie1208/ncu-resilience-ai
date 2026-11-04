@@ -16,6 +16,7 @@ from app.api.v1.admin import (
     resilience,
     scenarios,
     skills,
+    trends,
 )
 
 # router 層先擋未登入，避免新端點忘了加權限依賴就變成免登入
@@ -33,5 +34,6 @@ router.include_router(publications.router)
 router.include_router(relations.router)
 router.include_router(resilience.router)
 router.include_router(scenarios.router)
+router.include_router(trends.router)
 
 __all__ = ["router"]
