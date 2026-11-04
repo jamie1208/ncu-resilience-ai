@@ -11,6 +11,7 @@ import json
 import uuid
 from collections import deque
 from collections.abc import AsyncIterator, Callable, Mapping, Sequence
+from dataclasses import replace
 from datetime import UTC, date, datetime
 from typing import Any
 
@@ -41,6 +42,7 @@ from app.pipeline.analyze_item import (
     PipelineDeps,
     analyze_event,
     analyze_item,
+    build_deps,
 )
 from app.risk.engine import load_policy
 from app.worker.celery_app import celery_app
@@ -677,3 +679,42 @@ async def test_analyze_endpoint_requires_permission(
 def test_pipeline_tasks_are_registered() -> None:
     assert ANALYZE_ITEM_TASK in celery_app.tasks
     assert ANALYZE_EVENT_TASK in celery_app.tasks
+
+
+# ---------- 不跑 S01（使用者 2026-11-04 決定：來源都是中大，不再判斷校園相關性） ----------
+
+
+async def test_skip_relevance_goes_straight_to_s02(session: AsyncSession) -> None:
+    item = await add_item(session, await add_source(session, "facebook"), REPOST)
+    e = eid(item)
+    provider = SkillScript(
+        {
+            "event-extractor": [extraction(e)],
+            "event-classifier": [classification(e)],
+            "evidence-verifier": [verification({e: ("supports", "first_hand")}, "unverified")],
+            "risk-assessor": [risk(e)],
+        }
+    )
+
+    result = await analyze_item(session, item.id, replace(deps(provider), check_relevance=False))
+
+    assert result.outcome is Outcome.CREATED
+    assert "relevance-filter" not in provider.called
+    assert provider.called[0] == "event-extractor"
+    assert "relevance-filter" not in [r.skill_name for r in await runs(session)]
+
+
+async def test_skip_relevance_still_stops_non_events(session: AsyncSession) -> None:
+    item = await add_item(session, await add_source(session, "facebook"), REPOST)
+    provider = SkillScript({"event-extractor": [extraction(eid(item), is_event=False)]})
+
+    result = await analyze_item(session, item.id, replace(deps(provider), check_relevance=False))
+
+    assert result.outcome is Outcome.NOT_EVENT
+    assert provider.called == ["event-extractor"]
+    assert await count(session, Event) == 0
+
+
+def test_production_pipeline_skips_relevance(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-not-used")
+    assert build_deps().check_relevance is False
