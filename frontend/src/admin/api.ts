@@ -4,6 +4,7 @@
  * （登入回應提供，重新整理後改讀非 HttpOnly 的 `ncu_csrf` cookie）。
  */
 import { apiGet, apiRequest } from '../api/client'
+import type { Resilience } from '../lib/resilience'
 
 const V1 = '/api/v1'
 const CSRF_COOKIE = 'ncu_csrf'
@@ -658,4 +659,9 @@ export function listAuditLogs(limit = 20) {
 
 export async function listSkills(): Promise<SkillSummary[]> {
   return (await apiGet<SkillSummary[]>(`${V1}/admin/skills`)).data
+}
+
+/** 韌性成績單（P6-T05）：全部事件，`windowDays` 為時間窗天數。 */
+export async function getResilience(windowDays: number): Promise<Resilience> {
+  return (await apiGet<Resilience>(`${V1}/admin/resilience${query({ window_days: windowDays })}`)).data
 }

@@ -454,6 +454,7 @@ bash infra/scripts/backup.sh && bash infra/scripts/restore.sh --target local
 - **P6-T05 校園韌性成績單 CRI（後台與公開版）**（原 P4-T06）
   - 檔案：`app/resilience/cri.py`（四構面標準化，資料不足回傳 None）；後台報告頁加入資料覆蓋率、時間窗、樣本量、來源限制；公開版成績單頁標明「回報變多不等於校園變危險」
   - 驗證：`tests/unit/resilience/test_cri.py`（缺資料顯示 N/A，不產生假精確分數）
+  - 實作調整（指標定義與公開端點經使用者 2026-10-28 同意，其餘 AI 自行決定）：發現 = 事件建立台北日期 − S02 發生日期（負值算 0）的中位數，錨點 1／14 天；回應 = 事件建立到第一項改善措施進入處理的中位數，1／30 天；恢復 = 措施第一次處理到之後第一次恢復的中位數，3／60 天；調適 = 改善完成率（改進 ÷ 不含不追蹤）與 1 − 重複事件比例（時間窗內同地點同類別不只一件）的平均；錨點間線性換算；任何指標樣本 < 5 → 構面 None，四構面齊全才算 CRI、不重新加權，分數取整數；時間窗預設 180 天（後台可選 7–730），只用 as_of 當天結束前的事件與狀態變更，排除 false 與類別 none；參數為 `CriParams` 預設值。新增 `GET /api/v1/admin/resilience`（`app/api/v1/admin/resilience.py`，reports:read_internal）與公開端點 `GET /api/v1/public/resilience`（`app/api/v1/public/resilience.py`，只統計以事件內容公開中的事件、時間窗固定 180 天、只回彙總數字與限制說明，不含事件、地點、措施或 ID）；前端新增 `src/lib/resilience.ts`（共用型別與格式）、`admin/pages/Resilience.tsx`（`/admin/resilience`，可切換時間窗）、`public/pages/Resilience.tsx`（`/resilience`，醒目標明「回報變多不等於校園變危險」）及對應測試與 `src/test/resilienceFixtures.ts`，修改兩邊的路由、導覽與 api；公開閘道白名單（`infra/tunnel/nginx-public.conf`、`tunnel.sh` 檢查清單、`docs/runbooks/deploy.md`）加入 `/resilience`，`docs/architecture/threat-model-public.md` 列入新端點；新增 `tests/integration/test_resilience_api.py`。限制說明避開來源名稱（`test_public_exposure` 禁止公開回應出現 Facebook）
 
 ```bash
 cd backend && uv run pytest tests/unit/analytics tests/unit/resilience tests/integration/test_relations.py -q

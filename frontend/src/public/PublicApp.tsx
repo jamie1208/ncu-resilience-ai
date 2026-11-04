@@ -9,6 +9,7 @@ import { Events } from './pages/Events'
 import { Home } from './pages/Home'
 import { Progress } from './pages/Progress'
 import { Report } from './pages/Report'
+import { Resilience } from './pages/Resilience'
 import { matchPublicRoute, type PublicRoute } from './routes'
 import { PageIntro, SiteFooter } from './ui'
 
@@ -16,6 +17,7 @@ const NAV = [
   { to: '/', label: '最新動態', pages: ['home'] },
   { to: '/events', label: '事件查詢', pages: ['events', 'event'] },
   { to: '/progress', label: '改善進度', pages: ['progress'] },
+  { to: '/resilience', label: '韌性成績單', pages: ['resilience'] },
   { to: '/report', label: '匿名回報', pages: ['report'] },
   { to: '/about', label: '關於本站', pages: ['about'] },
 ] as const
@@ -30,6 +32,8 @@ function Page({ route }: { route: PublicRoute }) {
       return <EventReport key={route.id} id={route.id} />
     case 'progress':
       return <Progress />
+    case 'resilience':
+      return <Resilience />
     case 'about':
       return <About />
     case 'report':

@@ -56,9 +56,9 @@ check() {
   fi
 
   echo "公開網站與公開 API（應可存取）："
-  for path in / /events /events/00000000-0000-0000-0000-000000000000 /progress /about /report "$asset" \
+  for path in / /events /events/00000000-0000-0000-0000-000000000000 /progress /resilience /about /report "$asset" \
     /api/v1/public/feed /api/v1/public/notices /api/v1/public/categories \
-    /api/v1/public/events /api/v1/public/progress; do
+    /api/v1/public/events /api/v1/public/progress /api/v1/public/resilience; do
     expect allow GET "$path"
   done
   # 匿名回報：送空內容，只確認 POST 有到後端（得到驗證錯誤），不建立任何投稿
