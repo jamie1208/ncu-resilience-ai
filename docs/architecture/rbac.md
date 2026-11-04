@@ -73,6 +73,8 @@
 | POST | `/api/v1/admin/scenarios` | `scenarios:create` | `scenario.create` |
 | GET | `/api/v1/admin/scenarios` | `events:read_all` | |
 | GET | `/api/v1/admin/scenarios/{id}` | `events:read_all` | |
+| GET | `/api/v1/admin/trends/forecast` | `events:read_all` | |
+| POST | `/api/v1/admin/trends/forecast` | `events:analyze` | `trend_forecast.run` |
 | GET | `/api/v1/admin/ingestion-runs` | `ingestion_runs:read` | |
 | GET | `/api/v1/admin/ingestion-runs/health` | `ingestion_runs:read` | |
 | GET | `/api/v1/admin/audit-logs` | `audit_logs:read` | `audit_logs.read`（敏感讀取，經 `authorize()`） |

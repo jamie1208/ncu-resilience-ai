@@ -297,6 +297,11 @@ tasks:
   P7-T05:
     status: pending
   P7-T06:
+    status: done
+    updated_at: '2026-11-04T19:39:58+08:00'
+    note: 使用者 2026-11-04 決定：只手動觸發，不加每週排程
+    evidence: docs/progress/records/P7-T06-20261104.md
+  P7-T07:
     status: pending
 gates:
   G0-1:
@@ -1312,4 +1317,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-11-04T18:35:25+08:00'
+- at: '2026-11-04T19:25:30+08:00'
+  id: P7-T06
+  from: pending
+  to: in_progress
+  note: 使用者 2026-11-04 決定：只手動觸發，不加每週排程
+- at: '2026-11-04T19:39:58+08:00'
+  id: P7-T06
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-11-04T19:39:58+08:00'
