@@ -10,6 +10,8 @@
    中性提醒，並標記 `needs_review` 留給使用者在後台判斷。
 3. S07 的原因一律不公開（ADR-0015：公開版小報告只放影響與建議）；依據推測原因（hypothesized）
    的 S08 措施，以及由這類措施建立的改善措施（P4-T05）也不公開，避免措施文字間接把推測寫成事實。
+   例外（P7-T07，ADR-0017）：使用者在後台人工確認的原因視為 confirmed，依據它的措施可以公開，
+   顯示方式與依據校方來源確認的措施相同；原因本身仍不公開，邊界 2、5 照常適用。
 4. 來源只列官方來源（`is_official_source`）的名稱與連結；Facebook、匿名投稿等其他來源不列出，
    只透過 S02 的 AI 摘要呈現，原文與連結永不公開。
 5. 所有公開文字一律經 `mask_pii()`。
@@ -101,6 +103,8 @@ class ReportInput:
     impacts: Sequence[Mapping[str, Any]] = ()
     causes: Sequence[Mapping[str, Any]] = ()
     measures: Sequence[Mapping[str, Any]] = ()
+    confirmed_cause_ids: frozenset[str] = frozenset()
+    """這份報告中經人工確認的推測原因代號（P7-T07）。"""
 
 
 @dataclass(frozen=True)
@@ -114,6 +118,8 @@ class ActionInput:
     updated_at: datetime
     cause_basis: str | None = None
     """由 S08 措施建立時，該措施依據的原因性質；手動建立為 None。"""
+    cause_confirmed: bool = False
+    """依據的推測原因已在最新一份有效小報告中人工確認（P7-T07）。"""
 
 
 @dataclass(frozen=True)
@@ -175,7 +181,7 @@ def evaluate(
 
     reasons: list[str] = []
     measures = _public_measures(item.report)
-    actions = [a for a in item.actions if a.cause_basis != "hypothesized"]
+    actions = [a for a in item.actions if a.cause_basis != "hypothesized" or a.cause_confirmed]
     public_texts = _public_texts(item, measures) + [a.title for a in actions]
     allegation = any(texts.allegation.matches(t) for t in public_texts)
     if allegation:
@@ -212,10 +218,15 @@ def evaluate(
 
 
 def _public_measures(report: ReportInput | None) -> list[Mapping[str, Any]]:
-    """依據推測原因的措施不公開。"""
+    """依據推測原因的措施不公開，除非該原因經人工確認。"""
     if report is None:
         return []
-    return [m for m in report.measures if m.get("cause_basis") != "hypothesized"]
+    return [
+        m
+        for m in report.measures
+        if m.get("cause_basis") != "hypothesized"
+        or str(m.get("cause_id")) in report.confirmed_cause_ids
+    ]
 
 
 def _public_texts(item: PublicationInput, measures: Iterable[Mapping[str, Any]]) -> list[str]:

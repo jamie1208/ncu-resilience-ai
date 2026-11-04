@@ -7,7 +7,7 @@ from app.models.audit import AuditLog
 from app.models.base import Base
 from app.models.event import Event, EventEvidence, Location
 from app.models.publication import Publication, PublicationTakedown, PublicationVersion
-from app.models.report import EventReport
+from app.models.report import EventReport, ReportCauseDecision
 from app.models.response_action import ResponseAction, ResponseActionTransition
 from app.models.scenario import ScenarioRun
 from app.models.source import (
@@ -36,6 +36,7 @@ __all__ = [
     "Publication",
     "PublicationTakedown",
     "PublicationVersion",
+    "ReportCauseDecision",
     "ResponseAction",
     "ResponseActionTransition",
     "RiskAssessment",

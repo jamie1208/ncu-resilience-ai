@@ -14,6 +14,9 @@
 - first_hand：以上皆非（例如只有兩份第一手來源支持），不足以公開內容。
 monitoring、resolved 沿用進入後續追蹤前的查證結果（從 `event.verify` 稽核的 from／to 推得）。
 
+人工確認原因（P7-T07）：最新有效小報告中經人工確認的原因代號交給公開規則；改善措施只有在
+來自同一份報告、且依據的原因已確認時才算確認（舊報告的確認不沿用）。
+
 Celery beat 每分鐘執行一次 `sync_all()`；公開 API 只讀取這裡寫入的結果。
 """
 
@@ -52,6 +55,7 @@ from app.publishing.policy import (
     evaluate,
     load_policy,
 )
+from app.reports.cause_decisions import confirmed_cause_ids
 from app.reports.service import latest_report
 from app.services.audit import record_audit
 from app.worker.celery_app import SYNC_PUBLICATIONS_TASK, celery_app
@@ -168,9 +172,14 @@ async def publication_input(session: AsyncSession, event: Event) -> PublicationI
     )
     report = await latest_report(session, event.id)
     report_input = None
+    confirmed: frozenset[str] = frozenset()
     if report is not None and report.invalidated_at is None:
+        confirmed = await confirmed_cause_ids(session, report.id)
         report_input = ReportInput(
-            impacts=report.impacts, causes=report.causes, measures=report.measures
+            impacts=report.impacts,
+            causes=report.causes,
+            measures=report.measures,
+            confirmed_cause_ids=confirmed,
         )
     actions = await session.scalars(
         select(ResponseAction)
@@ -196,6 +205,9 @@ async def publication_input(session: AsyncSession, event: Event) -> PublicationI
                 due_date=_taipei_date(a.due_at),
                 updated_at=a.updated_at,
                 cause_basis=(a.measure or {}).get("cause_basis"),
+                cause_confirmed=report is not None
+                and a.report_id == report.id
+                and str((a.measure or {}).get("cause_id")) in confirmed,
             )
             for a in actions
         ],

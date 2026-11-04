@@ -119,7 +119,18 @@ export interface ReportCause {
   quotes: { evidence_id: string; quote: string }[]
   to_verify: string | null
   evidence_ids: string[]
+  /** 目前的人工確認（P7-T07）；沒有時為 null。basis 仍是 S07 的判定，不會改寫。 */
+  manual_confirmation?: ManualConfirmation | null
 }
+
+/** 推測原因的人工確認：確認依據、決定者與時間（ADR-0017）。 */
+export interface ManualConfirmation {
+  basis: string
+  decided_by: string
+  decided_at: string
+}
+
+export type CauseDecision = 'confirmed' | 'hypothesized'
 
 export type MeasureAudience = 'students' | 'school'
 export type MeasureHorizon = 'short' | 'mid' | 'long'
@@ -615,6 +626,24 @@ export async function verifyEvent(eventId: string, status: VerifyStatus, note = 
   const body = trimmed ? { status, note: trimmed } : { status }
   return (await post<{ id: string; status: EventStatus }>(`/admin/events/${id(eventId)}/verify`, body))
     .data
+}
+
+/** 人工確認（需確認依據）或回滾小報告中的推測原因；回傳更新後的小報告。 */
+export async function decideCause(
+  eventId: string,
+  reportId: string,
+  causeId: string,
+  decision: CauseDecision,
+  basis = '',
+): Promise<EventReport> {
+  const trimmed = basis.trim()
+  const body = decision === 'confirmed' ? { report_id: reportId, decision, basis: trimmed } : { report_id: reportId, decision }
+  return (
+    await post<EventReport>(
+      `/admin/events/${id(eventId)}/report/causes/${encodeURIComponent(causeId)}/decision`,
+      body,
+    )
+  ).data
 }
 
 /** 重跑事件分析（非同步排入佇列）。 */

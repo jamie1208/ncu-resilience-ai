@@ -15,6 +15,10 @@
   S08 措施），排入 Celery 佇列後回 202；事件不實或已封存回 CONFLICT。需要 `events:analyze`，
   寫入稽核 `event.report`。
   建議轉給哪個單位只顯示給使用者，系統不寄信給任何單位。
+- `POST /api/v1/admin/events/{id}/report/causes/{cause_id}/decision`（P7-T07，ADR-0017）：
+  把最新一份有效小報告中的推測原因標為人工確認（需填確認依據）或回滾；body 帶 report_id，
+  報告已被重新產生或失效時回 CONFLICT。需要 `events:verify`，寫入稽核 `report.cause_decide`。
+  回傳更新後的小報告；事件詳細中每個原因附 `manual_confirmation`（目前的人工確認，沒有時為 null）。
 """
 
 from __future__ import annotations
@@ -24,7 +28,7 @@ from collections.abc import Callable
 from datetime import date
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Path, Query, status
 from pydantic import AwareDatetime, BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import distinct_on
@@ -40,8 +44,16 @@ from app.core.security import Permission, Principal
 from app.domain.states import EventStatus, StateTransitionError, transition
 from app.models.ai import RiskAssessment
 from app.models.event import Event, EventEvidence
-from app.models.report import EventReport
+from app.models.report import EventReport, ReportCauseDecision
 from app.models.source import Source, SourceItem
+from app.reports.cause_decisions import (
+    CauseConflictError,
+    CauseDecision,
+    CauseDecisionError,
+    CauseInvalidError,
+    current_decisions,
+    decide_cause,
+)
 from app.reports.service import (
     ABSTAIN_MESSAGE,
     FAILED_MESSAGE,
@@ -197,7 +209,31 @@ def _referrals(measures: list[dict[str, Any]]) -> list[Referral]:
     return [Referral(unit=unit, evidence_ids=ids) for unit, ids in units.items()]
 
 
-def _report_out(report: EventReport) -> ReportOut:
+class ManualConfirmation(BaseModel):
+    """原因目前的人工確認（P7-T07）：確認依據、決定者與時間。"""
+
+    basis: str
+    decided_by: str
+    decided_at: AwareDatetime
+
+
+def _causes(
+    causes: list[dict[str, Any]], decisions: dict[str, ReportCauseDecision]
+) -> list[dict[str, Any]]:
+    """原因附上目前的人工確認；S07 的 basis 與標示不改寫。"""
+    items = []
+    for c in causes:
+        d = decisions.get(str(c.get("cause_id")))
+        manual = None
+        if d is not None and d.decision == CauseDecision.CONFIRMED and d.basis is not None:
+            manual = ManualConfirmation(
+                basis=d.basis, decided_by=d.decided_by, decided_at=d.decided_at
+            ).model_dump(mode="json")
+        items.append({**c, "manual_confirmation": manual})
+    return items
+
+
+def _report_out(report: EventReport, decisions: dict[str, ReportCauseDecision]) -> ReportOut:
     return ReportOut(
         id=report.id,
         trigger=report.trigger,
@@ -207,7 +243,7 @@ def _report_out(report: EventReport) -> ReportOut:
         verification_status=report.verification_status,
         risk_level=report.risk_level,
         impacts=_section("ok" if report.impacts else "unavailable", report.impacts),
-        causes=_section(report.causes_status, report.causes),
+        causes=_section(report.causes_status, _causes(report.causes, decisions)),
         missing_information=report.missing_information,
         measures=_section(report.measures_status, report.measures),
         referrals=_referrals(report.measures),
@@ -215,6 +251,19 @@ def _report_out(report: EventReport) -> ReportOut:
         solution_run_id=report.solution_run_id,
         created_at=report.created_at,
     )
+
+
+async def _report_data(session: AsyncSession, report: EventReport) -> dict[str, Any]:
+    decisions = await current_decisions(session, report.id)
+    return _report_out(report, decisions).model_dump(mode="json")
+
+
+class CauseDecisionIn(BaseModel):
+    """人工確認或回滾一個推測原因；basis 為確認依據（確認時必填，不得含個資）。"""
+
+    report_id: uuid.UUID
+    decision: CauseDecision
+    basis: Annotated[str | None, Field(max_length=500)] = None
 
 
 class VerifyIn(BaseModel):
@@ -356,7 +405,7 @@ async def get_event(event_id: uuid.UUID, session: Session, _: CanRead) -> dict[s
         "summary": summary,
         "evidence": evidence,
         "risk_assessments": risks,
-        "report": _report_out(report).model_dump(mode="json") if report is not None else None,
+        "report": await _report_data(session, report) if report is not None else None,
     }
     return envelope(data)
 
@@ -433,3 +482,33 @@ async def generate_event_report(
     await session.commit()
     enqueue(event_id, request_id)
     return envelope({"event_id": str(event_id), "status": "queued"})
+
+
+@router.post("/{event_id}/report/causes/{cause_id}/decision")
+async def decide_report_cause(
+    event_id: uuid.UUID,
+    cause_id: Annotated[str, Path(max_length=32)],
+    body: CauseDecisionIn,
+    session: Session,
+    principal: CanVerify,
+) -> dict[str, Any]:
+    """人工確認或回滾小報告中的推測原因；回傳更新後的小報告。"""
+    try:
+        await decide_cause(
+            session, principal, event_id, body.report_id, cause_id, body.decision, basis=body.basis
+        )
+    except CauseInvalidError as e:
+        raise ApiError(
+            ErrorCode.VALIDATION_ERROR,
+            str(e),
+            details=[{"field": f"body.{e.field}", "message": str(e)}],
+        ) from None
+    except CauseConflictError as e:
+        raise ApiError(ErrorCode.CONFLICT, str(e)) from None
+    except CauseDecisionError as e:
+        raise ApiError(ErrorCode.NOT_FOUND, str(e)) from None
+    await session.commit()
+    report = await session.get(EventReport, body.report_id)
+    if report is None:  # 確認後同一個請求內被刪除（事件刪除）
+        raise ApiError(ErrorCode.NOT_FOUND, "找不到事件小報告")
+    return envelope(await _report_data(session, report))
