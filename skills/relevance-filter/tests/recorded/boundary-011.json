@@ -1,0 +1,21 @@
+{
+  "case_id": "boundary-011",
+  "skill_version": "1.2.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": false,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "台大資工系今天系館停電，晚上的課全部改線上。"
+      }
+    ],
+    "reason": "內容明確提到「台大資工系」，是其他學校的系館停電，未提及中央大學或其校園受影響。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

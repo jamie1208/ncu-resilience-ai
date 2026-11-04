@@ -1,6 +1,6 @@
 {
   "case_id": "boundary-008",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -14,7 +14,7 @@
         "quote": "剛剛中大路跟雙連坡路口有機車擦撞，騎車經過的同學小心。"
       }
     ],
-    "reason": "內容提到校內地點「中大路」與「雙連坡」，為中央大學周邊生活圈，提醒師生注意、可能影響通行。",
+    "reason": "貼文明確提到「中大路」與「雙連坡」，這些為中央大學校園或周邊生活圈的地點，內容會影響校內師生。",
     "confidence": 0.95,
     "abstain_reason": null
   }

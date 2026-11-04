@@ -1,6 +1,6 @@
 {
   "case_id": "normal-016",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -14,8 +14,8 @@
         "quote": "北村機車停車場旁邊的腳踏車鎖被剪掉，我的車不見了，有人也遇到嗎？"
       }
     ],
-    "reason": "貼文明確提到「北村機車停車場」，屬於中央大學校內地點，描述校內遺失財物，會影響校內師生。",
-    "confidence": 0.9,
+    "reason": "貼文提到「北村機車停車場」，為中央大學校內地點，描述校內停車及失竊情形，會影響本校師生與校園安全，故相關。",
+    "confidence": 0.95,
     "abstain_reason": null
   }
 }

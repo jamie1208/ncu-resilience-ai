@@ -2,7 +2,7 @@
 name: relevance-filter
 description: S01 校園相關性過濾。判斷一篇來源文章（校內公告、氣象特報、Facebook 社團貼文）是否與國立中央大學校園相關，輸出 is_campus_relevant、判斷理由、引用的 evidence_ids 與逐字抄錄的證據原句；內容不足時 abstain。分析管線的第一步，不相關的文章不進入後續的事件抽取。
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   schema_version: "1"
 ---
 
@@ -22,7 +22,7 @@ metadata:
 
 ## 步驟
 
-1. 讀完每份證據的標題與內文，找出和「中央大學」「校內地點」「周邊生活圈」「桃園市」有關的描述；校內地點清單見 `references/relevance-criteria.md`，`facebook` 貼文提到這些地點或學生常用的簡稱（例如「K中」「教研」「北村」）時，即使沒寫校名也視為中央大學，不要因為沒寫校名就 abstain。
+1. 讀完每份證據的標題與內文，找出和「中央大學」「校內地點」「周邊生活圈」「桃園市」有關的描述；校內地點清單見 `references/relevance-criteria.md`，`facebook` 貼文提到這些地點、學生常用的簡稱（例如「K中」「教研」「北村」）或校內單位的簡稱（例如「課務組」「認知所」「中央財金」）時，即使沒寫校名也視為中央大學，不要因為沒寫校名就 abstain。
 2. 依 `references/relevance-criteria.md` 判斷是否相關：看內容本身，不是看貼在哪裡。
 3. 從證據中**逐字**抄錄 1～3 句支持判斷的原句放進 `evidence_spans`：
    - 每句是證據中連續的一段文字，不要改寫、不要摘要、不要加刪標點，每句 120 字以內；

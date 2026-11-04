@@ -1,6 +1,6 @@
 {
   "case_id": "normal-007",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -11,15 +11,11 @@
     "evidence_spans": [
       {
         "evidence_id": "e1",
-        "quote": "大氣系團隊颱風研究登上國際期刊"
-      },
-      {
-        "evidence_id": "e1",
         "quote": "本校大氣科學系研究團隊分析近十年颱風資料，研究成果刊登於國際期刊。"
       }
     ],
-    "reason": "來源為本校官方（ncu-news），且內文明確提到「本校大氣科學系研究團隊」，顯示事件與中央大學師生與研究成果相關。",
-    "confidence": 0.95,
+    "reason": "內容明確提到「本校大氣科學系」的研究成果，屬於中央大學系所發布的學術新聞，與校園相關。",
+    "confidence": 0.92,
     "abstain_reason": null
   }
 }

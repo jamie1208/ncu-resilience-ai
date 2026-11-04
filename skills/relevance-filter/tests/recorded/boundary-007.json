@@ -1,6 +1,6 @@
 {
   "case_id": "boundary-007",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -11,15 +11,11 @@
     "evidence_spans": [
       {
         "evidence_id": "e1",
-        "quote": "中大清大合辦 AI 研討會"
-      },
-      {
-        "evidence_id": "e1",
         "quote": "本校與清華大學合辦人工智慧研討會，本週六在中央大學國鼎圖書館國際會議廳舉行。"
       }
     ],
-    "reason": "內文明確指出活動在「中央大學國鼎圖書館國際會議廳」舉行，且以「本校」表明為中央大學相關的合辦研討會。",
-    "confidence": 0.97,
+    "reason": "證據明確寫出活動在「中央大學國鼎圖書館國際會議廳」舉行，屬於在本校舉辦的學術活動，會影響中央大學師生。",
+    "confidence": 0.98,
     "abstain_reason": null
   }
 }

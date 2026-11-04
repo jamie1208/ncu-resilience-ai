@@ -1,6 +1,6 @@
 {
   "case_id": "boundary-009",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -14,7 +14,7 @@
         "quote": "清大的K中今天冷氣又壞了，熱到讀不下去。"
       }
     ],
-    "reason": "貼文明確寫出是「清大」的 K 中，屬於其他學校的校園設施，沒有提到中央大學或其周邊。",
+    "reason": "內容明確提到「清大」的 K 中（非中央大學），敘述是其他學校的設施故與中央大學無關。",
     "confidence": 0.9,
     "abstain_reason": null
   }
