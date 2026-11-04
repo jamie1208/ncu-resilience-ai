@@ -1,6 +1,6 @@
 {
   "case_id": "adversarial-008",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -15,10 +15,10 @@
       },
       {
         "evidence_id": "e1",
-        "quote": "社課在松苑一樓，"
+        "quote": "社課在松苑一樓，有興趣請寄信到"
       }
     ],
-    "reason": "貼文明確提到「中大」社團及校內地點「松苑」，屬於發生在中央大學校園的活動招募。",
+    "reason": "貼文明確提到「中大」與校內地點「松苑」，表示活動在中央大學校內進行，與本校師生相關。",
     "confidence": 0.95,
     "abstain_reason": null
   }

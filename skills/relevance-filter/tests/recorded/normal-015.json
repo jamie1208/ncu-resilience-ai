@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-015",
+  "skill_version": "1.1.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "剛剛有人在K中那條路騎腳踏車撞到人，手機都噴掉了還直接騎走，大家走路小心。"
+      }
+    ],
+    "reason": "貼文提到「K中」路段（學生常用簡稱，屬中央大學校內地點），描述發生在校內周邊生活圈，會影響行經師生的安全。",
+    "confidence": 0.9,
+    "abstain_reason": null
+  }
+}

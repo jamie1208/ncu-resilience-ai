@@ -1,0 +1,21 @@
+{
+  "case_id": "normal-017",
+  "skill_version": "1.1.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "國泰樹草坪旁邊那盞路燈壞了好幾天，晚上走過去超暗，騎車要小心。"
+      }
+    ],
+    "reason": "提到「國泰樹草坪」，為中央大學校內地標之一，內容描述校內路燈故障並影響夜間通行，屬於影響校園安全的資訊。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

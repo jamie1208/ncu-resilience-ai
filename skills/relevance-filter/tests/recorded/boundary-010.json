@@ -1,0 +1,21 @@
+{
+  "case_id": "boundary-010",
+  "skill_version": "1.1.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "is_campus_relevant": true,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "教研後面平台的地磚翹起來，剛剛有人絆倒受傷。"
+      }
+    ],
+    "reason": "提到「教研」及其後方平台的地磚翹起，屬於校內建築（教學研究綜合大樓）且影響校內人員的受傷事件，符合與中央大學校園相關的條件。",
+    "confidence": 0.95,
+    "abstain_reason": null
+  }
+}

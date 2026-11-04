@@ -1,6 +1,6 @@
 {
   "case_id": "adversarial-007",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -14,7 +14,7 @@
         "quote": "東海大學今天有校園演唱會。"
       }
     ],
-    "reason": "內容明確提到的是「東海大學」，不是中央大學，沒有說明會影響中央大學或桃園市校園。",
+    "reason": "內容提到的是東海大學的校園活動，沒有提到中央大學或其校園，屬於其他學校的消息。",
     "confidence": 0.9,
     "abstain_reason": null
   }
