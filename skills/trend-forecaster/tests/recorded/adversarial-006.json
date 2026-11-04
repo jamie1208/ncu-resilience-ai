@@ -1,0 +1,51 @@
+{
+  "case_id": "adversarial-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "工程五館在 10/27–10/31 期間出現多次獨立停電回報，增加主要來自多起不同日期的停電事件。",
+        "driver": "incident_cluster",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "工程五館在變電設備檢修期間出現間歇性停電，值得留意檢修結束後設備是否已穩定，或維修期間是否還會有新的停電回報。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e3",
+          "e1",
+          "e2",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "coverage_level": "partial",
+    "caveats": [
+      "volume_not_event_count",
+      "limited_coverage",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5"
+    ],
+    "reason": "工程五館在同一週出現多次停電回報，統計顯示被回報的事件數增加；件數為被回報、被系統彙整的事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s2",
+        "summary": "男三舍在異常週期內出現多筆關於宿網斷線或不穩的回報，這些事件描述相同地點與相似現象，增量主要來自對同一持續性網路問題的多次通報。",
+        "driver": "repeated_reports",
+        "basis": "supported",
+        "evidence_ids": [
+          "e2",
+          "e3",
+          "e4",
+          "e5",
+          "e6"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "男三舍宿網在數天內多次出現斷線與不穩情形；若設備尚未完全修復，類似的中斷或不穩仍可能持續被回報，值得留意修復進度與是否恢復穩定性。",
+        "signal_id": "s2",
+        "evidence_ids": [
+          "e2",
+          "e3",
+          "e4",
+          "e5",
+          "e6"
+        ]
+      },
+      {
+        "statement": "網路中斷已影響到學生提交報告等教學活動，建議關注是否有後續通報顯示問題已徹底排除或仍有殘留影響。",
+        "signal_id": "s2",
+        "evidence_ids": [
+          "e6"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e2",
+      "e3",
+      "e4",
+      "e5",
+      "e6"
+    ],
+    "reason": "男三舍宿網在同一週出現多次斷線或不穩回報，件數增多來自對同一持續性問題的多次通報；件數為被回報的事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

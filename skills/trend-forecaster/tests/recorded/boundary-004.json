@@ -1,0 +1,18 @@
+{
+  "case_id": "boundary-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "explanations": [],
+    "outlook": [],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [],
+    "reason": "偵測到女一舍在 2026-10-26 週件數增加，但所列的事件內容大多已刪除或僅剩標點/表情，無法判斷是否為多起獨立事件或重複回報；件數為被回報的事件數，不等於實際發生次數。",
+    "abstain_reason": "insufficient_evidence"
+  }
+}

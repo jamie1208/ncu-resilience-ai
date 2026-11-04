@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "trend-forecaster 輸入",
+  "description": "P6-T03 的時序統計結果（補零後的週／月件數序列與 Poisson 突增偵測結果）、資料覆蓋率，以及異常週期中的事件。series 與 coverage 由程式計算，放在 <skill_input> 中；evidence 是事件的標題與摘要，屬不可信的來源內容，Skill Runner 會包在 <untrusted_source> 中。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence",
+    "freq",
+    "as_of",
+    "series",
+    "coverage"
+  ],
+  "properties": {
+    "evidence": {
+      "description": "異常週期中被彙整成事件的報導（每個事件一份）；沒有異常時可以是空陣列",
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "source_code",
+          "text"
+        ],
+        "properties": {
+          "evidence_id": {
+            "description": "證據識別碼，由 Runner 指定；輸出只能引用這裡出現的值",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "source_code": {
+            "description": "事件主要來源的代碼（config/sources.yaml）",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "title": {
+            "description": "事件標題",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 300
+          },
+          "text": {
+            "description": "事件摘要（不是原文）",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "published_at": {
+            "description": "aware UTC 時間（ISO 8601）",
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "freq": {
+      "description": "統計週期：week（ISO 週，週一起算）或 month",
+      "type": "string",
+      "enum": [
+        "week",
+        "month"
+      ]
+    },
+    "as_of": {
+      "description": "統計截止日（台北時間）",
+      "type": "string",
+      "format": "date"
+    },
+    "series": {
+      "description": "要解讀的件數序列（某類別、某地點；地點為 null 表示全校）",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "signal_id",
+          "event_type",
+          "location",
+          "counts",
+          "anomaly",
+          "evidence_ids"
+        ],
+        "properties": {
+          "signal_id": {
+            "description": "訊號識別碼，由程式指定",
+            "type": "string",
+            "pattern": "^s[1-6]$"
+          },
+          "event_type": {
+            "description": "事件類別（S03 分類法）",
+            "type": "string",
+            "enum": [
+              "facility",
+              "weather",
+              "security",
+              "traffic",
+              "health",
+              "fire",
+              "academic",
+              "infosec"
+            ]
+          },
+          "location": {
+            "description": "地點名稱（已經過個資遮蔽）；null 表示全校合計",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 60
+          },
+          "counts": {
+            "description": "補零後依時間排序的各期件數",
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 26,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "period_start",
+                "count"
+              ],
+              "properties": {
+                "period_start": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "anomaly": {
+            "description": "程式判定的最近一次突增（期望值只用之前各期的 EWMA）；沒有異常時為 null",
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "required": [
+              "period_start",
+              "observed",
+              "expected",
+              "p_value"
+            ],
+            "properties": {
+              "period_start": {
+                "type": "string",
+                "format": "date"
+              },
+              "observed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "expected": {
+                "type": "number",
+                "minimum": 0
+              },
+              "p_value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "evidence_ids": {
+            "description": "異常週期中屬於這個序列的事件（evidence 的 evidence_id）",
+            "type": "array",
+            "maxItems": 12,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "coverage": {
+      "description": "統計期間的資料覆蓋率，由程式依各來源的實際擷取紀錄計算",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "level",
+        "ratio",
+        "note"
+      ],
+      "properties": {
+        "level": {
+          "description": "full：所有核准來源都有擷取；partial：部分來源有缺漏或來源組成有變；low：大部分期間缺資料",
+          "type": "string",
+          "enum": [
+            "full",
+            "partial",
+            "low"
+          ]
+        },
+        "ratio": {
+          "description": "實際擷取天數 ÷ 應擷取天數（所有來源合計）；無法計算時為 null",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "note": {
+          "description": "程式產生的覆蓋率說明，例如哪個來源哪幾天沒有擷取、何時新增來源",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 300
+        }
+      }
+    }
+  }
+}

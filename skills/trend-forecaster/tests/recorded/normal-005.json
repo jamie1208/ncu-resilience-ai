@@ -1,0 +1,61 @@
+{
+  "case_id": "normal-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "男九舍在異常週期內出現多起不同時間與地點的小型竊盜回報（腳踏車與機車置物箱），件數增加主要來自多起獨立事件。",
+        "driver": "incident_cluster",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "男九舍車棚及置物區在短期間內出現多起竊盜通報，值得留意是否持續發生並關注後續通報情況。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      },
+      {
+        "statement": "校方安全單位已發出提醒，若後續仍有多起回報，可關注是否出現共同手法或集中地點供進一步處理。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e3",
+          "e1",
+          "e2",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5"
+    ],
+    "reason": "男九舍在本週被回報多起竊盜事件，增加來源為多起獨立回報；件數為系統彙整的回報事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

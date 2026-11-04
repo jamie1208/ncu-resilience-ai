@@ -1,0 +1,66 @@
+{
+  "case_id": "normal-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "本週多筆設施相關回報出現在同一週，但覆蓋說明指出該週起新增 Facebook 資料來源，增加件數可能由此來源補擷取所致；事件本身也包含多處不同場域的獨立設施故障。",
+        "driver": "coverage_change",
+        "basis": "hypothesized",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5",
+          "e6"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "多個不同建築與設施在同一週被回報，值得關注是否為資料來源擴增後發現以往未被蒐集的小型設施問題。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5",
+          "e6"
+        ]
+      },
+      {
+        "statement": "若後續週期覆蓋率維持或回復，觀察是否仍持續出現分散的設施故障，可協助判斷是否為真實增加或僅為回報量改變。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5",
+          "e6"
+        ]
+      }
+    ],
+    "coverage_level": "partial",
+    "caveats": [
+      "volume_not_event_count",
+      "limited_coverage",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5",
+      "e6"
+    ],
+    "reason": "本週設施類事件件數突增同時伴隨新增來源的說明，增加可能由資料覆蓋變動與多點小型故障共同造成；件數為被回報事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

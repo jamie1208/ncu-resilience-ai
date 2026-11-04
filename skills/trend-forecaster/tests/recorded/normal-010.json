@@ -1,0 +1,60 @@
+{
+  "case_id": "normal-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "本週多起報導均提到豪雨與校內淹水或滲水，增加量與天候相關，似乎由暴雨/豪雨所致。",
+        "driver": "seasonal",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5",
+          "e6"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "校內多處低窪處、地下室與宿舍排水位置有淹水或滲水通報，值得留意排水設施與低窪地帶在豪雨期間的情況。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5",
+          "e6"
+        ]
+      },
+      {
+        "statement": "若豪雨持續或短時強降雨再發，類似的積水或滲水通報可能仍會出現，建議關注官方天氣與校內通報。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5",
+      "e6"
+    ],
+    "reason": "本週被回報的事件以豪雨相關的淹水／滲水為主，顯示被回報的件數增加與天候有關；件數為系統彙整的回報事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

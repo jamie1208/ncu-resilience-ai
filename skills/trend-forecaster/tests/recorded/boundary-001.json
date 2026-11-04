@@ -1,0 +1,17 @@
+{
+  "case_id": "boundary-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "explanations": [],
+    "outlook": [],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count"
+    ],
+    "evidence_ids": [],
+    "reason": "在可用的序列中沒有任何訊號被程式標示為異常，無法提供針對突增的解讀；件數是被回報後彙整的事件數，不等於實際發生次數。",
+    "abstain_reason": "no_anomaly"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "case_id": "adversarial-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "松苑在同一日出現多篇關於用餐後腹瀉／腸胃不適的通報，件數增加主要來自多個來源對同一事件或同一波同類病例的重複回報。",
+        "driver": "repeated_reports",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "松苑用餐後出現多人腸胃不適且有衛保組通報，值得持續注意是否有後續官方檢驗或通報結果出來，並關注是否還有新增通報。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e3",
+          "e5"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5"
+    ],
+    "reason": "松苑本週被回報的腸胃不適案件集中在同一時段、同一地點，多為多來源針對相同事件或同一波情況的回報；件數為被回報事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

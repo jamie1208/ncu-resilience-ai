@@ -1,0 +1,18 @@
+{
+  "case_id": "boundary-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "explanations": [],
+    "outlook": [],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [],
+    "reason": "偵測到全校層級的安全類別在 2026-10-26 週件數突增，但該異常週期沒有對應的事件內容可供判讀，無法據此判定增幅來源或給出可靠解釋；件數為被回報的事件數，不等於實際發生次數。",
+    "abstain_reason": "insufficient_evidence"
+  }
+}

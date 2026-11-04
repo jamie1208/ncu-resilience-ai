@@ -5,6 +5,9 @@
 - S08 solution-planner：`basis_by_cause`（措施回填的原因性質，依 cause_id 排序成
   「c1=confirmed;c2=hypothesized」，同一原因回填不一致記為 conflict）、
   `hypotheses_investigated`（每個待查證原因都至少有一項 investigate 措施）。
+- S09 trend-forecaster（P7-T01）：`explained_signals`（有解釋的統計訊號，依 signal_id 排序成
+  「s1;s3」，abstain 為 None）、`caveats_complete`（標註聲量≠事件數，覆蓋率不是 full 時也標註
+  limited_coverage）。
 """
 
 from __future__ import annotations
@@ -52,3 +55,16 @@ def solution_plan_fields(output: Mapping[str, Any]) -> dict[str, Any]:
         "basis_by_cause": ";".join(f"{c}={labels[c]}" for c in sorted(labels)),
         "hypotheses_investigated": hypotheses <= investigated,
     }
+
+
+def trend_forecast_fields(output: Mapping[str, Any]) -> dict[str, Any]:
+    """S09 輸出的衍生欄位；`caveats_complete` 在 abstain 時同樣檢查。"""
+    caveats = set(output.get("caveats") or [])
+    complete = "volume_not_event_count" in caveats and (
+        output.get("coverage_level") == "full" or "limited_coverage" in caveats
+    )
+    explained: str | None = None
+    if output.get("status") == "ok":
+        ids = {str(e.get("signal_id")) for e in _items(output, "explanations")}
+        explained = ";".join(sorted(ids))
+    return {"explained_signals": explained, "caveats_complete": complete}

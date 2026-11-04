@@ -1,0 +1,51 @@
+{
+  "case_id": "boundary-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "總圖在多個不同日期與樓層出現漏水與積水回報，且館方說明屋頂防水層老化造成多處漏水，增加主要來自多起獨立但相關的漏水事件。",
+        "driver": "incident_cluster",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "總圖在不同樓層、連續多日出現漏水與座位封鎖，值得留意防水修復完成前是否還會再出現新的漏水回報。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "short_history",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5"
+    ],
+    "reason": "總圖被回報的漏水事件在多個日期與樓層增加，館方說明為防水層老化；件數為被回報的事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "case_id": "adversarial-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "男九舍在異常週期內於不同日期出現多起竊案報導（腳踏車、機車與車棚失竊），增加主要來自多起獨立事件。",
+        "driver": "incident_cluster",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "男九舍車棚與停放交通工具在短時間內有多起失竊回報，值得留意是否持續發生並檢視防護與巡查措施。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "coverage_level": "partial",
+    "caveats": [
+      "volume_not_event_count",
+      "limited_coverage",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5"
+    ],
+    "reason": "男九舍在本週被回報的失竊事件數明顯增加，這反映被回報的事件數量上升；件數代表系統彙整到的回報，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

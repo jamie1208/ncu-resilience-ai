@@ -1,0 +1,50 @@
+{
+  "case_id": "normal-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "異常週期內多則通報都明確指向颱風造成的樹倒、淹水與停班停課，件數增加可能與颱風相關的天候事件增加有關。",
+        "driver": "seasonal",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "多起通報集中在同一颱風期間，值得持續留意後續天候造成的設施與淹水通報是否仍有增加。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5"
+    ],
+    "reason": "本週天候相關事件集中在颱風當日的多起通報，顯示被回報的氣象災害事件增加；件數為回報或彙整的事件數，不等於實際發生次數。",
+    "abstain_reason": null
+  }
+}

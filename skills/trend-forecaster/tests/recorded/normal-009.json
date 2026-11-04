@@ -1,0 +1,61 @@
+{
+  "case_id": "normal-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "explanations": [
+      {
+        "signal_id": "s1",
+        "summary": "科學一館在同一週內出現多次火警警報，但事件內容指向同一現象（偵煙器誤報）；增加主要來自同一問題被多次回報。",
+        "driver": "repeated_reports",
+        "basis": "supported",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "outlook": [
+      {
+        "statement": "同一棟館內連續數日出現火警誤報，值得留意偵煙器更換與檢修後是否能降低誤報頻率。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      },
+      {
+        "statement": "若誤報持續，可能影響師生對警報的信任，建議關注官方維修進度與後續說明。",
+        "signal_id": "s1",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3",
+          "e4",
+          "e5"
+        ]
+      }
+    ],
+    "coverage_level": "full",
+    "caveats": [
+      "volume_not_event_count",
+      "small_counts"
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+      "e5"
+    ],
+    "reason": "科學一館的回報件數增加主要來自同一場景的多次誤報；件數為被回報並彙整的事件數，不等同於實際發生次數。",
+    "abstain_reason": null
+  }
+}
