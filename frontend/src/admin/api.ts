@@ -423,6 +423,105 @@ export interface SkillSummary {
   eval: SkillEval | null
 }
 
+export type ScenarioStatus = 'estimated' | 'not_estimable'
+export type CostTier = 'low' | 'medium' | 'high' | 'unknown'
+export type ScenarioLimitation =
+  | 'hypothetical_not_prediction'
+  | 'independence_assumed'
+  | 'unknown_effects'
+  | 'cost_unknown'
+  | 'small_baseline'
+  | 'unsupported_assumption'
+
+/** 一項措施的參數；效果為件數降低比例（0–1），上下限都為 null 代表效果未知。 */
+export interface ScenarioMeasureSpec {
+  name: string
+  effect_low: number | null
+  effect_high: number | null
+  cost: number | null
+  rationale: string | null
+}
+
+/** 建立模擬的參數；未給 seed 時後端自動產生。 */
+export interface ScenarioRequest {
+  baseline: number
+  window_days: number
+  measures: ScenarioMeasureSpec[]
+  seed?: number
+  event_type?: string
+  location?: string
+}
+
+export interface ScenarioMeasureResult {
+  measure_id: string
+  included: boolean
+  cost_tier: CostTier
+  at_low: number | null
+  at_high: number | null
+  swing: number | null
+  rank: number | null
+}
+
+/** What-if 引擎的結果（P7-T02）；`estimate` 只在 estimated 時有值。 */
+export interface ScenarioOutput {
+  engine_version: string
+  seed: number
+  samples: number
+  status: ScenarioStatus
+  baseline: number
+  estimate: {
+    point: number
+    low: number
+    high: number
+    p05: number
+    p50: number
+    p95: number
+    reduction: number
+  } | null
+  measures: ScenarioMeasureResult[]
+  excluded_measure_ids: string[]
+  total_cost: number | null
+  total_cost_tier: CostTier
+}
+
+/** S10 scenario-simulator 的輸出（只解釋假設與限制，數字來自引擎）。 */
+export interface ScenarioExplanationOutput {
+  status: 'ok' | 'abstain'
+  summary: string
+  assumptions: { measure_id: string; statement: string; evidence_ids: string[] }[]
+  key_driver: string | null
+  limitations: ScenarioLimitation[]
+  evidence_ids: string[]
+  reason: string
+  abstain_reason: string | null
+}
+
+export interface ScenarioRun {
+  id: string
+  event_id: string | null
+  input: {
+    baseline: number
+    window_days: number
+    event_type: string | null
+    location: string | null
+    seed: number
+    measures: (ScenarioMeasureSpec & { measure_id: string })[]
+  }
+  output: ScenarioOutput
+  engine_version: string
+  seed: number
+  explanation: {
+    ai_run_id: string
+    status: 'succeeded' | 'abstained' | 'failed'
+    output: ScenarioExplanationOutput | null
+    abstain_reason: string | null
+    error_type: string | null
+    skill_version: string
+  } | null
+  created_by: string
+  created_at: string
+}
+
 // ---- CSRF ----
 
 let csrfToken: string | null = null
@@ -664,4 +763,16 @@ export async function listSkills(): Promise<SkillSummary[]> {
 /** 韌性成績單（P6-T05）：全部事件，`windowDays` 為時間窗天數。 */
 export async function getResilience(windowDays: number): Promise<Resilience> {
   return (await apiGet<Resilience>(`${V1}/admin/resilience${query({ window_days: windowDays })}`)).data
+}
+
+// ---- What-if 模擬 ----
+
+/** 建立模擬（P7-T02）：引擎計算數值，S10 解釋假設與限制；結果是假設情境，不是成效預測。 */
+export async function createScenario(body: ScenarioRequest): Promise<ScenarioRun> {
+  return (await post<ScenarioRun>('/admin/scenarios', body)).data
+}
+
+/** 最近 50 次模擬（新到舊）。 */
+export async function listScenarios(): Promise<ScenarioRun[]> {
+  return (await apiGet<ScenarioRun[]>(`${V1}/admin/scenarios`)).data
 }

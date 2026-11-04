@@ -482,6 +482,7 @@ uv run python ../scripts/eval/backtest_trends.py --start 2026-01-01 --step week
 - **P7-T03 What-if 介面**（原 P5-T03）
   - 檔案：`frontend/src/admin/pages/Scenario.tsx`（參數表單、龍捲風敏感度圖、明顯的「假設情境，非成效預測」標示）
   - 驗證：Playwright
+  - 實作調整（AI 自行決定，2026-11-04）：路徑 `/admin/scenarios`（導覽「What-if 模擬」），沿用 P7-T02 的管理端 API，不新增端點；修改 `admin/api.ts`（型別、`createScenario`、`listScenarios`）、`admin/router.ts`、`AdminApp.tsx`；測試新增 `Scenario.test.tsx`、`e2e/scenario.e2e.ts`、`src/test/scenarioFixtures.ts`，擴充 `e2e/mockApi.ts`。效果以百分比輸入、換成 0–1 送出，上下限都留空為效果未知；頁首警示區塊與每次結果都標示「假設情境，非成效預測」；龍捲風圖依 rank 排序、直線為點估計、每列附文字數值（長條只是輔助）；not_estimable 顯示「無法估計」不畫圖；S10 失敗時仍顯示引擎結果；介面不選關聯事件、基準件數手動填寫
 - **P7-T04 Skills 可攜性驗證**（原 P5-T08）
   - 檔案：`docs/portability-report.md`；將 S01–S10 放進另一個支援 Agent Skills 的客戶端（例如 Claude Code）跑 golden cases，比較與 Runner 結果
   - 驗證：記錄各 skill 在不同平台的通過率與需調整之處
