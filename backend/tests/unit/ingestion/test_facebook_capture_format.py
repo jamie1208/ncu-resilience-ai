@@ -162,6 +162,21 @@ def test_skill_forbids_interaction_and_person_data() -> None:
         assert rule in text
 
 
+def test_skill_backfill_days_are_bounded() -> None:
+    """手動補抓（使用者 2026-11-04 決定）：/ncu-fb-capture <天數>，1–8 天；排程仍為 26 小時。"""
+    text = SKILL.read_text(encoding="utf-8")
+    for rule in (
+        "/ncu-fb-capture 8",  # 用法範例
+        "1–8 天",  # 上限：避免長時間捲動，也不超過原本只讀近期貼文的目的
+        "天數 × 24 + 2 小時",
+        "沒有參數時",  # 排程與一般執行仍是 26 小時
+        "40 × 天數",  # 捲動次數上限隨天數放大
+    ):
+        assert rule in text
+    plist = (REPO / "scripts" / "facebook" / "install_schedule.sh").read_text(encoding="utf-8")
+    assert "/ncu-fb-capture 8" not in plist
+
+
 # --- 排程範本與安裝腳本 ---------------------------------------------------------------------
 
 
