@@ -181,18 +181,30 @@ function graphStyle(): StylesheetJson {
         color: token('--color-foreground'),
         // Cytoscape 的 font-family 只接受雙引號
         'font-family': token('--font-sans').replaceAll("'", '"'),
-        'font-size': 11,
+        'font-size': 13,
         'text-wrap': 'wrap',
-        'text-max-width': '120px',
+        'text-max-width': '140px',
         'text-valign': 'bottom',
-        'text-margin-y': 4,
-        width: 18,
-        height: 18,
+        'text-margin-y': 6,
+        // 標籤底色：線條經過文字時仍可讀
+        'text-background-color': token('--color-card'),
+        'text-background-opacity': 0.85,
+        'text-background-padding': '2px',
+        'text-background-shape': 'roundrectangle',
+        'border-width': 2,
+        'border-color': token('--color-card'),
+        width: 16,
+        height: 16,
       },
     },
     {
       selector: 'edge',
-      style: { width: 2, 'curve-style': 'bezier', 'line-color': token('--color-muted-foreground') },
+      style: {
+        width: 2,
+        'curve-style': 'bezier',
+        'line-color': token('--color-muted-foreground'),
+        opacity: 0.85,
+      },
     },
     { selector: 'edge[type = "same_event"]', style: { width: 4 } },
     {
@@ -212,6 +224,27 @@ function graphStyle(): StylesheetJson {
       },
     },
   ]
+}
+
+/** cose 的起點：依 id 排序後平均放在圓上（不用亂數，同一份資料每次排出相同的圖）。 */
+function circlePositions(ids: string[]): Map<string, { x: number; y: number }> {
+  const sorted = [...ids].sort()
+  const radius = 40 * sorted.length
+  return new Map(
+    sorted.map((id, i) => {
+      const angle = (2 * Math.PI * i) / sorted.length
+      return [id, { x: radius * Math.cos(angle), y: radius * Math.sin(angle) }]
+    }),
+  )
+}
+
+/** 事件少時自動縮放會把字放得很大：排版後最多放大到 MAX_FIT_ZOOM 並置中。 */
+const MAX_FIT_ZOOM = 1.1
+
+function limitZoom(instance: Core): void {
+  if (instance.zoom() <= MAX_FIT_ZOOM) return
+  instance.zoom(MAX_FIT_ZOOM)
+  instance.center()
 }
 
 function edgeColor(decision: RelationDecision): string {
@@ -235,10 +268,11 @@ function GraphCanvas({ graph, selectedId, onSelect }: {
   const structure = [...graph.nodes.map((n) => n.id), '|', ...graph.edges.map((e) => e.id)].join(',')
 
   useEffect(() => {
+    const start = circlePositions(graph.nodes.map((n) => n.id))
     const instance = cytoscape({
       container: container.current,
       elements: [
-        ...graph.nodes.map((n) => ({ data: { id: n.id, label: n.title } })),
+        ...graph.nodes.map((n) => ({ data: { id: n.id, label: n.title }, position: start.get(n.id) })),
         ...graph.edges.map((e) => ({
           data: {
             id: e.id,
@@ -251,7 +285,21 @@ function GraphCanvas({ graph, selectedId, onSelect }: {
         })),
       ],
       style: graphStyle(),
-      layout: { name: 'cose', animate: false, padding: 24 },
+      layout: {
+        name: 'cose',
+        animate: false,
+        padding: 32,
+        // 排版時把標籤算進節點大小，避免文字互相重疊；從固定的圓形起點排，每次排出相同的圖
+        nodeDimensionsIncludeLabels: true,
+        randomize: false,
+        nodeRepulsion: () => 80000,
+        idealEdgeLength: () => 70,
+        nodeOverlap: 20,
+        componentSpacing: 60,
+        gravity: 0.25,
+        numIter: 2000,
+        stop: (e) => limitZoom(e.cy),
+      },
       autounselectify: true,
       boxSelectionEnabled: false,
       minZoom: 0.3,
