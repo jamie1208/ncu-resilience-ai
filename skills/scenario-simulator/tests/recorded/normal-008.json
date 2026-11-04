@@ -1,0 +1,27 @@
+{
+  "case_id": "normal-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "summary": "若該項假設成立，180 天內約 7.5 件（範圍 7.5～7.5），這是假設情境，不是成效預測。",
+    "assumptions": [
+      {
+        "measure_id": "m1",
+        "statement": "假設電梯全面汰換能讓這類事件減少約 25%；依據為廠商提供的故障率比較，為廠商說法，尚未在本校驗證。",
+        "evidence_ids": [
+          "m1"
+        ]
+      }
+    ],
+    "key_driver": "m1",
+    "limitations": [
+      "hypothetical_not_prediction"
+    ],
+    "evidence_ids": [
+      "m1"
+    ],
+    "reason": "結果主要取決於電梯汰換假設的 25% 效果區間；這是假設情境、不是成效預測。",
+    "abstain_reason": null
+  }
+}

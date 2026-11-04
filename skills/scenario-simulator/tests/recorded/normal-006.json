@@ -1,0 +1,37 @@
+{
+  "case_id": "normal-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "summary": "若各項假設都成立，180 天內約 12.0 件（範圍 9.8～14.4 件），這是假設情境，不是成效預測。",
+    "assumptions": [
+      {
+        "measure_id": "m1",
+        "statement": "假設增設垃圾桶能讓這類事件少一到三成；依據是宿舍幹部的建議，尚未在本校驗證。",
+        "evidence_ids": [
+          "m1"
+        ]
+      },
+      {
+        "measure_id": "m2",
+        "statement": "假設加強清運頻率能讓這類事件少二到三成；沒有提供依據。",
+        "evidence_ids": [
+          "m2"
+        ]
+      }
+    ],
+    "key_driver": "m1",
+    "limitations": [
+      "hypothetical_not_prediction",
+      "independence_assumed",
+      "unsupported_assumption"
+    ],
+    "evidence_ids": [
+      "m1",
+      "m2"
+    ],
+    "reason": "結果主要取決於增設垃圾桶的效果假設（rank 1），值得先查證；這是假設情境，不是成效預測。",
+    "abstain_reason": null
+  }
+}

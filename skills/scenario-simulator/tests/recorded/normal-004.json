@@ -1,0 +1,28 @@
+{
+  "case_id": "normal-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "summary": "若上述假設都成立，180 天內約 16.5 件（範圍 15.0～18.0 件），這是假設情境，不是成效預測。",
+    "assumptions": [
+      {
+        "measure_id": "m1",
+        "statement": "假設於松苑路口加設反光鏡能讓這類交通事件減少約 10% 到 25%；依據是交通安全宣導資料，尚未在本校驗證。",
+        "evidence_ids": [
+          "m1"
+        ]
+      }
+    ],
+    "key_driver": "m1",
+    "limitations": [
+      "hypothetical_not_prediction",
+      "unknown_effects"
+    ],
+    "evidence_ids": [
+      "m1"
+    ],
+    "reason": "結果主要受反光鏡效果假設影響；這是假設情境，不是成效預測。",
+    "abstain_reason": null
+  }
+}

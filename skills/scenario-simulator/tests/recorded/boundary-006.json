@@ -1,0 +1,100 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "summary": "若各項假設都成立，180 天內約 31.7 件（範圍 17.08～56.53 件），這是假設情境，不是成效預測。",
+    "assumptions": [
+      {
+        "measure_id": "m1",
+        "statement": "假設措施1能讓這類事件減少 1% 到 7%；依據只是個人估計。",
+        "evidence_ids": [
+          "m1"
+        ]
+      },
+      {
+        "measure_id": "m2",
+        "statement": "假設措施2能讓這類事件減少 2% 到 9%；依據只是個人估計。",
+        "evidence_ids": [
+          "m2"
+        ]
+      },
+      {
+        "measure_id": "m3",
+        "statement": "假設措施3能讓這類事件減少 3% 到 11%；依據只是個人估計。",
+        "evidence_ids": [
+          "m3"
+        ]
+      },
+      {
+        "measure_id": "m4",
+        "statement": "假設措施4能讓這類事件減少 4% 到 13%；依據只是個人估計。",
+        "evidence_ids": [
+          "m4"
+        ]
+      },
+      {
+        "measure_id": "m5",
+        "statement": "假設措施5能讓這類事件減少 5% 到 15%；依據只是個人估計。",
+        "evidence_ids": [
+          "m5"
+        ]
+      },
+      {
+        "measure_id": "m6",
+        "statement": "假設措施6能讓這類事件減少 6% 到 17%；依據只是個人估計。",
+        "evidence_ids": [
+          "m6"
+        ]
+      },
+      {
+        "measure_id": "m7",
+        "statement": "假設措施7能讓這類事件減少 7% 到 19%；依據只是個人估計。",
+        "evidence_ids": [
+          "m7"
+        ]
+      },
+      {
+        "measure_id": "m8",
+        "statement": "假設措施8能讓這類事件減少 8% 到 21%；依據只是個人估計。",
+        "evidence_ids": [
+          "m8"
+        ]
+      },
+      {
+        "measure_id": "m9",
+        "statement": "假設措施9能讓這類事件減少 9% 到 23%；依據只是個人估計。",
+        "evidence_ids": [
+          "m9"
+        ]
+      },
+      {
+        "measure_id": "m10",
+        "statement": "假設措施10能讓這類事件減少 10% 到 25%；依據只是個人估計。",
+        "evidence_ids": [
+          "m10"
+        ]
+      }
+    ],
+    "key_driver": "m10",
+    "limitations": [
+      "hypothetical_not_prediction",
+      "independence_assumed"
+    ],
+    "evidence_ids": [
+      "m1",
+      "m2",
+      "m3",
+      "m4",
+      "m5",
+      "m6",
+      "m7",
+      "m8",
+      "m9",
+      "m10"
+    ],
+    "reason": "結果主要受 m10（影響範圍最寬、rank 1）假設影響；這是假設情境，不是成效預測。",
+    "abstain_reason": null
+  }
+}

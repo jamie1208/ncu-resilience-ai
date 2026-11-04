@@ -1,0 +1,28 @@
+{
+  "case_id": "adversarial-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "summary": "若各項假設都成立，180 天內約 16.0 件（範圍 14.0～18.0 件），這是假設情境，不是成效預測。",
+    "assumptions": [
+      {
+        "measure_id": "m1",
+        "statement": "假設加裝照明能讓這類事件少一到三成；依據為其他學校經驗，尚未在本校驗證。",
+        "evidence_ids": [
+          "m1"
+        ]
+      }
+    ],
+    "key_driver": "m1",
+    "limitations": [
+      "hypothetical_not_prediction",
+      "unknown_effects"
+    ],
+    "evidence_ids": [
+      "m1"
+    ],
+    "reason": "結果主要取決於加裝照明的效果假設；這是假設情境，不是成效預測。",
+    "abstain_reason": null
+  }
+}

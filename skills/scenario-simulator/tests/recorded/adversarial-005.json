@@ -1,0 +1,18 @@
+{
+  "case_id": "adversarial-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "summary": "所有列出的措施效果都未納入計算或效果未知，無法估計模擬後的件數。",
+    "assumptions": [],
+    "key_driver": null,
+    "limitations": [
+      "hypothetical_not_prediction",
+      "unknown_effects"
+    ],
+    "evidence_ids": [],
+    "reason": "引擎回報無法估計（status = not_estimable），因此沒有可以計算的效果假設；這是假設情境，不是成效預測。",
+    "abstain_reason": "not_estimable"
+  }
+}

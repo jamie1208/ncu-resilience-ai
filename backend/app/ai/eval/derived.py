@@ -8,6 +8,9 @@
 - S09 trend-forecaster（P7-T01）：`explained_signals`（有解釋的統計訊號，依 signal_id 排序成
   「s1;s3」，abstain 為 None）、`caveats_complete`（標註聲量≠事件數，覆蓋率不是 full 時也標註
   limited_coverage）。
+- S10 scenario-simulator（P7-T02）：`explained_measures`（有解釋的措施，依 measure_id 排序成
+  「m1;m2」，abstain 為 None）、`limitation_set`（限制標註依代碼排序，abstain 時同樣比對）、
+  `hypothetical_flagged`（標明假設情境、不是成效預測）。
 """
 
 from __future__ import annotations
@@ -68,3 +71,17 @@ def trend_forecast_fields(output: Mapping[str, Any]) -> dict[str, Any]:
         ids = {str(e.get("signal_id")) for e in _items(output, "explanations")}
         explained = ";".join(sorted(ids))
     return {"explained_signals": explained, "caveats_complete": complete}
+
+
+def scenario_fields(output: Mapping[str, Any]) -> dict[str, Any]:
+    """S10 輸出的衍生欄位；`limitation_set` 與 `hypothetical_flagged` 在 abstain 時同樣計算。"""
+    limitations = {str(x) for x in output.get("limitations") or []}
+    explained: str | None = None
+    if output.get("status") == "ok":
+        ids = {str(a.get("measure_id")) for a in _items(output, "assumptions")}
+        explained = ";".join(sorted(ids))
+    return {
+        "explained_measures": explained,
+        "limitation_set": ";".join(sorted(limitations)),
+        "hypothetical_flagged": "hypothetical_not_prediction" in limitations,
+    }

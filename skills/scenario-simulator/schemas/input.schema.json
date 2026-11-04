@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "scenario-simulator 輸入",
+  "description": "What-if 引擎（app/simulations/engine.py）的輸入與計算結果，以及每項措施的名稱與假設依據。scenario 與 engine 由程式計算，放在 <skill_input> 中；evidence 是使用者填寫的措施名稱與假設依據，屬不可信內容，Skill Runner 會包在 <untrusted_source> 中。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence",
+    "scenario",
+    "engine"
+  ],
+  "properties": {
+    "evidence": {
+      "description": "每項措施一份：evidence_id 為措施代號（m1…m10），title 為措施名稱，text 為使用者寫的假設依據（沒有填寫時為「未提供假設依據」）",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "source_code",
+          "text"
+        ],
+        "properties": {
+          "evidence_id": {
+            "description": "措施代號，由程式指定；輸出只能引用這裡出現的值",
+            "type": "string",
+            "enum": [
+              "m1",
+              "m2",
+              "m3",
+              "m4",
+              "m5",
+              "m6",
+              "m7",
+              "m8",
+              "m9",
+              "m10"
+            ]
+          },
+          "source_code": {
+            "description": "固定為 scenario-assumption（使用者輸入的假設）",
+            "type": "string",
+            "enum": [
+              "scenario-assumption"
+            ]
+          },
+          "title": {
+            "description": "措施名稱",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "text": {
+            "description": "假設依據",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "scenario": {
+      "description": "情境描述",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline",
+        "window_days",
+        "event_type",
+        "location"
+      ],
+      "properties": {
+        "baseline": {
+          "description": "時間窗內的基準件數（被回報、被彙整成事件的數量）",
+          "type": "number",
+          "minimum": 0
+        },
+        "window_days": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "event_type": {
+          "description": "事件類別；null 為不限",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 32
+        },
+        "location": {
+          "description": "地點；null 為全校",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 100
+        }
+      }
+    },
+    "engine": {
+      "description": "引擎計算結果；數字的唯一依據",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine_version",
+        "seed",
+        "samples",
+        "status",
+        "estimate",
+        "measures",
+        "excluded_measure_ids",
+        "total_cost_tier"
+      ],
+      "properties": {
+        "engine_version": {
+          "type": "string"
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "samples": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "description": "estimated：至少一項措施有效果假設；not_estimable：效果全部未知，無法估計",
+          "type": "string",
+          "enum": [
+            "estimated",
+            "not_estimable"
+          ]
+        },
+        "estimate": {
+          "description": "模擬後的件數；not_estimable 時為 null",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "point",
+            "low",
+            "high",
+            "p05",
+            "p50",
+            "p95",
+            "reduction"
+          ],
+          "properties": {
+            "point": {
+              "type": "number"
+            },
+            "low": {
+              "type": "number"
+            },
+            "high": {
+              "type": "number"
+            },
+            "p05": {
+              "type": "number"
+            },
+            "p50": {
+              "type": "number"
+            },
+            "p95": {
+              "type": "number"
+            },
+            "reduction": {
+              "description": "點估計的降低比例（0–1）",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "measures": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "measure_id",
+              "effect_low",
+              "effect_high",
+              "cost_tier",
+              "included",
+              "at_low",
+              "at_high",
+              "swing",
+              "rank"
+            ],
+            "properties": {
+              "measure_id": {
+                "type": "string",
+                "enum": [
+                  "m1",
+                  "m2",
+                  "m3",
+                  "m4",
+                  "m5",
+                  "m6",
+                  "m7",
+                  "m8",
+                  "m9",
+                  "m10"
+                ]
+              },
+              "effect_low": {
+                "description": "假設效果下限（降低比例）；null 為效果未知",
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 1
+              },
+              "effect_high": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 1
+              },
+              "cost_tier": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "unknown"
+                ]
+              },
+              "included": {
+                "description": "是否納入計算（效果未知時為 false）",
+                "type": "boolean"
+              },
+              "at_low": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "at_high": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "swing": {
+                "description": "敏感度：這項措施在區間兩端時的件數差",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "rank": {
+                "description": "敏感度排名，1 為影響最大",
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              }
+            }
+          }
+        },
+        "excluded_measure_ids": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "string",
+            "enum": [
+              "m1",
+              "m2",
+              "m3",
+              "m4",
+              "m5",
+              "m6",
+              "m7",
+              "m8",
+              "m9",
+              "m10"
+            ]
+          }
+        },
+        "total_cost_tier": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "unknown"
+          ]
+        }
+      }
+    }
+  }
+}

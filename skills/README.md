@@ -27,4 +27,4 @@ skills/<skill-name>/
 | S07 | root-cause-analyst | P2-T12 |
 | S08 | solution-planner | P2-T12 |
 | S09 | trend-forecaster | P7-T01 |
-| S10 | scenario-simulator | P5-T02 |
+| S10 | scenario-simulator | P7-T02 |

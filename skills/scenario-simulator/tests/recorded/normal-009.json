@@ -1,0 +1,39 @@
+{
+  "case_id": "normal-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "summary": "若各項假設都成立，180 天內約 19.5 件（範圍 11.4～28.0 件），這是假設情境，不是成效預測。",
+    "assumptions": [
+      {
+        "measure_id": "m1",
+        "statement": "假設網路設備升級能讓這類事件少三到七成；依據是電算中心的估計，尚未在本校驗證。",
+        "evidence_ids": [
+          "m1"
+        ]
+      },
+      {
+        "measure_id": "m3",
+        "statement": "假設尖峰時段公告能讓這類事件最多減少五％；依據只是個人估計，尚未在本校驗證。",
+        "evidence_ids": [
+          "m3"
+        ]
+      }
+    ],
+    "key_driver": "m1",
+    "limitations": [
+      "hypothetical_not_prediction",
+      "independence_assumed",
+      "unknown_effects",
+      "cost_unknown"
+    ],
+    "evidence_ids": [
+      "m1",
+      "m3",
+      "m2"
+    ],
+    "reason": "結果主要受網路設備升級（m1）效果假設影響，值得先查證；這是假設情境，不是成效預測。",
+    "abstain_reason": null
+  }
+}

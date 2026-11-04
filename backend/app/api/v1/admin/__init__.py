@@ -14,6 +14,7 @@ from app.api.v1.admin import (
     recurrences,
     relations,
     resilience,
+    scenarios,
     skills,
 )
 
@@ -31,5 +32,6 @@ router.include_router(recurrences.router)
 router.include_router(publications.router)
 router.include_router(relations.router)
 router.include_router(resilience.router)
+router.include_router(scenarios.router)
 
 __all__ = ["router"]
