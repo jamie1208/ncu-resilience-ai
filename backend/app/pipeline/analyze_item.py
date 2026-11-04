@@ -1,7 +1,9 @@
 """分析管線（P2-T13）：S01 → S02 → S03 → S04 → S05 → S06。
 
 `analyze_item`（一篇來源文章）：
-1. S01 relevance-filter：與校園無關 → 結束（irrelevant）。
+1. S01 relevance-filter：與校園無關 → 結束（irrelevant）。正式環境不跑這一步
+   （`check_relevance=False`，使用者 2026-11-04 決定：來源都是中大的單位與社團，
+   不再判斷校園相關性），直接從 S02 開始。
 2. S02 event-extractor：不是事件 → 結束（not_event）。
 3. S03 event-classifier：類別為 none → 結束（not_event）。
 4. 候選召回（`app/ai/embeddings.py`）＋ S04 event-linker：依距離逐一判斷候選事件，
@@ -156,6 +158,8 @@ class PipelineDeps:
     policy: RiskPolicy
     max_candidates: int = MAX_CANDIDATES
     report_hook: ReportHook | None = None
+    check_relevance: bool = True
+    """是否先跑 S01；False 時所有文章都視為與校園相關。"""
 
 
 @dataclass(frozen=True)
@@ -610,11 +614,12 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
     eid = str(article["evidence_id"])
     payload = {"evidence": evidence}
 
-    relevance = _ok(await ctx.run(S01, payload))
-    if relevance is None:
-        return _stopped(ctx, S01)
-    if relevance.get("is_campus_relevant") is not True:
-        return PipelineResult(Outcome.IRRELEVANT, None, ctx.trace_id, tuple(ctx.steps))
+    if ctx.deps.check_relevance:
+        relevance = _ok(await ctx.run(S01, payload))
+        if relevance is None:
+            return _stopped(ctx, S01)
+        if relevance.get("is_campus_relevant") is not True:
+            return PipelineResult(Outcome.IRRELEVANT, None, ctx.trace_id, tuple(ctx.steps))
 
     extraction = await ctx.run(S02, payload)
     extracted = _ok(extraction)
@@ -781,6 +786,7 @@ def build_deps() -> PipelineDeps:
         skills=discover_skills(),
         policy=load_policy(),
         report_hook=make_report_hook(send_to_celery),
+        check_relevance=False,
     )
 
 

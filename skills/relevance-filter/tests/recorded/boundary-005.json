@@ -1,6 +1,6 @@
 {
   "case_id": "boundary-005",
-  "skill_version": "1.0.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -14,7 +14,7 @@
         "quote": "桃園市政府宣布因颱風來襲，明天全市停止上班上課。"
       }
     ],
-    "reason": "公告為桃園市政府發布全市停止上班上課，屬於會影響桃園地區（含中央大學師生）的停課停班通知。",
+    "reason": "內容為桃園市政府宣布全市停班停課，屬於會影響中央大學師生的桃園市停課停班公告，判定為相關。",
     "confidence": 0.95,
     "abstain_reason": null
   }

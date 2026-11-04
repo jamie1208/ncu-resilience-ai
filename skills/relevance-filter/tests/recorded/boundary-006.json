@@ -1,6 +1,6 @@
 {
   "case_id": "boundary-006",
-  "skill_version": "1.0.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -14,7 +14,7 @@
         "quote": "中壢夜市週末新開了一家臭豆腐攤，排隊排了半小時。"
       }
     ],
-    "reason": "內容描述中壢夜市的商家與排隊情形，未提及中央大學、校內地點或對本校師生的影響。",
+    "reason": "內容描述中壢夜市的市井消息，未提及中央大學、校內地點或對本校師生的影響。",
     "confidence": 0.9,
     "abstain_reason": null
   }
