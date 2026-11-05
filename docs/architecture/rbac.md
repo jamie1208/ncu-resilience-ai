@@ -65,6 +65,8 @@
 | POST | `/api/v1/admin/events/{id}/verify` | `events:verify` | `event.verify` |
 | POST | `/api/v1/admin/events/{id}/analyze` | `events:analyze` | `event.analyze` |
 | POST | `/api/v1/admin/events/{id}/report/causes/{cause_id}/decision` | `events:verify` | `report.cause_decide`（只有報告、原因代號、from／to） |
+| POST | `/api/v1/admin/events/{id}/merge` | `events:verify` | `event.merge`（目標事件 id、移動的證據與措施筆數） |
+| POST | `/api/v1/admin/events/{id}/split` | `events:verify` | `event.split`（新事件 id、移動的證據筆數；不記標題） |
 | GET | `/api/v1/admin/alerts` | `alerts:read_all` | |
 | POST | `/api/v1/admin/alerts/{id}/retract` | `alerts:retract` | `alert.retract`（含原因） |
 | GET | `/api/v1/admin/publications` | `alerts:read_all` | |

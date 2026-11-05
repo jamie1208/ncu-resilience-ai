@@ -20,6 +20,8 @@
 （Runner 已拒絕含個資的輸出，這是第二道防線）。
 
 `analyze_event`（`POST /api/v1/admin/events/{id}/analyze` 的重跑）：以事件目前的證據重跑 S05、S06。
+事件沒有向量時（例：P8-T01 拆分後），先以最早加入的文章重新計算（與建立事件時相同的文字），
+失敗時記下步驟、不影響 S05、S06。
 文章已屬於某個事件時，`analyze_item` 不重建事件，改為重跑該事件（冪等）。
 
 設計（AI 自行決定，見 P2-T13 驗收紀錄）：
@@ -469,6 +471,8 @@ async def _analyze_event(ctx: _Context, event_id: uuid.UUID) -> PipelineResult:
     )
     if event.status == EventStatus.ARCHIVED.value or has_evidence is None:
         return PipelineResult(Outcome.SKIPPED, event.id, ctx.trace_id, tuple(ctx.steps))
+    if event.embedding is None:
+        await _embed_event(ctx, event)
     verification, level = await _verify_and_assess(ctx, event)
     return PipelineResult(
         Outcome.ANALYZED,
@@ -478,6 +482,31 @@ async def _analyze_event(ctx: _Context, event_id: uuid.UUID) -> PipelineResult:
         verification=verification,
         risk_level=level,
     )
+
+
+async def _embed_event(ctx: _Context, event: Event) -> None:
+    """以事件最早加入的文章計算向量（建立事件時也是用第一篇文章的內文）。"""
+    first = await ctx.session.scalar(
+        select(EventEvidence.source_item_id)
+        .where(EventEvidence.event_id == event.id)
+        .order_by(EventEvidence.created_at, EventEvidence.source_item_id)
+        .limit(1)
+    )
+    evidence = await _evidence(ctx.session, [first]) if first is not None else []
+    if not evidence:
+        return
+    try:
+        embedded = await embed_texts(
+            ctx.deps.embedder,
+            [embedding_text(None, str(evidence[0]["text"]))],
+            config=ctx.deps.config,
+        )
+    except (LLMError, LLMConfigError, CostLimitExceededError) as exc:
+        ctx.steps.append(Step(EMBEDDING_STEP, type(exc).__name__))
+        return
+    ctx.steps.append(Step(EMBEDDING_STEP, RunStatus.SUCCEEDED.value))
+    event.embedding = list(embedded.vectors[0])
+    await ctx.session.commit()
 
 
 async def analyze_item(

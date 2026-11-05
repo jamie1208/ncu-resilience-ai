@@ -3,6 +3,7 @@
 狀態欄位的合法值由 app/domain/states.py 定義；events.status 以 CHECK 約束強制（0002）。
 events.embedding、occurrence_start_date 供 S04 候選召回使用（P2-T09，0006）。
 events.summary* 是 S02 的事件說明與出處（P4-T08，0010）。
+event_merges 是手動合併的紀錄（P8-T01，0019）：被併入的事件改為 archived，並由這裡導向目標事件。
 """
 
 from __future__ import annotations
@@ -12,7 +13,16 @@ from datetime import date, datetime
 from typing import Any
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import CheckConstraint, Date, DateTime, Double, ForeignKey, String, Text
+from sqlalchemy import (
+    CheckConstraint,
+    Date,
+    DateTime,
+    Double,
+    ForeignKey,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -92,3 +102,24 @@ class EventEvidence(Base):
     )
     excerpt: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = created_at_col()
+
+
+class EventMerge(Base):
+    """一次手動合併：被併入的事件導向目標事件（每個事件最多被併入一次）。"""
+
+    __tablename__ = "event_merges"
+    __table_args__ = (
+        CheckConstraint("merged_event_id <> target_event_id", name="distinct_events"),
+    )
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    merged_event_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("events.id", ondelete="CASCADE"), unique=True
+    )
+    target_event_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("events.id", ondelete="CASCADE"), index=True
+    )
+    decided_by: Mapped[str] = mapped_column(String(128))
+    decided_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )

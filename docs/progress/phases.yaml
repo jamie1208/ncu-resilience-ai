@@ -6,7 +6,7 @@
 # - human：true 表示需要你親自決定，AI 只能準備資料。
 # - gates.command：可自動執行的驗證指令（--run-gates 時執行）；
 #   manual：true 表示需人工確認，tracker 只會提示。
-# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12、ADR-0012 G1-2 改為人工閘門、ADR-0010 新增 P1-T16、ADR-0009 P1-T09 檔案調整、ADR-0008 個人使用：新增 P1-T13／P1-T14／P1-T15，刪除 P3-T02／P3-T04／P3-T06／P3-T09／P5-T07 與 G3-1／G5-3，ID 不重複使用、ADR-0014 新增 P3-T11 雙設計系統、ADR-0015 對外公開並重排 P4–P7：舊 P4-T01–T04／P4-T06／P5-T01–T03／P5-T08／P5-T09 與 G4-1–G4-3／G5-1／G5-4 改以 P6／P7 新 ID 重建），tracker 優先讀取本檔。
+# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12、ADR-0012 G1-2 改為人工閘門、ADR-0010 新增 P1-T16、ADR-0009 P1-T09 檔案調整、ADR-0008 個人使用：新增 P1-T13／P1-T14／P1-T15，刪除 P3-T02／P3-T04／P3-T06／P3-T09／P5-T07 與 G3-1／G5-3，ID 不重複使用、ADR-0014 新增 P3-T11 雙設計系統、ADR-0015 對外公開並重排 P4–P7：舊 P4-T01–T04／P4-T06／P5-T01–T03／P5-T08／P5-T09 與 G4-1–G4-3／G5-1／G5-4 改以 P6／P7 新 ID 重建、ADR-0018 新增 P8 系列事件與公開內容擴充並改寫 G5-5 定義），tracker 優先讀取本檔。
 # 修改計畫時：只改這個檔案，再執行 `tracker.py sync` 讓 state.yaml 補上新任務。
 
 version: 1
@@ -379,7 +379,7 @@ phases:
         title: 備份可完整還原
         manual: true
       - id: G5-5
-        title: 疑似指控、推測原因、FB 原文與投稿原文不出現在公開端
+        title: 疑似指控、推測原因、FB 原文與投稿原文不出現在公開端（P8-T06 起依 ADR-0018 改寫）
         command: cd backend && uv run pytest tests/security/test_public_exposure.py tests/security/test_anonymous_report.py -q
       - id: G5-6
         title: 公開端與附錄 A 端到端測試全過
@@ -467,3 +467,74 @@ phases:
       - id: G7-2
         title: Skills 可攜性報告完成
         manual: true
+  - id: P8
+    name: 系列事件與公開內容擴充
+    goal: 相似事件可以成系列觀察（頻率、規律、改善後是否下降）；地點由 AI 判斷；公開內容放寬但有標籤與下架；補做 v1.0 缺口（ADR-0018）
+    tasks:
+      - id: P8-T01
+        title: 手動合併／拆分事件
+        deps: [P5-T10]
+        paths: [backend/app/events/merge.py, backend/tests/integration/test_event_merge.py]
+      - id: P8-T02
+        title: S13 location-resolver 與代表地點
+        skill: location-resolver
+        deps: [P2-T07]
+        paths: [skills/location-resolver/SKILL.md, skills/location-resolver/tests/cases.jsonl, backend/app/locations/resolver.py, backend/tests/integration/test_location_resolver.py]
+      - id: P8-T03
+        title: 再發生與突增偵測改用代表地點
+        deps: [P8-T02]
+        paths: [backend/app/resilience/recurrence.py, backend/app/analytics/timeseries.py, backend/tests/unit/resilience/test_recurrence_canonical.py]
+      - id: P8-T04
+        title: S11 series-matcher 與系列自動歸組
+        skill: series-matcher
+        deps: [P8-T01]
+        paths: [skills/series-matcher/SKILL.md, skills/series-matcher/tests/cases.jsonl, backend/app/series/grouping.py, backend/tests/integration/test_series_grouping.py]
+      - id: P8-T05
+        title: S12 series-analyst、系列時間軸與前後比較
+        skill: series-analyst
+        deps: [P8-T02, P8-T04]
+        paths: [skills/series-analyst/SKILL.md, skills/series-analyst/tests/cases.jsonl, backend/app/series/analysis.py, backend/app/series/timeline.py, backend/tests/unit/series/test_timeline.py, frontend/src/admin/pages/Series.tsx]
+      - id: P8-T06
+        title: 公開規則放寬與公開系列頁
+        deps: [P8-T05]
+        paths: [backend/app/publishing/policy.py, backend/app/api/v1/public/series.py, frontend/src/public/pages/Series.tsx, docs/architecture/threat-model-public.md]
+      - id: P8-T07
+        title: 通知失敗重試
+        deps: [P3-T10]
+        paths: [backend/app/alerts/delivery.py, backend/tests/integration/test_delivery_retry.py, tests/e2e/a10-delivery.e2e.ts]
+      - id: P8-T08
+        title: 匿名回報收據碼與補件
+        deps: [P5-T13]
+        paths: [backend/app/api/v1/public/reports.py, backend/tests/security/test_report_receipt.py]
+      - id: P8-T09
+        title: What-if 時間窗與地點
+        deps: [P7-T03, P8-T02]
+        paths: [backend/app/simulations/baseline.py, backend/tests/integration/test_scenario_baseline.py]
+      - id: P8-T10
+        title: 介面文案改為播報員語氣
+        deps: [P8-T06]
+        paths: [docs/governance/tone-guide.md]
+      - id: P8-T11
+        title: AI 產生內容改為播報員語氣
+        deps: [P8-T05, P8-T10]
+        paths: [eval/reports]
+      - id: P8-T12
+        title: 規格書 v1.2 更新
+        deps: [P8-T01, P8-T03, P8-T06, P8-T07, P8-T08, P8-T09, P8-T11]
+        paths: [docs/requirements/spec-v1.2.md]
+    gates:
+      - id: G8-1
+        title: 系列歸組、拆出、解散與前後比較可重現
+        command: cd backend && uv run pytest tests/unit/series tests/integration/test_series_grouping.py -q
+      - id: G8-2
+        title: S11–S13 評測達門檻且引用全部可驗證
+        command: cd backend && uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --split test
+      - id: G8-3
+        title: 新版公開邊界安全測試通過
+        command: cd backend && uv run pytest tests/security -q
+      - id: G8-4
+        title: 使用者確認新公開端點、閘道白名單與威脅模型
+        manual: true
+      - id: G8-5
+        title: 播報員語氣改版後 S01–S13 評測不低於門檻
+        command: cd backend && uv run python ../scripts/eval/run_eval.py --all --split test

@@ -11,6 +11,8 @@ import {
   getEvent,
   listEvents,
   listPublications,
+  mergeEvent,
+  splitEvent,
   VERIFY_STATUSES,
   verifyEvent,
   type DimensionScore,
@@ -189,11 +191,13 @@ function EventPanel({ eventId }: { eventId: string }) {
               <span>{`更新 ${formatTime(event.updated_at)}`}</span>
             </div>
           </Card>
+          {event.merged_into && <MergedNotice targetId={event.merged_into} />}
           <SummaryCard event={event} />
           <ReportCard event={event} onReport={(report) => detail.setData((d) => (d ? { ...d, report } : d))} />
           <ActionsCard event={event} />
           <PublicCard event={event} />
           <SourceComparison event={event} />
+          {!event.merged_into && <MergeSplitCard event={event} onChanged={detail.reload} />}
           <RiskBreakdown assessments={event.risk_assessments} />
           <VerifyForm
             event={event}
@@ -202,6 +206,22 @@ function EventPanel({ eventId }: { eventId: string }) {
         </>
       )}
     </div>
+  )
+}
+
+/** 已被併入其他事件（P8-T01）：證據、改善措施與事件關聯都已移到目標事件。 */
+function MergedNotice({ targetId }: { targetId: string }) {
+  return (
+    <Card>
+      <Section id="merged-heading" title="已併入其他事件">
+        <div className="space-y-2">
+          <Muted>這個事件已手動併入另一個事件，來源文章、改善措施與事件關聯都已移過去，這裡只保留歷史紀錄。</Muted>
+          <Link to={`/admin/events/${targetId}`} className="inline-flex h-11 items-center text-sm text-accent underline underline-offset-4">
+            前往目標事件
+          </Link>
+        </div>
+      </Section>
+    </Card>
   )
 }
 
@@ -696,6 +716,157 @@ function ActionsCard({ event }: { event: EventDetail }) {
         </div>
       </Section>
     </Card>
+  )
+}
+
+const MERGE_BLOCKED = new Set<EventStatus>(['detected', 'analyzing', 'archived'])
+
+/** 合併與拆分（P8-T01）：同一件事的兩筆紀錄合併成一筆；誤併在一起的來源拆成新事件。 */
+function MergeSplitCard({ event, onChanged }: { event: EventDetail; onChanged: () => void }) {
+  const blocked = MERGE_BLOCKED.has(event.status)
+  return (
+    <Card>
+      <Section id="merge-heading" title="合併與拆分">
+        {blocked ? (
+          <Muted>分析中或已封存的事件不能合併或拆分。</Muted>
+        ) : (
+          <div className="space-y-4">
+            <MergeForm event={event} onMerged={onChanged} />
+            <SplitForm event={event} onSplit={onChanged} />
+          </div>
+        )}
+      </Section>
+    </Card>
+  )
+}
+
+function MergeForm({ event, onMerged }: { event: EventDetail; onMerged: () => void }) {
+  const events = useLoad(() => listEvents(), `merge-targets:${event.id}`)
+  const [target, setTarget] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const message = useErrorMessage()
+  const targets = (events.data?.items ?? []).filter((e) => e.id !== event.id && !MERGE_BLOCKED.has(e.status))
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError(null)
+    try {
+      await mergeEvent(event.id, target)
+      onMerged()
+    } catch (err) {
+      setError(message(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form aria-label="合併到其他事件" className="space-y-2" onSubmit={submit}>
+      <p className="text-sm text-muted-foreground">
+        和另一個事件是同一件事時，把這個事件的來源與改善措施併過去；這個事件會封存並撤下公開內容。
+      </p>
+      <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-end">
+        <label className="block space-y-1 text-sm text-foreground">
+          <span>併入的目標事件</span>
+          <Select value={target} onChange={(e) => setTarget(e.target.value)}>
+            <option value="">請選擇</option>
+            {targets.map((t) => (
+              <option key={t.id} value={t.id}>
+                {`${t.title}（${t.occurrence_start_date ?? formatTime(t.created_at)}）`}
+              </option>
+            ))}
+          </Select>
+        </label>
+        <Button type="submit" size="sm" variant="outline" disabled={busy || target === ''}>
+          合併
+        </Button>
+      </div>
+      {events.error && <ErrorText>{events.error}</ErrorText>}
+      {error && <ErrorText>{error}</ErrorText>}
+    </form>
+  )
+}
+
+function SplitForm({ event, onSplit }: { event: EventDetail; onSplit: () => void }) {
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [title, setTitle] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [created, setCreated] = useState<string | null>(null)
+  const message = useErrorMessage()
+  const all = selected.size > 0 && selected.size >= event.evidence.length
+
+  function toggle(itemId: string, on: boolean) {
+    setSelected((s) => {
+      const next = new Set(s)
+      if (on) next.add(itemId)
+      else next.delete(itemId)
+      return next
+    })
+  }
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError(null)
+    setCreated(null)
+    try {
+      const ids = event.evidence.map((ev) => ev.source_item_id).filter((i) => selected.has(i))
+      const result = await splitEvent(event.id, ids, title)
+      setSelected(new Set())
+      setTitle('')
+      setCreated(result.new_event_id)
+      onSplit()
+    } catch (err) {
+      setError(message(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (event.evidence.length < 2) {
+    return <Muted>只有一篇來源文章，不能拆分。</Muted>
+  }
+  return (
+    <form aria-label="拆分成新事件" className="space-y-2" onSubmit={submit}>
+      <p className="text-sm text-muted-foreground">
+        有來源其實是另一件事時，勾選後拆成新事件；兩邊都會重新分析。
+      </p>
+      <fieldset className="space-y-1">
+        <legend className="text-sm text-foreground">要拆出的來源</legend>
+        {event.evidence.map((ev) => (
+          <label key={ev.source_item_id} className="flex min-h-11 items-center gap-2 text-sm text-foreground">
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-accent"
+              checked={selected.has(ev.source_item_id)}
+              onChange={(e) => toggle(ev.source_item_id, e.target.checked)}
+            />
+            <span className="font-mono">{ev.source_code}</span>
+            <span className="font-mono text-muted-foreground">{formatTime(ev.published_at)}</span>
+          </label>
+        ))}
+      </fieldset>
+      {all && <Muted>至少要留一篇來源在原事件</Muted>}
+      <label className="block space-y-1 text-sm text-foreground">
+        <span>新事件標題</span>
+        <Input value={title} maxLength={300} placeholder="請勿填寫個資" onChange={(e) => setTitle(e.target.value)} />
+      </label>
+      <Button type="submit" size="sm" variant="outline" disabled={busy || selected.size === 0 || all || title.trim() === ''}>
+        拆分
+      </Button>
+      {error && <ErrorText>{error}</ErrorText>}
+      {created && (
+        <Notice>
+          已拆成新事件，兩邊都已排入重新分析。
+          <Link to={`/admin/events/${created}`} className="ml-2 underline underline-offset-4">
+            前往新事件
+          </Link>
+        </Notice>
+      )}
+    </form>
   )
 }
 

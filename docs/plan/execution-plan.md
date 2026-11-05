@@ -7,15 +7,17 @@
 >
 > 修改計畫時三處要一起改：本檔、phases.yaml（或其覆寫檔 `docs/progress/phases.yaml`）、ADR。
 
-全案 8 個階段、73 個任務、32 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。Migration 檔名以實際的下一個可用編號為準（ADR-0009），計畫中寫成 `<下一個編號>_<名稱>.py`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
+全案 9 個階段、87 個任務、37 道閘門。任務 ID 為 `P{階段}-T{序號}`，閘門 ID 為 `G{階段}-{序號}`。Migration 檔名以實際的下一個可用編號為準（ADR-0009），計畫中寫成 `<下一個編號>_<名稱>.py`。標記「需你決定」的任務，AI 只能準備資料，必須由使用者本人定案。
 
 **對外公開（ADR-0015，部分取代 ADR-0008）**：管理端只有使用者本人；P5 起新增公開網站、公開唯讀 API 與匿名回報入口。公開由確定性規則自動判斷，硬性邊界：未查證只公開中性提醒、疑似指控永不自動公開、推測原因不公開、Facebook 只公開 AI 摘要、使用者可一鍵下架。通知只送給使用者本人。
+
+**公開規則放寬（ADR-0018，P8-T06 起生效）**：未查證事件公開 AI 摘要並標「尚未查證」；疑似指控照原文摘要公開，公開時立即提醒使用者並附一鍵下架；改善建議公開但不寫依據的原因。不變：推測原因不公開、Facebook 與匿名投稿只公開 AI 摘要、全部經 PII 遮蔽、一鍵下架。
 
 已刪除的任務與閘門不重新編號，ID 也不重複使用：ADR-0008 刪除 P3-T02、P3-T04、P3-T06、P3-T09、P5-T07、G3-1、G5-3；ADR-0015 把 P4-T01–T04、P4-T06、P5-T01–T03、P5-T08、P5-T09 與 G4-1–G4-3、G5-1、G5-4 搬到 P6／P7 並改用新 ID（對照表見 ADR-0015）。
 
 ---
 
-## Skill 開發標準循環（S01–S10 共用）
+## Skill 開發標準循環（S01–S13 共用）
 
 1. **定義 I/O**：寫 `schemas/input.schema.json` 與 `schemas/output.schema.json`；列舉值、數值範圍、`evidence_ids` 必填、允許 `abstain`。
 2. **寫 SKILL.md**：frontmatter 含 `name`、`description`、`metadata.version`、`metadata.schema_version`；本文章節為「何時使用、輸入、步驟、證據優先序、禁止事項、Abstain／Fallback、輸出範例」。
@@ -424,7 +426,7 @@ bash infra/scripts/backup.sh && bash infra/scripts/restore.sh --target local
 | 閘門 | 條件 | 驗證方式 |
 | --- | --- | --- |
 | G5-2 | 備份可完整還原 | 還原演練紀錄 |
-| G5-5 | 疑似指控、推測原因、FB 原文與投稿原文不出現在公開端 | test_public_exposure、test_anonymous_report |
+| G5-5 | 疑似指控、推測原因、FB 原文與投稿原文不出現在公開端（P8-T06 起依 ADR-0018 改為：推測原因、FB 原文與投稿原文不出現；未查證與疑似指控內容帶標籤並經 PII 遮蔽） | test_public_exposure、test_anonymous_report |
 | G5-6 | 公開端與附錄 A 端到端測試全過 | `make e2e` |
 | G5-7 | 下架即時生效並留稽核 | test_takedown |
 | G5-8 | 上線前確認威脅模型與公開端點清單 | 使用者本人審閱 `threat-model-public.md` 並同意上線 |
@@ -509,6 +511,66 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
 | --- | --- | --- |
 | G7-1 | 模擬結果可重現 | test_engine |
 | G7-2 | Skills 可攜 | portability-report.md |
+
+---
+
+## P8 系列事件與公開內容擴充
+
+目標：相似事件可以成系列觀察（頻率、規律、改善後是否下降）；地點由 AI 判斷；公開內容放寬但帶標籤、可下架；補做 v1.0 缺口（ADR-0018）。前置：各任務列出的已完成任務；與 G6-1、G7-2 同時進行（使用者決定，ADR-0018）。
+
+新產品 Skill 依「Skill 開發標準循環」開發：S11 series-matcher、S12 series-analyst、S13 location-resolver。S12、S13 輸出引用的事件 id 必須屬於輸入、逐字證據必須出現在該事件的證據中，否則整項丟棄；計數一律由程式依引用的事件 id 計算，模型不寫數字。
+
+- **P8-T01 手動合併／拆分事件**（v1.0 F03，D24）
+  - 檔案：`infra/migrations/versions/<下一個編號>_event_merges.py`（合併紀錄：被併入事件、目標事件、決定者、時間；可 downgrade）、`app/events/merge.py`（合併：來源文章、證據、措施移到目標事件，被併入的事件標為 merged 並導向目標；拆分：把指定來源文章移到新事件並重新分析；稽核 `event.merge`、`event.split`）、管理端 API（掛在 `app/api/v1/admin/events.py`）、後台事件工作台的合併／拆分操作
+  - 驗證：`tests/integration/test_event_merge.py`（合併後公開快照只剩目標事件、被併入事件的公開內容撤下；拆分後兩邊各自重新分析；合併後 S04 不再把同一篇文章併回被併入的事件）、前端 vitest
+  - 實作調整（AI 自行決定，2026-11-05）：migration 為 `0019_event_merges.py`（id、merged_event_id〔唯一〕、target_event_id、decided_by、decided_at；兩個事件 id 不同；任一事件刪除時 CASCADE）；「標為 merged」以 archived 狀態＋event_merges 導向表示，不新增事件狀態（新增狀態要改 P0-T06 的窮舉狀態機測試），archived 已被候選召回、公開同步、通知與小報告排除；分析中（detected、analyzing）或已封存的事件不能合併或拆分（CONFLICT）；合併時文章的 S01–S03 執行紀錄跟著文章移動，目標事件的說明依 P4-T08 規則從移入文章的 S02 結果重挑，被併入事件的小報告失效（`event_merged`），事件關聯改指向目標事件（連到目標本身的刪除；同一對事件同類型只留一條，已有人工決策的優先），同一交易內同步通知與公開狀態；拆分的新事件標題由使用者填寫（經 PII 檢查），沿用原事件的類型、地點與開始日期，從 analyzing 開始，措施與小報告留在原事件；拆分時兩邊的向量清空，重跑分析時依各自最早的文章重新計算（使用者 2026-11-05 要求；修改 `app/pipeline/analyze_item.py`：`analyze_event` 遇到沒有向量的事件先補算，失敗不影響 S05、S06）；端點 `POST /api/v1/admin/events/{id}/merge`（200）與 `/split`（201），`events:verify`，提交後把目標事件（合併）或兩個事件（拆分）排入重跑 S05、S06；事件詳細新增 `merged_into`；新增 `app/events/__init__.py`、ORM `EventMerge` 放在 `app/models/event.py`（修改 `app/models/__init__.py`），修改 `admin/api.ts`、`src/test/fixtures.ts`（`merged_into: null`）、`docs/architecture/rbac.md`
+- **P8-T02 S13 location-resolver 與代表地點**（ADR-0018 決策 1-5）
+  - 檔案：`skills/location-resolver/`（輸入：新地點名稱與其證據原句、既有代表地點清單；輸出：alias_of／inside_of／new 與目標地點 id、理由、逐字證據；資訊不足時 abstain，當成新地點）、`infra/migrations/versions/<下一個編號>_location_canonical.py`（`locations` 加 `canonical_id`、`parent_id`；地點判斷紀錄表含使用者拆開的決定）、`app/locations/resolver.py`（新名稱才呼叫 S13，同名稱沿用；拆開後不再自動合併；既有地點補判一次的指令；稽核 `location.resolve`、`location.split`）、修改 `app/pipeline/analyze_item.py`、後台地點檢視與拆開操作
+  - 驗證：golden cases ≥ 20（別名、包含、同名不同地、提示注入、只有「學校」這類無效地點）；`tests/integration/test_location_resolver.py`（fake provider；同名稱不重複呼叫；abstain 時建新地點；拆開後不再合併；補判可重跑且結果相同）
+- **P8-T03 再發生與突增偵測改用代表地點**
+  - 檔案：`app/resilience/recurrence.py`、`app/analytics/timeseries.py`、`app/analytics/forecast.py`（依 `canonical_id` 分組，顯示代表地點名稱；`parent_id` 不併入計數）
+  - 被手動合併的事件不計數（使用者 2026-11-05 決定從 P8-T01 移到本任務，ADR-0018「合併後只算 1 件」）：`app/resilience/recurrence.py`、`app/resilience/cri.py` 與時序統計 view（新 migration 修改 0016 的 view）排除有 `event_merges` 紀錄的事件；驗證新增合併後只算 1 件的案例
+  - 驗證：`tests/unit/resilience/test_recurrence_canonical.py`、`tests/unit/analytics/` 新增別名合併案例；P4-T10、P6-T03 既有測試不修改且通過；`config/recurrence.yaml` 門檻不變
+- **P8-T04 S11 series-matcher 與系列自動歸組**（ADR-0018 決策 1-1～1-4）
+  - 檔案：`skills/series-matcher/`（輸入：新事件與同類別的候選系列／事件；輸出：是否同主題、目標系列、理由、逐字證據；不看地點）、`infra/migrations/versions/<下一個編號>_event_series.py`（系列、子事件關係、使用者拆出紀錄）、`app/series/grouping.py`（同類別＋S11 同主題即歸組，2 件成立；拆出後不再自動歸回；解散；子事件改判 false 移出、剩不到 2 件自動解散；合併後的事件只算 1 件；稽核 `series.*`）、管理端 API `app/api/v1/admin/series.py`
+  - 驗證：golden cases ≥ 20；`tests/integration/test_series_grouping.py`（fake provider；以上每條規則各一案例；同一組輸入重跑結果相同）
+- **P8-T05 S12 series-analyst、系列時間軸與前後比較**（ADR-0018 決策 1-5～1-8）
+  - 檔案：`skills/series-analyst/`（輸入：系列的子事件摘要與證據、程式算出的件數序列與突增；輸出：爆發解釋、地點分組、規律、可能的共同原因、改善建議（同學／學校／相關單位）；規律與原因一律標為推測；證據不足時 abstain）、`app/series/analysis.py`（引用驗證、程式計數、每個規律至少 2 件；新事件加入時重新分析，每系列每天最多一次，受每日費用上限）、`app/series/timeline.py`（日／週／月件數、4 期移動平均、措施開始處理／完成標記、範圍 1M／3M／6M／1Y／全部；前後比較：措施開始前後各 8 週平均，任一邊少於 5 件回傳「資料還不夠」）、系列措施（`response_actions` 加系列層級；可從建議一鍵加入）、後台 `frontend/src/admin/pages/Series.tsx`（時間軸、地點篩選、規律、推測原因、措施）
+  - 驗證：golden cases ≥ 20（含捏造規律、引用不存在事件、只有 1 件支持的規律）；`tests/unit/series/test_timeline.py`（移動平均、粒度、前後比較門檻、「變少不一定是措施的功勞」說明一律出現）；`tests/integration/test_series_analysis.py`（引用驗證丟棄、計數由程式算、每天最多一次）；前端 vitest（雙設計系統）
+- **P8-T06 公開規則放寬與公開系列頁**（ADR-0018 決策 2、1-9）
+  - 檔案：`app/publishing/policy.py`、`app/publishing/sync.py`（未查證事件公開 AI 摘要並標「尚未查證」；疑似指控照原文摘要公開並立即在通知中心提醒、附一鍵下架；改善建議公開但不寫依據的原因；推測原因、FB 原文、投稿原文仍不公開；全部經 PII 遮蔽）、`app/api/v1/public/series.py`（系列頁：時間軸、子事件、前後比較、改善建議、改善進度；不含推測原因與規律）、`frontend/src/public/pages/Series.tsx`、`docs/architecture/threat-model-public.md`、`docs/architecture/rbac.md`、通道閘道白名單
+  - 驗證：`tests/unit/publishing/test_publish_policy.py`、`tests/security/test_public_exposure.py` 依 G5-5 新定義修改（使用者 2026-11-05 同意，只限 ADR-0018 放寬的規則）；新增系列頁不含推測原因、規律與 FB 原文的案例；公開前端 vitest 與 `tests/e2e/public.e2e.ts`
+- **P8-T07 通知失敗重試**（v1.0 A10，D41）
+  - 檔案：`app/alerts/delivery.py`（failed 最多重試 3 次、遞增間隔；唯一約束仍防重複遞送）、`infra/migrations/versions/<下一個編號>_delivery_attempts.py`（嘗試次數、下次時間）、Celery 排程
+  - 驗證：`tests/integration/test_delivery_retry.py`（第 3 次仍失敗就停止；成功後不再重送；不重複遞送）、`tests/e2e/a10-delivery.e2e.ts`
+- **P8-T08 匿名回報收據碼與補件**（v1.0 §2、D11）
+  - 檔案：`app/api/v1/public/reports.py`（送出時回傳高熵收據碼，只存雜湊；`GET` 查詢只回 已收到／處理中／已處理；`POST` 補件，同樣限流與格式限制，以 `<untrusted_source>` 進入既有管線）、`infra/migrations/versions/<下一個編號>_report_receipts.py`、公開通報頁的收據碼顯示與查詢
+  - 驗證：`tests/security/test_report_receipt.py`（資料庫中沒有明文收據碼；錯的收據碼與不存在的回應相同；查詢不回投稿內容；補件原文不公開；限流）、`tests/security/test_anonymous_report.py` 不修改且通過
+- **P8-T09 What-if 時間窗與地點**（v1.0 D29）
+  - 檔案：`app/simulations/baseline.py`（依時間窗、類別、代表地點自動計算歷史基準件數）、修改 `app/simulations/service.py`、`app/api/v1/admin/scenarios.py`、`frontend/src/admin/pages/Scenario.tsx`（自動帶入、可手改）
+  - 驗證：`tests/integration/test_scenario_baseline.py`（基準與 P6-T03 計數一致；手改值優先）；P7-T02 G7-1 測試不修改且通過
+- **P8-T10 介面文案改為播報員語氣**（ADR-0018 決策 3）
+  - 檔案：`docs/governance/tone-guide.md`（語氣規則、例外：緊急資訊與「尚未查證」標籤平實、不用表情符號、範例）、公開網站與後台介面文案、`app/alerts/templates/`
+  - 驗證：前端 vitest 斷言的文案依新文案修改（使用者 2026-11-05 同意）；緊急資訊與「尚未查證」文案不變的測試
+- **P8-T11 AI 產生內容改為播報員語氣**
+  - 檔案：S02、S07、S08、S11、S12 的 `SKILL.md` 與 `tests/recorded/`、`eval/reports/<name>/<version>.json`
+  - 驗證：每個 Skill 重錄、重跑 `--live` 評測、升版本；評測不低於現有門檻
+- **P8-T12 規格書 v1.2 更新**
+  - 檔案：`docs/requirements/spec-v1.2.md`（v1.1 差異清單；ADR-0018 的變更）
+  - 驗證：與 v1.1 差異清單完整
+
+```bash
+cd backend && uv run pytest tests/unit/series tests/security -q
+uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --split test
+```
+
+| 閘門 | 條件 | 驗證方式 |
+| --- | --- | --- |
+| G8-1 | 系列歸組、拆出、解散與前後比較可重現 | test_series_grouping、tests/unit/series |
+| G8-2 | S11–S13 評測達門檻且引用全部可驗證 | run_eval |
+| G8-3 | 新版公開邊界安全測試通過 | tests/security |
+| G8-4 | 使用者確認新公開端點、閘道白名單與威脅模型 | 人工 |
+| G8-5 | 播報員語氣改版後 S01–S13 評測不低於門檻 | run_eval --all |
 
 ---
 
