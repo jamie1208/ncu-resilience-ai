@@ -1,0 +1,22 @@
+{
+  "case_id": "boundary-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "alias_of",
+    "target_id": "L1",
+    "confidence": 0.8,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工五館外面的腳踏車架被貼了一堆違停單。"
+      }
+    ],
+    "reason": "「工五館」為「工程五館」的常見簡稱，貼文描述的是該館外的腳踏車架，與工程五館位置相符。",
+    "abstain_reason": null
+  }
+}

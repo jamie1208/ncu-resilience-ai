@@ -150,3 +150,20 @@ skills:
         type: accuracy
         field: hypothetical_flagged
         threshold: 1.0
+
+  location-resolver:
+    # P8-T02：使用者 2026-11-05 決定三項都 ≥ 0.90
+    metrics:
+      - name: decision_accuracy
+        type: accuracy
+        field: decision
+        threshold: 0.90
+      - name: alias_precision
+        type: precision
+        field: decision
+        positive: alias_of
+        threshold: 0.90
+      - name: target_accuracy
+        type: accuracy
+        field: target_id
+        threshold: 0.90

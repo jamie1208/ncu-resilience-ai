@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "decision": null,
+    "target_id": null,
+    "confidence": 0.0,
+    "evidence_ids": [],
+    "evidence_spans": [],
+    "reason": "提供的證據已刪除，沒有任何可用的原文描述來判斷「工程五館」指的是哪一處或是否與候選項目相同或包含關係。",
+    "abstain_reason": "insufficient_evidence"
+  }
+}

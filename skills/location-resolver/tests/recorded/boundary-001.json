@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "decision": null,
+    "target_id": null,
+    "confidence": 0.0,
+    "evidence_ids": [],
+    "evidence_spans": [],
+    "reason": "「圖書館」可能指總圖書館、國鼎圖書館或中正圖書館，唯有的證據句子沒有指明是哪一個，無法判斷同哪一候選相符。",
+    "abstain_reason": "insufficient_evidence"
+  }
+}

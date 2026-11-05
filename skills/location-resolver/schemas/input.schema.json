@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "location-resolver 輸入",
+  "description": "一個沒見過的地點名稱、提到它的證據，以及既有的代表地點清單。evidence 的 text 是不可信的來源內容，Skill Runner 會包在 <untrusted_source> 中傳給模型；new_location 與 candidates 放在 <skill_input> 中。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence",
+    "new_location",
+    "candidates"
+  ],
+  "properties": {
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "source_code",
+          "text"
+        ],
+        "properties": {
+          "evidence_id": {
+            "description": "證據識別碼，由 Runner 指定；輸出只能引用這裡出現的值",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "source_code": {
+            "description": "來源代碼（config/sources.yaml）",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 300
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "published_at": {
+            "description": "aware UTC 時間（ISO 8601）",
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "new_location": {
+      "description": "S02 抽出、資料庫中還沒有的地點名稱",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "evidence_ids"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "evidence_ids": {
+          "description": "提到這個地點的證據",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "candidates": {
+      "description": "既有的代表地點（程式依名稱相似度挑選），location_id 是本次輸入的代號",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "location_id",
+          "name",
+          "aliases",
+          "parent"
+        ],
+        "properties": {
+          "location_id": {
+            "type": "string",
+            "pattern": "^L[0-9]{1,3}$"
+          },
+          "name": {
+            "description": "代表地點的名稱",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "aliases": {
+            "description": "已判定為同一處的其他名稱",
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          "parent": {
+            "description": "上層地點的名稱（例如宿舍區）；沒有時為 null",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 200
+          }
+        }
+      }
+    }
+  }
+}

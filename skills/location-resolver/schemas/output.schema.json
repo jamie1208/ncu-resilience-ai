@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "location-resolver 輸出",
+  "description": "判斷新的地點名稱與既有代表地點的關係：alias_of（同一處的別名）、inside_of（位在某個既有地點之內）、new（新地點）。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "decision",
+    "target_id",
+    "confidence",
+    "evidence_ids",
+    "evidence_spans",
+    "reason",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已判斷；abstain：資訊不足或不是有效的地點",
+      "type": "string",
+      "enum": [
+        "ok",
+        "abstain"
+      ]
+    },
+    "decision": {
+      "description": "與既有地點的關係；abstain 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "alias_of",
+        "inside_of",
+        "new",
+        null
+      ]
+    },
+    "target_id": {
+      "description": "alias_of、inside_of 時為候選的 location_id；new 與 abstain 時為 null",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "confidence": {
+      "description": "判斷的信心；只能靠推測時較低",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "evidence_ids": {
+      "description": "抄錄原句的證據，必須存在於輸入",
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_spans": {
+      "description": "逐字抄錄、支持判斷的原句；Runner 會比對原句確實存在",
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "quote"
+        ],
+        "properties": {
+          "evidence_id": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 120
+          }
+        }
+      }
+    },
+    "reason": {
+      "description": "一兩句判斷理由；不得包含個資與人名、店名",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "insufficient_evidence",
+        "invalid_location",
+        null
+      ]
+    }
+  }
+}

@@ -1,0 +1,302 @@
+{
+  "skill": "location-resolver",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "mode": "live",
+  "provider": "openai",
+  "model": "gpt-5-mini",
+  "split": "test",
+  "generated_at": "2026-11-05T07:14:49.909738+00:00",
+  "max_cost_usd": 0.2,
+  "summary": {
+    "cases": 12,
+    "passed": 12,
+    "pass_rate": 1.0,
+    "schema_pass_rate": 1.0,
+    "traceability": 1.0,
+    "abstain_rate": 0.25,
+    "failed_runs": 0,
+    "no_recording": 0,
+    "skipped_budget": 0,
+    "by_type": {
+      "normal": {
+        "cases": 5,
+        "passed": 5
+      },
+      "boundary": {
+        "cases": 4,
+        "passed": 4
+      },
+      "adversarial": {
+        "cases": 3,
+        "passed": 3
+      }
+    },
+    "attempts": 12,
+    "input_tokens": 46199,
+    "output_tokens": 4173,
+    "cost_usd": 0.009845,
+    "latency_ms": 62473
+  },
+  "metrics": [
+    {
+      "name": "decision_accuracy",
+      "type": "accuracy",
+      "field": "decision",
+      "value": 1.0,
+      "threshold": 0.9,
+      "max": null,
+      "passed": true
+    },
+    {
+      "name": "alias_precision",
+      "type": "precision",
+      "field": "decision",
+      "value": 1.0,
+      "threshold": 0.9,
+      "max": null,
+      "passed": true
+    },
+    {
+      "name": "target_accuracy",
+      "type": "accuracy",
+      "field": "target_id",
+      "value": 1.0,
+      "threshold": 0.9,
+      "max": null,
+      "passed": true
+    }
+  ],
+  "gates": {
+    "schema_pass_rate": {
+      "value": 1.0,
+      "threshold": 0.99,
+      "passed": true
+    },
+    "traceability": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "passed": true
+    }
+  },
+  "incomplete": false,
+  "passed": true,
+  "cases": [
+    {
+      "id": "normal-002",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "decision": "alias_of",
+        "target_id": "L4"
+      },
+      "predicted": {
+        "status": "ok",
+        "decision": "alias_of",
+        "target_id": "L4"
+      }
+    },
+    {
+      "id": "normal-004",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "decision": "inside_of",
+        "target_id": "L3"
+      },
+      "predicted": {
+        "status": "ok",
+        "decision": "inside_of",
+        "target_id": "L3"
+      }
+    },
+    {
+      "id": "normal-006",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "decision": "alias_of",
+        "target_id": "L1"
+      },
+      "predicted": {
+        "status": "ok",
+        "decision": "alias_of",
+        "target_id": "L1"
+      }
+    },
+    {
+      "id": "normal-008",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "decision": "new",
+        "target_id": null
+      },
+      "predicted": {
+        "status": "ok",
+        "decision": "new",
+        "target_id": null
+      }
+    },
+    {
+      "id": "normal-010",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "decision": "inside_of",
+        "target_id": "L1"
+      },
+      "predicted": {
+        "status": "ok",
+        "decision": "inside_of",
+        "target_id": "L1"
+      }
+    },
+    {
+      "id": "boundary-002",
+      "type": "boundary",
+      "split": "test",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "decision": null,
+        "target_id": null
+      },
+      "predicted": {
+        "status": "abstain",
+        "decision": null,
+        "target_id": null
+      }
+    },
+    {
+      "id": "boundary-004",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "decision": "inside_of",
+        "target_id": "L1"
+      },
+      "predicted": {
+        "status": "ok",
+        "decision": "inside_of",
+        "target_id": "L1"
+      }
+    },
+    {
+      "id": "boundary-006",
+      "type": "boundary",
+      "split": "test",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "decision": null,
+        "target_id": null
+      },
+      "predicted": {
+        "status": "abstain",
+        "decision": null,
+        "target_id": null
+      }
+    },
+    {
+      "id": "boundary-008",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "decision": "alias_of",
+        "target_id": "L1"
+      },
+      "predicted": {
+        "status": "ok",
+        "decision": "alias_of",
+        "target_id": "L1"
+      }
+    },
+    {
+      "id": "adversarial-002",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "decision": "inside_of",
+        "target_id": "L1"
+      },
+      "predicted": {
+        "status": "ok",
+        "decision": "inside_of",
+        "target_id": "L1"
+      }
+    },
+    {
+      "id": "adversarial-004",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "decision": "new",
+        "target_id": null
+      },
+      "predicted": {
+        "status": "ok",
+        "decision": "new",
+        "target_id": null
+      }
+    },
+    {
+      "id": "adversarial-006",
+      "type": "adversarial",
+      "split": "test",
+      "status": "abstained",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "abstain",
+        "decision": null,
+        "target_id": null
+      },
+      "predicted": {
+        "status": "abstain",
+        "decision": null,
+        "target_id": null
+      }
+    }
+  ]
+}

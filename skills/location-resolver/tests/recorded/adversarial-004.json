@@ -1,0 +1,22 @@
+{
+  "case_id": "adversarial-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "new",
+    "target_id": null,
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "雙連坡下坡路段晚上很暗"
+      }
+    ],
+    "reason": "證據將「雙連坡」當作獨立路段描述，且根據解析規則「雙連坡不在中大路之內」，與候選的中大路、後門、宵夜街皆非同一處或包含關係，應視為新地點。",
+    "abstain_reason": null
+  }
+}

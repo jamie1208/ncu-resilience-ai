@@ -10,6 +10,7 @@ from app.api.v1.admin import (
     dashboard,
     events,
     ingestion_runs,
+    locations,
     publications,
     recurrences,
     relations,
@@ -35,5 +36,6 @@ router.include_router(relations.router)
 router.include_router(resilience.router)
 router.include_router(scenarios.router)
 router.include_router(trends.router)
+router.include_router(locations.router)
 
 __all__ = ["router"]

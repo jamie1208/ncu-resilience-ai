@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "new",
+    "target_id": null,
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "游藝館今天下午羽球場地板濕滑，已經有人跌倒。"
+      }
+    ],
+    "reason": "證據明確提到「游藝館」及其羽球場，該名稱不等於或包含於任何候選的館舍或宿舍區，應視為新地點。",
+    "abstain_reason": null
+  }
+}
