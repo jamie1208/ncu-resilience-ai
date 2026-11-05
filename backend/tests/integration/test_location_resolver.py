@@ -13,6 +13,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import AsyncIterator, Mapping
 from dataclasses import replace
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx2
@@ -363,6 +364,49 @@ async def test_backfill_resolves_once_and_rerun_is_stable(session: AsyncSession)
     assert {
         loc.name: (loc.canonical_id, loc.parent_id) for loc in (canonical, alias, other)
     } == state
+
+
+async def test_backfill_flattens_aliases_and_children_of_new_alias(
+    session: AsyncSession,
+) -> None:
+    # 補判前已有別名與下層地點指向「工五」，之後「工五」本身才被判成「工程五館」的別名
+    target = await add_location(session, "工程五館")
+    middle = await add_location(session, "工五")
+    alias = await add_location(session, "工五館", canonical_id=middle.id)
+    child = await add_location(session, "工五二樓", parent_id=middle.id)
+    for loc in (alias, child):
+        session.add(
+            LocationResolution(
+                location_id=loc.id,
+                decision="alias_of" if loc is alias else "inside_of",
+                target_id=middle.id,
+                method="ai",
+                decided_by="pipeline",
+                created_at=datetime.now(UTC),
+            )
+        )
+    await add_event_at(session, middle, "工五二樓走廊的燈一直閃。")
+    await session.commit()
+    run = Resolver(
+        session,
+        lambda: answer(
+            "alias_of",
+            target_of(run, "工程五館"),
+            quote="工五二樓走廊",
+            evidence_id=run.payloads[0]["evidence"][0]["evidence_id"],
+        ),
+    )
+
+    await backfill_locations(session, run=run, principal=SERVICE)
+    await session.commit()
+
+    assert run.calls == 1
+    for loc in (target, middle, alias, child):
+        await session.refresh(loc)
+    assert middle.canonical_id == target.id
+    assert alias.canonical_id == target.id  # 不留下別名的別名
+    assert await canonical_id_of(session, alias.id) == target.id
+    assert (child.canonical_id, child.parent_id) == (None, target.id)
 
 
 # ---------- 管線 ----------

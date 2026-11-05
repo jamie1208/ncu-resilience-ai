@@ -4,9 +4,10 @@
   「不明」與空白不建立地點；「全校」「校外」是 S02 的特殊值，直接建立、不判斷，也不當候選。
 - 候選：既有的代表地點（沒有 canonical_id），依名稱（含別名）的字元重疊度挑最多 20 個，
   代號 L1…依序；附上別名與上層地點的名稱。沒有候選時不呼叫。
-- 結果：alias_of → `canonical_id` 指向目標的代表地點（別名的別名攤平）；inside_of → `parent_id`
-  指向目標的代表地點（上層只用於篩選，不併入計數）；new 不改。abstain、失敗或 target_id 不在
-  候選中，一律當成新地點（method fallback）。
+- 結果：alias_of → `canonical_id` 指向目標的代表地點（別名的別名攤平；地點本身成為別名時，
+  原本指向它的別名與下層地點一併改指向新的代表地點）；inside_of → `parent_id` 指向目標的
+  代表地點（上層只用於篩選，不併入計數）；new 不改。abstain、失敗或 target_id 不在候選中，
+  一律當成新地點（method fallback）。
 - 每次判斷新增一筆 location_resolutions；有呼叫 S13 時另寫稽核 `location.resolve`（只記決定、
   目標 id 與方法）。
 - 拆開（`split_location`）：清除別名或上層關係，新增一筆 split 紀錄並寫稽核 `location.split`。
@@ -27,7 +28,7 @@ from collections.abc import Awaitable, Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.runner.run import RunStatus, SkillRunResult
@@ -150,6 +151,16 @@ async def _record(
     await session.flush()
 
 
+async def _repoint(session: AsyncSession, old: uuid.UUID, anchor: uuid.UUID) -> None:
+    """`old` 成為別名後，原本指向它的別名與下層地點改指向 `anchor`，不留下別名的別名。"""
+    await session.execute(
+        update(Location).where(Location.canonical_id == old).values(canonical_id=anchor)
+    )
+    await session.execute(
+        update(Location).where(Location.parent_id == old).values(parent_id=anchor)
+    )
+
+
 async def _judge(
     session: AsyncSession,
     loc: Location,
@@ -184,6 +195,7 @@ async def _judge(
         anchor = target.canonical_id or target.id
         if decision == "alias_of":
             loc.canonical_id = anchor
+            await _repoint(session, loc.id, anchor)
         else:
             loc.parent_id = anchor
         await _record(
