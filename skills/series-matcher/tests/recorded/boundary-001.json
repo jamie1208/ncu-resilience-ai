@@ -1,0 +1,22 @@
+{
+  "case_id": "boundary-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": false,
+    "target_id": null,
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "後門那邊停在紅線的機車今天全部被拖走了。"
+      }
+    ],
+    "reason": "新事件描述的是後門紅線違停的機車被拖吊（違規停車/拖吊），候選系列分別是車禍與接駁車延誤，屬於不同的問題類型。",
+    "abstain_reason": null
+  }
+}

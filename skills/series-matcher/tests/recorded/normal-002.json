@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": true,
+    "target_id": "S2",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "女十二舍從早上就停水，洗手台跟廁所都沒水。"
+      }
+    ],
+    "reason": "新事件描述的是宿舍停水（廁所與洗手台沒水）；S2 系列包含多起無預警或因維修導致的停水（包含其他宿舍停水），屬於同一種問題。",
+    "abstain_reason": null
+  }
+}

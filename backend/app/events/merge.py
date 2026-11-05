@@ -7,6 +7,7 @@ event_merges 導向目標事件。archived 已被候選召回（S04）、公開�
 - S04 不會再把文章併回被併入的事件；被移走的文章重跑管線時，依證據歸到目標事件。
 目標事件的事件說明依 P4-T08 的規則（官方來源優先、其次最新）從移入文章的 S02 結果重新挑選。
 被併入事件的風險評估、查證與 S04–S06 執行紀錄留在原處當作歷史。
+被併入的事件離開所屬的系列（P8-T04，合併後在系列中只算 1 件；件數 0 的系列刪除）。
 
 拆分（`split_event`）：把指定的來源文章移到新事件（沿用原事件的類型、地點與開始日期，
 標題由使用者填寫），新事件從 analyzing 開始；兩邊的事件說明依各自剩下的文章重新挑選。
@@ -36,6 +37,7 @@ from app.models.response_action import ResponseAction
 from app.pipeline.analyze_item import MAX_TITLE_CHARS, S01, S02, S03, _update_summary
 from app.publishing.sync import sync_publication
 from app.reports.service import invalidate_reports
+from app.series.grouping import leave_merged
 from app.services.audit import record_audit
 
 INVALID_EVENT_MERGED = "event_merged"
@@ -217,6 +219,7 @@ async def merge_events(
 
     source.status = archived.value
     await invalidate_reports(session, source.id, INVALID_EVENT_MERGED)
+    await leave_merged(session, principal, source.id, request_id=request_id)  # 系列只算 1 件
     record = EventMerge(
         merged_event_id=source.id, target_event_id=target.id, decided_by=principal.actor
     )

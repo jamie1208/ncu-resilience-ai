@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": true,
+    "target_id": "S1",
+    "confidence": 0.92,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工五剛剛整棟停電"
+      }
+    ],
+    "reason": "新事件描述的是工程五館整棟停電，屬於建築物的停電問題；S1 系列包含科學一館整棟停電等同類型的停電事件，屬同一種問題（停電），因此歸到 S1。",
+    "abstain_reason": null
+  }
+}

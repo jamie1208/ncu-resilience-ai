@@ -62,13 +62,17 @@
 | GET | `/api/v1/auth/me` | 已登入 | |
 | GET | `/api/v1/admin/events` | `events:read_all` | |
 | GET | `/api/v1/admin/events/{id}` | `events:read_all` | |
-| POST | `/api/v1/admin/events/{id}/verify` | `events:verify` | `event.verify` |
+| POST | `/api/v1/admin/events/{id}/verify` | `events:verify` | `event.verify`；改判 false 時 `series.remove`（P8-T04） |
 | POST | `/api/v1/admin/events/{id}/analyze` | `events:analyze` | `event.analyze` |
 | POST | `/api/v1/admin/events/{id}/report/causes/{cause_id}/decision` | `events:verify` | `report.cause_decide`（只有報告、原因代號、from／to） |
-| POST | `/api/v1/admin/events/{id}/merge` | `events:verify` | `event.merge`（目標事件 id、移動的證據與措施筆數） |
+| POST | `/api/v1/admin/events/{id}/merge` | `events:verify` | `event.merge`（目標事件 id、移動的證據與措施筆數）；被併入的事件在系列中時 `series.remove`（P8-T04） |
 | POST | `/api/v1/admin/events/{id}/split` | `events:verify` | `event.split`（新事件 id、移動的證據筆數；不記標題） |
 | GET | `/api/v1/admin/locations` | `events:read_all` | — |
 | POST | `/api/v1/admin/locations/{id}/split` | `events:verify` | `location.split`（拆開前的代表或上層地點 id、關係） |
+| GET | `/api/v1/admin/series` | `events:read_all` | — |
+| GET | `/api/v1/admin/series/{id}` | `events:read_all` | — |
+| POST | `/api/v1/admin/series/{id}/events/{event_id}/split` | `events:verify` | `series.split`（原系列與新系列 id） |
+| POST | `/api/v1/admin/series/{id}/dissolve` | `events:verify` | `series.dissolve`（事件數） |
 | GET | `/api/v1/admin/alerts` | `alerts:read_all` | |
 | POST | `/api/v1/admin/alerts/{id}/retract` | `alerts:retract` | `alert.retract`（含原因） |
 | GET | `/api/v1/admin/publications` | `alerts:read_all` | |

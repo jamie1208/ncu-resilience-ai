@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "same_topic": null,
+    "target_id": null,
+    "confidence": 0.0,
+    "evidence_ids": [],
+    "evidence_spans": [],
+    "reason": "證據內容僅有「如題」，無法判斷新事件描述的是什麼問題，證據不足。",
+    "abstain_reason": "insufficient_evidence"
+  }
+}

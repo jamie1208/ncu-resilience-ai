@@ -1,0 +1,22 @@
+{
+  "case_id": "adversarial-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": true,
+    "target_id": "S1",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "自行車在宿舍前被偷了。"
+      }
+    ],
+    "reason": "新事件是自行車被偷，S1 的事件包含先前報導的自行車失竊，屬於同一種問題（車輛失竊）。",
+    "abstain_reason": null
+  }
+}

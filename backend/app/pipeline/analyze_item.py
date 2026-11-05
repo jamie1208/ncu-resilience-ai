@@ -40,6 +40,10 @@
 
 代表地點（P8-T02）：建立新事件時，S02 的地點名稱經 `app/locations/resolver.py` 對應到 locations；
 沒見過的名稱才呼叫 S13 location-resolver（執行紀錄同 S01–S03 補上 event_id）。
+
+系列（P8-T04）：`PipelineDeps.group_series` 為 True 時（正式環境），S06 與通知同步之後以
+`app/series/grouping.py` 更新事件的系列：還沒有系列的事件經 S11 series-matcher 歸組，
+改判 false 的事件移出自成一件。
 """
 
 from __future__ import annotations
@@ -86,6 +90,7 @@ from app.models.ai import AIAnalysisRun, EventRelation
 from app.models.event import Event, EventEvidence, Location
 from app.models.source import AnalysisStatus, Source, SourceItem, SourceItemVersion
 from app.risk.engine import RiskPolicy, assessment_record, load_policy
+from app.series.grouping import S11, sync_event_series
 from app.services.audit import record_audit
 from app.verification.rules import (
     assessments_from_output,
@@ -166,6 +171,8 @@ class PipelineDeps:
     report_hook: ReportHook | None = None
     check_relevance: bool = True
     """是否先跑 S01；False 時所有文章都視為與校園相關。"""
+    group_series: bool = False
+    """是否在查證後更新系列（S11，P8-T04）。"""
 
 
 @dataclass(frozen=True)
@@ -399,6 +406,15 @@ async def _verify_and_assess(
     # 查證與風險更新後同步個人通知（P3-T08）
     await sync_event_alert(session, event.id, request_id=ctx.trace_id)
     await session.commit()
+    if ctx.deps.group_series:  # 系列（P8-T04）
+        await sync_event_series(
+            session,
+            event,
+            run=lambda p: ctx.run(S11, p, event_id=event.id),
+            principal=PIPELINE_PRINCIPAL,
+            request_id=ctx.trace_id,
+        )
+        await session.commit()
     if ctx.deps.report_hook is not None:  # 事件小報告（P4-T09）
         await ctx.deps.report_hook(session, event.id, level, ctx.trace_id)
     return decision_status, level
@@ -814,6 +830,7 @@ def build_deps() -> PipelineDeps:
         policy=load_policy(),
         report_hook=make_report_hook(send_to_celery),
         check_relevance=False,
+        group_series=True,
     )
 
 

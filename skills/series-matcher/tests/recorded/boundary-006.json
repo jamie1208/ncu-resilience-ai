@@ -1,0 +1,22 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": false,
+    "target_id": null,
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "科二一樓的飲水機壞了，按了沒水，面板一直亮紅色故障燈。"
+      }
+    ],
+    "reason": "新事件是飲水機（飲水設備）故障，證據描述設備按了沒水並有故障燈。候選系列分別是全館無預警停水（供水中斷）與電梯故障，均不是相同的問題，故判為不同主題。",
+    "abstain_reason": null
+  }
+}

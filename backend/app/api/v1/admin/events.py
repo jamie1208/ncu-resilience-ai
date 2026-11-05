@@ -7,6 +7,7 @@
   （沒有時為 null；推測原因帶「推測，尚未查證」標示；abstain 的區塊顯示「證據不足，暫不分析」）。
 - `POST /api/v1/admin/events/{id}/verify`（P3-T03）：記錄查證結果（變更事件狀態）；
   轉移由 app/domain/states.py 檢查，非法回 CONFLICT。需要 `events:verify`，寫入稽核 `event.verify`。
+  改判 false 時事件移出系列、自成一件（P8-T04，稽核 `series.remove`）。
   改為 false（不實）時，事件小報告一併標為失效（P4-T09）。
 - `POST /api/v1/admin/events/{id}/analyze`（P2-T13）：重跑事件的分析（S05 查證、S06 風險），
   排入 Celery 佇列後回 202；需要 `events:analyze`，寫入稽核 `event.analyze`。
@@ -74,6 +75,7 @@ from app.reports.service import (
     invalidate_reports,
     latest_report,
 )
+from app.series.grouping import sync_event_series
 from app.services.audit import AuditMetadataError, prepare_metadata, record_audit
 from app.worker.celery_app import ANALYZE_EVENT_TASK, REPORT_EVENT_TASK, celery_app
 
@@ -482,8 +484,9 @@ async def verify_event(
     await record_audit(
         session, principal, "event.verify", target=f"event:{event_id}", metadata=metadata
     )
-    if target is EventStatus.FALSE:  # 事件不實：小報告失效（P4-T09）
+    if target is EventStatus.FALSE:  # 事件不實：小報告失效（P4-T09），移出系列（P8-T04）
         await invalidate_reports(session, event_id, INVALID_EVENT_FALSE)
+        await sync_event_series(session, event, run=None, principal=principal)
     # 查證結果改變後同步個人通知（P3-T08）；由通知服務帳號執行，管理者本身沒有發布權限
     await sync_event_alert(session, event_id)
     await session.commit()
