@@ -1,0 +1,131 @@
+# 校園代表地點清單（P8-T14，使用者 2026-11-05 確認）。
+# 由 backend/app/locations/seed.py 匯入 locations：name 建立為代表地點，aliases 建立為指向它的別名。
+# 匯入後同名稱直接沿用、不呼叫 S13；清單外的新名稱仍由 S13 判斷（alias_of 時記成別名，new 時新增代表地點）。
+# 「全校」「校外」是 S02 的特殊值，不放在清單中。
+#
+# 來源：
+#   - 地圖：中央大學校園導覽圖（地圖）2024-08 版的編號與正式名稱，code 為平面圖代號
+#     https://erp.mgt.ncu.edu.tw/wp-content/uploads/2024/12/01-中央大學校園導覽圖-（地圖）-202408.pdf
+#   - 事件：資料庫 locations 現有 7 個名稱（2026-11-05）
+# 欄位：
+#   name       正式名稱（地圖上的寫法）
+#   code       平面圖代號（課表教室代號的字首，例如 E6-A204），沒有就省略
+#   aliases    地圖上的括號名稱、現有事件資料已出現的名稱、常用簡稱（使用者 2026-11-05 確認）
+#   parent     上層地點（inside_of，只用於篩選、不併入計數），沒有就省略
+#
+# 修改清單時更新 list_version。
+
+list_version: "2026-11-05.1"
+
+locations:
+  # ---------- 行政服務 ----------
+  - {name: 行政大樓, code: A1, aliases: [行政]}
+  - name: 總圖書館
+    code: L2  # 中正圖書館的代號 L 也算這裡
+    aliases: [圖書館, 中正圖書館, 舊圖書館, 總圖, 舊圖, 中正圖]  # 使用者決定：總圖與中正圖書館算同一個地點
+  - {name: 國鼎圖書資料館, code: L3, aliases: [國鼎圖書館]}
+  - {name: 志希館, code: I, aliases: [志希]}
+  - {name: 松果館, code: IC}
+  - {name: 依仁堂, code: YH}
+  - {name: 大講堂, code: AH}
+  - {name: 教學研究綜合大樓, code: TR, aliases: [教研大樓, 教研]}
+  - {name: 大禮堂, code: MA}
+
+  # ---------- 教學研究 ----------
+  - {name: 文學一館, code: A, aliases: [文一, 文一館]}
+  - {name: 文學二館, code: C2, aliases: [文二, 文二館]}
+  - {name: 人文社會科學大樓, code: LS, aliases: [人社大樓, 人社館]}
+  - {name: 科學一館, code: S, aliases: [地球科學學院館, 科一, 科一館]}
+  - {name: 科學二館, code: S1, aliases: [理學院館, 科二, 科二館]}
+  - {name: 科學三館, code: S2, aliases: [科三, 科三館]}
+  - {name: 鴻經館, code: M}
+  - {name: 健雄館, code: S4, aliases: [科學四館, 科四館, 科四]}
+  - {name: 科學五館, code: S5, aliases: [科五, 科五館]}
+  - {name: 理學院教學館, code: H2, aliases: [理教]}
+  - {name: 國鼎光電大樓, code: IL, aliases: [光電大樓, 光電館]}
+  - {name: 工程一館, code: E, aliases: [工一, 工一館]}
+  - {name: 實習一館, code: EH, aliases: [實一]}
+  - {name: 工程二館, code: E1, aliases: [工二, 工二館]}
+  - {name: 機械館, code: E2}
+  - {name: 實習三館, code: H3, aliases: [實三]}
+  - {name: 環工化工館, code: E3, aliases: [環工館, 化工館]}
+  - {name: 機電實驗室, code: E4}
+  - {name: 大型力學實驗館, code: E5}
+  - {name: 風洞實驗室, code: EQ}
+  - name: 工程五館
+    code: E6
+    aliases: [工學院館, 資訊電機學院館, 工五, 工五館]
+  - {name: 管理二館, code: I1, aliases: [管二, 管二館]}
+  - {name: 客家學院大樓, code: HK, aliases: [客家大樓, 客家學院]}
+  - {name: 太空及遙測研究中心, code: R2, aliases: [太空中心]}
+  - {name: 研究中心大樓二期, code: R3, aliases: [生醫理工學院館]}
+  - {name: 綜教館, code: O, aliases: [綜合教學館, 綜教]}
+  - {name: 氣象雷達站}
+  - {name: 天線區}
+  - {name: 大氣微量物質分析實驗室, code: G}
+  - {name: 大氣水文觀測站, code: GE}
+  - {name: 前瞻科技中心, aliases: [前瞻中心]}
+
+  # ---------- 宿舍 ----------
+  - {name: 國際學舍}
+  - {name: 學生男三舍, aliases: [男三舍, 男3舍, 男三]}
+  - {name: 學生男五舍, aliases: [男五舍, 男5舍, 男五]}
+  - {name: 學生男六舍, aliases: [男六舍, 男6舍, 男六]}
+  - {name: 學生男七舍, aliases: [男七舍, 男7舍, 男七]}
+  - {name: 學生男九舍, aliases: [男九舍, 男9舍, 男九]}
+  - {name: 學生男十一舍, aliases: [男十一舍, 男11舍]}
+  - {name: 學生男十二舍, aliases: [男十二舍, 男12舍]}
+  - {name: 學生男十三舍, aliases: [男十三舍, 男13舍]}  # 事件資料已有「男十三舍」
+  - {name: 學生女一舍, aliases: [女一舍, 女1舍]}
+  - {name: 學生女二舍, aliases: [女二舍, 女2舍]}
+  - {name: 學生女三舍, aliases: [女三舍, 女3舍]}
+  - {name: 學生女四舍, aliases: [女四舍, 女4舍]}
+  - {name: 學生女十四舍, aliases: [女十四舍, 女14舍]}
+  - {name: 中大會館}
+  - {name: 研究生宿舍, aliases: [曙光苑]}
+  - {name: 教職員單一舍}
+  - {name: 教職員單二舍}
+  - {name: 教職員單四舍}
+  - {name: 教職員中大新村, aliases: [中大新村]}
+  - {name: 教職員中大北村, aliases: [中大北村]}
+  - {name: 學人宿舍}
+
+  # ---------- 休閒生活 ----------
+  - {name: 正門牌樓, aliases: [正門, 大門]}
+  - {name: 在台建校紀念塔, aliases: [觀景台]}
+  - {name: 聽松台}
+  - {name: 據德樓}
+  - {name: 游藝館}
+  - {name: 志道樓}
+  - {name: 荷花池}
+  - {name: 室外排球場}
+  - {name: 桃園市中大國民運動中心, aliases: [國民運動中心, 運動中心]}
+  - {name: 羽球館}
+  - {name: 溜冰場}
+  - {name: 室外籃排球場, aliases: [室外籃球場, 籃球場]}
+  - {name: 網球場}
+  - {name: 田徑場, aliases: [操場]}
+  - {name: 攀岩塔}
+  - {name: 室內游泳池, aliases: [游泳池]}
+  - {name: 中大湖}
+  - {name: 大草坪, aliases: [棒壘球場]}
+  - {name: 太極銅像}
+  - {name: 松苑餐廳, aliases: [松苑]}
+  - {name: 小木屋鬆餅, aliases: [小木屋]}
+  - {name: 松果餐廳, aliases: [松果]}
+  - {name: 正門圓環}
+  - {name: 百花川}
+  - {name: 大象五形}
+  - {name: 蘊行一風動藝術}
+  - {name: 漫步雲端}
+  - {name: 享想空間}
+  - {name: 賈斯汀單車}
+
+  # ---------- 其他單位 ----------
+  - {name: 前門警衛室}
+  - {name: 後門警衛室, aliases: [後門]}
+
+  # ---------- 事件資料中、地圖沒有對應館舍的名稱（獨立地點） ----------
+  - {name: K書中心}  # 使用者決定：獨立地點
+  - {name: 校史館}  # 使用者決定：獨立地點
+  - {name: 校史館旁}  # 使用者決定：獨立地點
