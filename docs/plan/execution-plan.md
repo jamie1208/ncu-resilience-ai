@@ -534,12 +534,15 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
 - **P8-T04 S11 series-matcher 與系列自動歸組**（ADR-0018 決策 1-1～1-4）
   - 檔案：`skills/series-matcher/`（輸入：新事件與同類別的候選系列／事件；輸出：是否同主題、目標系列、理由、逐字證據；不看地點）、`infra/migrations/versions/<下一個編號>_event_series.py`（系列、子事件關係、使用者拆出紀錄）、`app/series/grouping.py`（同類別＋S11 同主題即歸組，2 件成立；拆出後不再自動歸回；解散；子事件改判 false 移出、剩不到 2 件自動解散；合併後的事件只算 1 件；稽核 `series.*`）、管理端 API `app/api/v1/admin/series.py`
   - 驗證：golden cases ≥ 20；`tests/integration/test_series_grouping.py`（fake provider；以上每條規則各一案例；同一組輸入重跑結果相同）
+  - ADR-0020 修改（使用者 2026-11-05 同意）：每個事件都屬於一個系列，S11 判斷不同主題時建立只有它一件的系列（第 1 起就有分析頁）；拆出或改判 false 移出的事件各自成為 1 件的系列，件數 0 的系列刪除（取代「2 件成立」「剩不到 2 件自動解散」）；驗證新增 1 件系列、拆出後自成系列的案例
 - **P8-T05 S12 series-analyst、系列時間軸與前後比較**（ADR-0018 決策 1-5～1-8）
   - 檔案：`skills/series-analyst/`（輸入：系列的子事件摘要與證據、程式算出的件數序列與突增；輸出：爆發解釋、地點分組、規律、可能的共同原因、改善建議（同學／學校／相關單位）；規律與原因一律標為推測；證據不足時 abstain）、`app/series/analysis.py`（引用驗證、程式計數、每個規律至少 2 件；新事件加入時重新分析，每系列每天最多一次，受每日費用上限）、`app/series/timeline.py`（日／週／月件數、4 期移動平均、措施開始處理／完成標記、範圍 1M／3M／6M／1Y／全部；前後比較：措施開始前後各 8 週平均，任一邊少於 5 件回傳「資料還不夠」）、系列措施（`response_actions` 加系列層級；可從建議一鍵加入）、後台 `frontend/src/admin/pages/Series.tsx`（時間軸、地點篩選、規律、推測原因、措施）
   - 驗證：golden cases ≥ 20（含捏造規律、引用不存在事件、只有 1 件支持的規律）；`tests/unit/series/test_timeline.py`（移動平均、粒度、前後比較門檻、「變少不一定是措施的功勞」說明一律出現）；`tests/integration/test_series_analysis.py`（引用驗證丟棄、計數由程式算、每天最多一次）；前端 vitest（雙設計系統）
+  - ADR-0020 修改（使用者 2026-11-05 同意）：S12 承接 S07、S08 的欄位（原因的 `to_verify`、改善建議的 `audience`／`horizon`／`priority`）；1 件的系列也分析（規律仍需 ≥ 2 件，否則該區 abstain）；原因與規律提到特定個人、群體、店家或單位時以既有指控比對標記（不擋，交給公開規則比照疑似指控處理）；系列措施與原因的人工確認（`series.cause_decide`，沿用 ADR-0017 的規則）；golden cases 新增 1 件系列、提到個人或單位的原因（須被標記）
 - **P8-T06 公開規則放寬與公開系列頁**（ADR-0018 決策 2、1-9）
   - 檔案：`app/publishing/policy.py`、`app/publishing/sync.py`（未查證事件公開 AI 摘要並標「尚未查證」；疑似指控照原文摘要公開並立即在通知中心提醒、附一鍵下架；改善建議公開但不寫依據的原因；推測原因、FB 原文、投稿原文仍不公開；全部經 PII 遮蔽）、`app/api/v1/public/series.py`（系列頁：時間軸、子事件、前後比較、改善建議、改善進度；不含推測原因與規律）、`frontend/src/public/pages/Series.tsx`、`docs/architecture/threat-model-public.md`、`docs/architecture/rbac.md`、通道閘道白名單
   - 驗證：`tests/unit/publishing/test_publish_policy.py`、`tests/security/test_public_exposure.py` 依 G5-5 新定義修改（使用者 2026-11-05 同意，只限 ADR-0018 放寬的規則）；新增系列頁不含推測原因、規律與 FB 原文的案例；公開前端 vitest 與 `tests/e2e/public.e2e.ts`
+  - ADR-0020 修改（使用者 2026-11-05 同意）：公開系列頁加上規律與可能原因（一律標「推測，尚未查證」，人工確認的標「已確認」；首次公開或改變時通知中心提醒並附一鍵下架；提到特定個人、群體、店家或單位的比照疑似指控公開並在提醒中註明）；公開首頁改為依類別分區的橫向滑動快報卡片（類別圖示與配色、查證標籤、系列第 N 起）；快報全文頁不含單一事件小報告，只連到系列分析頁；底部放韌性成績單與匿名回報入口；AGENTS.md 推測原因的硬性邊界與 G5-5 定義依 ADR-0020 修改；`test_public_exposure` 依新定義修改（使用者 2026-11-05 同意，只限 ADR-0020 放寬的規則），新增「提到個人或單位的原因公開時必定產生提醒與下架入口」「未帶推測標籤不得公開」的案例
 - **P8-T07 通知失敗重試**（v1.0 A10，D41）
   - 檔案：`app/alerts/delivery.py`（failed 最多重試 3 次、遞增間隔；唯一約束仍防重複遞送）、`infra/migrations/versions/<下一個編號>_delivery_attempts.py`（嘗試次數、下次時間）、Celery 排程
   - 驗證：`tests/integration/test_delivery_retry.py`（第 3 次仍失敗就停止；成功後不再重送；不重複遞送）、`tests/e2e/a10-delivery.e2e.ts`
@@ -552,12 +555,16 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
 - **P8-T10 介面文案改為播報員語氣**（ADR-0018 決策 3）
   - 檔案：`docs/governance/tone-guide.md`（語氣規則、例外：緊急資訊與「尚未查證」標籤平實、不用表情符號、範例）、公開網站與後台介面文案、`app/alerts/templates/`
   - 驗證：前端 vitest 斷言的文案依新文案修改（使用者 2026-11-05 同意）；緊急資訊與「尚未查證」文案不變的測試
+  - ADR-0020 修改（使用者 2026-11-05 同意）：匿名回報頁與校園韌性成績單頁改成白話（韌性四個構面改成四個問題、說明「幾天算好是本專題自己訂的目標」）；分數規則不變；緊急資訊與「尚未查證」維持平實
 - **P8-T11 AI 產生內容改為播報員語氣**
   - 檔案：S02、S07、S08、S11、S12 的 `SKILL.md` 與 `tests/recorded/`、`eval/reports/<name>/<version>.json`
   - 驗證：每個 Skill 重錄、重跑 `--live` 評測、升版本；評測不低於現有門檻
-- **P8-T12 規格書 v1.2 更新**
+- **P8-T12 規格書 v1.2 更新**（含 ADR-0020）
   - 檔案：`docs/requirements/spec-v1.2.md`（v1.1 差異清單；ADR-0018 的變更）
   - 驗證：與 v1.1 差異清單完整
+- **P8-T13 停用單一事件小報告並遷移到系列**（ADR-0020 決策 3，使用者 2026-11-05 同意）
+  - 檔案：`app/reports/service.py`、`app/pipeline/analyze_item.py`（不再排入 S07、S08，移除 `report_hook` 的產生報告）、`infra/migrations/versions/<下一個編號>_series_actions_backfill.py`（既有事件層級的改善措施與原因確認掛到所屬系列，保留原 event_id；可 downgrade、不刪資料）、`app/api/v1/admin/events.py`（舊小報告唯讀、停用產生報告端點回 GONE 或 CONFLICT）、`app/publishing/sync.py`（改依系列分析）、後台 `EventWorkbench.tsx`（「舊版事件小報告（已停用）」）、公開 `EventReport.tsx`（改為快報全文）、`skills/root-cause-analyzer/`、`skills/solution-generator/` 標示停用（不刪）
+  - 驗證：`tests/integration/test_event_report.py`、`tests/integration/test_cause_confirmation.py`、`tests/unit/publishing/test_cause_confirmation_policy.py`、相關前端 vitest 與 `e2e/admin.e2e.ts` 改為驗證停用與遷移（使用者 2026-11-05 同意修改既有測試，只限 ADR-0020 決策 3）；新增 `tests/integration/test_report_migration.py`（措施與確認遷移後可在系列查到、舊資料唯讀、事件建立後不再呼叫 S07／S08）；G4-5 保留為歷史紀錄
 
 ```bash
 cd backend && uv run pytest tests/unit/series tests/security -q
