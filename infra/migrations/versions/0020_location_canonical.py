@@ -1,4 +1,6 @@
-"""代表地點與地點判斷紀錄（P8-T02，ADR-0018 決策 1-5）：locations.canonical_id／parent_id、location_resolutions。
+"""代表地點與地點判斷紀錄（P8-T02，ADR-0018 決策 1-5）。
+
+新增 locations.canonical_id／parent_id 與 location_resolutions 表。
 
 依 ADR-0009 的編號原則使用下一個可用編號 0020。S13 判斷沒見過的地點名稱是既有地點的別名
 （canonical_id 指向代表地點）、位在某個地點之內（parent_id），還是新地點；每次判斷與使用者的
