@@ -39,9 +39,7 @@ def upgrade() -> None:
         "event_series",
         _uuid("id", server_default=sa.text("gen_random_uuid()")),
         sa.Column("category", sa.String(32), nullable=False, comment="S03 類別"),
-        sa.Column(
-            "title", sa.String(300), nullable=False, comment="建立系列時第一起事件的標題"
-        ),
+        sa.Column("title", sa.String(300), nullable=False, comment="建立系列時第一起事件的標題"),
         sa.Column(
             "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
         ),
