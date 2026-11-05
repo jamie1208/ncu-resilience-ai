@@ -3,7 +3,15 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from '../../App'
-import { ACTION_DETAIL, EVENT_DETAIL, EVENT_ID, EVENT_REPORT, EVENTS, PUBLICATIONS } from '../../test/fixtures'
+import {
+  ACTION_DETAIL,
+  EVENT_DETAIL,
+  EVENT_ID,
+  EVENT_ID_2,
+  EVENT_REPORT,
+  EVENTS,
+  PUBLICATIONS,
+} from '../../test/fixtures'
 import { ME, mockApi, type MockRoute } from '../../test/mockApi'
 
 const DETAIL = `GET /api/v1/admin/events/${EVENT_ID}`
@@ -430,5 +438,99 @@ describe('EventWorkbench', () => {
   it('事件不存在時顯示錯誤', async () => {
     open('/admin/events/missing', { 'GET /api/v1/admin/events': { data: EVENTS } })
     expect(await screen.findByText('找不到')).toBeInTheDocument()
+  })
+})
+
+describe('EventWorkbench 合併／拆分（P8-T01）', () => {
+  it('合併：選擇目標事件後送出，顯示前往目標事件的連結並重新載入', async () => {
+    let merged = false
+    const { calls, user } = open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: () => ({
+        data: merged
+          ? { ...EVENT_DETAIL, status: 'archived', merged_into: EVENT_ID_2, evidence: [] }
+          : EVENT_DETAIL,
+      }),
+      [`POST /api/v1/admin/events/${EVENT_ID}/merge`]: () => {
+        merged = true
+        return { data: { event_id: EVENT_ID, merged_into: EVENT_ID_2 } }
+      },
+    })
+    const form = await screen.findByRole('form', { name: '合併到其他事件' })
+    const submit = within(form).getByRole('button', { name: '合併' })
+    expect(submit).toBeDisabled()
+    // 目標選項不含自己
+    expect(within(form).queryByRole('option', { name: /工程一館停電/ })).not.toBeInTheDocument()
+    await within(form).findByRole('option', { name: /圖書館網路維護/ })
+    await user.selectOptions(within(form).getByLabelText('併入的目標事件'), EVENT_ID_2)
+    await user.click(submit)
+
+    const post = calls.find((c) => c.method === 'POST')!
+    expect(post.path).toBe(`/api/v1/admin/events/${EVENT_ID}/merge`)
+    expect(post.body).toEqual({ target_event_id: EVENT_ID_2 })
+    const banner = await screen.findByRole('region', { name: '已併入其他事件' })
+    expect(within(banner).getByRole('link', { name: '前往目標事件' })).toHaveAttribute(
+      'href',
+      `/admin/events/${EVENT_ID_2}`,
+    )
+    expect(screen.queryByRole('form', { name: '合併到其他事件' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('form', { name: '拆分成新事件' })).not.toBeInTheDocument()
+  })
+
+  it('拆分：勾選部分來源並填標題後送出，顯示新事件的連結；全選或沒有標題時不能送出', async () => {
+    const { calls, user } = open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: EVENT_DETAIL },
+      [`POST /api/v1/admin/events/${EVENT_ID}/split`]: {
+        status: 201,
+        data: { event_id: EVENT_ID, new_event_id: 'new-event' },
+      },
+    })
+    const form = await screen.findByRole('form', { name: '拆分成新事件' })
+    const submit = within(form).getByRole('button', { name: '拆分' })
+    await user.click(within(form).getByRole('checkbox', { name: /facebook_ncu_group/ }))
+    expect(submit).toBeDisabled() // 還沒有標題
+    await user.type(within(form).getByLabelText('新事件標題'), '工程一館停電延期傳聞')
+    expect(submit).toBeEnabled()
+    await user.click(within(form).getByRole('checkbox', { name: /ncu_announcements/ }))
+    expect(submit).toBeDisabled() // 全部拆走
+    expect(within(form).getByText('至少要留一篇來源在原事件')).toBeInTheDocument()
+    await user.click(within(form).getByRole('checkbox', { name: /ncu_announcements/ }))
+    await user.click(submit)
+
+    const post = calls.find((c) => c.method === 'POST')!
+    expect(post.body).toEqual({ source_item_ids: ['si-2'], title: '工程一館停電延期傳聞' })
+    const notice = await within(form).findByRole('status')
+    expect(notice).toHaveTextContent('已拆成新事件，兩邊都已排入重新分析')
+    expect(within(notice).getByRole('link', { name: '前往新事件' })).toHaveAttribute(
+      'href',
+      '/admin/events/new-event',
+    )
+  })
+
+  it('合併失敗時顯示伺服器訊息', async () => {
+    const { user } = open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: EVENT_DETAIL },
+      [`POST /api/v1/admin/events/${EVENT_ID}/merge`]: {
+        status: 409,
+        error: { code: 'CONFLICT', message: '目標事件已封存或已被併入其他事件' },
+      },
+    })
+    const form = await screen.findByRole('form', { name: '合併到其他事件' })
+    await within(form).findByRole('option', { name: /圖書館網路維護/ })
+    await user.selectOptions(within(form).getByLabelText('併入的目標事件'), EVENT_ID_2)
+    await user.click(within(form).getByRole('button', { name: '合併' }))
+    expect(await within(form).findByRole('alert')).toHaveTextContent('已封存或已被併入')
+  })
+
+  it('已封存的事件不提供合併與拆分', async () => {
+    open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: { data: { ...EVENT_DETAIL, status: 'archived' } },
+    })
+    const card = await screen.findByRole('region', { name: '合併與拆分' })
+    expect(within(card).getByText(/分析中或已封存的事件不能合併或拆分/)).toBeInTheDocument()
+    expect(screen.queryByRole('form', { name: '合併到其他事件' })).not.toBeInTheDocument()
   })
 })

@@ -183,6 +183,8 @@ export interface EventDetail {
   occurrence_start_date: string | null
   created_at: string
   updated_at: string
+  /** 已被手動併入的目標事件 id（P8-T01）；沒有時為 null */
+  merged_into: string | null
   summary: EventSummary | null
   evidence: Evidence[]
   risk_assessments: RiskAssessment[]
@@ -643,6 +645,25 @@ export async function decideCause(
       `/admin/events/${id(eventId)}/report/causes/${encodeURIComponent(causeId)}/decision`,
       body,
     )
+  ).data
+}
+
+/** 把事件併入目標事件（P8-T01）；之後目標事件會排入重新分析。 */
+export async function mergeEvent(eventId: string, targetEventId: string) {
+  return (
+    await post<{ event_id: string; merged_into: string }>(`/admin/events/${id(eventId)}/merge`, {
+      target_event_id: targetEventId,
+    })
+  ).data
+}
+
+/** 把指定的來源文章拆到新事件（P8-T01）；原事件與新事件都會排入重新分析。 */
+export async function splitEvent(eventId: string, sourceItemIds: string[], title: string) {
+  return (
+    await post<{ event_id: string; new_event_id: string }>(`/admin/events/${id(eventId)}/split`, {
+      source_item_ids: sourceItemIds,
+      title: title.trim(),
+    })
   ).data
 }
 

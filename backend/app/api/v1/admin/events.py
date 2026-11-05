@@ -19,6 +19,11 @@
   把最新一份有效小報告中的推測原因標為人工確認（需填確認依據）或回滾；body 帶 report_id，
   報告已被重新產生或失效時回 CONFLICT。需要 `events:verify`，寫入稽核 `report.cause_decide`。
   回傳更新後的小報告；事件詳細中每個原因附 `manual_confirmation`（目前的人工確認，沒有時為 null）。
+- `POST /api/v1/admin/events/{id}/merge`（P8-T01）：把事件併入 body 的 target_event_id；
+  被併入的事件改為 archived 並導向目標（事件詳細的 `merged_into`），之後把目標事件排入重跑分析。
+  需要 `events:verify`，寫入稽核 `event.merge`。分析中、已封存或已被併入回 CONFLICT。
+- `POST /api/v1/admin/events/{id}/split`（P8-T01）：把 body 指定的來源文章拆到新事件（回 201），
+  之後把原事件與新事件都排入重跑分析。需要 `events:verify`，寫入稽核 `event.split`。
 """
 
 from __future__ import annotations
@@ -42,8 +47,16 @@ from app.api.responses import envelope
 from app.core.logging import request_id_var
 from app.core.security import Permission, Principal
 from app.domain.states import EventStatus, StateTransitionError, transition
+from app.events.merge import (
+    MAX_SPLIT_ITEMS,
+    MergeConflictError,
+    MergeError,
+    MergeInvalidError,
+    merge_events,
+    split_event,
+)
 from app.models.ai import RiskAssessment
-from app.models.event import Event, EventEvidence
+from app.models.event import Event, EventEvidence, EventMerge
 from app.models.report import EventReport, ReportCauseDecision
 from app.models.source import Source, SourceItem
 from app.reports.cause_decisions import (
@@ -266,6 +279,31 @@ class CauseDecisionIn(BaseModel):
     basis: Annotated[str | None, Field(max_length=500)] = None
 
 
+class MergeIn(BaseModel):
+    """把事件併入目標事件。"""
+
+    target_event_id: uuid.UUID
+
+
+class SplitIn(BaseModel):
+    """把指定的來源文章拆到新事件；title 為新事件的標題（不得含個資）。"""
+
+    source_item_ids: Annotated[list[uuid.UUID], Field(max_length=MAX_SPLIT_ITEMS)]
+    title: Annotated[str, Field(max_length=300)]
+
+
+def _merge_error(e: MergeError) -> ApiError:
+    if isinstance(e, MergeInvalidError):
+        return ApiError(
+            ErrorCode.VALIDATION_ERROR,
+            str(e),
+            details=[{"field": f"body.{e.field}", "message": str(e)}],
+        )
+    if isinstance(e, MergeConflictError):
+        return ApiError(ErrorCode.CONFLICT, str(e))
+    return ApiError(ErrorCode.NOT_FOUND, str(e))
+
+
 class VerifyIn(BaseModel):
     """查證結果；note 會寫入稽核紀錄，不得含個資。"""
 
@@ -392,6 +430,9 @@ async def get_event(event_id: uuid.UUID, session: Session, _: CanRead) -> dict[s
         else None
     )
     report = await latest_report(session, event_id)
+    merged_into = await session.scalar(
+        select(EventMerge.target_event_id).where(EventMerge.merged_event_id == event_id)
+    )
     data = {
         "id": str(event.id),
         "title": event.title,
@@ -402,6 +443,7 @@ async def get_event(event_id: uuid.UUID, session: Session, _: CanRead) -> dict[s
         ),
         "created_at": event.created_at.isoformat(),
         "updated_at": event.updated_at.isoformat(),
+        "merged_into": str(merged_into) if merged_into is not None else None,
         "summary": summary,
         "evidence": evidence,
         "risk_assessments": risks,
@@ -512,3 +554,43 @@ async def decide_report_cause(
     if report is None:  # 確認後同一個請求內被刪除（事件刪除）
         raise ApiError(ErrorCode.NOT_FOUND, "找不到事件小報告")
     return envelope(await _report_data(session, report))
+
+
+@router.post("/{event_id}/merge")
+async def merge_event(
+    event_id: uuid.UUID, body: MergeIn, session: Session, principal: CanVerify, enqueue: Queue
+) -> dict[str, Any]:
+    """把事件併入目標事件，之後把目標事件排入重跑分析。"""
+    request_id = request_id_var.get() or str(uuid.uuid4())
+    try:
+        await merge_events(
+            session, principal, event_id, body.target_event_id, request_id=request_id
+        )
+    except MergeError as e:
+        raise _merge_error(e) from None
+    await session.commit()
+    enqueue(body.target_event_id, request_id)
+    return envelope({"event_id": str(event_id), "merged_into": str(body.target_event_id)})
+
+
+@router.post("/{event_id}/split", status_code=status.HTTP_201_CREATED)
+async def split_event_items(
+    event_id: uuid.UUID, body: SplitIn, session: Session, principal: CanVerify, enqueue: Queue
+) -> dict[str, Any]:
+    """把來源文章拆到新事件，之後把原事件與新事件都排入重跑分析。"""
+    request_id = request_id_var.get() or str(uuid.uuid4())
+    try:
+        new = await split_event(
+            session,
+            principal,
+            event_id,
+            body.source_item_ids,
+            title=body.title,
+            request_id=request_id,
+        )
+    except MergeError as e:
+        raise _merge_error(e) from None
+    await session.commit()
+    enqueue(event_id, request_id)
+    enqueue(new.id, request_id)
+    return envelope({"event_id": str(event_id), "new_event_id": str(new.id)})
