@@ -572,19 +572,23 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
   - 匯入後：清單內的名稱同名稱直接沿用、不呼叫 S13；清單外的新名稱照 P8-T02 由 S13 從代表地點（含清單）判斷，alias_of 記成別名、new 新增代表地點，之後同名稱即可找到
   - 驗證：`tests/unit/locations/test_seed_file.py`（清單格式：名稱與別名全域不重複、不含「全校」「校外」「不明」、parent 必須在清單中、只允許 name／code／aliases／parent 欄位）；`tests/integration/test_location_seed.py`（匯入後別名同名沿用且不呼叫 S13；重跑結果相同；既有代表地點成為別名時其別名與下層地點攤平；拆開過的不覆蓋；清單外地點保留；補判跳過匯入過的地點）
   - 前置：P8-T02
+- **P8-T15 依改善建議評估效益（S14 impact-evaluator）**（ADR-0019，使用者 2026-11-05 決定；ADR-0020 決策 6 改以系列為單位）
+  - 檔案：`skills/impact-evaluator/`（依「Skill 開發標準循環」：SKILL.md、schema、golden cases、錄製回應、評測報告；輸入：系列總覽、子事件摘要、可能原因〔推測／已確認〕、全部改善建議並標示哪些被選、系列件數基準、改善追蹤進度，建議與事件內容以 `<untrusted_source>` 包裹；輸出：改善百分比區間 `improvement`〔整數 0–100 或 null〕、改善前／後情境 `before`／`after`〔播報員語氣〕、`covered_causes`／`uncovered_causes`、`overlaps`、`risks`〔至少 1 項〕、`suggestion`〔只能引用未被選的建議〕、`evidence_ids`）、`app/simulations/impact.py`（輸入組裝、業務驗證：`0 ≤ low ≤ high ≤ improvement_cap`、引用 id 存在、PII 檢查、推測原因不得寫成已確定；保存；改善前後件數由程式以 基準 ×（1 − 百分比）換算）、`infra/migrations/versions/<下一個編號>_impact_evaluations.py`（或擴充 `scenario_runs`，實作時決定並記錄；可 downgrade）、`app/api/v1/admin/scenarios.py`（`POST /api/v1/admin/scenarios/impact`，`scenarios:create`，稽核 `scenario.impact`；`GET` 查詢；只在 `/api/v1/admin/*`）、設定檔 `improvement_cap`（預設 80）、`frontend/src/admin/pages/Scenario.tsx`（新分頁「依建議評估」：只勾選建議、結果卡顯示改善百分比〔標「AI 估計，非實證」〕、改善前／後兩欄對照、涵蓋與未涵蓋原因、重疊提醒、風險、補強建議可一鍵加入再評估；原自訂措施模式保留為另一分頁；雙設計系統）、後台系列分析頁的「評估效益」入口（`/admin/scenarios?series=<id>`）
+  - 驗證：S14 評測 `improvement_valid` = 1.0、`cause_coverage` accuracy ≥ 0.90、`abstain_when_insufficient`、`hypothesized_not_asserted` = 1.0；`tests/integration/test_impact_evaluation.py`（fake provider；沒有勾選時不呼叫模型；引用不存在的原因或建議 id 被拒；超過上限被拒；件數由程式換算；系列分析更新後舊評估標示過期）；`tests/security/` 新增公開快照與公開端點不含評估結果的案例；前端 vitest 與 Playwright（勾選到結果）；P7-T02／P7-T03 的 G7-1 測試不修改且通過
+  - 前置：P8-T05、P8-T09、P8-T10、P8-T13
 
 ```bash
 cd backend && uv run pytest tests/unit/series tests/security -q
-uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --split test
+uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --skill impact-evaluator --split test
 ```
 
 | 閘門 | 條件 | 驗證方式 |
 | --- | --- | --- |
 | G8-1 | 系列歸組、拆出、解散與前後比較可重現 | test_series_grouping、tests/unit/series |
-| G8-2 | S11–S13 評測達門檻且引用全部可驗證 | run_eval |
+| G8-2 | S11–S14 評測達門檻且引用全部可驗證 | run_eval |
 | G8-3 | 新版公開邊界安全測試通過 | tests/security |
 | G8-4 | 使用者確認新公開端點、閘道白名單與威脅模型 | 人工 |
-| G8-5 | 播報員語氣改版後 S01–S13 評測不低於門檻 | run_eval --all |
+| G8-5 | 播報員語氣改版後 S01–S14 評測不低於門檻 | run_eval --all |
 
 ---
 

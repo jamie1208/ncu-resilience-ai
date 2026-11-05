@@ -1,4 +1,4 @@
-# skills — 產品 AI Skills（S01–S13）
+# skills — 產品 AI Skills（S01–S14）
 
 系統執行時由後端 Skill Runner 載入，格式遵守 Agent Skills 規格（https://agentskills.io/specification）。開發輔助用的 skills 放在 `.claude/skills/`，不要放這裡。
 
@@ -31,3 +31,4 @@ skills/<skill-name>/
 | S11 | series-matcher | P8-T04 |
 | S12 | series-analyst | P8-T05 |
 | S13 | location-resolver | P8-T02 |
+| S14 | impact-evaluator | P8-T15 |

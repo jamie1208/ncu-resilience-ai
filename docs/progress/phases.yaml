@@ -6,7 +6,7 @@
 # - human：true 表示需要你親自決定，AI 只能準備資料。
 # - gates.command：可自動執行的驗證指令（--run-gates 時執行）；
 #   manual：true 表示需人工確認，tracker 只會提示。
-# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12、ADR-0012 G1-2 改為人工閘門、ADR-0010 新增 P1-T16、ADR-0009 P1-T09 檔案調整、ADR-0008 個人使用：新增 P1-T13／P1-T14／P1-T15，刪除 P3-T02／P3-T04／P3-T06／P3-T09／P5-T07 與 G3-1／G5-3，ID 不重複使用、ADR-0014 新增 P3-T11 雙設計系統、ADR-0015 對外公開並重排 P4–P7：舊 P4-T01–T04／P4-T06／P5-T01–T03／P5-T08／P5-T09 與 G4-1–G4-3／G5-1／G5-4 改以 P6／P7 新 ID 重建、ADR-0018 新增 P8 系列事件與公開內容擴充並改寫 G5-5 定義、使用者 2026-11-05 新增 P8-T14 校園地點清單匯入），tracker 優先讀取本檔。
+# 本檔為 repo 覆寫版（ADR-0002 新增 P0-T11、ADR-0004 新增 P0-T12、ADR-0005 新增 P1-T11、ADR-0006 P1 穩定運行改為一晚、ADR-0007 新增 P1-T12、ADR-0012 G1-2 改為人工閘門、ADR-0010 新增 P1-T16、ADR-0009 P1-T09 檔案調整、ADR-0008 個人使用：新增 P1-T13／P1-T14／P1-T15，刪除 P3-T02／P3-T04／P3-T06／P3-T09／P5-T07 與 G3-1／G5-3，ID 不重複使用、ADR-0014 新增 P3-T11 雙設計系統、ADR-0015 對外公開並重排 P4–P7：舊 P4-T01–T04／P4-T06／P5-T01–T03／P5-T08／P5-T09 與 G4-1–G4-3／G5-1／G5-4 改以 P6／P7 新 ID 重建、ADR-0018 新增 P8 系列事件與公開內容擴充並改寫 G5-5 定義、使用者 2026-11-05 新增 P8-T14 校園地點清單匯入、ADR-0019 新增 P8-T15 依改善建議評估效益），tracker 優先讀取本檔。
 # 修改計畫時：只改這個檔案，再執行 `tracker.py sync` 讓 state.yaml 補上新任務。
 
 version: 1
@@ -520,7 +520,7 @@ phases:
         paths: [eval/reports]
       - id: P8-T12
         title: 規格書 v1.2 更新
-        deps: [P8-T01, P8-T03, P8-T06, P8-T07, P8-T08, P8-T09, P8-T11, P8-T13, P8-T14]
+        deps: [P8-T01, P8-T03, P8-T06, P8-T07, P8-T08, P8-T09, P8-T11, P8-T13, P8-T14, P8-T15]
         paths: [docs/requirements/spec-v1.2.md]
       - id: P8-T13
         title: 停用單一事件小報告並遷移到系列
@@ -530,13 +530,17 @@ phases:
         title: 校園地點清單匯入
         deps: [P8-T02]
         paths: [config/locations.yaml, backend/app/locations/seed.py, backend/tests/unit/locations/test_seed_file.py, backend/tests/integration/test_location_seed.py]
+      - id: P8-T15
+        title: 依改善建議評估效益（S14 impact-evaluator）
+        deps: [P8-T05, P8-T09, P8-T10, P8-T13]
+        paths: [skills/impact-evaluator, backend/app/simulations/impact.py, backend/tests/integration/test_impact_evaluation.py]
     gates:
       - id: G8-1
         title: 系列歸組、拆出、解散與前後比較可重現
         command: cd backend && uv run pytest tests/unit/series tests/integration/test_series_grouping.py -q
       - id: G8-2
-        title: S11–S13 評測達門檻且引用全部可驗證
-        command: cd backend && uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --split test
+        title: S11–S14 評測達門檻且引用全部可驗證
+        command: cd backend && uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --skill impact-evaluator --split test
       - id: G8-3
         title: 新版公開邊界安全測試通過
         command: cd backend && uv run pytest tests/security -q
@@ -544,5 +548,5 @@ phases:
         title: 使用者確認新公開端點、閘道白名單與威脅模型
         manual: true
       - id: G8-5
-        title: 播報員語氣改版後 S01–S13 評測不低於門檻
+        title: 播報員語氣改版後 S01–S14 評測不低於門檻
         command: cd backend && uv run python ../scripts/eval/run_eval.py --all --split test
