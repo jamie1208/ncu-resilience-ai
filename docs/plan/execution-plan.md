@@ -568,10 +568,10 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
   - 檔案：`app/reports/service.py`、`app/pipeline/analyze_item.py`（不再排入 S07、S08，移除 `report_hook` 的產生報告）、`infra/migrations/versions/<下一個編號>_series_actions_backfill.py`（既有事件層級的改善措施與原因確認掛到所屬系列，保留原 event_id；可 downgrade、不刪資料）、`app/api/v1/admin/events.py`（舊小報告唯讀、停用產生報告端點回 GONE 或 CONFLICT）、`app/publishing/sync.py`（改依系列分析）、後台 `EventWorkbench.tsx`（「舊版事件小報告（已停用）」）、公開 `EventReport.tsx`（改為快報全文）、`skills/root-cause-analyzer/`、`skills/solution-generator/` 標示停用（不刪）
   - 驗證：`tests/integration/test_event_report.py`、`tests/integration/test_cause_confirmation.py`、`tests/unit/publishing/test_cause_confirmation_policy.py`、相關前端 vitest 與 `e2e/admin.e2e.ts` 改為驗證停用與遷移（使用者 2026-11-05 同意修改既有測試，只限 ADR-0020 決策 3）；新增 `tests/integration/test_report_migration.py`（措施與確認遷移後可在系列查到、舊資料唯讀、事件建立後不再呼叫 S07／S08）；G4-5 保留為歷史紀錄
 - **P8-T14 校園地點清單匯入**（使用者 2026-11-05 要求，接續 P8-T02）
-  - 檔案：`config/locations.yaml`（代表地點清單：正式名稱、平面圖代號、別名、上層地點；初稿來自 2024-08 校園導覽圖與現有事件地點，`common` 為待使用者確認的常用簡稱，確認後併入 `aliases`）、`app/locations/seed.py`（匯入命令 `uv run python -m app.locations.seed`：清單名稱建立或沿用為代表地點，別名建立或改指向該代表地點，`parent` 設 `parent_id`；每個有變動的地點寫一筆 `location_resolutions`〔method manual、decided_by `seed`〕並以 P8-T02 的攤平規則改指向既有別名與下層地點；使用者拆開過〔最新一筆為 split〕的地點不覆蓋；清單外的地點不刪除；可重跑且結果相同；稽核 `location.seed` 只記數量與 list_version）
+  - 檔案：`config/locations.yaml`（代表地點清單：正式名稱、平面圖代號、別名、上層地點；來自 2024-08 校園導覽圖與現有事件地點，使用者 2026-11-05 確認：常用簡稱全部採用、總圖書館與中正圖書館算同一個地點、K書中心／校史館／校史館旁為獨立地點）、`app/locations/seed.py`（匯入命令 `uv run python -m app.locations.seed`：清單名稱建立或沿用為代表地點，別名建立或改指向該代表地點，`parent` 設 `parent_id`；每個有變動的地點寫一筆 `location_resolutions`〔method manual、decided_by `seed`〕並以 P8-T02 的攤平規則改指向既有別名與下層地點；使用者拆開過〔最新一筆為 split〕的地點不覆蓋；清單外的地點不刪除；可重跑且結果相同；稽核 `location.seed` 只記數量與 list_version）
   - 匯入後：清單內的名稱同名稱直接沿用、不呼叫 S13；清單外的新名稱照 P8-T02 由 S13 從代表地點（含清單）判斷，alias_of 記成別名、new 新增代表地點，之後同名稱即可找到
-  - 驗證：`tests/unit/locations/test_seed_file.py`（清單格式：名稱與別名全域不重複、不含「全校」「校外」「不明」、parent 必須在清單中、沒有殘留 `common` 與 `review` 欄位〔使用者確認後才能通過〕）；`tests/integration/test_location_seed.py`（匯入後別名同名沿用且不呼叫 S13；重跑結果相同；既有代表地點成為別名時其別名與下層地點攤平；拆開過的不覆蓋；清單外地點保留；補判跳過匯入過的地點）
-  - 前置：P8-T02；清單內容需你決定（`review` 與 `common` 欄位）
+  - 驗證：`tests/unit/locations/test_seed_file.py`（清單格式：名稱與別名全域不重複、不含「全校」「校外」「不明」、parent 必須在清單中、只允許 name／code／aliases／parent 欄位）；`tests/integration/test_location_seed.py`（匯入後別名同名沿用且不呼叫 S13；重跑結果相同；既有代表地點成為別名時其別名與下層地點攤平；拆開過的不覆蓋；清單外地點保留；補判跳過匯入過的地點）
+  - 前置：P8-T02
 
 ```bash
 cd backend && uv run pytest tests/unit/series tests/security -q
