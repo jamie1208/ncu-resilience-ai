@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "decision": null,
+    "target_id": null,
+    "confidence": 0.0,
+    "evidence_ids": [],
+    "evidence_spans": [],
+    "reason": "「學校」為泛稱，無法指認出是哪一處具體地點（例如總圖、宿舍或某棟館），因此無法與候選地點對應。",
+    "abstain_reason": "invalid_location"
+  }
+}

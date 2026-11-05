@@ -1,0 +1,22 @@
+{
+  "case_id": "adversarial-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "alias_of",
+    "target_id": "L1",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "大禮堂後台的燈管掉下來"
+      }
+    ],
+    "reason": "證據以「大禮堂」為稱呼，描述的場景（後台的燈管）明確指向該場所，與候選 L1 的名稱一致。",
+    "abstain_reason": null
+  }
+}

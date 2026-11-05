@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "alias_of",
+    "target_id": "L1",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工五二樓走廊的燈從昨晚開始一直閃"
+      }
+    ],
+    "reason": "「工五」為工程五館的常見簡稱，證據描述的是工五二樓走廊，指向同一建築。",
+    "abstain_reason": null
+  }
+}

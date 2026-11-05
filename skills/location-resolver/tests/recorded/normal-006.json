@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "alias_of",
+    "target_id": "L1",
+    "confidence": 0.95,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "綜合教學館（綜教館）"
+      }
+    ],
+    "reason": "原文以「綜合教學館（綜教館）」明列全名與常用簡稱，與候選 L1 為同一處。",
+    "abstain_reason": null
+  }
+}

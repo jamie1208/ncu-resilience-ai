@@ -4,6 +4,7 @@
 events.embedding、occurrence_start_date 供 S04 候選召回使用（P2-T09，0006）。
 events.summary* 是 S02 的事件說明與出處（P4-T08，0010）。
 event_merges 是手動合併的紀錄（P8-T01，0019）：被併入的事件改為 archived，並由這裡導向目標事件。
+locations.canonical_id／parent_id 與 location_resolutions 是 S13 的地點判斷（P8-T02，0020）。
 """
 
 from __future__ import annotations
@@ -48,6 +49,54 @@ class Location(Base):
     lat: Mapped[float | None] = mapped_column(Double)
     lng: Mapped[float | None] = mapped_column(Double)
     precision: Mapped[str | None] = mapped_column(String(32), comment="例：building、area、unknown")
+    canonical_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("locations.id", ondelete="SET NULL"),
+        index=True,
+        comment="代表地點（別名時有值，指向沒有 canonical_id 的地點）；null 表示自己就是代表地點",
+    )
+    parent_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("locations.id", ondelete="SET NULL"),
+        index=True,
+        comment="上層地點（例如宿舍區）；只用於篩選，不併入計數",
+    )
+
+
+LOCATION_DECISIONS = ("alias_of", "inside_of", "new", "split")
+LOCATION_METHODS = ("ai", "fallback", "manual")
+
+
+def _in(values: tuple[str, ...]) -> str:
+    return ", ".join(f"'{v}'" for v in values)
+
+
+class LocationResolution(Base):
+    """一次地點判斷（S13 或使用者拆開）；同一個地點可有多筆，最新的一筆是目前狀態。
+
+    split 表示使用者把它從 `target_id` 拆開，之後不再自動合併。
+    """
+
+    __tablename__ = "location_resolutions"
+    __table_args__ = (
+        CheckConstraint(f"decision IN ({_in(LOCATION_DECISIONS)})", name="decision"),
+        CheckConstraint(f"method IN ({_in(LOCATION_METHODS)})", name="method"),
+    )
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    location_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("locations.id", ondelete="CASCADE"), index=True
+    )
+    decision: Mapped[str] = mapped_column(String(16))
+    target_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("locations.id", ondelete="SET NULL")
+    )
+    method: Mapped[str] = mapped_column(
+        String(16), comment="ai（S13 判斷）、fallback（沒呼叫或 abstain）、manual（使用者）"
+    )
+    ai_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("ai_analysis_runs.id", ondelete="SET NULL")
+    )
+    decided_by: Mapped[str] = mapped_column(String(128))
+    created_at: Mapped[datetime] = created_at_col()
 
 
 class Event(Base):

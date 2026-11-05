@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "inside_of",
+    "target_id": "L2",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "總圖三樓自習區靠窗的天花板又在滴水了。"
+      }
+    ],
+    "reason": "證據明確寫出「總圖三樓自習區」，總圖三樓自習區是總圖書館（總圖）內的特定樓層與區域，因此屬於在總圖書館之內。",
+    "abstain_reason": null
+  }
+}

@@ -737,6 +737,37 @@ export async function retractAlert(alertId: string, reason: string) {
   })).data
 }
 
+// ---- 地點（P8-T02） ----
+
+export interface LocationRef {
+  id: string
+  name: string
+  event_count: number
+}
+
+/** 最上層的代表地點：AI 判斷的別名、位在其中的下層地點與事件數（含別名，不含下層）。 */
+export interface LocationItem {
+  id: string
+  name: string
+  parent_id: string | null
+  event_count: number
+  aliases: LocationRef[]
+  children: LocationRef[]
+}
+
+export async function listLocations(): Promise<LocationItem[]> {
+  return (await apiGet<LocationItem[]>(`${V1}/admin/locations`)).data
+}
+
+/** 把判斷錯的別名或上層關係拆開；之後不再自動合併。 */
+export async function splitLocation(locationId: string) {
+  return (
+    await post<{ id: string; canonical_id: string | null; parent_id: string | null }>(
+      `/admin/locations/${id(locationId)}/split`,
+    )
+  ).data
+}
+
 // ---- 公開內容 ----
 
 export async function listPublications(

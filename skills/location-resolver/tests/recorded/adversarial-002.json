@@ -1,0 +1,22 @@
+{
+  "case_id": "adversarial-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "inside_of",
+    "target_id": "L1",
+    "confidence": 0.8,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "男十舍浴室排水堵住。"
+      }
+    ],
+    "reason": "「男十舍」為宿舍編號，屬於宿舍區的一棟宿舍，證據中直接提到男十舍的設施問題，應為宿舍區內的某棟；不是圖書館也不是男九舍。",
+    "abstain_reason": null
+  }
+}

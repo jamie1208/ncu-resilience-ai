@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "inside_of",
+    "target_id": "L1",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工程五館二樓 E2-201 教室冷氣漏水"
+      }
+    ],
+    "reason": "證據明確寫出「工程五館二樓」，為工程五館內的樓層，屬於某建築內的某層（inside_of）。",
+    "abstain_reason": null
+  }
+}

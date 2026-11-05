@@ -1,0 +1,22 @@
+{
+  "case_id": "adversarial-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "alias_of",
+    "target_id": "L1",
+    "confidence": 0.8,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "管院一樓的販賣機吃錢。"
+      }
+    ],
+    "reason": "「管院」為「管理學院」的常見簡稱，證據寫到「管院一樓」，表示指的是管理學院這棟建築。",
+    "abstain_reason": null
+  }
+}

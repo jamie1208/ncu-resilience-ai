@@ -520,8 +520,12 @@ phases:
         paths: [eval/reports]
       - id: P8-T12
         title: 規格書 v1.2 更新
-        deps: [P8-T01, P8-T03, P8-T06, P8-T07, P8-T08, P8-T09, P8-T11]
+        deps: [P8-T01, P8-T03, P8-T06, P8-T07, P8-T08, P8-T09, P8-T11, P8-T13]
         paths: [docs/requirements/spec-v1.2.md]
+      - id: P8-T13
+        title: 停用單一事件小報告並遷移到系列
+        deps: [P8-T05]
+        paths: [backend/tests/integration/test_report_migration.py]
     gates:
       - id: G8-1
         title: 系列歸組、拆出、解散與前後比較可重現

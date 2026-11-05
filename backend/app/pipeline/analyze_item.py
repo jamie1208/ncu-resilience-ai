@@ -37,6 +37,9 @@
 事件小報告（P4-T09）：S06 與通知同步之後呼叫 `PipelineDeps.report_hook`（正式環境為
 `app.reports.service.after_assessment`），由它決定是否排入產生報告（S07、S08）或讓報告失效。
 沒有設定 hook 時不處理報告。
+
+代表地點（P8-T02）：建立新事件時，S02 的地點名稱經 `app/locations/resolver.py` 對應到 locations；
+沒見過的名稱才呼叫 S13 location-resolver（執行紀錄同 S01–S03 補上 event_id）。
 """
 
 from __future__ import annotations
@@ -78,6 +81,7 @@ from app.core.config import get_settings
 from app.core.logging import request_id_var
 from app.core.security import Permission, Principal, Role, require
 from app.domain.states import EventStatus, StateTransitionError, VerificationStatus, transition
+from app.locations.resolver import S13, resolve_location
 from app.models.ai import AIAnalysisRun, EventRelation
 from app.models.event import Event, EventEvidence, Location
 from app.models.source import AnalysisStatus, Source, SourceItem, SourceItemVersion
@@ -272,19 +276,6 @@ async def _location_name(session: AsyncSession, event: Event) -> str | None:
         return None
     location = await session.get(Location, event.location_id)
     return location.name[:MAX_LOCATION_CHARS] if location else None
-
-
-async def _location_id(session: AsyncSession, name: str | None) -> uuid.UUID | None:
-    """S02 的地點標準名稱對應到 locations（沒有就新增）；「不明」或空白不建立。"""
-    if not name or name == UNKNOWN_LOCATION:
-        return None
-    existing = await session.scalar(select(Location.id).where(Location.name == name).limit(1))
-    if existing is not None:
-        return existing
-    location = Location(name=name)
-    session.add(location)
-    await session.flush()
-    return location.id
 
 
 def _parse_date(value: Any) -> date | None:
@@ -705,7 +696,14 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
             title=str(extracted.get("title") or UNTITLED)[:MAX_TITLE_CHARS],
             type=category,
             status=EventStatus.DETECTED.value,
-            location_id=await _location_id(session, location),
+            location_id=await resolve_location(
+                session,
+                str(location) if location else None,
+                evidence=[article],
+                run=lambda p: ctx.run(S13, p),
+                principal=PIPELINE_PRINCIPAL,
+                request_id=ctx.trace_id,
+            ),
             occurrence_start_date=start,
             embedding=vector,
         )
@@ -734,7 +732,7 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
         item_id=item_id,
         run_id=extraction.run_id,
     )
-    article_runs = [s.run_id for s in ctx.steps if s.name in (S01, S02, S03) and s.run_id]
+    article_runs = [s.run_id for s in ctx.steps if s.name in (S01, S02, S03, S13) and s.run_id]
     await session.execute(
         update(AIAnalysisRun)
         .where(AIAnalysisRun.id.in_(article_runs), AIAnalysisRun.event_id.is_(None))

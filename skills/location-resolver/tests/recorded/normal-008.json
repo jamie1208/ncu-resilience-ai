@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "new",
+    "target_id": null,
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工程二館地下室停車場積水，機車騎不進去。"
+      }
+    ],
+    "reason": "證據明確寫出「工程二館地下室」，而候選中沒有工程二館（只有工程一館、工程五館、總圖書館），因此此為一個與候選不同的新地點。",
+    "abstain_reason": null
+  }
+}

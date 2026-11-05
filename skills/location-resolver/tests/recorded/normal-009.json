@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "alias_of",
+    "target_id": "L2",
+    "confidence": 0.8,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "科五 3 樓實驗室旁的走廊有怪味，像是化學藥品。"
+      }
+    ],
+    "reason": "「科五」是「科學五館」的常見簡稱，貼文描述的是三樓實驗室旁的走廊，符合科學五館的場所類型，故判為別名。",
+    "abstain_reason": null
+  }
+}

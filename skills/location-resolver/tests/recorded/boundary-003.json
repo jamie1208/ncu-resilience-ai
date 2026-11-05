@@ -1,0 +1,22 @@
+{
+  "case_id": "boundary-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "new",
+    "target_id": null,
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "宿舍區最近晚上路燈很暗，好幾盞都不亮。"
+      }
+    ],
+    "reason": "「宿舍區」是較大的區域名稱，包含多棟宿舍；候選項目是單棟宿舍（男九舍、女十四舍）或圖書館，與宿舍區不是同一處也不在其內的上位錯置，因此視為新地點。",
+    "abstain_reason": null
+  }
+}

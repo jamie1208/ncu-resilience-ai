@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "inside_of",
+    "target_id": "L3",
+    "confidence": 0.85,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "男九舍門口的車棚"
+      }
+    ],
+    "reason": "證據明確寫到「男九舍門口」，男九舍屬於宿舍區內的一棟宿舍，故將新地點視為宿舍區的一部分。",
+    "abstain_reason": null
+  }
+}

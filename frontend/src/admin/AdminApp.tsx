@@ -8,6 +8,7 @@ import { AuthContext } from './auth'
 import { Link } from './Link'
 import { AlertCenter } from './pages/AlertCenter'
 import { EventWorkbench } from './pages/EventWorkbench'
+import { Locations } from './pages/Locations'
 import { LoginPage } from './pages/LoginPage'
 import { Ops } from './pages/Ops'
 import { Publications } from './pages/Publications'
@@ -26,6 +27,7 @@ const NAV = [
   { to: '/admin/alerts', label: '通知中心', page: 'alerts' },
   { to: '/admin/actions', label: '改善追蹤', page: 'actions' },
   { to: '/admin/relations', label: '事件關聯', page: 'relations' },
+  { to: '/admin/locations', label: '地點', page: 'locations' },
   { to: '/admin/resilience', label: '韌性成績單', page: 'resilience' },
   { to: '/admin/scenarios', label: 'What-if 模擬', page: 'scenarios' },
   { to: '/admin/publications', label: '公開內容', page: 'publications' },
@@ -150,6 +152,8 @@ function Page({ route }: { route: Route }) {
           <RelationGraph />
         </Suspense>
       )
+    case 'locations':
+      return <Locations />
     case 'resilience':
       return <Resilience />
     case 'scenarios':

@@ -1,0 +1,22 @@
+{
+  "case_id": "adversarial-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "decision": "new",
+    "target_id": null,
+    "confidence": 0.85,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "游藝館健身房跑步機故障。"
+      }
+    ],
+    "reason": "證據提到的是「游藝館」的健身房，該名稱與候選的工程五館、總圖書館、宿舍區或中正圖書館都不同，且沒有指示它位在任何候選之內，因此應視為新的地點。",
+    "abstain_reason": null
+  }
+}
