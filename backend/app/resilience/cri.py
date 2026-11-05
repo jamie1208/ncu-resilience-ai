@@ -5,7 +5,8 @@ CRI = 0.25 Detection + 0.25 Response + 0.25 Recovery + 0.25 Adaptation，各構�
 - Response（回應）：事件建立到第一項改善措施進入「處理」的天數，取中位數；
 - Recovery（恢復）：改善措施從第一次「處理」到之後第一次「恢復」的天數，取中位數；
 - Adaptation（調適）：改善完成率（改進 ÷ 不含「不追蹤」的措施）與「1 − 重複事件比例」的平均；
-  重複事件 = 時間窗內同地點、同類別不只一件的事件（地點不明不列入）。
+  重複事件 = 時間窗內同地點、同類別不只一件的事件（地點不明不列入）；同地點依代表地點判斷
+  （P8-T03，別名併入代表地點，上層地點不併入）。
 
 天數依 `CriParams` 的錨點（best、worst）線性換算：≤ best 為 100、≥ worst 為 0。錨點是本專題
 自訂的目標值，不是校方或外部標準。
@@ -15,7 +16,8 @@ CRI，不以剩下的構面重新加權。分數只到整數，每個構面附�
 來源限制。
 
 時間窗為 as_of（台北日期，含當天）往前 `window_days` 天；只用 as_of 當天結束前已建立的事件與
-已發生的狀態變更。查證為不實（false）與類別 none 的事件不列入。公開版（`published_only`）只統計
+已發生的狀態變更。查證為不實（false）與類別 none 的事件、被手動合併到其他事件的事件
+（`event_merges`，P8-T03：合併後只算 1 件）不列入。公開版（`published_only`）只統計
 目前以「事件內容」公開中的事件。純統計參數放在 `CriParams` 預設值，不放設定檔（同 P6-T03）。
 """
 
@@ -30,11 +32,12 @@ from statistics import median
 from typing import Any, Literal
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import func, select
+from sqlalchemy import exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.analytics.timeseries import load_locations, representative
 from app.domain.states import EventStatus
-from app.models.event import Event
+from app.models.event import Event, EventMerge
 from app.models.publication import Publication
 from app.models.response_action import ResponseAction, ResponseActionTransition
 from app.publishing.policy import PublicLevel
@@ -93,6 +96,7 @@ class EventRecord:
     event_type: str
     status: str
     location_id: uuid.UUID | None
+    """代表地點的 id（`load_records` 已換過）。"""
     occurred_on: date | None
     """S02 抽取的發生日期（台北）；沒有則為 None。"""
     created_at: datetime
@@ -352,7 +356,10 @@ def compute_cri(
 async def load_records(
     session: AsyncSession, *, start: date, published_only: bool = False
 ) -> tuple[list[EventRecord], list[ActionRecord]]:
-    """讀出可能列入時間窗的事件與其改善措施；時間窗與 as_of 的篩選由 `compute_cri` 完成。"""
+    """讀出可能列入時間窗的事件與其改善措施；時間窗與 as_of 的篩選由 `compute_cri` 完成。
+
+    事件的 `location_id` 已換成代表地點的 id；被手動合併到其他事件的事件不讀出。
+    """
     first_handling = (
         select(
             ResponseActionTransition.action_id.label("action_id"),
@@ -373,6 +380,7 @@ async def load_records(
     ).where(
         Event.status.not_in(IGNORED_STATUSES),
         Event.type.not_in(IGNORED_TYPES),
+        ~exists().where(EventMerge.merged_event_id == Event.id),
         (Event.occurrence_start_date >= start)
         | (Event.occurrence_start_date.is_(None) & (Event.created_at >= since_at)),
     )
@@ -426,12 +434,18 @@ async def load_records(
             current = first_by_event.get(row.event_id)
             first_by_event[row.event_id] = min(current, handling_at) if current else handling_at
 
+    locations = await load_locations(session)
+
+    def located(location_id: uuid.UUID | None) -> uuid.UUID | None:
+        rep = representative(location_id, locations) if location_id is not None else None
+        return rep.id if rep is not None else location_id
+
     events = [
         EventRecord(
             event_id=row.id,
             event_type=row.type,
             status=row.status,
-            location_id=row.location_id,
+            location_id=located(row.location_id),
             occurred_on=row.occurrence_start_date,
             created_at=row.created_at,
             first_handling_at=first_by_event.get(row.id),

@@ -11,6 +11,7 @@
   所在的週期（系統開始擷取前的 0 件不是真的 0 件）；
 - 訊號：每個類別的全校序列與每個（類別, 地點）序列都做突增偵測；最近 `RECENT_PERIODS` 期內
   有突增者優先（p 值小的在前），其餘名額放件數最多的全校序列供對照，最多 6 個；
+- 地點是代表地點的名稱（P8-T03，與 views 相同）；被手動合併到其他事件的事件不計數、不當證據；
 - 最近一次解讀以稽核紀錄為準；views 只在觸發時重新整理，查詢時以同一截止日重算輸入，
   數字與當次相同。只在管理端使用，不經公開端（ADR-0015）。
 """
@@ -24,7 +25,7 @@ from datetime import date, datetime, timedelta
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import Date, cast, func, select
+from sqlalchemy import Date, cast, exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.llm.base import LLMProvider
@@ -42,15 +43,17 @@ from app.analytics.timeseries import (
     count_series,
     detect_changes,
     load_counts,
+    load_locations,
     period_start,
     periods,
     refresh_views,
+    representative,
 )
 from app.core.security import Principal
 from app.ingestion.types import AccessPolicy
 from app.models.ai import AIAnalysisRun
 from app.models.audit import AuditLog
-from app.models.event import Event, EventEvidence, Location
+from app.models.event import Event, EventEvidence, EventMerge
 from app.models.source import Source, SourceItem
 from app.services.audit import record_audit
 
@@ -263,29 +266,35 @@ async def _earliest_source_date(session: AsyncSession) -> date | None:
 async def _period_events(
     session: AsyncSession, signal: Signal, freq: Frequency
 ) -> list[tuple[Event, str | None]]:
-    """異常週期中屬於這個訊號的事件（排除查證為不實者），依發生日與建立時間排序。"""
+    """異常週期中屬於這個訊號的事件，附代表地點名稱；依發生日與建立時間排序。
+
+    排除查證為不實與被手動合併到其他事件的事件，與 views 的計數一致。
+    """
     if signal.anomaly is None:
         return []
     first = signal.anomaly.period_start
     occurred = func.coalesce(
         Event.occurrence_start_date, cast(func.timezone("Asia/Taipei", Event.created_at), Date)
     )
-    rows = await session.execute(
-        select(Event, Location.name)
-        .outerjoin(Location, Location.id == Event.location_id)
+    events = await session.scalars(
+        select(Event)
         .where(
             Event.type == signal.event_type,
             Event.status != "false",
+            ~exists().where(EventMerge.merged_event_id == Event.id),
             occurred >= first,
             occurred < _next_period(first, freq),
         )
         .order_by(occurred, Event.created_at, Event.id)
     )
-    return [
-        (event, name)
-        for event, name in rows.all()
-        if signal.location is None or (name is not None and mask_pii(name) == signal.location)
-    ]
+    locations = await load_locations(session)
+    out = []
+    for event in events.all():
+        rep = representative(event.location_id, locations) if event.location_id else None
+        name = rep.name if rep is not None else None
+        if signal.location is None or (name is not None and mask_pii(name) == signal.location):
+            out.append((event, name))
+    return out
 
 
 async def _primary_sources(

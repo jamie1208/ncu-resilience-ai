@@ -5,7 +5,10 @@
 `bucket()` 是同一套分組規則的 Python 版本，供回測（P6-T04）以切點前的事件重算。
 
 事件日期與再發生偵測（`app/resilience/recurrence.py`）一致：S02 的發生日期（台北時間），
-沒有時用建立時間的台北日期；查證為不實（false）與類別為 none 的事件不列入。
+沒有時用建立時間的台北日期；查證為不實（false）與類別為 none 的事件、被手動合併到其他事件的
+事件（`event_merges`，合併後只算 1 件）不列入。地點依代表地點分組（P8-T03，migration 0021）：
+沿著 `canonical_id` 找到最上層的代表地點並顯示其名稱，`parent_id` 只用於篩選、不併入計數；
+`representative()` 是同一規則的 Python 版本。
 
 變化偵測只看「突增」：第 t 期的期望值是第 t 期之前各期件數的 EWMA（不看當期與未來），
 在 Poisson(期望值) 下觀測值不小於當期件數的機率低於門檻、且件數達到下限才判為異常。
@@ -15,8 +18,9 @@
 from __future__ import annotations
 
 import math
+import uuid
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
 from itertools import pairwise
@@ -26,14 +30,27 @@ from sqlalchemy import column, select, table, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.alerts.pii import mask_pii
+from app.models.event import Location
 
 Frequency = Literal["week", "month"]
 UNKNOWN_LOCATION = "地點不明"
-# 與 infra/migrations/versions/0016_analytics_views.py 同步
+# 與 infra/migrations/versions/0021_analytics_views_canonical.py 同步
 VIEWS: dict[Frequency, str] = {
     "week": "analytics_event_counts_week",
     "month": "analytics_event_counts_month",
 }
+
+
+@dataclass(frozen=True)
+class LocationRef:
+    """判斷代表地點所需的地點欄位（由 `load_locations` 從資料庫組出）。"""
+
+    id: uuid.UUID
+    name: str
+    canonical_id: uuid.UUID | None = None
+    """別名時指向代表地點；None 表示自己就是代表地點。"""
+    parent_id: uuid.UUID | None = None
+    """上層地點；只用於篩選，不併入計數。"""
 
 
 @dataclass(frozen=True)
@@ -116,6 +133,29 @@ class DetectionParams:
 def _row_key(r: CountRow) -> tuple[date, str, str]:
     """排序鍵：週期、類別、地點（地點不明排在最前）。"""
     return (r.period_start, r.event_type, r.location_name or "")
+
+
+# ---------- 代表地點 ----------
+
+
+def representative(
+    location_id: uuid.UUID, locations: Mapping[uuid.UUID, LocationRef]
+) -> LocationRef | None:
+    """`location_id` 的代表地點：沿著 `canonical_id` 找到沒有 `canonical_id` 的地點。
+
+    不在 `locations` 中回傳 None；循環（不該出現，S13 會攤平別名）時維持自己，與 views 相同。
+    """
+    start = current = locations.get(location_id)
+    seen: set[uuid.UUID] = set()
+    while current is not None and current.canonical_id is not None:
+        seen.add(current.id)
+        target = locations.get(current.canonical_id)
+        if target is None:
+            return current
+        if target.id in seen:
+            return start
+        current = target
+    return current
 
 
 # ---------- 分桶 ----------
@@ -277,6 +317,14 @@ async def refresh_views(session: AsyncSession) -> None:
     """重新整理週／月 materialized views（在目前交易內執行）。"""
     for name in VIEWS.values():
         await session.execute(text(f"REFRESH MATERIALIZED VIEW {name}"))
+
+
+async def load_locations(session: AsyncSession) -> dict[uuid.UUID, LocationRef]:
+    """讀出全部地點（供 `representative` 使用）；地點數量少，一次讀完。"""
+    rows = await session.execute(
+        select(Location.id, Location.name, Location.canonical_id, Location.parent_id)
+    )
+    return {row.id: LocationRef(row.id, row.name, row.canonical_id, row.parent_id) for row in rows}
 
 
 async def load_counts(

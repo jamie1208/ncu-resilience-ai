@@ -6,7 +6,10 @@
 - 有改善措施達到「改進」（improved）的事件，改進日之後（不含當天）`after_improvement_days`
   天內又有同地點、同類別的事件 → `after_improvement`；
 - 地點不明、類別為 none、查證為不實（false）的事件不列入；最近一次發生不在 `active_days`
-  天內的組不顯示。
+  天內的組不顯示；
+- 地點依代表地點分組（P8-T03）：別名（`canonical_id`）的事件由 `canonicalize` 換成代表地點的
+  id 與名稱，上層地點（`parent_id`）不併入；被手動合併到其他事件的事件（`event_merges`）不從
+  資料庫讀出，合併後只算 1 件。
 
 事件日期以 S02 抽取的發生日期（台北時間）為準，沒有時用建立時間的台北日期；改進日是該事件
 最早一次轉到 improved 的台北日期。結果在通知中心讀取時重算（`find_recurrences`），不另存資料表，
@@ -17,8 +20,8 @@ from __future__ import annotations
 
 import uuid
 from collections import defaultdict
-from collections.abc import Sequence
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta
 from functools import cache
 from pathlib import Path
@@ -27,12 +30,13 @@ from zoneinfo import ZoneInfo
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from sqlalchemy import func, or_, select
+from sqlalchemy import exists, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.alerts.pii import mask_pii
+from app.analytics.timeseries import LocationRef, load_locations, representative
 from app.domain.states import EventStatus
-from app.models.event import Event, Location
+from app.models.event import Event, EventMerge, Location
 from app.models.response_action import ResponseAction, ResponseActionTransition
 
 DEFAULT_POLICY = Path(__file__).resolve().parents[3] / "config" / "recurrence.yaml"
@@ -113,6 +117,19 @@ def load_policy(path: Path = DEFAULT_POLICY) -> RecurrencePolicy:
 def default_policy() -> RecurrencePolicy:
     """`config/recurrence.yaml` 的規則（讀一次後快取）。"""
     return load_policy()
+
+
+def canonicalize(
+    events: Sequence[EventOccurrence], locations: Mapping[uuid.UUID, LocationRef]
+) -> list[EventOccurrence]:
+    """把每個事件的地點換成代表地點的 id 與名稱；地點不明或不在 `locations` 中的維持原樣。"""
+    out = []
+    for e in events:
+        rep = representative(e.location_id, locations) if e.location_id is not None else None
+        if rep is not None and rep.id != e.location_id:
+            e = replace(e, location_id=rep.id, location_name=rep.name)
+        out.append(e)
+    return out
 
 
 def detect(
@@ -198,7 +215,10 @@ def _taipei_date(moment: datetime) -> date:
 async def load_occurrences(
     session: AsyncSession, policy: RecurrencePolicy, *, today: date
 ) -> list[EventOccurrence]:
-    """從資料庫讀出可能列入的事件：近期發生的，加上有改善措施達到「改進」的。"""
+    """從資料庫讀出可能列入的事件：近期發生的，加上有改善措施達到「改進」的。
+
+    被手動合併到其他事件的事件不讀出；地點已換成代表地點（`canonicalize`）。
+    """
     improved_at = (
         select(
             ResponseAction.event_id.label("event_id"),
@@ -230,6 +250,7 @@ async def load_occurrences(
         .where(
             Event.status.not_in(IGNORED_STATUSES),
             Event.type.not_in(IGNORED_TYPES),
+            ~exists().where(EventMerge.merged_event_id == Event.id),
             or_(
                 Event.occurrence_start_date >= since,
                 Event.occurrence_start_date.is_(None) & (Event.created_at >= since_at),
@@ -237,7 +258,7 @@ async def load_occurrences(
             ),
         )
     )
-    return [
+    occurrences = [
         EventOccurrence(
             event_id=row.id,
             title=row.title,
@@ -250,6 +271,7 @@ async def load_occurrences(
         )
         for row in rows.all()
     ]
+    return canonicalize(occurrences, await load_locations(session))
 
 
 async def find_recurrences(
