@@ -184,3 +184,22 @@ skills:
         type: accuracy
         field: target_id
         threshold: 0.90
+
+  series-analyst:
+    # P8-T05：計畫沒有給數字門檻，AI 提出、使用者 2026-11-09 確認，比照 S11／S13 ≥ 0.90。
+    # 引用驗證、程式計數與「規律至少 2 件」由 app/series/analysis.py 保證（整項丟棄）；
+    # 這裡量測模型本身：整體 abstain 判斷、規律區 abstain 判斷，以及 patterns_supported
+    # （衍生欄位：每個規律都引用至少 2 起不同的子事件）。
+    metrics:
+      - name: status_accuracy
+        type: accuracy
+        field: status
+        threshold: 0.90
+      - name: pattern_status_accuracy
+        type: accuracy
+        field: pattern_status
+        threshold: 0.90
+      - name: patterns_supported
+        type: accuracy
+        field: patterns_supported
+        threshold: 0.90

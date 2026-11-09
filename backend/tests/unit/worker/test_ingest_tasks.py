@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 
 from app.core.config import get_settings
+from app.ingestion.source_settings import load_source_settings
 from app.worker import celery_app as app_module
 from app.worker.celery_app import celery_app
 from app.worker.tasks import ingest
@@ -68,7 +69,20 @@ def test_beat_dispatches_due_sources_every_minute() -> None:
         "task": "publishing.sync_publications",
         "schedule": 60.0,
     }
-    assert set(schedule) == {"dispatch-due-sources", "dispatch-pending-items", "sync-publications"}
+    # P8-T05：系列分析補做（使用者 2026-11-09 同意加入），間隔跟著新資料最短的擷取間隔
+    shortest = min(
+        s.poll_interval for s in load_source_settings().values() if s.poll_interval is not None
+    )
+    assert schedule["analyze-stale-series"] == {
+        "task": "series.analyze_stale_series",
+        "schedule": float(shortest),
+    }
+    assert set(schedule) == {
+        "dispatch-due-sources",
+        "dispatch-pending-items",
+        "sync-publications",
+        "analyze-stale-series",
+    }
 
 
 def test_tasks_are_registered() -> None:

@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "series-analyst 輸入",
+  "description": "一個系列的子事件與證據，以及程式算出的每週件數與突增。evidence 的 text 是不可信的來源內容，Skill Runner 會包在 <untrusted_source> 中；series、events、weekly_counts、bursts 放在 <skill_input> 中，同樣是資料。event_id 是本次輸入的代號（E1…）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence",
+    "series",
+    "events",
+    "weekly_counts",
+    "bursts"
+  ],
+  "properties": {
+    "evidence": {
+      "description": "子事件的來源文章（每起事件最多 3 份）",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "source_code",
+          "text"
+        ],
+        "properties": {
+          "evidence_id": {
+            "description": "證據識別碼，由 Runner 指定；輸出只能引用這裡出現的值",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "source_code": {
+            "description": "來源代碼（config/sources.yaml）",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 300
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "published_at": {
+            "description": "aware UTC 時間（ISO 8601）",
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "series": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "title",
+        "event_count"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "facility",
+            "weather",
+            "security",
+            "traffic",
+            "health",
+            "fire",
+            "academic",
+            "infosec"
+          ]
+        },
+        "title": {
+          "description": "目前的系列名稱（可能只是第一起事件的標題）",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "event_count": {
+          "description": "系列目前的件數（程式計算）",
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "events": {
+      "description": "系列中的子事件（最近的最多 30 起，不含查證為不實的）",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event_id",
+          "title",
+          "summary",
+          "occurrence_start_date",
+          "location",
+          "verification_status",
+          "evidence_ids"
+        ],
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "pattern": "^E[0-9]{1,2}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "summary": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
+          },
+          "occurrence_start_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "開始日期（台北時間）"
+          },
+          "location": {
+            "description": "S02 抽出的地點名稱（代表地點）；可能是別名",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "verified",
+              "disputed"
+            ]
+          },
+          "evidence_ids": {
+            "description": "屬於這起事件的證據",
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "weekly_counts": {
+      "description": "最近 26 週的每週件數（程式計算，週一起算）",
+      "type": "array",
+      "maxItems": 26,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "period_start",
+          "count"
+        ],
+        "properties": {
+          "period_start": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "bursts": {
+      "description": "程式（EWMA＋Poisson）判定的突增週；沒有突增時為空陣列",
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "burst_id",
+          "period_start",
+          "count",
+          "expected"
+        ],
+        "properties": {
+          "burst_id": {
+            "type": "string",
+            "pattern": "^b[0-9]$"
+          },
+          "period_start": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "expected": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}

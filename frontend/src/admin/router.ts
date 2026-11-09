@@ -32,6 +32,7 @@ export type Route =
   | { page: 'actions' }
   | { page: 'relations' }
   | { page: 'locations' }
+  | { page: 'series'; seriesId: string | null }
   | { page: 'resilience' }
   | { page: 'scenarios' }
   | { page: 'publications' }
@@ -50,6 +51,9 @@ export function matchRoute(path: string): Route {
   if (clean === '/admin/actions') return { page: 'actions' }
   if (clean === '/admin/relations') return { page: 'relations' }
   if (clean === '/admin/locations') return { page: 'locations' }
+  if (clean === '/admin/series') return { page: 'series', seriesId: null }
+  const series = /^\/admin\/series\/([^/]+)$/.exec(clean)
+  if (series) return { page: 'series', seriesId: decodeURIComponent(series[1]) }
   if (clean === '/admin/resilience') return { page: 'resilience' }
   if (clean === '/admin/scenarios') return { page: 'scenarios' }
   if (clean === '/admin/publications') return { page: 'publications' }

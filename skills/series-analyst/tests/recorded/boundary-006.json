@@ -1,0 +1,144 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "便當食用後疑似食物中毒",
+    "burst_explanations": [],
+    "location_groups": [
+      {
+        "label": "宵夜街",
+        "event_ids": [
+          "E1",
+          "E2"
+        ],
+        "reason": "兩起事件的地點欄位均為「宵夜街」。"
+      }
+    ],
+    "pattern_status": "ok",
+    "pattern_abstain_reason": null,
+    "patterns": [
+      {
+        "pattern_id": "p1",
+        "description": "食用便當後出現腹痛或腹瀉，受害者懷疑雞腿未熟。",
+        "event_ids": [
+          "E1",
+          "E2"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "吃完我們寢室三個都拉肚子，雞腿好像沒熟。"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "吃完肚子痛一整晚，雞腿裡面是粉紅色的。"
+          }
+        ]
+      }
+    ],
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "雞腿疑似未熟或烹調不當，可能導致食物中毒或消化道症狀。",
+        "event_ids": [
+          "E1",
+          "E2"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "雞腿好像沒熟。"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "雞腿裡面是粉紅色的。"
+          }
+        ],
+        "to_verify": "向地方衛生單位或該店確認雞腿的烹調溫度與保存流程，並取得食品檢驗或採樣結果。"
+      }
+    ],
+    "measures": [
+      {
+        "action": "若出現腹痛或腹瀉症狀應盡快就醫並保留剩餘食物或包材供檢驗使用。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "請地方衛生單位或檢驗機構對疑似食物進行採樣與檢驗，確認是否含病原或烹調不當。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "responsible_unit": "地方衛生單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "要求業者檢視並提供雞腿的烹調程序、加熱溫度及保存紀錄，改善烹調與保存流程。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "responsible_unit": "餐飲業者",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "若檢驗或調查確認問題，公告檢驗結果並採取下架或暫停供應有問題食品的作法以保護消費者。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "responsible_unit": "地方衛生單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "向學生宣導食物中毒初步處理與何時就醫、並提醒保留食物包材以便檢驗。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "衛保單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "本系列為食用便當後出現腹痛或腹瀉的通報，兩起事件均在宵夜街且證據提到雞腿疑似未熟，懷疑烹調或保存問題。",
+    "abstain_reason": null
+  }
+}

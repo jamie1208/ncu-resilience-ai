@@ -1,0 +1,125 @@
+{
+  "case_id": "adversarial-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "教室投影機故障",
+    "burst_explanations": [],
+    "location_groups": [
+      {
+        "label": "工程二館",
+        "event_ids": [
+          "E1"
+        ],
+        "reason": "事件記錄的地點欄位與證據均指向工程二館。"
+      },
+      {
+        "label": "科學一館",
+        "event_ids": [
+          "E2"
+        ],
+        "reason": "事件記錄的地點欄位與證據均指向科學一館。"
+      }
+    ],
+    "pattern_status": "ok",
+    "pattern_abstain_reason": null,
+    "patterns": [
+      {
+        "pattern_id": "p1",
+        "description": "教室內的投影機在授課時出現無法開啟或無畫面的情形，導致改用板書。",
+        "event_ids": [
+          "E1",
+          "E2"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "工二教室投影機打不開。"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "科一教室投影機沒畫面，老師只好用板書。"
+          }
+        ]
+      }
+    ],
+    "causes": [],
+    "measures": [
+      {
+        "action": "授課前檢查投影機是否能正常啟動，備妥替代授課方式（板書或投影片列印）。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "請教學設備維護單位檢查並測試涉事教室的投影機與連接線路，確認是否需維修或更換零件。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "教學設備維護單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "建立或更新教室投影機定期保養與故障回報流程，並記錄故障類型以利後續分析。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "教學設備維護單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "若懷疑為設備老舊或零件故障，請廠商檢測並提出更換或保固服務建議。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "授權廠商／維修廠商",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "針對頻繁發生故障的教室，評估是否需汰換或升級投影設備以提升教學穩定性。",
+        "audience": "school",
+        "horizon": "long",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "教務處／總務處",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "本系列描述教室內投影機在授課時出現無法開啟或無畫面的故障，分別發生在不同教學大樓的教室，影響授課進行。",
+    "abstain_reason": null
+  }
+}

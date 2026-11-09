@@ -70,7 +70,11 @@
 | GET | `/api/v1/admin/locations` | `events:read_all` | — |
 | POST | `/api/v1/admin/locations/{id}/split` | `events:verify` | `location.split`（拆開前的代表或上層地點 id、關係） |
 | GET | `/api/v1/admin/series` | `events:read_all` | — |
-| GET | `/api/v1/admin/series/{id}` | `events:read_all` | — |
+| GET | `/api/v1/admin/series/{id}` | `events:read_all` | —（P8-T05 起附最新的 S12 分析與系列措施） |
+| PATCH | `/api/v1/admin/series/{id}` | `events:verify` | `series.rename`（from／to；P8-T05） |
+| GET | `/api/v1/admin/series/{id}/timeline` | `events:read_all` | —（P8-T05） |
+| POST | `/api/v1/admin/series/{id}/actions` | `events:verify` | `response_action.create`（系列 id、origin；P8-T05） |
+| POST | `/api/v1/admin/series/{id}/causes/{cause_id}/decision` | `events:verify` | `series.cause_decide`（分析 id、原因代號、from／to，不含依據；P8-T05） |
 | POST | `/api/v1/admin/series/{id}/events/{event_id}/split` | `events:verify` | `series.split`（原系列與新系列 id） |
 | POST | `/api/v1/admin/series/{id}/dissolve` | `events:verify` | `series.dissolve`（事件數） |
 | GET | `/api/v1/admin/alerts` | `alerts:read_all` | |

@@ -28,6 +28,7 @@ from app.ai.llm.config import load_llm_config
 from app.core.config import get_settings
 from app.core.logging import configure_logging, request_id_var
 from app.core.metrics import observe_task, set_daily_cost_limit, start_metrics_server
+from app.ingestion.source_settings import load_source_settings
 
 DISPATCH_TASK = "ingest.dispatch_due_sources"
 INGEST_TASK = "ingest.ingest_source"
@@ -36,6 +37,20 @@ ANALYZE_EVENT_TASK = "pipeline.analyze_event"
 ANALYZE_DISPATCH_TASK = "pipeline.dispatch_pending_items"  # P4-T07
 REPORT_EVENT_TASK = "reports.generate_event_report"  # P4-T09
 SYNC_PUBLICATIONS_TASK = "publishing.sync_publications"  # P5-T11
+ANALYZE_SERIES_TASK = "series.analyze_series"  # P8-T05
+ANALYZE_STALE_SERIES_TASK = "series.analyze_stale_series"  # P8-T05
+DEFAULT_STALE_SERIES_SECONDS = 600.0
+
+
+def _shortest_poll_interval() -> float:
+    """系列分析補做的間隔：跟著新資料最短的擷取間隔（config/sources.yaml，使用者 2026-11-09 決定）。
+
+    每個系列每天最多分析一次，所以補做得再頻繁也不會多呼叫模型；只影響新事件多久後被分析。
+    """
+    intervals = [s.poll_interval for s in load_source_settings().values() if s.poll_interval]
+    return float(min(intervals)) if intervals else DEFAULT_STALE_SERIES_SECONDS
+
+
 DISPATCH_EVERY_SECONDS = 60.0
 
 celery_app = Celery(
@@ -46,6 +61,7 @@ celery_app = Celery(
         "app.pipeline.analyze_item",
         "app.reports.service",
         "app.publishing.sync",
+        "app.series.analysis",
     ],
 )
 celery_app.conf.update(
@@ -67,6 +83,11 @@ celery_app.conf.update(
         "sync-publications": {
             "task": SYNC_PUBLICATIONS_TASK,
             "schedule": DISPATCH_EVERY_SECONDS,
+        },
+        # 系列分析（P8-T05）：補做今天還沒分析、且有事件加入或移出的系列（每系列每天最多一次）
+        "analyze-stale-series": {
+            "task": ANALYZE_STALE_SERIES_TASK,
+            "schedule": _shortest_poll_interval(),
         },
     },
 )

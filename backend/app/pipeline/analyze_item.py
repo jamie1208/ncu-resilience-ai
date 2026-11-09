@@ -43,7 +43,8 @@
 
 系列（P8-T04）：`PipelineDeps.group_series` 為 True 時（正式環境），S06 與通知同步之後以
 `app/series/grouping.py` 更新事件的系列：還沒有系列的事件經 S11 series-matcher 歸組，
-改判 false 的事件移出自成一件。
+改判 false 的事件移出自成一件。之後以 `PipelineDeps.series_hook`（正式環境排入 Celery）
+排入系列分析（S12，P8-T05；每個系列每天最多一次）。
 """
 
 from __future__ import annotations
@@ -156,6 +157,8 @@ class Outcome(StrEnum):
 
 ReportHook = Callable[[AsyncSession, uuid.UUID, str | None, str], Awaitable[None]]
 """S06 之後的報告處理：（session, event_id, 風險分級, trace_id）。"""
+SeriesHook = Callable[[uuid.UUID, str], None]
+"""系列分析的排程：（系列 id, trace_id）。"""
 
 
 @dataclass(frozen=True)
@@ -173,6 +176,8 @@ class PipelineDeps:
     """是否先跑 S01；False 時所有文章都視為與校園相關。"""
     group_series: bool = False
     """是否在查證後更新系列（S11，P8-T04）。"""
+    series_hook: SeriesHook | None = None
+    """事件屬於某個系列之後排入系列分析（S12，P8-T05）：（系列 id, trace_id）。"""
 
 
 @dataclass(frozen=True)
@@ -407,7 +412,7 @@ async def _verify_and_assess(
     await sync_event_alert(session, event.id, request_id=ctx.trace_id)
     await session.commit()
     if ctx.deps.group_series:  # 系列（P8-T04）
-        await sync_event_series(
+        series_id = await sync_event_series(
             session,
             event,
             run=lambda p: ctx.run(S11, p, event_id=event.id),
@@ -415,6 +420,8 @@ async def _verify_and_assess(
             request_id=ctx.trace_id,
         )
         await session.commit()
+        if series_id is not None and ctx.deps.series_hook is not None:  # 系列分析（P8-T05）
+            ctx.deps.series_hook(series_id, ctx.trace_id)
     if ctx.deps.report_hook is not None:  # 事件小報告（P4-T09）
         await ctx.deps.report_hook(session, event.id, level, ctx.trace_id)
     return decision_status, level
@@ -819,6 +826,7 @@ async def _link(
 def build_deps() -> PipelineDeps:
     """依設定檔與環境變數建立正式的相依（OpenAI 需要 OPENAI_API_KEY）。"""
     from app.reports.service import make_report_hook, send_to_celery  # 報告模組匯入本模組
+    from app.series.analysis import enqueue_series_analysis  # 系列模組匯入本模組
 
     config = load_llm_config()
     settings = get_settings()
@@ -831,6 +839,7 @@ def build_deps() -> PipelineDeps:
         report_hook=make_report_hook(send_to_celery),
         check_relevance=False,
         group_series=True,
+        series_hook=enqueue_series_analysis,
     )
 
 

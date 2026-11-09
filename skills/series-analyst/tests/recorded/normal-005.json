@@ -1,0 +1,176 @@
+{
+  "case_id": "normal-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "停放機車遭竊",
+    "burst_explanations": [],
+    "location_groups": [
+      {
+        "label": "宿舍區停車場",
+        "event_ids": [
+          "E1",
+          "E2",
+          "E3"
+        ],
+        "reason": "三起事件都發生在宿舍或宿舍旁停車場（男三、女十四、後門停車場），屬於宿舍區的停車處。"
+      }
+    ],
+    "pattern_status": "ok",
+    "pattern_abstain_reason": null,
+    "patterns": [
+      {
+        "pattern_id": "p1",
+        "description": "多起案件發生在深夜或凌晨時段。",
+        "event_ids": [
+          "E1",
+          "E2",
+          "E3"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "週六深夜停在男三旁邊的機車不見了"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "週日凌晨女十四停車場機車被偷"
+          },
+          {
+            "evidence_id": "e3",
+            "quote": "半夜停後門停車場的機車被偷"
+          }
+        ]
+      }
+    ],
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "可能是夜間出沒的機會型竊賊趁低光與少人時行竊。",
+        "event_ids": [
+          "E1",
+          "E2",
+          "E3"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "週六深夜停在男三旁邊的機車不見了"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "週日凌晨女十四停車場機車被偷"
+          },
+          {
+            "evidence_id": "e3",
+            "quote": "半夜停後門停車場的機車被偷"
+          }
+        ],
+        "to_verify": "向校園保全或警方調查該時段的巡邏紀錄與監視器影像，確認是否有可疑人物或固定時段出沒。"
+      },
+      {
+        "cause_id": "c2",
+        "description": "可能部分機車未使用大鎖或其他強固防護，增加被偷風險（疑似個別車主未上大鎖）。",
+        "event_ids": [
+          "E3"
+        ],
+        "evidence_ids": [
+          "e3"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e3",
+            "quote": "沒上大鎖"
+          }
+        ],
+        "to_verify": "向受害車主與宿舍管理確認被偷車輛當時是否有使用大鎖或其他防盜設備，並查詢該停車區是否有監視器。"
+      }
+    ],
+    "measures": [
+      {
+        "action": "夜間停車時使用大鎖或額外防盜器材（例如鏈鎖、煞車鎖）。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c2",
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e3"
+        ]
+      },
+      {
+        "action": "提醒宿舍住戶加強夜間防盜並宣導正確使用大鎖與停車習慣（透過公告或社群）。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c2",
+        "responsible_unit": "宿舍管理",
+        "evidence_ids": [
+          "e3"
+        ]
+      },
+      {
+        "action": "檢視並調整宿舍區夜間照明與監視器覆蓋範圍，必要時增加燈光或補裝監視器。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "responsible_unit": "總務處／校園保全",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      },
+      {
+        "action": "由校園保全或相關單位調閱該時段監視器影像並加強夜間巡邏頻率以查證並即時回應可疑情形。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "responsible_unit": "校園保全",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      },
+      {
+        "action": "若確認為特定時段或路段高風險，安排臨時巡邏或警方重點巡查以回應近期案件。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "responsible_unit": "校園保全／警方",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3"
+    ],
+    "reason": "這個系列是宿舍區停放機車被竊的通報，三起事件都發生在深夜或凌晨的宿舍停車處。整體觀察顯示時間集中在夜間，個別案件有提到未上大鎖。 ",
+    "abstain_reason": null
+  }
+}

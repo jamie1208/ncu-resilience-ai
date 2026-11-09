@@ -1,0 +1,106 @@
+{
+  "case_id": "boundary-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "自習室冷氣不冷或故障",
+    "burst_explanations": [],
+    "location_groups": [
+      {
+        "label": "國鼎圖書館自習室",
+        "event_ids": [
+          "E1",
+          "E2"
+        ],
+        "reason": "兩起事件的地點都寫為「國鼎圖書館」，且摘要指出發生在自習室。"
+      }
+    ],
+    "pattern_status": "ok",
+    "pattern_abstain_reason": null,
+    "patterns": [
+      {
+        "pattern_id": "p1",
+        "description": "都發生在國鼎圖書館的自習室，且描述冷氣不冷或吹出熱風。",
+        "event_ids": [
+          "E1",
+          "E2"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "國鼎自習室冷氣好像壞了，吹出來是熱風，也有人說還好。"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "國鼎自習室冷氣不冷，坐一下就流汗。"
+          }
+        ]
+      }
+    ],
+    "causes": [],
+    "measures": [
+      {
+        "action": "如遇冷氣不冷，先向館內服務台或管理人反映狀況以紀錄並請求協助。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "派員檢查國鼎圖書館自習室冷氣設備運作，包括冷媒、風扇與出風口，並紀錄檢修結果。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "總務處或場館管理單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "若檢查發現設備故障或需更換零件，安排維修或與廠商聯繫進行保養與修復。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "responsible_unit": "冷氣維修廠商或設備承包單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "建立冷氣設備例行保養與回報機制，包含定期檢修與使用者回報通路，減少再次發生時的反應時間。",
+        "audience": "school",
+        "horizon": "long",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "總務處或場館管理單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "本系列描述國鼎圖書館自習室的冷氣出現不冷或疑似故障的情況，兩起事件均指出自習室冷氣吹出熱風或不冷。",
+    "abstain_reason": null
+  }
+}

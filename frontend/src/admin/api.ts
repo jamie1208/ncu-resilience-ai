@@ -768,6 +768,210 @@ export async function splitLocation(locationId: string) {
   ).data
 }
 
+// ---- 系列（P8-T04、P8-T05） ----
+
+export interface SeriesSummary {
+  id: string
+  category: string
+  title: string
+  title_source: 'first_event' | 'ai' | 'manual'
+  event_count: number
+  latest_joined_at: string | null
+  created_at: string
+}
+
+export interface SeriesEvent {
+  id: string
+  title: string
+  status: string
+  occurrence_start_date: string | null
+  created_at: string
+  joined_at: string
+  method: string
+}
+
+export interface SeriesQuote {
+  evidence_id: string
+  quote: string
+}
+
+/** S12 的規律與原因（一律是推測；原因可人工確認）；件數由程式依引用的子事件計算。 */
+export interface SeriesPattern {
+  pattern_id: string
+  description: string
+  label: string
+  event_ids: string[]
+  event_count: number
+  total: number
+  quotes: SeriesQuote[]
+  mentions_party: boolean
+}
+
+export interface SeriesCause extends Omit<SeriesPattern, 'pattern_id'> {
+  cause_id: string
+  to_verify: string | null
+  decision: 'confirmed' | 'hypothesized'
+}
+
+export interface SeriesMeasure {
+  action: string
+  audience: 'students' | 'school' | 'units'
+  horizon: 'short' | 'mid' | 'long'
+  priority: 'high' | 'medium' | 'low'
+  kind: 'respond' | 'investigate' | 'prevent'
+  cause_id: string | null
+  responsible_unit: string | null
+  tracked_action_id: string | null
+}
+
+export interface SeriesLocationGroup {
+  label: string
+  reason: string
+  event_ids: string[]
+  event_count: number
+  total: number
+}
+
+export interface SeriesBurst {
+  burst_id: string
+  period_start: string
+  count: number
+  expected: number
+  explanation: string
+  event_ids: string[]
+}
+
+export interface SeriesAnalysis {
+  id: string
+  status: string
+  title: string | null
+  summary: string | null
+  bursts: SeriesBurst[]
+  location_groups: SeriesLocationGroup[]
+  pattern_status: string
+  pattern_abstain_reason: string | null
+  patterns: SeriesPattern[]
+  causes: SeriesCause[]
+  measures: SeriesMeasure[]
+  dropped: number
+  created_at: string
+}
+
+export interface SeriesAction {
+  id: string
+  origin: string
+  analysis_id: string | null
+  measure_index: number | null
+  title: string
+  owner: string | null
+  due_at: string | null
+  state: ActionState
+  overdue: boolean
+  created_at: string
+}
+
+export interface SeriesDetail extends SeriesSummary {
+  events: SeriesEvent[]
+  removals: { event_id: string; reason: string; created_at: string }[]
+  analysis: SeriesAnalysis | null
+  latest_attempt: { status: string; abstain_reason: string | null; created_at: string } | null
+  actions: SeriesAction[]
+}
+
+export type TimelineGranularity = 'day' | 'week' | 'month'
+export type TimelineRange = '1M' | '3M' | '6M' | '1Y' | 'all'
+
+export interface SeriesComparison {
+  action_id: string
+  title: string
+  start: string
+  status: 'ok' | 'insufficient'
+  before_events: number
+  after_events: number
+  after_weeks: number
+  before_weekly_average: number | null
+  after_weekly_average: number | null
+  change_ratio: number | null
+  message: string | null
+  caveat: string
+}
+
+export interface SeriesTimeline {
+  granularity: TimelineGranularity
+  range: TimelineRange
+  location: string | null
+  start: string
+  end: string
+  points: { period_start: string; count: number; moving_average: number | null }[]
+  markers: { action_id: string; title: string; kind: 'started' | 'completed'; on: string }[]
+  comparisons: SeriesComparison[]
+  locations: { name: string; event_count: number }[]
+}
+
+export async function listSeries(filters: { category?: string } = {}): Promise<SeriesSummary[]> {
+  return (await apiGet<SeriesSummary[]>(`${V1}/admin/series${query(filters)}`)).data
+}
+
+export async function getSeries(seriesId: string): Promise<SeriesDetail> {
+  return (await apiGet<SeriesDetail>(`${V1}/admin/series/${id(seriesId)}`)).data
+}
+
+export async function getSeriesTimeline(
+  seriesId: string,
+  params: { granularity: TimelineGranularity; range: TimelineRange; location?: string | null },
+): Promise<SeriesTimeline> {
+  const path = `${V1}/admin/series/${id(seriesId)}/timeline${query(params)}`
+  return (await apiGet<SeriesTimeline>(path)).data
+}
+
+/** 手動改名；之後 AI 不再覆蓋名稱。 */
+export async function renameSeries(seriesId: string, title: string) {
+  return (
+    await send<{ id: string; title: string; title_source: string }>(
+      'PATCH',
+      `/admin/series/${id(seriesId)}`,
+      { title },
+    )
+  ).data
+}
+
+/** 從最新分析的改善建議一鍵加入追蹤。 */
+export async function addSeriesAction(seriesId: string, analysisId: string, measureIndex: number) {
+  return (
+    await post<SeriesAction>(`/admin/series/${id(seriesId)}/actions`, {
+      analysis_id: analysisId,
+      measure_index: measureIndex,
+    })
+  ).data
+}
+
+export async function decideSeriesCause(
+  seriesId: string,
+  causeId: string,
+  analysisId: string,
+  decision: 'confirmed' | 'hypothesized',
+  basis?: string,
+) {
+  const body: Record<string, string> = { analysis_id: analysisId, decision }
+  if (basis?.trim()) body.basis = basis.trim()
+  return (
+    await post<{ cause_id: string; decision: string }>(
+      `/admin/series/${id(seriesId)}/causes/${id(causeId)}/decision`,
+      body,
+    )
+  ).data
+}
+
+export async function splitFromSeries(seriesId: string, eventId: string) {
+  return (
+    await post<{ series_id: string }>(`/admin/series/${id(seriesId)}/events/${id(eventId)}/split`)
+  ).data
+}
+
+export async function dissolveSeries(seriesId: string) {
+  return (await post<{ series_id: string }>(`/admin/series/${id(seriesId)}/dissolve`)).data
+}
+
 // ---- 公開內容 ----
 
 export async function listPublications(
