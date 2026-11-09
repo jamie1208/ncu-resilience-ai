@@ -22,6 +22,10 @@ P8-T05（ADR-0018 決策 1-5～1-8、ADR-0020 決策 3-4）：
   measure_index），或手動新增（title）。需要 `events:verify`，稽核 `response_action.create`。
 - `POST /api/v1/admin/series/{id}/causes/{cause_id}/decision`（回 201）：人工確認或回滾推測原因。
   需要 `events:verify`，稽核 `series.cause_decide`。
+
+P8-T13（ADR-0020 決策 3-4）：`GET /api/v1/admin/series/{id}` 的措施包含掛到系列的事件層級措施
+（附 `event_id`），另附 `legacy_cause_decisions`：舊版事件小報告的人工確認（唯讀，每份報告每個原因
+只列最新一筆，附原因內容與確認依據）。
 """
 
 from __future__ import annotations
@@ -40,6 +44,7 @@ from app.api.errors import ApiError, ErrorCode
 from app.api.responses import envelope
 from app.core.security import Permission, Principal
 from app.models.event import Event
+from app.models.report import EventReport, ReportCauseDecision
 from app.models.response_action import ResponseAction, ResponseActionTransition
 from app.models.series import EventSeries, EventSeriesMember, EventSeriesRemoval
 from app.resilience.actions import ActionError, create_series_action, is_overdue
@@ -179,13 +184,46 @@ async def get_series(series_id: uuid.UUID, session: Session, _: CanRead) -> dict
                 else None
             ),
             "actions": [_action_data(a) for a in actions],
+            "legacy_cause_decisions": await _legacy_decisions(session, series_id),
         }
     )
+
+
+async def _legacy_decisions(session: AsyncSession, series_id: uuid.UUID) -> list[dict[str, Any]]:
+    """掛到系列的舊版小報告人工確認（P8-T13）：每份報告每個原因最新的一筆。"""
+    rows = (
+        await session.execute(
+            select(ReportCauseDecision, EventReport)
+            .join(EventReport, EventReport.id == ReportCauseDecision.report_id)
+            .where(ReportCauseDecision.series_id == series_id)
+            .order_by(ReportCauseDecision.decided_at.desc(), ReportCauseDecision.id.desc())
+        )
+    ).all()
+    latest: dict[tuple[uuid.UUID, str], dict[str, Any]] = {}
+    for decision, report in rows:
+        key = (report.id, decision.cause_id)
+        if key in latest:
+            continue
+        cause = next(
+            (c for c in report.causes if str(c.get("cause_id")) == decision.cause_id), None
+        )
+        latest[key] = {
+            "event_id": str(report.event_id),
+            "report_id": str(report.id),
+            "cause_id": decision.cause_id,
+            "description": cause.get("description") if cause else None,
+            "decision": decision.decision,
+            "basis": decision.basis,
+            "decided_by": decision.decided_by,
+            "decided_at": decision.decided_at.isoformat(),
+        }
+    return sorted(latest.values(), key=lambda d: str(d["decided_at"]))
 
 
 def _action_data(action: ResponseAction) -> dict[str, Any]:
     return {
         "id": str(action.id),
+        "event_id": str(action.event_id) if action.event_id else None,
         "origin": action.origin,
         "analysis_id": str(action.analysis_id) if action.analysis_id else None,
         "measure_index": action.measure_index,

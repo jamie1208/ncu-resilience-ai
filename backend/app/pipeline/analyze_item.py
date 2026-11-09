@@ -34,9 +34,8 @@
 - 結束時寫一筆稽核紀錄（pipeline.analyze_item／pipeline.analyze_event），request_id = trace_id；
   只記結果代碼與 id，不記原文。
 
-事件小報告（P4-T09）：S06 與通知同步之後呼叫 `PipelineDeps.report_hook`（正式環境為
-`app.reports.service.after_assessment`），由它決定是否排入產生報告（S07、S08）或讓報告失效。
-沒有設定 hook 時不處理報告。
+事件小報告（P4-T09）：P8-T13 起停用（ADR-0020 決策 3）。管線不再排入產生報告、不呼叫 S07、S08；
+原因、措施與改善建議只由系列分析（S12）產生。事件被判為不實時，既有的舊報告仍標為失效。
 
 代表地點（P8-T02）：建立新事件時，S02 的地點名稱經 `app/locations/resolver.py` 對應到 locations；
 沒見過的名稱才呼叫 S13 location-resolver（執行紀錄同 S01–S03 補上 event_id）。
@@ -52,7 +51,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import uuid
-from collections.abc import Awaitable, Callable, Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
@@ -155,15 +154,13 @@ class Outcome(StrEnum):
     SKIPPED = "skipped"  # 事件已封存或沒有證據
 
 
-ReportHook = Callable[[AsyncSession, uuid.UUID, str | None, str], Awaitable[None]]
-"""S06 之後的報告處理：（session, event_id, 風險分級, trace_id）。"""
 SeriesHook = Callable[[uuid.UUID, str], None]
 """系列分析的排程：（系列 id, trace_id）。"""
 
 
 @dataclass(frozen=True)
 class PipelineDeps:
-    """管線的相依：模型、設定、Skills、風險政策與事件小報告的 hook。"""
+    """管線的相依：模型、設定、Skills、風險政策與系列的設定。"""
 
     provider: LLMProvider
     embedder: EmbeddingProvider
@@ -171,7 +168,6 @@ class PipelineDeps:
     skills: Mapping[str, Skill]
     policy: RiskPolicy
     max_candidates: int = MAX_CANDIDATES
-    report_hook: ReportHook | None = None
     check_relevance: bool = True
     """是否先跑 S01；False 時所有文章都視為與校園相關。"""
     group_series: bool = False
@@ -422,8 +418,12 @@ async def _verify_and_assess(
         await session.commit()
         if series_id is not None and ctx.deps.series_hook is not None:  # 系列分析（P8-T05）
             ctx.deps.series_hook(series_id, ctx.trace_id)
-    if ctx.deps.report_hook is not None:  # 事件小報告（P4-T09）
-        await ctx.deps.report_hook(session, event.id, level, ctx.trace_id)
+    if event.status == EventStatus.FALSE.value:  # 舊版事件小報告失效（P8-T13 起不再產生報告）
+        # 報告模組匯入本模組，避免循環匯入
+        from app.reports.service import INVALID_EVENT_FALSE, invalidate_reports
+
+        await invalidate_reports(session, event.id, INVALID_EVENT_FALSE)
+        await session.commit()
     return decision_status, level
 
 
@@ -825,7 +825,6 @@ async def _link(
 
 def build_deps() -> PipelineDeps:
     """依設定檔與環境變數建立正式的相依（OpenAI 需要 OPENAI_API_KEY）。"""
-    from app.reports.service import make_report_hook, send_to_celery  # 報告模組匯入本模組
     from app.series.analysis import enqueue_series_analysis  # 系列模組匯入本模組
 
     config = load_llm_config()
@@ -836,7 +835,6 @@ def build_deps() -> PipelineDeps:
         config=config,
         skills=discover_skills(),
         policy=load_policy(),
-        report_hook=make_report_hook(send_to_celery),
         check_relevance=False,
         group_series=True,
         series_hook=enqueue_series_analysis,
@@ -895,7 +893,6 @@ __all__ = [
     "Outcome",
     "PipelineDeps",
     "PipelineResult",
-    "ReportHook",
     "Step",
     "analyze_event",
     "analyze_item",

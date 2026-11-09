@@ -77,6 +77,9 @@ CAUSE_DECISIONS = ("confirmed", "hypothesized")
 class ReportCauseDecision(Base):
     """小報告中一個推測原因的人工決策（P7-T07，0018，ADR-0017）。
 
+    P8-T13 起唯讀（ADR-0020 決策 3-4）：0024 依事件所屬的系列回填 `series_id`，供系列頁回溯；
+    之後的原因確認改在系列分析（`series_cause_decisions`）。
+
     只新增不修改：確認與回滾各新增一筆，同一份報告同一個原因最新的一筆是目前狀態，舊的筆保留
     確認依據供回溯。確認依據必填（回滾為 NULL），已經過 PII 檢查。報告刪除時一併刪除。
     """
@@ -90,6 +93,11 @@ class ReportCauseDecision(Base):
 
     id: Mapped[uuid.UUID] = uuid_pk()
     report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("event_reports.id", ondelete="CASCADE"))
+    series_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("event_series.id", ondelete="SET NULL"),
+        index=True,
+        comment="遷移時事件所屬的系列（P8-T13）",
+    )
     cause_id: Mapped[str] = mapped_column(String(32))
     decision: Mapped[str] = mapped_column(String(16))
     basis: Mapped[str | None] = mapped_column(String(200), comment="確認依據；不含個資")

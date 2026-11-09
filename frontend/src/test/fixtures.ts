@@ -53,6 +53,7 @@ export const EVENT_DETAIL: EventDetail = {
   created_at: '2026-10-20T02:10:00Z',
   updated_at: '2026-10-20T02:30:00Z',
   merged_into: null,
+  series_id: null,
   summary: null,
   evidence: [
     {
@@ -114,6 +115,7 @@ export const EVENT_DETAIL: EventDetail = {
 /** 事件小報告（evidence_ids 是 source_item_id 去掉連字號）。 */
 export const EVENT_REPORT: EventReport = {
   id: 'rp-1',
+  legacy: true,
   trigger: 'auto',
   valid: true,
   invalidated_at: null,

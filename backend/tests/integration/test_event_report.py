@@ -1,12 +1,13 @@
-"""P4-T09：事件小報告（S06 之後接上 S07、S08）。
+"""P4-T09：事件小報告（S06 之後接上 S07、S08）；P8-T13 起停用（ADR-0020 決策 3）。
 
-- S06 之後由 `after_assessment` 決定是否排入產生報告：風險中以上自動產生；風險低但已有報告時也重算；
-  事件被查證為不實時不產生，既有報告標為失效。
-- `generate_report`：S07 原因、S08 措施，加上 S06 分項成為「可能的影響」；每一項都要有存在的
-  evidence_ids；推測原因（hypothesized）永遠帶推測標示，只有官方來源逐字原句支持的原因才算確認。
+- P8-T13：管線不再排入產生報告（任何風險等級都不呼叫 S07、S08，既有報告也不重算）；
+  事件被查證為不實時既有報告仍標為失效。手動產生報告的端點回 CONFLICT，報告任務不再註冊。
+- `generate_report`（只留給既有資料，管線與 API 不再呼叫）：S07 原因、S08 措施，加上 S06 分項
+  成為「可能的影響」；每一項都要有存在的 evidence_ids；推測原因（hypothesized）永遠帶推測標示，
+  只有官方來源逐字原句支持的原因才算確認。
 - S07／S08 abstain 時該區塊沒有任何項目（不產生空白或捏造內容），API 顯示「證據不足，暫不分析」。
-- `GET /api/v1/admin/events/{id}` 回傳最新一份報告；
-  `POST /api/v1/admin/events/{id}/report` 手動觸發。
+- `GET /api/v1/admin/events/{id}` 回傳最新一份報告（標為 legacy、唯讀）；
+  `POST /api/v1/admin/events/{id}/report` 回 CONFLICT。
 """
 
 from __future__ import annotations
@@ -23,19 +24,16 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db_session, get_principal
-from app.api.v1.admin.events import get_report_queue
 from app.domain.states import EventStatus
 from app.main import create_app
 from app.models import AuditLog, Event, EventEvidence
 from app.models.report import EventReport
 from app.models.source import Source
-from app.pipeline.analyze_item import PipelineDeps, analyze_event
+from app.pipeline.analyze_item import analyze_event
 from app.reports.service import (
     ABSTAIN_MESSAGE,
     HYPOTHESIZED_LABEL,
-    REPORT_EVENT_TASK,
     generate_report,
-    make_report_hook,
 )
 from app.worker.celery_app import celery_app
 from tests.integration.test_pipeline import (
@@ -171,24 +169,10 @@ async def scene(session: AsyncSession, *, status: EventStatus = EventStatus.UNVE
     return Scene(event, official.id.hex, rumor.id.hex)
 
 
-class Enqueued:
-    """記錄被排入的報告任務（取代 Celery）。"""
-
-    def __init__(self) -> None:
-        self.calls: list[tuple[uuid.UUID, str]] = []
-
-    def __call__(self, event_id: uuid.UUID, trace_id: str) -> None:
-        self.calls.append((event_id, trace_id))
-
-
-def with_hook(provider: SkillScript, enqueue: Enqueued) -> PipelineDeps:
-    return dataclasses.replace(deps(provider), report_hook=make_report_hook(enqueue))
-
-
 async def assess(
     session: AsyncSession, s: Scene, *, safety: int, suggested: str = "unverified"
-) -> Enqueued:
-    """重跑事件的 S05、S06（風險由 safety 決定），回傳被排入的報告任務。"""
+) -> SkillScript:
+    """重跑事件的 S05、S06（風險由 safety 決定），回傳腳本（可檢查呼叫了哪些 Skill）。"""
     stances = {s.official: ("supports", "official"), s.rumor: ("supports", "first_hand")}
     if suggested == "false":
         stances = {s.official: ("refutes", "official"), s.rumor: ("supports", "hearsay")}
@@ -198,9 +182,8 @@ async def assess(
             "risk-assessor": [risk(s.official, safety=safety)],
         }
     )
-    enqueue = Enqueued()
-    await analyze_event(session, s.event.id, with_hook(provider, enqueue))
-    return enqueue
+    await analyze_event(session, s.event.id, deps(provider))
+    return provider
 
 
 def full_report_script(s: Scene) -> SkillScript:
@@ -247,32 +230,32 @@ def strings(node: Any) -> Iterator[str]:
             yield from strings(value)
 
 
-# ---------- 何時產生 ----------
+# ---------- 停用：管線不再產生報告（P8-T13） ----------
 
 
-async def test_medium_or_higher_risk_queues_report(session: AsyncSession) -> None:
+@pytest.mark.parametrize("safety", [85, 10])
+async def test_pipeline_never_runs_s07_or_s08(session: AsyncSession, safety: int) -> None:
     s = await scene(session)
 
-    enqueue = await assess(session, s, safety=85)  # personal_safety ≥ 80 → critical
+    provider = await assess(session, s, safety=safety)  # 85 → critical；10 → low
 
-    assert [event_id for event_id, _ in enqueue.calls] == [s.event.id]
+    assert provider.called == ["evidence-verifier", "risk-assessor"]
+    assert await session.scalar(select(EventReport.id)) is None
 
 
-async def test_low_risk_without_report_does_not_queue(session: AsyncSession) -> None:
+async def test_existing_report_is_not_recalculated(session: AsyncSession) -> None:
     s = await scene(session)
+    old = await generate_report(session, s.event.id, deps(full_report_script(s)), trigger="manual")
+    assert old is not None
 
-    enqueue = await assess(session, s, safety=10)  # 預設分項加權為 low
+    provider = await assess(session, s, safety=85)
 
-    assert enqueue.calls == []
-
-
-async def test_low_risk_with_existing_report_recalculates(session: AsyncSession) -> None:
-    s = await scene(session)
-    await generate_report(session, s.event.id, deps(full_report_script(s)), trigger="manual")
-
-    enqueue = await assess(session, s, safety=10)
-
-    assert [event_id for event_id, _ in enqueue.calls] == [s.event.id]
+    assert provider.called == ["evidence-verifier", "risk-assessor"]
+    rows = list(
+        await session.scalars(select(EventReport).where(EventReport.event_id == s.event.id))
+    )
+    assert [r.id for r in rows] == [old.id]
+    assert rows[0].invalidated_at is None
 
 
 # ---------- 內容：每項可回溯證據、推測不呈現為事實 ----------
@@ -418,12 +401,12 @@ async def test_pipeline_refutation_invalidates_report(session: AsyncSession) -> 
     report = await generate_report(session, s.event.id, deps(full_report_script(s)), trigger="auto")
     assert report is not None
 
-    enqueue = await assess(session, s, safety=85, suggested="false")
+    provider = await assess(session, s, safety=85, suggested="false")
 
     await session.refresh(report)
     assert report.invalidated_at is not None
     assert report.invalidated_reason == "event_false"
-    assert enqueue.calls == []
+    assert "root-cause-analyst" not in provider.called
 
 
 # ---------- API ----------
@@ -432,8 +415,6 @@ async def test_pipeline_refutation_invalidates_report(session: AsyncSession) -> 
 class Api:
     def __init__(self, app: FastAPI, client: httpx2.AsyncClient) -> None:
         self.client = client
-        self.queued = Enqueued()
-        app.dependency_overrides[get_report_queue] = lambda: self.queued
 
 
 @pytest.fixture()
@@ -459,6 +440,7 @@ async def test_event_detail_returns_latest_report(api: Api, session: AsyncSessio
 
     assert response.status_code == 200
     report = response.json()["data"]["report"]
+    assert report["legacy"] is True  # 舊版事件小報告（已停用），唯讀
     assert report["valid"] is True
     assert report["trigger"] == "auto"
     assert report["impacts"]["status"] == "ok"
@@ -523,18 +505,15 @@ async def test_verify_false_invalidates_report(api: Api, session: AsyncSession) 
     assert data["report"]["invalidated_reason"] == "event_false"
 
 
-async def test_manual_trigger_queues_and_audits(api: Api, session: AsyncSession) -> None:
+async def test_manual_trigger_is_retired(api: Api, session: AsyncSession) -> None:
     s = await scene(session)
 
     response = await api.client.post(f"/api/v1/admin/events/{s.event.id}/report")
 
-    assert response.status_code == 202
-    assert response.json()["data"] == {"event_id": str(s.event.id), "status": "queued"}
-    ((event_id, request_id),) = api.queued.calls
-    assert event_id == s.event.id
-    audit = await session.scalar(select(AuditLog).where(AuditLog.action == "event.report"))
-    assert audit is not None
-    assert audit.request_id == request_id
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "CONFLICT"
+    assert await session.scalar(select(AuditLog).where(AuditLog.action == "event.report")) is None
+    assert await session.scalar(select(EventReport.id)) is None
 
 
 async def test_manual_trigger_rejects_refuted_or_archived(api: Api, session: AsyncSession) -> None:
@@ -544,7 +523,6 @@ async def test_manual_trigger_rejects_refuted_or_archived(api: Api, session: Asy
     for s in (refuted, archived):
         response = await api.client.post(f"/api/v1/admin/events/{s.event.id}/report")
         assert response.status_code == 409
-    assert api.queued.calls == []
 
 
 async def test_manual_trigger_unknown_event(api: Api) -> None:
@@ -553,5 +531,5 @@ async def test_manual_trigger_unknown_event(api: Api) -> None:
     assert response.status_code == 404
 
 
-def test_report_task_is_registered() -> None:
-    assert REPORT_EVENT_TASK in celery_app.tasks
+def test_report_task_is_no_longer_registered() -> None:
+    assert "reports.generate_event_report" not in celery_app.tasks

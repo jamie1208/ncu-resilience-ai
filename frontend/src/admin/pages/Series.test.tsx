@@ -76,9 +76,11 @@ const DETAIL: SeriesDetail = {
   },
   latest_attempt: { status: 'ok', abstain_reason: null, created_at: '2026-11-09T04:00:00+00:00' },
   actions: [
-    { id: 'act-9', origin: 'series_measure', analysis_id: 'a-1', measure_index: 2, title: '請機車行協助提醒停放位置。',
-      owner: '機車行', due_at: null, state: 'handling', overdue: false, created_at: '2026-11-01T02:00:00+00:00' },
+    { id: 'act-9', event_id: null, origin: 'series_measure', analysis_id: 'a-1', measure_index: 2,
+      title: '請機車行協助提醒停放位置。', owner: '機車行', due_at: null, state: 'handling', overdue: false,
+      created_at: '2026-11-01T02:00:00+00:00' },
   ],
+  legacy_cause_decisions: [],
 }
 
 const TIMELINE: SeriesTimeline = {
@@ -242,6 +244,46 @@ describe('Series', () => {
     const post = calls.find((c) => c.method === 'POST')!
     expect(post.body).toEqual({ analysis_id: 'a-1', decision: 'confirmed', basis: '總務處回覆確認' })
     expect(await screen.findByRole('status')).toHaveTextContent('已標為人工確認')
+  })
+
+  it('遷移（P8-T13）：事件層級的措施標出來源事件，舊小報告的原因確認唯讀列出', async () => {
+    const migrated: SeriesDetail = {
+      ...DETAIL,
+      actions: [
+        ...DETAIL.actions,
+        { id: 'act-1', event_id: 'e-2', origin: 'measure', analysis_id: null, measure_index: 0,
+          title: '宵夜街加裝反光標示', owner: '總務處', due_at: null, state: 'handling', overdue: false,
+          created_at: '2026-10-16T02:00:00+00:00' },
+      ],
+      legacy_cause_decisions: [
+        { event_id: 'e-2', report_id: 'rp-1', cause_id: 'c1', description: '路邊照明不足',
+          decision: 'confirmed', basis: '11/5 電話向總務處確認', decided_by: 'admin:u-1',
+          decided_at: '2026-11-05T02:00:00+00:00' },
+      ],
+    }
+    open('/admin/series/s-1', {
+      'GET /api/v1/admin/series/s-1': { data: migrated },
+      'GET /api/v1/admin/series/s-1/timeline': { data: TIMELINE },
+    })
+    const actions = await screen.findByRole('region', { name: '改善追蹤' })
+    const item = within(actions).getByText('宵夜街加裝反光標示').closest('li')!
+    expect(within(item).getByRole('link', { name: '來自事件：宵夜街機車被擦撞' })).toHaveAttribute(
+      'href',
+      '/admin/events/e-2',
+    )
+
+    const legacy = screen.getByRole('region', { name: '舊版事件小報告的原因確認' })
+    expect(within(legacy).getByText('路邊照明不足')).toBeInTheDocument()
+    expect(within(legacy).getByText('已人工確認')).toBeInTheDocument()
+    expect(within(legacy).getByText(/確認依據：11\/5 電話向總務處確認/)).toBeInTheDocument()
+    expect(within(legacy).getByRole('link', { name: '宵夜街機車被擦撞' })).toHaveAttribute('href', '/admin/events/e-2')
+    expect(within(legacy).queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('沒有舊版確認時不顯示該區塊', async () => {
+    open('/admin/series/s-1', DETAIL_ROUTES)
+    await screen.findByRole('region', { name: '改善追蹤' })
+    expect(screen.queryByRole('region', { name: '舊版事件小報告的原因確認' })).not.toBeInTheDocument()
   })
 
   it('還沒有分析時說明原因', async () => {
