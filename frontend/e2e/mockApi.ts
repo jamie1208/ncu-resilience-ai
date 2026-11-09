@@ -94,10 +94,7 @@ export async function mockBackend(
       return reply(200, EVENTS.map((e) => (e.id === EVENT_DETAIL.id ? { ...e, status: state.eventStatus } : e)))
     }
     if (method === 'GET' && path === `/admin/events/${EVENT_DETAIL.id}`) {
-      return reply(200, { ...EVENT_DETAIL, status: state.eventStatus, report: state.report })
-    }
-    if (method === 'POST' && path === `/admin/events/${EVENT_DETAIL.id}/report`) {
-      return reply(202, { event_id: EVENT_DETAIL.id, status: 'queued' })
+      return reply(200, { ...EVENT_DETAIL, series_id: 's-1', status: state.eventStatus, report: state.report })
     }
     if (method === 'POST' && path === `/admin/events/${EVENT_DETAIL.id}/verify`) {
       const previous = state.eventStatus

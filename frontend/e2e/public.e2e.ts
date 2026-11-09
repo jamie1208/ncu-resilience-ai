@@ -57,7 +57,7 @@ async function expectNoHorizontalScroll(page: Page) {
   expect(overflow).toBeLessThanOrEqual(0)
 }
 
-test('公開瀏覽：首頁 → 事件小報告 → 分類查詢 → 改善進度 → 關於本站', async ({ page }) => {
+test('公開瀏覽：首頁 → 快報全文 → 分類查詢 → 改善進度 → 關於本站', async ({ page }) => {
   const others = await mockPublicApi(page)
 
   await page.goto('/')
@@ -75,8 +75,9 @@ test('公開瀏覽：首頁 → 事件小報告 → 分類查詢 → 改善進�
   await page.getByRole('link', { name: '工程五館外牆整修施工' }).click()
   await expect(page).toHaveURL(new RegExp(`/events/${PUBLIC_EVENT_ID}$`))
   await expect(page.getByRole('heading', { level: 1, name: '工程五館外牆整修施工' })).toBeVisible()
-  await expect(page.getByRole('region', { name: '可能的影響' })).toBeVisible()
-  await expect(page.getByRole('region', { name: '建議' }).getByText('在出入口張貼改道指示')).toBeVisible()
+  // 單一事件小報告停用（P8-T13）：快報全文不顯示影響與建議
+  await expect(page.getByRole('region', { name: '可能的影響' })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: '建議' })).toHaveCount(0)
   await expect(page.getByRole('region', { name: '官方來源' }).getByRole('link', { name: '中央大學公告' })).toBeVisible()
   await expect(page.getByRole('region', { name: '改善進度' })).toBeVisible()
   await expect(page.getByText('原因')).toHaveCount(0)

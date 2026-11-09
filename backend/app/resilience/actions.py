@@ -11,6 +11,8 @@
 - 系列層級（P8-T05，ADR-0018 決策 1-8）：`create_series_action` 從系列最新一次成功分析的 S12
   改善建議一鍵建立（學校或相關單位的建議；同一次分析的同一項只能建立一次），或手動新增；
   沒有 event_id，狀態轉移與事件層級相同。
+- 以系列為主（P8-T13，ADR-0020 決策 3-4）：事件層級的措施建立時一併記下事件目前所屬的系列
+  （`series_id`），在系列頁查得到；既有的由 migration 0024 回填。
 
 本模組只 flush、不 commit，由呼叫端決定交易邊界；所有檢查都在修改之前完成，
 失敗時不留下半套變更。
@@ -34,7 +36,7 @@ from app.domain.states import EventStatus
 from app.models.event import Event
 from app.models.report import EventReport
 from app.models.response_action import ResponseAction, ResponseActionTransition
-from app.models.series import EventSeries, SeriesAnalysis
+from app.models.series import EventSeries, EventSeriesMember, SeriesAnalysis
 from app.services.audit import record_audit
 
 TITLE_MAX = 200
@@ -214,8 +216,12 @@ async def create_action(
         name = _text(title, "title", TITLE_MAX) or ""
         if not name:
             raise ActionInvalidError("title", "請填寫改善措施名稱")
+    series_id = await session.scalar(
+        select(EventSeriesMember.series_id).where(EventSeriesMember.event_id == event_id)
+    )
     action = ResponseAction(
         event_id=event_id,
+        series_id=series_id,
         origin="measure" if measure is not None else "manual",
         report_id=report_id,
         measure_index=measure_index,

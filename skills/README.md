@@ -24,8 +24,8 @@ skills/<skill-name>/
 | S04 | event-linker | P2-T09 |
 | S05 | evidence-verifier | P2-T10 |
 | S06 | risk-assessor | P2-T11 |
-| S07 | root-cause-analyst | P2-T12 |
-| S08 | solution-planner | P2-T12 |
+| S07 | root-cause-analyst | P2-T12（P8-T13 起停用，見 `DEPRECATED.md`） |
+| S08 | solution-planner | P2-T12（P8-T13 起停用，見 `DEPRECATED.md`） |
 | S09 | trend-forecaster | P7-T01 |
 | S10 | scenario-simulator | P7-T02 |
 | S11 | series-matcher | P8-T04 |

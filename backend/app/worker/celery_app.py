@@ -35,7 +35,6 @@ INGEST_TASK = "ingest.ingest_source"
 ANALYZE_ITEM_TASK = "pipeline.analyze_item"  # P2-T13
 ANALYZE_EVENT_TASK = "pipeline.analyze_event"
 ANALYZE_DISPATCH_TASK = "pipeline.dispatch_pending_items"  # P4-T07
-REPORT_EVENT_TASK = "reports.generate_event_report"  # P4-T09
 SYNC_PUBLICATIONS_TASK = "publishing.sync_publications"  # P5-T11
 ANALYZE_SERIES_TASK = "series.analyze_series"  # P8-T05
 ANALYZE_STALE_SERIES_TASK = "series.analyze_stale_series"  # P8-T05
@@ -59,7 +58,6 @@ celery_app = Celery(
     include=[
         "app.worker.tasks.ingest",
         "app.pipeline.analyze_item",
-        "app.reports.service",
         "app.publishing.sync",
         "app.series.analysis",
     ],

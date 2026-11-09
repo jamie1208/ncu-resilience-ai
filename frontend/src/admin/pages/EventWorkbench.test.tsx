@@ -161,12 +161,14 @@ describe('EventWorkbench', () => {
     expect(calls.some((c) => c.path.endsWith('/analyze'))).toBe(true)
   })
 
-  it('事件小報告：影響、推測與已確認原因分開、措施依對象與時程分組、建議單位只供參考', async () => {
-    open(`/admin/events/${EVENT_ID}`, {
+  it('舊版事件小報告（已停用）：內容唯讀，不能重新產生、確認原因或加入追蹤', async () => {
+    const { calls } = open(`/admin/events/${EVENT_ID}`, {
       'GET /api/v1/admin/events': { data: EVENTS },
-      [DETAIL]: { data: { ...EVENT_DETAIL, report: EVENT_REPORT } },
+      [DETAIL]: { data: { ...EVENT_DETAIL, series_id: 's-1', report: EVENT_REPORT } },
     })
-    const report = await screen.findByRole('region', { name: '事件小報告' })
+    const report = await screen.findByRole('region', { name: '舊版事件小報告（已停用）' })
+    expect(within(report).getByText(/單一事件小報告已停用/)).toBeInTheDocument()
+    expect(within(report).getByRole('link', { name: '看系列分析' })).toHaveAttribute('href', '/admin/series/s-1')
 
     const impacts = within(report).getByRole('region', { name: '可能的影響' })
     expect(within(impacts).getByText('營運')).toBeInTheDocument()
@@ -195,9 +197,14 @@ describe('EventWorkbench', () => {
     const referrals = within(report).getByRole('region', { name: '建議轉給哪個單位' })
     expect(within(referrals).getByText('總務處')).toBeInTheDocument()
     expect(within(referrals).getByText(/系統不會寄信/)).toBeInTheDocument()
+
+    for (const name of ['產生小報告', '重新產生小報告', '確認原因', '加入改善追蹤', '回滾為推測']) {
+      expect(within(report).queryByRole('button', { name })).not.toBeInTheDocument()
+    }
+    expect(calls.some((c) => c.method === 'POST')).toBe(false)
   })
 
-  it('事件小報告：S07／S08 abstain 時顯示證據不足，不顯示任何項目', async () => {
+  it('舊版事件小報告：S07／S08 abstain 時顯示證據不足，不顯示任何項目', async () => {
     const abstained = { status: 'abstained' as const, message: '證據不足，暫不分析', items: [] }
     open(`/admin/events/${EVENT_ID}`, {
       'GET /api/v1/admin/events': { data: EVENTS },
@@ -208,13 +215,13 @@ describe('EventWorkbench', () => {
         },
       },
     })
-    const report = await screen.findByRole('region', { name: '事件小報告' })
+    const report = await screen.findByRole('region', { name: '舊版事件小報告（已停用）' })
     expect(within(report).getAllByText('證據不足，暫不分析')).toHaveLength(2)
     expect(within(report).queryByRole('region', { name: '值得查查看' })).not.toBeInTheDocument()
     expect(within(report).queryByRole('region', { name: '建議轉給哪個單位' })).not.toBeInTheDocument()
   })
 
-  it('事件小報告：事件被查證為不實時標示報告已失效', async () => {
+  it('舊版事件小報告：事件被查證為不實時標示報告已失效', async () => {
     open(`/admin/events/${EVENT_ID}`, {
       'GET /api/v1/admin/events': { data: EVENTS },
       [DETAIL]: {
@@ -225,68 +232,31 @@ describe('EventWorkbench', () => {
         },
       },
     })
-    const report = await screen.findByRole('region', { name: '事件小報告' })
+    const report = await screen.findByRole('region', { name: '舊版事件小報告（已停用）' })
     expect(within(report).getByText(/事件已被查證為不實，這份報告已失效/)).toBeInTheDocument()
-    expect(within(report).queryByRole('button', { name: '產生小報告' })).not.toBeInTheDocument()
   })
 
-  it('沒有小報告時可以手動產生', async () => {
-    const { calls, user } = open(`/admin/events/${EVENT_ID}`, {
+  it('沒有舊版小報告時：不能產生，改看系列分析', async () => {
+    const { calls } = open(`/admin/events/${EVENT_ID}`, {
       'GET /api/v1/admin/events': { data: EVENTS },
-      [DETAIL]: { data: EVENT_DETAIL },
-      [`POST /api/v1/admin/events/${EVENT_ID}/report`]: {
-        status: 202,
-        data: { event_id: EVENT_ID, status: 'queued' },
-      },
+      [DETAIL]: { data: { ...EVENT_DETAIL, series_id: 's-1' } },
     })
-    const report = await screen.findByRole('region', { name: '事件小報告' })
-    expect(within(report).getByText('尚未產生事件小報告。')).toBeInTheDocument()
-    await user.click(within(report).getByRole('button', { name: '產生小報告' }))
-    expect(await within(report).findByRole('status')).toHaveTextContent('已排入產生小報告')
-    expect(calls.some((c) => c.method === 'POST' && c.path.endsWith('/report'))).toBe(true)
+    const section = await screen.findByRole('region', { name: '原因與改善建議' })
+    expect(within(section).getByText(/原因、措施與改善建議由系列分析產生/)).toBeInTheDocument()
+    expect(within(section).getByRole('link', { name: '看系列分析' })).toHaveAttribute('href', '/admin/series/s-1')
+    expect(screen.queryByRole('region', { name: '舊版事件小報告（已停用）' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '產生小報告' })).not.toBeInTheDocument()
+    expect(calls.some((c) => c.method === 'POST')).toBe(false)
   })
 
-  it('小報告的校方措施可以加入改善追蹤，同學措施不行', async () => {
-    const { calls, user } = open(`/admin/events/${EVENT_ID}`, {
-      'GET /api/v1/admin/events': { data: EVENTS },
-      [DETAIL]: { data: { ...EVENT_DETAIL, report: EVENT_REPORT } },
-      [`POST /api/v1/admin/events/${EVENT_ID}/actions`]: { status: 201, data: ACTION_DETAIL },
-    })
-    const measures = await screen.findByRole('region', { name: '可以怎麼做' })
-    const students = within(measures).getByRole('group', { name: '同學可以做' })
-    expect(within(students).queryByRole('button', { name: '加入改善追蹤' })).not.toBeInTheDocument()
-
-    const item = within(measures).getByText('盤點同年份的變電箱並排定汰換。').closest('li')!
-    await user.click(within(item).getByRole('button', { name: '加入改善追蹤' }))
-
-    expect(await within(item).findByRole('link', { name: '已加入改善追蹤' })).toHaveAttribute('href', '/admin/actions')
-    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ report_id: 'rp-1', measure_index: 1 })
-  })
-
-  it('措施已在追蹤中時顯示伺服器訊息', async () => {
-    const { user } = open(`/admin/events/${EVENT_ID}`, {
-      'GET /api/v1/admin/events': { data: EVENTS },
-      [DETAIL]: { data: { ...EVENT_DETAIL, report: EVENT_REPORT } },
-      [`POST /api/v1/admin/events/${EVENT_ID}/actions`]: {
-        status: 409,
-        error: { code: 'CONFLICT', message: '這項措施已經在追蹤中' },
-      },
-    })
-    const measures = await screen.findByRole('region', { name: '可以怎麼做' })
-    const item = within(measures).getByText('盤點同年份的變電箱並排定汰換。').closest('li')!
-    await user.click(within(item).getByRole('button', { name: '加入改善追蹤' }))
-    expect(await within(item).findByRole('alert')).toHaveTextContent('這項措施已經在追蹤中')
-  })
-
-  it('失效報告的措施沒有加入追蹤按鈕', async () => {
+  it('不在系列中的事件沒有系列連結', async () => {
     open(`/admin/events/${EVENT_ID}`, {
       'GET /api/v1/admin/events': { data: EVENTS },
-      [DETAIL]: {
-        data: { ...EVENT_DETAIL, report: { ...EVENT_REPORT, valid: false, invalidated_reason: 'event_false' } },
-      },
+      [DETAIL]: { data: EVENT_DETAIL },
     })
-    const measures = await screen.findByRole('region', { name: '可以怎麼做' })
-    expect(within(measures).queryByRole('button', { name: '加入改善追蹤' })).not.toBeInTheDocument()
+    const section = await screen.findByRole('region', { name: '原因與改善建議' })
+    expect(within(section).queryByRole('link', { name: '看系列分析' })).not.toBeInTheDocument()
+    expect(within(section).getByText(/還沒有歸入系列/)).toBeInTheDocument()
   })
 
   it('手動新增改善措施', async () => {
@@ -334,54 +304,7 @@ describe('EventWorkbench', () => {
     expect(within(section).queryByRole('button', { name: '下架' })).not.toBeInTheDocument()
   })
 
-  it('人工確認原因：推測原因填確認依據後確認，送出報告 id，之後顯示依據與回滾', async () => {
-    const decision = `POST /api/v1/admin/events/${EVENT_ID}/report/causes/c2/decision`
-    const confirmed = {
-      ...EVENT_REPORT,
-      causes: {
-        ...EVENT_REPORT.causes,
-        items: EVENT_REPORT.causes.items.map((c) =>
-          c.cause_id === 'c2'
-            ? {
-                ...c,
-                manual_confirmation: {
-                  basis: '11/5 電話向總務處確認',
-                  decided_by: 'admin:u-1',
-                  decided_at: '2026-11-05T02:00:00Z',
-                },
-              }
-            : { ...c, manual_confirmation: null },
-        ),
-      },
-    }
-    const { calls, user } = open(`/admin/events/${EVENT_ID}`, {
-      'GET /api/v1/admin/events': { data: EVENTS },
-      [DETAIL]: { data: { ...EVENT_DETAIL, report: EVENT_REPORT } },
-      [decision]: { data: confirmed },
-    })
-    const confirmedSection = await screen.findByRole('region', { name: '已確認原因' })
-    expect(within(confirmedSection).queryByRole('button', { name: '確認原因' })).not.toBeInTheDocument()
-
-    const hypotheses = screen.getByRole('region', { name: '值得查查看' })
-    await user.click(within(hypotheses).getByRole('button', { name: '確認原因' }))
-    const form = within(hypotheses).getByRole('form', { name: '確認原因' })
-    expect(within(form).getByRole('button', { name: '確認' })).toBeDisabled()
-    await user.type(within(form).getByLabelText('確認依據'), '11/5 電話向總務處確認')
-    await user.click(within(form).getByRole('button', { name: '確認' }))
-
-    expect(await within(hypotheses).findByText('已人工確認')).toBeInTheDocument()
-    expect(within(hypotheses).getByText(/確認依據：11\/5 電話向總務處確認/)).toBeInTheDocument()
-    expect(within(hypotheses).getByText('推測，尚未查證')).toBeInTheDocument()
-    expect(within(hypotheses).getByRole('button', { name: '回滾為推測' })).toBeInTheDocument()
-    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({
-      report_id: 'rp-1',
-      decision: 'confirmed',
-      basis: '11/5 電話向總務處確認',
-    })
-  })
-
-  it('人工確認原因：回滾後回到推測，可以再確認', async () => {
-    const decision = `POST /api/v1/admin/events/${EVENT_ID}/report/causes/c2/decision`
+  it('舊版事件小報告：既有的人工確認唯讀顯示，不能回滾', async () => {
     const items = EVENT_REPORT.causes.items
     const withManual = {
       ...EVENT_REPORT,
@@ -394,45 +317,15 @@ describe('EventWorkbench', () => {
         ),
       },
     }
-    const { calls, user } = open(`/admin/events/${EVENT_ID}`, {
-      'GET /api/v1/admin/events': { data: EVENTS },
-      [DETAIL]: { data: { ...EVENT_DETAIL, report: withManual } },
-      [decision]: { data: EVENT_REPORT },
-    })
-    const hypotheses = await screen.findByRole('region', { name: '值得查查看' })
-    await user.click(within(hypotheses).getByRole('button', { name: '回滾為推測' }))
-    expect(await within(hypotheses).findByRole('button', { name: '確認原因' })).toBeInTheDocument()
-    expect(within(hypotheses).queryByText('已人工確認')).not.toBeInTheDocument()
-    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ report_id: 'rp-1', decision: 'hypothesized' })
-  })
-
-  it('人工確認原因：伺服器拒絕時顯示訊息；失效的報告不能確認', async () => {
-    const decision = `POST /api/v1/admin/events/${EVENT_ID}/report/causes/c2/decision`
-    const { user } = open(`/admin/events/${EVENT_ID}`, {
-      'GET /api/v1/admin/events': { data: EVENTS },
-      [DETAIL]: { data: { ...EVENT_DETAIL, report: EVENT_REPORT } },
-      [decision]: { status: 422, error: { code: 'VALIDATION_ERROR', message: '確認依據疑似含個資' } },
-    })
-    const hypotheses = await screen.findByRole('region', { name: '值得查查看' })
-    await user.click(within(hypotheses).getByRole('button', { name: '確認原因' }))
-    await user.type(within(hypotheses).getByLabelText('確認依據'), '電話確認')
-    await user.click(within(hypotheses).getByRole('button', { name: '確認' }))
-    expect(await within(hypotheses).findByText('確認依據疑似含個資')).toBeInTheDocument()
-    expect(within(hypotheses).queryByText('已人工確認')).not.toBeInTheDocument()
-  })
-
-  it('人工確認原因：失效的報告不顯示確認按鈕', async () => {
     open(`/admin/events/${EVENT_ID}`, {
       'GET /api/v1/admin/events': { data: EVENTS },
-      [DETAIL]: {
-        data: {
-          ...EVENT_DETAIL,
-          report: { ...EVENT_REPORT, valid: false, invalidated_at: '2026-10-21T00:00:00Z', invalidated_reason: 'event_false' },
-        },
-      },
+      [DETAIL]: { data: { ...EVENT_DETAIL, report: withManual } },
     })
     const hypotheses = await screen.findByRole('region', { name: '值得查查看' })
-    expect(within(hypotheses).queryByRole('button', { name: '確認原因' })).not.toBeInTheDocument()
+    expect(within(hypotheses).getByText('已人工確認')).toBeInTheDocument()
+    expect(within(hypotheses).getByText(/確認依據：電話確認/)).toBeInTheDocument()
+    expect(within(hypotheses).getByText('推測，尚未查證')).toBeInTheDocument()
+    expect(within(hypotheses).queryByRole('button')).not.toBeInTheDocument()
   })
 
   it('事件不存在時顯示錯誤', async () => {

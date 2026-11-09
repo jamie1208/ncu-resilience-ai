@@ -155,6 +155,7 @@ function SeriesPage({ seriesId }: { seriesId: string }) {
             busy={busy}
             onStart={(actionId) => act(() => transitionAction(actionId, 'handling'), '已改為處理中')}
           />
+          <LegacyDecisions data={data} />
           <Events
             data={data}
             busy={busy}
@@ -541,6 +542,15 @@ function Actions({ data, busy, onStart }: { data: SeriesDetail; busy: boolean; o
                 <span>
                   <span className="text-foreground">{a.title}</span>
                   {a.owner && <span className="ml-2 text-xs text-muted-foreground">{a.owner}</span>}
+                  {a.event_id && (
+                    // 遷移過來的事件層級措施（P8-T13）
+                    <Link
+                      to={`/admin/events/${encodeURIComponent(a.event_id)}`}
+                      className="ml-2 text-xs text-muted-foreground underline"
+                    >
+                      {`來自事件：${eventTitle(data, a.event_id)}`}
+                    </Link>
+                  )}
                 </span>
                 <span className="flex items-center gap-2">
                   <Badge tone={a.overdue ? 'danger' : 'neutral'}>{`${label(ACTION_LABELS, a.state)}${a.overdue ? '（逾期）' : ''}`}</Badge>
@@ -557,6 +567,43 @@ function Actions({ data, busy, onStart }: { data: SeriesDetail; busy: boolean; o
             ))}
           </ul>
         )}
+      </Section>
+    </Card>
+  )
+}
+
+function eventTitle(data: SeriesDetail, eventId: string): string {
+  return data.events.find((e) => e.id === eventId)?.title ?? '已移出的事件'
+}
+
+/** 舊版事件小報告的人工確認（P8-T13，ADR-0020 決策 3-4）：遷移到系列後唯讀列出，供回溯。 */
+function LegacyDecisions({ data }: { data: SeriesDetail }) {
+  if (data.legacy_cause_decisions.length === 0) return null
+  return (
+    <Card>
+      <Section id="series-legacy-decisions" title="舊版事件小報告的原因確認">
+        <p className="mb-2 text-xs text-muted-foreground">
+          停用單一事件小報告前做的確認，只供回溯；新的確認請在上面的「可能原因」操作。
+        </p>
+        <ul className="space-y-2">
+          {data.legacy_cause_decisions.map((d) => (
+            <li key={`${d.report_id}-${d.cause_id}`} className="space-y-1 rounded-lg border border-border p-3 text-sm">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone={d.decision === 'confirmed' ? 'success' : 'warning'}>
+                  {d.decision === 'confirmed' ? '已人工確認' : '已改回推測'}
+                </Badge>
+                <span className="min-w-0 text-foreground">{d.description ?? d.cause_id}</span>
+              </div>
+              {d.basis && <p className="text-foreground">{`確認依據：${d.basis}`}</p>}
+              <p className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                <Link to={`/admin/events/${encodeURIComponent(d.event_id)}`} className="underline">
+                  {eventTitle(data, d.event_id)}
+                </Link>
+                <span className="font-mono">{formatTime(d.decided_at)}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
       </Section>
     </Card>
   )

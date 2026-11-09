@@ -566,8 +566,7 @@ async def test_event_detail_returns_public_report(
     assert res.status_code == 200
     data = res.json()["data"]
     assert data["kind"] == "content"
-    assert data["report"]["impacts"][0]["reason"] == "地面濕滑"
-    assert data["report"]["measures"][0]["action"] == "暫停開放三樓座位"
+    assert data["report"] is None  # 單一事件小報告停用（P8-T13，ADR-0020 決策 3-5）
     assert data["sources"] == [{"name": "中央大學最新消息", "url": data["sources"][0]["url"]}]
     assert data["progress"][0]["title"] == "更換三樓天花板防水層"
     assert "owner" not in data["progress"][0]

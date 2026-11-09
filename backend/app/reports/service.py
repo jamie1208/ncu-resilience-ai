@@ -1,10 +1,10 @@
 """事件小報告（P4-T09）：S06 之後接上 S07 root-cause-analyst、S08 solution-planner。
 
-何時產生（`after_assessment`，由管線在 S06 與通知同步之後呼叫）：
-- 事件被查證為不實（status false）→ 不產生，既有報告標為失效（`event_false`）；
-- 風險中以上（medium、high、critical）→ 排入產生報告；
-- 風險低但事件已有有效報告 → 也排入重算，讓既有報告跟上事件的最新證據；
-- 其他情況不產生，可在後台手動觸發（`POST /api/v1/admin/events/{id}/report`）。
+**P8-T13 起停用（ADR-0020 決策 3）**：管線不再排入產生報告（移除 `report_hook`），手動產生的端點
+回 CONFLICT，產生報告的 Celery 任務不再註冊；原因、措施與改善建議只由系列分析（S12）產生。
+既有的 `event_reports` 保留唯讀：後台事件頁顯示為「舊版事件小報告（已停用）」，事件被判為不實或
+被合併時仍標為失效（`invalidate_reports`）。`generate_report` 保留為歷史行為的紀錄（測試以它建立
+既有資料），正式環境沒有任何呼叫路徑。
 
 報告內容（`generate_report`）：
 - 可能的影響：最新一次 S06 的五個分項（分數由規則引擎計算），理由取自該次 S06 的輸出，
@@ -15,16 +15,12 @@
   指向不存在原因的措施視為一般措施。
 - 每一項都必須有 evidence_ids 且全部屬於事件的證據，否則捨棄該項；文字一律經 `mask_pii()`。
 - S07／S08 abstain 或失敗時該區塊沒有任何項目；S07 abstain 時 S08 仍以空的原因清單執行。
-
-設計（AI 自行決定，見 P4-T09 驗收紀錄）：報告是獨立的 Celery 任務，不在分析管線的同一個任務裡
-執行：S07、S08 是額外兩次模型呼叫，失敗不影響事件建立與通知；手動觸發與自動產生共用同一個任務。
 """
 
 from __future__ import annotations
 
-import asyncio
 import uuid
-from collections.abc import Callable, Iterable, Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from datetime import UTC, datetime
 from typing import Any, Literal
 
@@ -44,23 +40,18 @@ from app.pipeline.analyze_item import (
     MAX_TITLE_CHARS,
     PIPELINE_PRINCIPAL,
     PipelineDeps,
-    ReportHook,
     _Context,
     _event_item_ids,
     _evidence,
     _location_name,
-    build_deps,
 )
 from app.risk.engine import DIMENSIONS
 from app.services.audit import record_audit
 from app.verification.rules import is_official_source
-from app.worker.celery_app import REPORT_EVENT_TASK, celery_app
 
 S07 = "root-cause-analyst"
 S08 = "solution-planner"
 
-AUTO_LEVELS = frozenset({"medium", "high", "critical"})
-"""風險達到這些分級時自動產生報告。"""
 INVALID_EVENT_FALSE = "event_false"
 HYPOTHESIZED_LABEL = "推測，尚未查證"
 CONFIRMED_LABEL = "已確認"
@@ -69,7 +60,6 @@ FAILED_MESSAGE = "分析失敗，可稍後重新產生"
 DEFAULT_TO_VERIFY = "向權責單位確認此原因是否屬實。"
 
 Trigger = Literal["auto", "manual"]
-ReportQueue = Callable[[uuid.UUID, str], None]
 
 # S07／S08 的輸入只接受這四種查證狀態；monitoring、resolved 等視為 unverified（與管線相同）
 _VERIFICATION_OF = {
@@ -79,7 +69,7 @@ _VERIFICATION_OF = {
 }
 
 
-# ---------- 何時產生 ----------
+# ---------- 既有報告 ----------
 
 
 async def latest_report(session: AsyncSession, event_id: uuid.UUID) -> EventReport | None:
@@ -100,46 +90,6 @@ async def invalidate_reports(session: AsyncSession, event_id: uuid.UUID, reason:
         .values(invalidated_at=datetime.now(UTC), invalidated_reason=reason)
     )
     return int(getattr(result, "rowcount", 0) or 0)
-
-
-async def after_assessment(
-    session: AsyncSession,
-    event_id: uuid.UUID,
-    level: str | None,
-    trace_id: str,
-    *,
-    enqueue: ReportQueue,
-) -> bool:
-    """S06 之後決定是否排入產生報告；回傳是否已排入。事件不實時改為讓既有報告失效。"""
-    event = await session.get(Event, event_id)
-    if event is None or event.status == EventStatus.ARCHIVED.value:
-        return False
-    if event.status == EventStatus.FALSE.value:
-        await invalidate_reports(session, event_id, INVALID_EVENT_FALSE)
-        await session.commit()
-        return False
-    current = await latest_report(session, event_id)
-    has_valid = current is not None and current.invalidated_at is None
-    if level in AUTO_LEVELS or has_valid:
-        enqueue(event_id, trace_id)
-        return True
-    return False
-
-
-def make_report_hook(enqueue: ReportQueue) -> ReportHook:
-    """管線用的 hook：`after_assessment` 綁定排入佇列的函式。"""
-
-    async def hook(
-        session: AsyncSession, event_id: uuid.UUID, level: str | None, trace_id: str
-    ) -> None:
-        await after_assessment(session, event_id, level, trace_id, enqueue=enqueue)
-
-    return hook
-
-
-def send_to_celery(event_id: uuid.UUID, trace_id: str) -> None:
-    """把事件排入產生報告的 Celery 任務。"""
-    celery_app.send_task(REPORT_EVENT_TASK, args=[str(event_id), trace_id])
 
 
 # ---------- 整理 ----------
@@ -283,6 +233,8 @@ async def generate_report(
 ) -> EventReport | None:
     """產生事件小報告並寫入；事件不實、已封存或沒有證據時不產生（回傳 None）。
 
+    P8-T13 起正式環境不再呼叫（ADR-0020 決策 3），只保留給既有資料與測試。
+
     事件不存在時拋出 LookupError。
     """
     require(PIPELINE_PRINCIPAL, Permission.AI_RUN)
@@ -377,41 +329,13 @@ async def generate_report(
     return report
 
 
-# ---------- Celery 任務 ----------
-
-
-async def _in_worker(event_id: str, trace_id: str | None, trigger: Trigger) -> None:
-    from app.worker.tasks.ingest import open_sessionmaker  # 避免 API 匯入時載入擷取模組
-
-    deps = build_deps()
-    async with open_sessionmaker() as maker, maker() as session:
-        await generate_report(
-            session, uuid.UUID(event_id), deps, trigger=trigger, trace_id=trace_id
-        )
-
-
-@celery_app.task(name=REPORT_EVENT_TASK)
-def generate_report_task(
-    event_id: str, trace_id: str | None = None, trigger: Trigger = "auto"
-) -> None:
-    """Celery 任務：產生事件小報告（trace_id 沿用管線或 API 的 request_id）。"""
-    asyncio.run(_in_worker(event_id, trace_id, trigger))
-
-
 __all__ = [
     "ABSTAIN_MESSAGE",
-    "AUTO_LEVELS",
     "CONFIRMED_LABEL",
     "FAILED_MESSAGE",
     "HYPOTHESIZED_LABEL",
     "INVALID_EVENT_FALSE",
-    "REPORT_EVENT_TASK",
-    "ReportHook",
-    "ReportQueue",
-    "after_assessment",
     "generate_report",
     "invalidate_reports",
     "latest_report",
-    "make_report_hook",
-    "send_to_celery",
 ]

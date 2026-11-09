@@ -5,6 +5,8 @@
 - `GET /api/v1/admin/events/{id}`（P3-T03）：事件詳細，含證據來源與風險評估歷史；
   P4-T08 起附事件說明（S02 摘要與出處，沒有時為 null）；P4-T09 起附最新一份事件小報告
   （沒有時為 null；推測原因帶「推測，尚未查證」標示；abstain 的區塊顯示「證據不足，暫不分析」）。
+  P8-T13 起報告為舊版、唯讀（`legacy: true`，ADR-0020 決策 3），另附事件所屬的 `series_id`
+  （不在系列時為 null），原因、措施與改善建議改看系列分析。
 - `POST /api/v1/admin/events/{id}/verify`（P3-T03）：記錄查證結果（變更事件狀態）；
   轉移由 app/domain/states.py 檢查，非法回 CONFLICT。需要 `events:verify`，寫入稽核 `event.verify`。
   改判 false 時事件移出系列、自成一件（P8-T04，稽核 `series.remove`）。
@@ -12,14 +14,12 @@
 - `POST /api/v1/admin/events/{id}/analyze`（P2-T13）：重跑事件的分析（S05 查證、S06 風險），
   排入 Celery 佇列後回 202；需要 `events:analyze`，寫入稽核 `event.analyze`。
   分析的 trace_id 沿用本請求的 request_id，可由稽核紀錄對到 ai_analysis_runs。
-- `POST /api/v1/admin/events/{id}/report`（P4-T09）：手動產生事件小報告（S07 原因、
-  S08 措施），排入 Celery 佇列後回 202；事件不實或已封存回 CONFLICT。需要 `events:analyze`，
-  寫入稽核 `event.report`。
-  建議轉給哪個單位只顯示給使用者，系統不寄信給任何單位。
+- `POST /api/v1/admin/events/{id}/report`（P4-T09）：P8-T13 起停用，事件存在時一律回 CONFLICT
+  （不排入任務、不寫稽核）。需要 `events:analyze`。
 - `POST /api/v1/admin/events/{id}/report/causes/{cause_id}/decision`（P7-T07，ADR-0017）：
-  把最新一份有效小報告中的推測原因標為人工確認（需填確認依據）或回滾；body 帶 report_id，
-  報告已被重新產生或失效時回 CONFLICT。需要 `events:verify`，寫入稽核 `report.cause_decide`。
-  回傳更新後的小報告；事件詳細中每個原因附 `manual_confirmation`（目前的人工確認，沒有時為 null）。
+  P8-T13 起停用，一律回 CONFLICT，原因改在系列分析確認（`series.cause_decide`）。需要
+  `events:verify`。事件詳細中每個原因仍附既有的 `manual_confirmation`（沒有時為 null）。
+  建議轉給哪個單位只顯示給使用者，系統不寄信給任何單位。
 - `POST /api/v1/admin/events/{id}/merge`（P8-T01）：把事件併入 body 的 target_event_id；
   被併入的事件改為 archived 並導向目標（事件詳細的 `merged_into`），之後把目標事件排入重跑分析。
   需要 `events:verify`，寫入稽核 `event.merge`。分析中、已封存或已被併入回 CONFLICT。
@@ -59,15 +59,9 @@ from app.events.merge import (
 from app.models.ai import RiskAssessment
 from app.models.event import Event, EventEvidence, EventMerge
 from app.models.report import EventReport, ReportCauseDecision
+from app.models.series import EventSeriesMember
 from app.models.source import Source, SourceItem
-from app.reports.cause_decisions import (
-    CauseConflictError,
-    CauseDecision,
-    CauseDecisionError,
-    CauseInvalidError,
-    current_decisions,
-    decide_cause,
-)
+from app.reports.cause_decisions import CauseDecision, current_decisions
 from app.reports.service import (
     ABSTAIN_MESSAGE,
     FAILED_MESSAGE,
@@ -77,7 +71,7 @@ from app.reports.service import (
 )
 from app.series.grouping import sync_event_series
 from app.services.audit import AuditMetadataError, prepare_metadata, record_audit
-from app.worker.celery_app import ANALYZE_EVENT_TASK, REPORT_EVENT_TASK, celery_app
+from app.worker.celery_app import ANALYZE_EVENT_TASK, celery_app
 
 router = APIRouter(prefix="/events", tags=["admin"])
 
@@ -100,21 +94,11 @@ def get_analysis_queue() -> AnalysisQueue:
     return _send_to_celery
 
 
-def _send_report_to_celery(event_id: uuid.UUID, request_id: str) -> None:
-    celery_app.send_task(REPORT_EVENT_TASK, args=[str(event_id), request_id, "manual"])
-
-
-def get_report_queue() -> AnalysisQueue:
-    """把事件排入產生小報告佇列的函式（測試時以 dependency override 替換）。"""
-    return _send_report_to_celery
-
-
 Session = Annotated[AsyncSession, Depends(get_db_session)]
 CanRead = Annotated[Principal, Depends(require_permission(Permission.EVENTS_READ_ALL))]
 CanVerify = Annotated[Principal, Depends(require_permission(Permission.EVENTS_VERIFY))]
 CanAnalyze = Annotated[Principal, Depends(require_permission(Permission.EVENTS_ANALYZE))]
 Queue = Annotated[AnalysisQueue, Depends(get_analysis_queue)]
-ReportQueue = Annotated[AnalysisQueue, Depends(get_report_queue)]
 
 
 class RiskSummary(BaseModel):
@@ -187,9 +171,13 @@ class Referral(BaseModel):
 
 
 class ReportOut(BaseModel):
-    """事件小報告：可能的影響（S06）、原因（S07）、措施（S08）與建議轉給的單位。"""
+    """事件小報告：可能的影響（S06）、原因（S07）、措施（S08）與建議轉給的單位。
+
+    P8-T13 起一律是舊版、唯讀的報告（`legacy` 為 True）。
+    """
 
     id: uuid.UUID
+    legacy: bool = True
     trigger: str
     valid: bool
     invalidated_at: AwareDatetime | None
@@ -432,6 +420,9 @@ async def get_event(event_id: uuid.UUID, session: Session, _: CanRead) -> dict[s
         else None
     )
     report = await latest_report(session, event_id)
+    series_id = await session.scalar(
+        select(EventSeriesMember.series_id).where(EventSeriesMember.event_id == event_id)
+    )
     merged_into = await session.scalar(
         select(EventMerge.target_event_id).where(EventMerge.merged_event_id == event_id)
     )
@@ -449,6 +440,7 @@ async def get_event(event_id: uuid.UUID, session: Session, _: CanRead) -> dict[s
         "summary": summary,
         "evidence": evidence,
         "risk_assessments": risks,
+        "series_id": str(series_id) if series_id is not None else None,
         "report": await _report_data(session, report) if report is not None else None,
     }
     return envelope(data)
@@ -510,23 +502,17 @@ async def analyze_event(
     return envelope({"event_id": str(event_id), "status": "queued"})
 
 
+RETIRED_REPORT = "單一事件小報告已停用（ADR-0020），原因、措施與改善建議請看系列分析"
+RETIRED_CAUSE = "舊版事件小報告唯讀（ADR-0020），請到系列分析確認原因"
+
+
 @router.post("/{event_id}/report", status_code=status.HTTP_202_ACCEPTED)
 async def generate_event_report(
-    event_id: uuid.UUID, session: Session, principal: CanAnalyze, enqueue: ReportQueue
+    event_id: uuid.UUID, session: Session, _: CanAnalyze
 ) -> dict[str, Any]:
-    """手動產生事件小報告（非同步）；事件不存在回 NOT_FOUND，不實或已封存回 CONFLICT。"""
-    event = await _get_event(session, event_id)
-    if event.status == EventStatus.FALSE.value:
-        raise ApiError(ErrorCode.CONFLICT, "事件已被查證為不實，不產生小報告")
-    if event.status == EventStatus.ARCHIVED.value:
-        raise ApiError(ErrorCode.CONFLICT, "事件已封存，不產生小報告")
-    request_id = request_id_var.get() or str(uuid.uuid4())
-    await record_audit(
-        session, principal, "event.report", target=f"event:{event_id}", request_id=request_id
-    )
-    await session.commit()
-    enqueue(event_id, request_id)
-    return envelope({"event_id": str(event_id), "status": "queued"})
+    """已停用（P8-T13）：事件不存在回 NOT_FOUND，否則一律回 CONFLICT。"""
+    await _get_event(session, event_id)
+    raise ApiError(ErrorCode.CONFLICT, RETIRED_REPORT)
 
 
 @router.post("/{event_id}/report/causes/{cause_id}/decision")
@@ -534,29 +520,10 @@ async def decide_report_cause(
     event_id: uuid.UUID,
     cause_id: Annotated[str, Path(max_length=32)],
     body: CauseDecisionIn,
-    session: Session,
-    principal: CanVerify,
+    _: CanVerify,
 ) -> dict[str, Any]:
-    """人工確認或回滾小報告中的推測原因；回傳更新後的小報告。"""
-    try:
-        await decide_cause(
-            session, principal, event_id, body.report_id, cause_id, body.decision, basis=body.basis
-        )
-    except CauseInvalidError as e:
-        raise ApiError(
-            ErrorCode.VALIDATION_ERROR,
-            str(e),
-            details=[{"field": f"body.{e.field}", "message": str(e)}],
-        ) from None
-    except CauseConflictError as e:
-        raise ApiError(ErrorCode.CONFLICT, str(e)) from None
-    except CauseDecisionError as e:
-        raise ApiError(ErrorCode.NOT_FOUND, str(e)) from None
-    await session.commit()
-    report = await session.get(EventReport, body.report_id)
-    if report is None:  # 確認後同一個請求內被刪除（事件刪除）
-        raise ApiError(ErrorCode.NOT_FOUND, "找不到事件小報告")
-    return envelope(await _report_data(session, report))
+    """已停用（P8-T13）：舊報告唯讀，一律回 CONFLICT。"""
+    raise ApiError(ErrorCode.CONFLICT, RETIRED_CAUSE)
 
 
 @router.post("/{event_id}/merge")

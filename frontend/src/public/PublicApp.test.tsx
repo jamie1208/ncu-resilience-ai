@@ -148,7 +148,7 @@ describe('PublicApp', () => {
     expect(calls.some((c) => c.path === '/api/v1/public/events?type=traffic')).toBe(true)
   })
 
-  it('事件頁顯示公開版小報告：影響、建議、官方來源、改善進度，不出現原因分析', async () => {
+  it('事件頁是快報全文：標題、摘要、地點、官方來源、改善進度；不顯示小報告的影響、建議與原因（P8-T13）', async () => {
     mockApi(ROUTES)
     at(`/events/${PUBLIC_EVENT_ID}`)
     render(<PublicApp />)
@@ -156,15 +156,14 @@ describe('PublicApp', () => {
     expect(screen.getByText('工程五館外牆整修，施工期間東側出入口封閉。')).toBeInTheDocument()
     expect(screen.getByText(/工程五館/, { selector: 'dd' })).toBeInTheDocument()
 
-    const impacts = screen.getByRole('region', { name: '可能的影響' })
-    expect(within(impacts).getByText('營運')).toBeInTheDocument()
-    expect(within(impacts).getByText('東側出入口封閉，需改走西側。')).toBeInTheDocument()
+    expect(screen.getByText('快報全文')).toBeInTheDocument()
+    expect(screen.getByText('已查證')).toBeInTheDocument()
 
-    const advice = screen.getByRole('region', { name: '建議' })
-    expect(within(within(advice).getByRole('group', { name: '同學可以做' })).getByText('改由西側出入口進出')).toBeInTheDocument()
-    const school = within(within(advice).getByRole('group', { name: '學校可以做' }))
-    expect(school.getByText('在出入口張貼改道指示')).toBeInTheDocument()
-    expect(school.getByText(/建議單位：總務處/)).toBeInTheDocument()
+    // 舊快照可能仍帶小報告；快報全文不顯示（ADR-0020 決策 3-5）
+    expect(screen.queryByRole('region', { name: '可能的影響' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: '建議' })).not.toBeInTheDocument()
+    expect(screen.queryByText('東側出入口封閉，需改走西側。')).not.toBeInTheDocument()
+    expect(screen.queryByText('改由西側出入口進出')).not.toBeInTheDocument()
 
     const sources = screen.getByRole('region', { name: '官方來源' })
     const link = within(sources).getByRole('link', { name: /中央大學公告/ })
@@ -192,7 +191,7 @@ describe('PublicApp', () => {
     expect(within(sources).queryByRole('link')).not.toBeInTheDocument()
   })
 
-  it('事件頁在沒有小報告時說明尚未產生；找不到時顯示已下架或不存在', async () => {
+  it('事件頁沒有小報告時照常顯示快報，不提小報告；找不到時顯示已下架或不存在', async () => {
     mockApi({
       [`GET /api/v1/public/events/${PUBLIC_EVENT_ID}`]: {
         data: { ...PUBLIC_EVENT_DETAIL, report: null, sources: [], progress: [] },
@@ -200,7 +199,8 @@ describe('PublicApp', () => {
     })
     at(`/events/${PUBLIC_EVENT_ID}`)
     const { unmount } = render(<PublicApp />)
-    expect(await screen.findByText(/尚未產生公開版小報告/)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: '工程五館外牆整修施工' })).toBeInTheDocument()
+    expect(screen.queryByText(/小報告/)).not.toBeInTheDocument()
     unmount()
 
     mockApi({})

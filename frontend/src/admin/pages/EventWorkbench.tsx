@@ -6,8 +6,6 @@ import { cn } from '../../lib/cn'
 import {
   analyzeEvent,
   createAction,
-  decideCause,
-  generateReport,
   getEvent,
   listEvents,
   listPublications,
@@ -193,7 +191,7 @@ function EventPanel({ eventId }: { eventId: string }) {
           </Card>
           {event.merged_into && <MergedNotice targetId={event.merged_into} />}
           <SummaryCard event={event} />
-          <ReportCard event={event} onReport={(report) => detail.setData((d) => (d ? { ...d, report } : d))} />
+          <ReportCard event={event} />
           <ActionsCard event={event} />
           <PublicCard event={event} />
           <SourceComparison event={event} />
@@ -292,67 +290,53 @@ function useSources(event: EventDetail) {
   return (ids: string[]) => `來源：${ids.map((i) => byHex.get(i) ?? i).join('、')}`
 }
 
+/** 前往事件所屬系列的分析頁；不在系列時說明。 */
+function SeriesLink({ event }: { event: EventDetail }) {
+  if (!event.series_id) return <Muted>這個事件還沒有歸入系列，系列分析完成後會出現在系列頁。</Muted>
+  return (
+    <Link to={`/admin/series/${encodeURIComponent(event.series_id)}`} className="text-sm text-accent underline underline-offset-4">
+      看系列分析
+    </Link>
+  )
+}
+
 /**
- * 事件小報告（P4-T09）：可能的影響、值得查查看（推測，尚未查證）、已確認原因（附原句）、
- * 可以怎麼做（依同學／學校與短中長期分組）、建議轉給哪個單位（只供參考，系統不寄信）。
- * 所有文字來自 AI 與來源原句，只當純文字顯示。
+ * 單一事件小報告 P8-T13 起停用（ADR-0020 決策 3）：原因、措施與改善建議只由系列分析產生。
+ * 既有的報告保留唯讀，顯示為「舊版事件小報告（已停用）」：可能的影響、值得查查看（推測，尚未查證）、
+ * 已確認原因（附原句）、可以怎麼做、建議轉給哪個單位（只供參考，系統不寄信）。不能重新產生、
+ * 確認原因或加入追蹤。所有文字來自 AI 與來源原句，只當純文字顯示。
  */
-function ReportCard({ event, onReport }: { event: EventDetail; onReport: (report: EventReport) => void }) {
+function ReportCard({ event }: { event: EventDetail }) {
   const report = event.report
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
-  const message = useErrorMessage()
-  const canGenerate = event.status !== 'false' && event.status !== 'archived'
-
-  async function generate() {
-    setBusy(true)
-    setError(null)
-    setNotice(null)
-    try {
-      await generateReport(event.id)
-      setNotice('已排入產生小報告，完成後重新整理即可看到')
-    } catch (e) {
-      setError(message(e))
-    } finally {
-      setBusy(false)
-    }
+  if (!report) {
+    return (
+      <Card>
+        <Section id="report-heading" title="原因與改善建議">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">原因、措施與改善建議由系列分析產生，不再有單一事件的小報告。</p>
+            <SeriesLink event={event} />
+          </div>
+        </Section>
+      </Card>
+    )
   }
-
   return (
     <Card>
-      <Section id="report-heading" title="事件小報告">
+      <Section id="report-heading" title="舊版事件小報告（已停用）">
         <div className="space-y-4">
-          {!report ? (
-            <Muted>尚未產生事件小報告。</Muted>
-          ) : (
-            <ReportBody event={event} report={report} onReport={onReport} />
-          )}
-          {error && <ErrorText>{error}</ErrorText>}
-          {notice && <Notice>{notice}</Notice>}
-          {canGenerate && (
-            <Button variant="outline" size="sm" disabled={busy} onClick={() => void generate()}>
-              {report ? '重新產生小報告' : '產生小報告'}
-            </Button>
-          )}
+          <div className="space-y-2 rounded-lg border border-border bg-muted p-3 text-sm text-foreground">
+            <p>單一事件小報告已停用，這是停用前產生的內容，只供回溯；原因、措施與改善建議請看系列分析。</p>
+            <SeriesLink event={event} />
+          </div>
+          <ReportBody event={event} report={report} />
         </div>
       </Section>
     </Card>
   )
 }
 
-function ReportBody({
-  event,
-  report,
-  onReport,
-}: {
-  event: EventDetail
-  report: EventReport
-  onReport: (report: EventReport) => void
-}) {
+function ReportBody({ event, report }: { event: EventDetail; report: EventReport }) {
   const sources = useSources(event)
-  // 人工確認原因（P7-T07）只限有效報告；事件詳細回傳的一定是最新一份
-  const decide = trackable(event, report) ? { eventId: event.id, reportId: report.id, onReport } : null
   const causes = report.causes.items
   const hypothesized = causes.filter((c) => c.basis === 'hypothesized')
   const confirmed = causes.filter((c) => c.basis === 'confirmed')
@@ -393,7 +377,7 @@ function ReportBody({
             <SubSection id="report-hypotheses" title="值得查查看">
               <ul className="space-y-3">
                 {hypothesized.map((c) => (
-                  <CauseItem key={c.cause_id} cause={c} sources={sources} decide={decide} />
+                  <CauseItem key={c.cause_id} cause={c} sources={sources} />
                 ))}
               </ul>
             </SubSection>
@@ -417,11 +401,7 @@ function ReportBody({
         {report.measures.status !== 'ok' ? (
           <Muted>{report.measures.message}</Muted>
         ) : (
-          <MeasureGroups
-            measures={report.measures.items}
-            sources={sources}
-            track={trackable(event, report) ? { eventId: event.id, reportId: report.id } : null}
-          />
+          <MeasureGroups measures={report.measures.items} sources={sources} />
         )}
       </SubSection>
 
@@ -441,22 +421,9 @@ function ReportBody({
   )
 }
 
-interface CauseDecide {
-  eventId: string
-  reportId: string
-  onReport: (report: EventReport) => void
-}
-
-function CauseItem({
-  cause,
-  sources,
-  decide = null,
-}: {
-  cause: ReportCause
-  sources: (ids: string[]) => string
-  decide?: CauseDecide | null
-}) {
+function CauseItem({ cause, sources }: { cause: ReportCause; sources: (ids: string[]) => string }) {
   const guess = cause.basis === 'hypothesized'
+  const manual = cause.manual_confirmation ?? null
   return (
     <li className="rounded-lg border border-border p-3 text-sm">
       <div className="flex flex-wrap items-center gap-2">
@@ -474,109 +441,19 @@ function CauseItem({
         ))}
       {guess && cause.to_verify && <p className="mt-2 text-muted-foreground">{`待查：${cause.to_verify}`}</p>}
       <p className="mt-1 text-xs text-muted-foreground">{sources(cause.evidence_ids)}</p>
-      {guess && decide && <CauseConfirmation cause={cause} decide={decide} />}
-    </li>
-  )
-}
-
-/**
- * 人工確認原因（P7-T07，ADR-0017）：你已用其他管道確認推測原因時，填確認依據後標為人工確認，
- * 依據它的學校措施會在下一次公開同步時公開（原因本身不公開）；也可以回滾為推測。
- */
-function CauseConfirmation({ cause, decide }: { cause: ReportCause; decide: CauseDecide }) {
-  const manual = cause.manual_confirmation ?? null
-  const [open, setOpen] = useState(false)
-  const [basis, setBasis] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const message = useErrorMessage()
-
-  async function send(decision: 'confirmed' | 'hypothesized') {
-    setBusy(true)
-    setError(null)
-    try {
-      decide.onReport(await decideCause(decide.eventId, decide.reportId, cause.cause_id, decision, basis))
-      setOpen(false)
-      setBasis('')
-    } catch (e) {
-      setError(message(e))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  function submit(e: FormEvent) {
-    e.preventDefault()
-    void send('confirmed')
-  }
-
-  if (manual) {
-    return (
-      <div className="mt-2 space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
+      {guess && manual && (
+        // 停用前做的人工確認（P7-T07），唯讀
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <Badge tone="success">已人工確認</Badge>
           <span className="min-w-0 text-foreground">{`確認依據：${manual.basis}`}</span>
           <span className="font-mono text-xs text-muted-foreground">{formatTime(manual.decided_at)}</span>
         </div>
-        <p className="text-xs text-muted-foreground">依據這個原因的學校措施會隨公開規則公開，原因本身不公開。</p>
-        {error && <ErrorText>{error}</ErrorText>}
-        <Button variant="outline" size="sm" disabled={busy} onClick={() => void send('hypothesized')}>
-          回滾為推測
-        </Button>
-      </div>
-    )
-  }
-  if (!open) {
-    return (
-      <div className="mt-2">
-        <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-          確認原因
-        </Button>
-      </div>
-    )
-  }
-  return (
-    <form aria-label="確認原因" className="mt-2 space-y-2" onSubmit={submit}>
-      <label className="block space-y-1 text-foreground">
-        <span>確認依據</span>
-        <Textarea
-          value={basis}
-          maxLength={200}
-          required
-          placeholder="例如：11/5 電話向總務處確認；請勿填寫個資"
-          onChange={(e) => setBasis(e.target.value)}
-        />
-      </label>
-      <p className="text-xs text-muted-foreground">確認後，依據這個原因的學校措施會公開；重新產生小報告後需要重新確認。</p>
-      {error && <ErrorText>{error}</ErrorText>}
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" size="sm" disabled={busy || !basis.trim()}>
-          確認
-        </Button>
-        <Button variant="outline" size="sm" disabled={busy} onClick={() => setOpen(false)}>
-          取消
-        </Button>
-      </div>
-    </form>
+      )}
+    </li>
   )
 }
 
-/** 有效報告、事件未被查證為不實或封存時，校方措施才能加入改善追蹤（P4-T05）。 */
-function trackable(event: EventDetail, report: EventReport): boolean {
-  return report.valid && event.status !== 'false' && event.status !== 'archived'
-}
-
-type Track = { eventId: string; reportId: string } | null
-
-function MeasureGroups({
-  measures,
-  sources,
-  track,
-}: {
-  measures: ReportMeasure[]
-  sources: (ids: string[]) => string
-  track: Track
-}) {
+function MeasureGroups({ measures, sources }: { measures: ReportMeasure[]; sources: (ids: string[]) => string }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {AUDIENCES.map(([audience, title]) => {
@@ -607,9 +484,6 @@ function MeasureGroups({
                           {m.responsible_unit && <span>{`建議單位：${m.responsible_unit}`}</span>}
                           <span>{sources(m.evidence_ids)}</span>
                         </span>
-                        {track && audience === 'school' && (
-                          <TrackButton track={track} index={measures.indexOf(m)} />
-                        )}
                       </li>
                     ))}
                   </ul>
@@ -619,42 +493,6 @@ function MeasureGroups({
           </div>
         )
       })}
-    </div>
-  )
-}
-
-/** 把一項校方措施加入改善追蹤；成功後改為連到改善追蹤頁。 */
-function TrackButton({ track, index }: { track: NonNullable<Track>; index: number }) {
-  const [busy, setBusy] = useState(false)
-  const [added, setAdded] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const message = useErrorMessage()
-
-  async function add() {
-    setBusy(true)
-    setError(null)
-    try {
-      await createAction(track.eventId, { report_id: track.reportId, measure_index: index })
-      setAdded(true)
-    } catch (e) {
-      setError(message(e))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <div className="mt-1 space-y-1">
-      {added ? (
-        <Link to="/admin/actions" className="text-xs text-accent underline underline-offset-4">
-          已加入改善追蹤
-        </Link>
-      ) : (
-        <Button variant="outline" size="sm" disabled={busy} onClick={() => void add()}>
-          加入改善追蹤
-        </Button>
-      )}
-      {error && <ErrorText>{error}</ErrorText>}
     </div>
   )
 }

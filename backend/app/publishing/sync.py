@@ -1,6 +1,6 @@
 """公開狀態同步（P5-T11）：把公開規則（`policy.py`）的判斷結果寫入 publications。
 
-從事件、證據、風險評估、最新有效的小報告、改善措施與查證稽核組出 `PublicationInput`，
+從事件、證據、風險評估、改善措施與查證稽核組出 `PublicationInput`，
 交給 `evaluate()` 判斷，再寫入 publications 與 publication_versions：
 
 - 內容（content_hash）與公開程度都沒變時不升版；改變時新增一筆版本快照並升版；
@@ -14,8 +14,11 @@
 - first_hand：以上皆非（例如只有兩份第一手來源支持），不足以公開內容。
 monitoring、resolved 沿用進入後續追蹤前的查證結果（從 `event.verify` 稽核的 from／to 推得）。
 
-人工確認原因（P7-T07）：最新有效小報告中經人工確認的原因代號交給公開規則；改善措施只有在
-來自同一份報告、且依據的原因已確認時才算確認（舊報告的確認不沿用）。
+單一事件小報告停用（P8-T13，ADR-0020 決策 3-5）：公開事件頁（快報全文）不再帶小報告的影響、
+原因與措施（`report` 一律為 None）；原因與改善建議改由系列分析頁公開（P8-T06）。
+既有的人工確認（P7-T07，唯讀）仍決定由舊報告措施建立的改善措施能否公開進度：只有來自最新有效
+報告、且依據的原因已確認時才算確認（舊報告的確認不沿用）。事件層級的改善進度保留到系列公開頁
+（P8-T06）上線為止。
 
 Celery beat 每分鐘執行一次 `sync_all()`；公開 API 只讀取這裡寫入的結果。
 """
@@ -51,7 +54,6 @@ from app.publishing.policy import (
     PublicLevel,
     PublicSource,
     PublishPolicy,
-    ReportInput,
     evaluate,
     load_policy,
 )
@@ -171,16 +173,9 @@ async def publication_input(session: AsyncSession, event: Event) -> PublicationI
         .order_by(SourceItem.published_at, SourceItem.id)
     )
     report = await latest_report(session, event.id)
-    report_input = None
     confirmed: frozenset[str] = frozenset()
     if report is not None and report.invalidated_at is None:
         confirmed = await confirmed_cause_ids(session, report.id)
-        report_input = ReportInput(
-            impacts=report.impacts,
-            causes=report.causes,
-            measures=report.measures,
-            confirmed_cause_ids=confirmed,
-        )
     actions = await session.scalars(
         select(ResponseAction)
         .where(ResponseAction.event_id == event.id)
@@ -197,7 +192,7 @@ async def publication_input(session: AsyncSession, event: Event) -> PublicationI
         location_name=location,
         occurrence_date=event.occurrence_start_date,
         sources=[PublicSource(code, name, url) for code, name, url in source_rows],
-        report=report_input,
+        report=None,  # 單一事件小報告停用（P8-T13）
         actions=[
             ActionInput(
                 title=a.title,

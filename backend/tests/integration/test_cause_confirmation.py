@@ -1,11 +1,12 @@
-"""P7-T07：人工確認原因（ADR-0017，`app/reports/cause_decisions.py`）。
+"""P7-T07：人工確認原因（ADR-0017，`app/reports/cause_decisions.py`）；P8-T13 起舊報告唯讀。
 
 - 只能確認最新一份有效小報告中 basis 為 hypothesized 的原因；確認依據必填、最多 200 字、不得含個資；
-- 確認後，依據該原因的措施（與由它建立的改善措施）在下一次公開同步進入公開快照；回滾後撤下；
-- 疑似指控事件確認後仍不公開內容；重新產生小報告後要重新確認；
+- P8-T13（ADR-0020 決策 3）：小報告的措施不再進入公開快照；既有的確認仍讓由該原因建立的改善措施
+  進度公開（系列公開頁完成前，P8-T06），回滾後撤下；
+- 疑似指控的措施不出現在公開端；重新產生小報告後要重新確認；
 - 決策 append-only 保存（最新一筆為目前狀態），稽核 `report.cause_decide` 不含依據文字；
-- 管理端 API：`POST /api/v1/admin/events/{id}/report/causes/{cause_id}/decision`；
-  事件詳細的原因附 `manual_confirmation`。
+- 管理端 API：`POST /api/v1/admin/events/{id}/report/causes/{cause_id}/decision` 停用，回 CONFLICT
+  （改到系列分析確認原因，`series.cause_decide`）；事件詳細的原因仍附既有的 `manual_confirmation`。
 """
 
 from __future__ import annotations
@@ -112,7 +113,7 @@ def public_progress(content: dict[str, Any]) -> list[str]:
 # ---------- 公開同步 ----------
 
 
-async def test_confirmation_publishes_measures_and_rollback_withdraws(
+async def test_confirmation_publishes_progress_only_and_rollback_withdraws(
     session: AsyncSession,
 ) -> None:
     event, report = await seed(session)
@@ -124,7 +125,8 @@ async def test_confirmation_publishes_measures_and_rollback_withdraws(
     await confirm(session, event, report)
     assert await publish(session, event) is SyncAction.UPDATED
     after = await snapshot(session, event)
-    assert public_measures(after) == ["更換三樓屋頂防水層"]
+    assert public_measures(after) == []  # 小報告的措施不再公開（P8-T13）
+    assert after["report"] is None
     assert public_progress(after) == ["更換屋頂防水層"]
     assert "屋頂防水層老化" not in str(after)  # 原因本身仍不公開
     assert BASIS not in str(after)
@@ -140,10 +142,7 @@ async def test_allegation_event_stays_private_after_confirmation(session: AsyncS
     event, report = await seed(session, measures=[accusation], actions=[])
     await confirm(session, event, report)
     await publish(session, event)
-    pub = await publication_of(session, event)
-    assert pub.level != "content"
-    assert pub.needs_review
-    assert "偷竊" not in str(await snapshot(session, event))
+    assert "偷竊" not in str(await snapshot(session, event))  # 小報告的措施不再進入公開端
 
 
 async def test_regenerated_report_needs_new_confirmation(session: AsyncSession) -> None:
@@ -267,61 +266,28 @@ async def client(session: AsyncSession) -> AsyncIterator[httpx2.AsyncClient]:
         yield c
 
 
-async def test_api_confirms_and_rolls_back(
+async def test_api_is_retired_and_keeps_existing_decisions(
     client: httpx2.AsyncClient, session: AsyncSession
 ) -> None:
     event, report = await seed(session)
+    await confirm(session, event, report)  # P8-T13 之前做的確認
     url = URL.format(event.id, "c1")
-    res = await client.post(
-        url, json={"report_id": str(report.id), "decision": "confirmed", "basis": BASIS}
-    )
-    assert res.status_code == 200, res.text
-    causes = res.json()["data"]["causes"]["items"]
-    manual = causes[0]["manual_confirmation"]
-    assert manual["basis"] == BASIS
-    assert manual["decided_by"] == ADMIN.actor
-    assert causes[0]["basis"] == "hypothesized"  # S07 的判定不改寫
-    assert causes[1]["manual_confirmation"] is None
+    for body in (
+        {"report_id": str(report.id), "decision": "hypothesized"},
+        {"report_id": str(report.id), "decision": "confirmed", "basis": BASIS},
+        {"report_id": str(uuid.uuid4()), "decision": "confirmed", "basis": BASIS},
+    ):
+        res = await client.post(url, json=body)
+        assert res.status_code == 409, res.text
+        assert res.json()["error"]["code"] == "CONFLICT"
+    rows = list(await session.scalars(select(ReportCauseDecision.decision)))
+    assert rows == ["confirmed"]
 
     detail = (await client.get(f"/api/v1/admin/events/{event.id}")).json()["data"]
-    assert detail["report"]["causes"]["items"][0]["manual_confirmation"]["basis"] == BASIS
-
-    res = await client.post(url, json={"report_id": str(report.id), "decision": "hypothesized"})
-    assert res.status_code == 200, res.text
-    assert res.json()["data"]["causes"]["items"][0]["manual_confirmation"] is None
-
-
-async def test_api_errors(client: httpx2.AsyncClient, session: AsyncSession) -> None:
-    event, report = await seed(session)
-    body = {"report_id": str(report.id), "decision": "confirmed"}
-    res = await client.post(URL.format(event.id, "c1"), json=body)
-    assert res.status_code == 422
-    assert res.json()["error"]["code"] == "VALIDATION_ERROR"
-    res = await client.post(URL.format(event.id, "c1"), json={**body, "basis": "電話 0912-345-678"})
-    assert res.status_code == 422
-    assert "0912" not in res.text
-    res = await client.post(URL.format(event.id, "c2"), json={**body, "basis": BASIS})
-    assert res.status_code == 409
-    res = await client.post(URL.format(event.id, "c9"), json={**body, "basis": BASIS})
-    assert res.status_code == 404
-    res = await client.post(
-        URL.format(event.id, "c1"), json={**body, "report_id": str(uuid.uuid4()), "basis": BASIS}
-    )
-    assert res.status_code == 404
-    session.add(
-        EventReport(
-            event_id=event.id,
-            trigger="manual",
-            verification_status="verified",
-            causes_status="ok",
-            causes=[CAUSE],
-            measures_status="ok",
-            trace_id="t2",
-        )
-    )
-    await session.commit()
-    res = await client.post(URL.format(event.id, "c1"), json={**body, "basis": BASIS})
-    assert res.status_code == 409  # 報告已被重新產生
+    causes = detail["report"]["causes"]["items"]
+    assert causes[0]["manual_confirmation"]["basis"] == BASIS
+    assert causes[0]["basis"] == "hypothesized"  # S07 的判定不改寫
+    assert causes[1]["manual_confirmation"] is None
 
 
 async def test_api_requires_verify_permission(session: AsyncSession) -> None:

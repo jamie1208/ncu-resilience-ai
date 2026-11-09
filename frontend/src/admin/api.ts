@@ -155,9 +155,11 @@ export interface ReportSection<T> {
   items: T[]
 }
 
-/** 事件小報告（P4-T09）：每一項都帶 evidence_ids（文章 id 的十六進位）。 */
+/** 事件小報告（P4-T09）：每一項都帶 evidence_ids（文章 id 的十六進位）。P8-T13 起只有舊版、唯讀。 */
 export interface EventReport {
   id: string
+  /** P8-T13 起一律為 true：舊版事件小報告（已停用） */
+  legacy: boolean
   trigger: 'auto' | 'manual'
   valid: boolean
   invalidated_at: string | null
@@ -185,6 +187,8 @@ export interface EventDetail {
   updated_at: string
   /** 已被手動併入的目標事件 id（P8-T01）；沒有時為 null */
   merged_into: string | null
+  /** 事件所屬的系列（P8-T13）；不在系列時為 null */
+  series_id: string | null
   summary: EventSummary | null
   evidence: Evidence[]
   risk_assessments: RiskAssessment[]
@@ -630,24 +634,6 @@ export async function verifyEvent(eventId: string, status: VerifyStatus, note = 
     .data
 }
 
-/** 人工確認（需確認依據）或回滾小報告中的推測原因；回傳更新後的小報告。 */
-export async function decideCause(
-  eventId: string,
-  reportId: string,
-  causeId: string,
-  decision: CauseDecision,
-  basis = '',
-): Promise<EventReport> {
-  const trimmed = basis.trim()
-  const body = decision === 'confirmed' ? { report_id: reportId, decision, basis: trimmed } : { report_id: reportId, decision }
-  return (
-    await post<EventReport>(
-      `/admin/events/${id(eventId)}/report/causes/${encodeURIComponent(causeId)}/decision`,
-      body,
-    )
-  ).data
-}
-
 /** 把事件併入目標事件（P8-T01）；之後目標事件會排入重新分析。 */
 export async function mergeEvent(eventId: string, targetEventId: string) {
   return (
@@ -674,11 +660,6 @@ export async function analyzeEvent(eventId: string) {
 }
 
 /** 手動產生事件小報告（非同步排入佇列）。 */
-export async function generateReport(eventId: string) {
-  return (await post<{ event_id: string; status: string }>(`/admin/events/${id(eventId)}/report`))
-    .data
-}
-
 // ---- 改善措施追蹤 ----
 
 export async function listActions(
@@ -859,6 +840,8 @@ export interface SeriesAnalysis {
 
 export interface SeriesAction {
   id: string
+  /** 遷移過來的事件層級措施（P8-T13）的來源事件；系列層級的措施為 null */
+  event_id: string | null
   origin: string
   analysis_id: string | null
   measure_index: number | null
@@ -876,6 +859,19 @@ export interface SeriesDetail extends SeriesSummary {
   analysis: SeriesAnalysis | null
   latest_attempt: { status: string; abstain_reason: string | null; created_at: string } | null
   actions: SeriesAction[]
+  /** 舊版事件小報告的人工確認（P8-T13，唯讀）：每份報告每個原因最新的一筆 */
+  legacy_cause_decisions: LegacyCauseDecision[]
+}
+
+export interface LegacyCauseDecision {
+  event_id: string
+  report_id: string
+  cause_id: string
+  description: string | null
+  decision: CauseDecision
+  basis: string | null
+  decided_by: string
+  decided_at: string
 }
 
 export type TimelineGranularity = 'day' | 'week' | 'month'

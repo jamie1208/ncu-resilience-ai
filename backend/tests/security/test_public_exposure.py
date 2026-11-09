@@ -250,12 +250,13 @@ async def test_safe_parts_are_still_public(
     )
     for expected in (
         "總圖書館三樓漏水",
-        "地面濕滑",
-        "暫停開放三樓座位",
         "更換三樓防水設施",
         "治安",
     ):
         assert expected in joined, f"應公開的內容沒有出現：{expected}"
+    # 單一事件小報告停用（P8-T13，ADR-0020 決策 3-5）：影響與措施不再出現在公開端
+    for retired in ("地面濕滑", "暫停開放三樓座位"):
+        assert retired not in joined, f"舊小報告的內容不應公開：{retired}"
 
 
 async def test_allegation_events_are_not_published_as_content(
@@ -264,5 +265,8 @@ async def test_allegation_events_are_not_published_as_content(
 ) -> None:
     await seed(session)
     await sync_all(session)
-    titles = {i["title"] for i in (await client.get(f"{PUBLIC}/events")).json()["data"]}
-    assert titles == {"總圖書館三樓漏水"}
+    res = await client.get(f"{PUBLIC}/events")
+    titles = {i["title"] for i in res.json()["data"]}
+    # P8-T13：指控只在舊小報告的措施裡，措施不再公開，事件以本身的標題與摘要公開
+    assert titles == {"總圖書館三樓漏水", "科學一館夜間照明不足"}
+    assert "騷擾" not in res.text
