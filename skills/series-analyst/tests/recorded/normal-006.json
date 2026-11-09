@@ -1,0 +1,166 @@
+{
+  "case_id": "normal-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "冒充校方單位的釣魚電子郵件",
+    "burst_explanations": [],
+    "location_groups": [],
+    "pattern_status": "ok",
+    "pattern_abstain_reason": null,
+    "patterns": [
+      {
+        "pattern_id": "p1",
+        "description": "冒充學校或校內單位發送電子郵件，內含可疑連結要求點擊或更新帳密。",
+        "event_ids": [
+          "E1",
+          "E2",
+          "E3"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "近日有信件冒充學校要求更新信箱密碼，請勿點擊連結。"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "收到一封說我借書逾期的信，連結網址怪怪的不是學校網域。"
+          },
+          {
+            "evidence_id": "e3",
+            "quote": "有信件冒充計中要求點連結驗證帳號，學校不會用信件要求輸入密碼。"
+          }
+        ]
+      }
+    ],
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "可能為惡意寄件者偽裝成校方或校內單位發送釣魚郵件，誘導收件人點擊連結或輸入帳密。",
+        "event_ids": [
+          "E1",
+          "E3",
+          "E2"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e3",
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "近日有信件冒充學校要求更新信箱密碼，請勿點擊連結。"
+          },
+          {
+            "evidence_id": "e3",
+            "quote": "有信件冒充計中要求點連結驗證帳號，學校不會用信件要求輸入密碼。"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "收到一封說我借書逾期的信，連結網址怪怪的不是學校網域。"
+          }
+        ],
+        "to_verify": "向資訊單位或資安中心確認收到的可疑郵件之郵件標頭與發件伺服器紀錄是否顯示偽造或外部來源。"
+      },
+      {
+        "cause_id": "c2",
+        "description": "可能存在使用非學校網域的惡意連結或假網域，導致郵件看似來自校方卻導向外部網站。",
+        "event_ids": [
+          "E2"
+        ],
+        "evidence_ids": [
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e2",
+            "quote": "連結網址怪怪的不是學校網域。"
+          }
+        ],
+        "to_verify": "請資安或網域管理單位檢查可疑連結所指向的網域、SSL 憑證與 DNS 紀錄，並確認是否為已知惡意站點。"
+      }
+    ],
+    "measures": [
+      {
+        "action": "收到疑似校方的郵件時，不點擊郵件內連結，改至官網或系統直接登入確認。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1",
+          "e3",
+          "e2"
+        ]
+      },
+      {
+        "action": "在校內發布提醒，說明學校不會以電子郵件要求輸入密碼或直接提供驗證連結，並示範如何辨識可疑郵件。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "responsible_unit": "資訊處",
+        "evidence_ids": [
+          "e1",
+          "e3"
+        ]
+      },
+      {
+        "action": "檢查並強化郵件驗證機制（例如 SPF、DKIM、DMARC）與郵件過濾規則，以降低冒充郵件到達收件匣的機率。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "responsible_unit": "校務或資訊單位與郵件服務廠商",
+        "evidence_ids": [
+          "e1",
+          "e3"
+        ]
+      },
+      {
+        "action": "調查可疑郵件之郵件標頭與連結所指向的網域，將確認為惡意的來源封鎖並回報給相關單位。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": "c2",
+        "responsible_unit": "資安中心或資訊處",
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "建立報告管道並鼓勵師生回報可疑郵件，資安單位定期彙整通報以供追蹤與防護調整。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "responsible_unit": "資安中心",
+        "evidence_ids": [
+          "e1",
+          "e3",
+          "e2"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3"
+    ],
+    "reason": "這個系列描述多起冒充校方或校內單位的釣魚電子郵件，均包含可疑連結或要求驗證帳號的內容，可能導致帳密外洩或導向惡意網站。",
+    "abstain_reason": null
+  }
+}

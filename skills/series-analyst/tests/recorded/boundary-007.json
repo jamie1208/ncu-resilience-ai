@@ -1,0 +1,129 @@
+{
+  "case_id": "boundary-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "校內機車違停遭拖吊",
+    "burst_explanations": [
+      {
+        "burst_id": "b1",
+        "explanation": "同一週有兩起拖吊通報；證據中看不出造成突增的原因（例如臨時稽查或公告）。",
+        "event_ids": [
+          "E2",
+          "E3"
+        ],
+        "evidence_ids": [
+          "e2",
+          "e3"
+        ]
+      }
+    ],
+    "location_groups": [
+      {
+        "label": "大門",
+        "event_ids": [
+          "E1",
+          "E3"
+        ],
+        "reason": "兩起事件的地點都標示為「大門」。"
+      },
+      {
+        "label": "工程一館",
+        "event_ids": [
+          "E2"
+        ],
+        "reason": "事件地點明確為工程一館（與大門不同）。"
+      }
+    ],
+    "pattern_status": "ok",
+    "pattern_abstain_reason": null,
+    "patterns": [
+      {
+        "pattern_id": "p1",
+        "description": "發生在校園主要出入口（大門）附近的機車遭拖吊。",
+        "event_ids": [
+          "E1",
+          "E3"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e3"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "大門口機車被拖了。"
+          },
+          {
+            "evidence_id": "e3",
+            "quote": "大門那邊一次拖了好幾台。"
+          }
+        ]
+      }
+    ],
+    "causes": [],
+    "measures": [
+      {
+        "action": "避免在出入口或禁停區停放機車，改停正規機車格。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1",
+          "e3"
+        ]
+      },
+      {
+        "action": "檢視並標示出入口與主要通道的禁停範圍與拖吊規定，增設明顯告示牌與違停警示。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1",
+          "e3"
+        ]
+      },
+      {
+        "action": "向拖吊承包單位或校內管理單位確認近期是否有集中稽查或異常拖吊作業以釐清突增原因。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "宿舍管理或承包廠商",
+        "evidence_ids": [
+          "e2",
+          "e3"
+        ]
+      },
+      {
+        "action": "若拖吊頻繁，檢討校內違停通報與處理程序，並考慮公告常見違停地點與處理時段以提醒師生。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "總務處或交通組",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3"
+    ],
+    "reason": "系列為校內機車因違規停放或停在出入口等處而被拖吊的通報，集中在校園出入口與工程一館附近，證據未說明是否有特別稽查導致數量增加。",
+    "abstain_reason": null
+  }
+}

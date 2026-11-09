@@ -1,0 +1,90 @@
+{
+  "case_id": "boundary-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "建築物電梯故障或停用",
+    "burst_explanations": [],
+    "location_groups": [
+      {
+        "label": "工程五館",
+        "event_ids": [
+          "E1"
+        ],
+        "reason": "事件的 location 欄位與證據均指出發生在工程五館。"
+      }
+    ],
+    "pattern_status": "abstain",
+    "pattern_abstain_reason": "too_few_events",
+    "patterns": [],
+    "causes": [],
+    "measures": [
+      {
+        "action": "電梯停用期間於樓梯口與電梯前放置明顯告示，並標示可行的替代路線與樓層。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若有使用不便或行動不便者，安排臨時協助或聯絡方式以提供協助。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "檢查該電梯的維修與保養記錄，確認故障原因並評估需不需要進一步檢修或更換零件。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "在維修完成前檢討例行保養與檢測頻率，若有必要調整巡檢計畫以減少再次停用。",
+        "audience": "school",
+        "horizon": "long",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "提醒同學出入該棟時留意公告與臨時替代路線，外出時預留更多時間以因應樓梯通行。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "這個系列描述建築物（工程五館）電梯故障或停用的事件；目前只有一件報告指出電梯在特定日期故障停用，沒有其他事件可供比對，因此無法找出多起事件間的共同規律。",
+    "abstain_reason": null
+  }
+}

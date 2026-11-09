@@ -10,7 +10,13 @@ from app.models.publication import Publication, PublicationTakedown, Publication
 from app.models.report import EventReport, ReportCauseDecision
 from app.models.response_action import ResponseAction, ResponseActionTransition
 from app.models.scenario import ScenarioRun
-from app.models.series import EventSeries, EventSeriesMember, EventSeriesRemoval
+from app.models.series import (
+    EventSeries,
+    EventSeriesMember,
+    EventSeriesRemoval,
+    SeriesAnalysis,
+    SeriesCauseDecision,
+)
 from app.models.source import (
     IngestionDeadLetter,
     IngestionRun,
@@ -47,6 +53,8 @@ __all__ = [
     "ResponseActionTransition",
     "RiskAssessment",
     "ScenarioRun",
+    "SeriesAnalysis",
+    "SeriesCauseDecision",
     "Source",
     "SourceItem",
     "SourceItemVersion",

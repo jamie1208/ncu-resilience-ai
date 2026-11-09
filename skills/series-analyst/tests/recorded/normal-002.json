@@ -1,0 +1,211 @@
+{
+  "case_id": "normal-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "建築物停電",
+    "burst_explanations": [
+      {
+        "burst_id": "b1",
+        "explanation": "該週的多起停電個案證據中提到颱風，顯示可能與颱風期間的停電有關。",
+        "event_ids": [
+          "E2",
+          "E3",
+          "E4"
+        ],
+        "evidence_ids": [
+          "e2",
+          "e3",
+          "e4"
+        ]
+      }
+    ],
+    "location_groups": [
+      {
+        "label": "工程五館",
+        "event_ids": [
+          "E1"
+        ],
+        "reason": "事件地點標示為「工程五館」。"
+      },
+      {
+        "label": "男九舍",
+        "event_ids": [
+          "E2"
+        ],
+        "reason": "事件地點標示為「男九舍」。"
+      },
+      {
+        "label": "科學一館",
+        "event_ids": [
+          "E3"
+        ],
+        "reason": "事件地點標示為「科學一館」。"
+      },
+      {
+        "label": "女十四舍",
+        "event_ids": [
+          "E4"
+        ],
+        "reason": "事件地點標示為「女十四舍」。"
+      }
+    ],
+    "pattern_status": "ok",
+    "pattern_abstain_reason": null,
+    "patterns": [
+      {
+        "pattern_id": "p1",
+        "description": "多起停電發生在颱風期間或颱風夜。",
+        "event_ids": [
+          "E2",
+          "E3",
+          "E4"
+        ],
+        "evidence_ids": [
+          "e2",
+          "e3",
+          "e4"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e2",
+            "quote": "颱風夜男九又跳電"
+          },
+          {
+            "evidence_id": "e3",
+            "quote": "颱風來科一停電"
+          },
+          {
+            "evidence_id": "e4",
+            "quote": "颱風過境女十四停電"
+          }
+        ]
+      }
+    ],
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "可能是颱風期間造成的外部供電或配電中斷，導致多棟建築停電。",
+        "event_ids": [
+          "E2",
+          "E3",
+          "E4"
+        ],
+        "evidence_ids": [
+          "e2",
+          "e3",
+          "e4"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e2",
+            "quote": "颱風夜男九又跳電"
+          },
+          {
+            "evidence_id": "e3",
+            "quote": "颱風來科一停電"
+          },
+          {
+            "evidence_id": "e4",
+            "quote": "颱風過境女十四停電"
+          }
+        ],
+        "to_verify": "向總務處與外部供電單位確認該週停電是否因颱風造成外部供電中斷或配電設備受損。"
+      },
+      {
+        "cause_id": "c2",
+        "description": "工程五館的停電原因不明，疑似為內部配電或建築設備的瞬間故障或異常。",
+        "event_ids": [
+          "E1"
+        ],
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "工五整棟停電，電腦都關機了，不知道什麼原因。"
+          }
+        ],
+        "to_verify": "向總務處或工程維護單位查詢工程五館當次停電的設備紀錄與檢修記錄，確認是否為內部設備故障。"
+      }
+    ],
+    "measures": [
+      {
+        "action": "停電時關閉或保存電腦作業並暫勿使用電梯，依指示改走樓梯以確保安全。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e3"
+        ]
+      },
+      {
+        "action": "向外部供電單位及總務處查證該週停電原因，並檢視配電設備與電力中斷紀錄。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e2",
+          "e3",
+          "e4"
+        ]
+      },
+      {
+        "action": "請總務處檢查工程五館的配電系統與備援設備狀態，確認是否有內部設備故障或需要檢修。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": "c2",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "檢討並加強建築配電與備用電源的防護與維護計畫（含風雨期間防護措施），降低颱風等天候造成的停電風險。",
+        "audience": "school",
+        "horizon": "long",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e2",
+          "e3",
+          "e4"
+        ]
+      },
+      {
+        "action": "與外部供電單位協調提升在惡劣天候時的配電防護與通報機制。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "responsible_unit": "外部電力單位",
+        "evidence_ids": [
+          "e2",
+          "e3",
+          "e4"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3",
+      "e4"
+    ],
+    "reason": "本系列記錄多起建築物停電事件，部分個案發生於有颱風相關描述的期間；也有一則停電原因不明的個案需另行查證。",
+    "abstain_reason": null
+  }
+}

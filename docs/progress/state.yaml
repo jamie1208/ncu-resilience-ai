@@ -327,7 +327,9 @@ tasks:
     updated_at: '2026-11-06T01:37:16+08:00'
     evidence: docs/progress/records/P8-T04-20261105.md
   P8-T05:
-    status: pending
+    status: done
+    updated_at: '2026-11-09T22:46:40+08:00'
+    evidence: docs/progress/records/P8-T05-20261109.md
   P8-T06:
     status: pending
   P8-T07:
@@ -1471,4 +1473,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-11-06T01:37:16+08:00'
+- at: '2026-11-09T20:44:56+08:00'
+  id: P8-T05
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-11-09T22:46:40+08:00'
+  id: P8-T05
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-11-09T22:46:40+08:00'

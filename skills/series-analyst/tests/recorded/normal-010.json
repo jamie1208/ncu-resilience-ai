@@ -1,0 +1,107 @@
+{
+  "case_id": "normal-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "步道路燈不亮",
+    "burst_explanations": [],
+    "location_groups": [
+      {
+        "label": "中大湖步道",
+        "event_ids": [
+          "E1",
+          "E2"
+        ],
+        "reason": "兩起事件都描述發生在中大湖附近的步道，名稱為同一處（中大湖步道、湖旁步道）。"
+      }
+    ],
+    "pattern_status": "ok",
+    "pattern_abstain_reason": null,
+    "patterns": [
+      {
+        "pattern_id": "p1",
+        "description": "步道路燈在夜間不亮或整段沒燈，造成步道暗且有跌倒風險。",
+        "event_ids": [
+          "E1",
+          "E2"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "路燈好幾盞不亮"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "整段都沒燈"
+          }
+        ]
+      }
+    ],
+    "causes": [],
+    "measures": [
+      {
+        "action": "夜間行經步道請攜帶手電或使用手機照明，避免在步道獨自慢走或跑步。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "由校方或設施維護單位檢查中大湖步道的路燈供電與燈具狀況，確認是否需更換燈泡或修復配電。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "設施維護單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "修復或更換已損壞的路燈、並在修復前臨時增加臨時照明或警示標示，減少夜間跌倒風險。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "responsible_unit": "設施維護單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "檢討並建立定期路燈巡檢與維護計畫，包含夜間巡查頻率與故障通報流程。",
+        "audience": "school",
+        "horizon": "long",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "設施維護單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ],
+    "reason": "這個系列是關於步道路燈不亮的問題：兩起事件都描述中大湖步道在夜間燈不亮、步道很暗且有跌倒風險。",
+    "abstain_reason": null
+  }
+}

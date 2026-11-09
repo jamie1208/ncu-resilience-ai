@@ -27,7 +27,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import Base, created_at_col, updated_at_col, uuid_pk
 
 ACTION_STATES = ("discovered", "handling", "recovered", "improved", "dropped")
-ACTION_ORIGINS = ("measure", "manual")
+ACTION_ORIGINS = ("measure", "manual", "series_measure")
 
 
 def _in(values: tuple[str, ...]) -> str:
@@ -45,12 +45,22 @@ class ResponseAction(Base):
             "(origin = 'measure') = (report_id IS NOT NULL AND measure_index IS NOT NULL)",
             name="measure_source",
         ),
+        CheckConstraint(
+            "origin <> 'series_measure' OR measure_index IS NOT NULL", name="series_measure"
+        ),
         UniqueConstraint("report_id", "measure_index"),
+        UniqueConstraint("analysis_id", "measure_index"),
     )
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    event_id: Mapped[uuid.UUID] = mapped_column(
+    event_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("events.id", ondelete="CASCADE"), index=True
+    )
+    series_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("event_series.id", ondelete="SET NULL"), index=True
+    )
+    analysis_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("series_analyses.id", ondelete="SET NULL")
     )
     origin: Mapped[str] = mapped_column(String(16))
     report_id: Mapped[uuid.UUID | None] = mapped_column(

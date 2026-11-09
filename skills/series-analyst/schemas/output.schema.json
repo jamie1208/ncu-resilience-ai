@@ -1,0 +1,396 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "series-analyst 輸出",
+  "description": "系列分析：共通名稱、突增解釋、地點分組、規律、可能的共同原因與改善建議。規律與原因一律是推測；件數由程式依引用的子事件計算，模型不寫數字。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "title",
+    "burst_explanations",
+    "location_groups",
+    "pattern_status",
+    "pattern_abstain_reason",
+    "patterns",
+    "causes",
+    "measures",
+    "evidence_ids",
+    "reason",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已分析；abstain：證據不足，看不出這個系列是什麼問題",
+      "type": "string",
+      "enum": [
+        "ok",
+        "abstain"
+      ]
+    },
+    "title": {
+      "description": "系列共通名稱：描述所有子事件共同的現象與對象，不含地點、日期與單一事件的細節；abstain 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 30
+    },
+    "burst_explanations": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "burst_id",
+          "explanation",
+          "event_ids",
+          "evidence_ids"
+        ],
+        "properties": {
+          "burst_id": {
+            "description": "輸入 bursts 中的代號",
+            "type": "string",
+            "maxLength": 4
+          },
+          "explanation": {
+            "description": "可能的解釋；推測要帶「可能」等字",
+            "type": "string",
+            "maxLength": 200
+          },
+          "event_ids": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "string"
+            },
+            "description": "這段期間的子事件代號"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "string"
+            },
+            "description": "支持解釋的證據"
+          }
+        }
+      },
+      "description": "每個突增週的解釋；沒有突增時為空陣列"
+    },
+    "location_groups": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "event_ids",
+          "reason"
+        ],
+        "properties": {
+          "label": {
+            "description": "這一組的地點或區域名稱",
+            "type": "string",
+            "maxLength": 30
+          },
+          "event_ids": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "string"
+            },
+            "description": "發生在這個地點或區域的子事件代號"
+          },
+          "reason": {
+            "description": "為什麼這些是同一個地點或同一區（例如別名）",
+            "type": "string",
+            "maxLength": 150
+          }
+        }
+      },
+      "description": "同一個地點或同一區的子事件分組"
+    },
+    "pattern_status": {
+      "description": "ok：找到至少一個有 2 件以上子事件支持的規律；abstain：沒有",
+      "type": "string",
+      "enum": [
+        "ok",
+        "abstain"
+      ]
+    },
+    "pattern_abstain_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "too_few_events",
+        "no_pattern",
+        null
+      ],
+      "description": "too_few_events：系列不到 2 件；no_pattern：看不出規律；pattern_status 為 ok 時為 null"
+    },
+    "patterns": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pattern_id",
+          "description",
+          "event_ids",
+          "evidence_ids",
+          "evidence_spans"
+        ],
+        "properties": {
+          "pattern_id": {
+            "type": "string",
+            "enum": [
+              "p1",
+              "p2",
+              "p3",
+              "p4",
+              "p5"
+            ]
+          },
+          "description": {
+            "description": "規律的描述；不寫件數、不寫成定論",
+            "type": "string",
+            "maxLength": 150
+          },
+          "event_ids": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "string"
+            },
+            "description": "符合這個規律的子事件代號；至少 2 個"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "string"
+            },
+            "description": "支持規律的證據"
+          },
+          "evidence_spans": {
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "evidence_id",
+                "quote"
+              ],
+              "properties": {
+                "evidence_id": {
+                  "type": "string"
+                },
+                "quote": {
+                  "type": "string",
+                  "maxLength": 120
+                }
+              }
+            },
+            "description": "逐字抄錄的支持原句；至少 1 句，原句所在的證據必須屬於 event_ids 中的事件"
+          }
+        }
+      },
+      "description": "子事件之間的共同點（時間、地點、天氣、學期時程、設備、使用情境等）；pattern_status 為 abstain 時為空陣列"
+    },
+    "causes": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cause_id",
+          "description",
+          "event_ids",
+          "evidence_ids",
+          "evidence_spans",
+          "to_verify"
+        ],
+        "properties": {
+          "cause_id": {
+            "type": "string",
+            "enum": [
+              "c1",
+              "c2",
+              "c3",
+              "c4"
+            ]
+          },
+          "description": {
+            "description": "可能的共同原因，帶「可能」「疑似」等字",
+            "type": "string",
+            "maxLength": 150
+          },
+          "event_ids": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "string"
+            },
+            "description": "這個原因可能涉及的子事件代號"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "string"
+            },
+            "description": "支持的證據"
+          },
+          "evidence_spans": {
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "evidence_id",
+                "quote"
+              ],
+              "properties": {
+                "evidence_id": {
+                  "type": "string"
+                },
+                "quote": {
+                  "type": "string",
+                  "maxLength": 120
+                }
+              }
+            },
+            "description": "逐字抄錄的支持原句；至少 1 句，原句所在的證據必須屬於 event_ids 中的事件"
+          },
+          "to_verify": {
+            "description": "要查證什麼才能確認",
+            "type": "string",
+            "maxLength": 150
+          }
+        }
+      },
+      "description": "可能的共同原因（一律是推測）"
+    },
+    "measures": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action",
+          "audience",
+          "horizon",
+          "priority",
+          "kind",
+          "cause_id",
+          "responsible_unit",
+          "evidence_ids"
+        ],
+        "properties": {
+          "action": {
+            "description": "具體的改善建議",
+            "type": "string",
+            "maxLength": 150
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "students",
+              "school",
+              "units"
+            ],
+            "description": "students：同學可以做的；school：學校；units：相關單位（例如廠商、警方、宿舍管理）"
+          },
+          "horizon": {
+            "type": "string",
+            "enum": [
+              "short",
+              "mid",
+              "long"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "respond",
+              "investigate",
+              "prevent"
+            ]
+          },
+          "cause_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "c1",
+              "c2",
+              "c3",
+              "c4",
+              null
+            ],
+            "description": "針對的原因；一般性建議為 null"
+          },
+          "responsible_unit": {
+            "description": "建議的負責單位；students 時為 null",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 30
+          },
+          "evidence_ids": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "string"
+            },
+            "description": "支持的證據"
+          }
+        }
+      },
+      "description": "改善建議"
+    },
+    "evidence_ids": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "string"
+      },
+      "description": "分析所依據的證據；ok 時至少 1 個"
+    },
+    "reason": {
+      "description": "一兩句話說明這個系列是什麼問題、整體觀察；不得包含個資，也不得把推測寫成事實",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "insufficient_evidence",
+        null
+      ],
+      "description": "abstain 的原因；ok 時為 null"
+    }
+  }
+}

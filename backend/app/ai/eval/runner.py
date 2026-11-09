@@ -37,6 +37,7 @@ from pydantic import (
 from app.ai.eval.derived import (
     root_cause_fields,
     scenario_fields,
+    series_analysis_fields,
     solution_plan_fields,
     trend_forecast_fields,
 )
@@ -198,8 +199,10 @@ DERIVERS: dict[str, Deriver] = {
     "solution-planner": solution_plan_fields,
     "trend-forecaster": trend_forecast_fields,
     "scenario-simulator": scenario_fields,
+    "series-analyst": series_analysis_fields,
 }
-"""由輸出計算衍生欄位的 Skill（P2-T11；S07／S08 為 P2-T12；S09 為 P7-T01；S10 為 P7-T02）。
+"""由輸出計算衍生欄位的 Skill（P2-T11；S07／S08 為 P2-T12；S09 為 P7-T01；S10 為 P7-T02；
+S12 為 P8-T05）。
 
 欄位名稱要在 SKILL.md 的 metadata.derived_fields 宣告。
 """

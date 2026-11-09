@@ -8,6 +8,9 @@
 - 每次狀態變更（含建立時的「發現」）新增一筆 response_action_transitions，
   與稽核紀錄共用 request_id。
 - 名稱、負責人、備註、佐證含個資時拒絕（與模型輸出的 PII 規則相同）。
+- 系列層級（P8-T05，ADR-0018 決策 1-8）：`create_series_action` 從系列最新一次成功分析的 S12
+  改善建議一鍵建立（學校或相關單位的建議；同一次分析的同一項只能建立一次），或手動新增；
+  沒有 event_id，狀態轉移與事件層級相同。
 
 本模組只 flush、不 commit，由呼叫端決定交易邊界；所有檢查都在修改之前完成，
 失敗時不留下半套變更。
@@ -31,6 +34,7 @@ from app.domain.states import EventStatus
 from app.models.event import Event
 from app.models.report import EventReport
 from app.models.response_action import ResponseAction, ResponseActionTransition
+from app.models.series import EventSeries, SeriesAnalysis
 from app.services.audit import record_audit
 
 TITLE_MAX = 200
@@ -230,6 +234,79 @@ async def create_action(
         None,
         audit_action="response_action.create",
         metadata={"event_id": str(event_id), "origin": action.origin},
+    )
+    return action
+
+
+async def create_series_action(
+    session: AsyncSession,
+    principal: Principal,
+    series_id: uuid.UUID,
+    *,
+    title: str | None = None,
+    analysis_id: uuid.UUID | None = None,
+    measure_index: int | None = None,
+    owner: str | None = None,
+    due_at: datetime | None = None,
+) -> ResponseAction:
+    """新增系列層級的追蹤項目：有 analysis_id 時從該次分析的建議建立，否則手動新增。"""
+    from app.series.analysis import latest_analysis  # 系列模組匯入管線，避免循環匯入
+
+    series = await session.get(EventSeries, series_id)
+    if series is None:
+        raise ActionNotFoundError("找不到系列")
+    owner = _text(owner, "owner", OWNER_MAX)
+    measure: dict[str, Any] | None = None
+    if analysis_id is not None or measure_index is not None:
+        if analysis_id is None or measure_index is None:
+            raise ActionInvalidError(
+                "analysis_id", "從建議建立時 analysis_id 與 measure_index 都要提供"
+            )
+        analysis = await session.get(SeriesAnalysis, analysis_id)
+        if analysis is None or analysis.series_id != series_id:
+            raise ActionNotFoundError("找不到這個系列的分析")
+        latest = await latest_analysis(session, series_id)
+        if latest is None or latest.id != analysis.id:
+            raise ActionConflictError("只能從最新一次分析的建議建立，請重新整理後再操作")
+        if not 0 <= measure_index < len(analysis.measures):
+            raise ActionInvalidError("measure_index", "分析中沒有這項建議")
+        measure = dict(analysis.measures[measure_index])
+        if measure.get("audience") == "students":
+            raise ActionInvalidError("measure_index", "同學可以做的建議不建立追蹤")
+        exists = await session.scalar(
+            select(ResponseAction.id).where(
+                ResponseAction.analysis_id == analysis_id,
+                ResponseAction.measure_index == measure_index,
+            )
+        )
+        if exists is not None:
+            raise ActionConflictError("這項建議已經在追蹤中")
+        name = str(measure["action"])[:TITLE_MAX]
+        owner = owner or measure.get("responsible_unit")
+    else:
+        name = _text(title, "title", TITLE_MAX) or ""
+        if not name:
+            raise ActionInvalidError("title", "請填寫改善措施名稱")
+    action = ResponseAction(
+        series_id=series_id,
+        origin="series_measure" if measure is not None else "manual",
+        analysis_id=analysis_id,
+        measure_index=measure_index,
+        measure=measure,
+        title=name,
+        owner=owner,
+        due_at=due_at,
+        state=ActionState.DISCOVERED.value,
+    )
+    session.add(action)
+    await session.flush()
+    await _record(
+        session,
+        principal,
+        action,
+        None,
+        audit_action="response_action.create",
+        metadata={"series_id": str(series_id), "origin": action.origin},
     )
     return action
 

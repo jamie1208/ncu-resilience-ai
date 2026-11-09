@@ -62,10 +62,14 @@ class EventRef(BaseModel):
 
 
 class ActionOut(BaseModel):
-    """一項改善措施；measure 為從 S08 建立時的措施快照（手動新增為 null）。"""
+    """一項改善措施；measure 為從 S08（或系列的 S12）建立時的措施快照（手動新增為 null）。
+
+    系列層級的措施（P8-T05）沒有 event_id，有 series_id。
+    """
 
     id: uuid.UUID
-    event_id: uuid.UUID
+    event_id: uuid.UUID | None
+    series_id: uuid.UUID | None
     origin: str
     report_id: uuid.UUID | None
     measure_index: int | None
@@ -144,6 +148,7 @@ def _out(action: ResponseAction, now: datetime | None = None) -> dict[str, Any]:
     return {
         "id": action.id,
         "event_id": action.event_id,
+        "series_id": action.series_id,
         "origin": action.origin,
         "report_id": action.report_id,
         "measure_index": action.measure_index,

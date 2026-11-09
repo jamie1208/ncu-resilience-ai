@@ -1,0 +1,169 @@
+{
+  "case_id": "normal-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "飲水機不出熱水",
+    "burst_explanations": [],
+    "location_groups": [
+      {
+        "label": "男七舍",
+        "event_ids": [
+          "E1"
+        ],
+        "reason": "事件記載地點為「男七舍」。"
+      },
+      {
+        "label": "女十二舍",
+        "event_ids": [
+          "E2"
+        ],
+        "reason": "事件記載地點為「女十二舍」。"
+      },
+      {
+        "label": "男九舍",
+        "event_ids": [
+          "E3"
+        ],
+        "reason": "事件記載地點為「男九舍」。"
+      }
+    ],
+    "pattern_status": "ok",
+    "pattern_abstain_reason": null,
+    "patterns": [
+      {
+        "pattern_id": "p1",
+        "description": "熱水無法供應，僅有冷水或顯示錯誤燈。",
+        "event_ids": [
+          "E1",
+          "E2",
+          "E3"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "熱水一直不出來，冷水正常。"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "不出熱水，紅色錯誤燈一直閃。"
+          },
+          {
+            "evidence_id": "e3",
+            "quote": "熱水又壞了，只有冷水。"
+          }
+        ]
+      }
+    ],
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "可能是飲水機的加熱系統或加熱元件故障，導致熱水無法供應或設備顯示錯誤。",
+        "event_ids": [
+          "E1",
+          "E2",
+          "E3"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "熱水一直不出來，冷水正常。"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "不出熱水，紅色錯誤燈一直閃。"
+          },
+          {
+            "evidence_id": "e3",
+            "quote": "熱水又壞了，只有冷水。"
+          }
+        ],
+        "to_verify": "向宿舍管理或設備維修單位確認該批飲水機的加熱系統與加熱元件是否有故障紀錄或最近有無維修/更換。"
+      }
+    ],
+    "measures": [
+      {
+        "action": "發現飲水機無熱水時，向宿舍管理回報並標示該飲水機以提醒其他同學避免誤用熱水功能。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1",
+          "e3"
+        ]
+      },
+      {
+        "action": "檢查並記錄故障飲水機的型號與故障現象、確認是否為加熱系統或加熱元件故障，並提供維修紀錄。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "responsible_unit": "宿舍管理或設備維修單位",
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "安排廠商或校內技師對出現錯誤燈或不出熱水的飲水機進行維修或更換加熱元件，完成後回報並更新維修紀錄。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": "c1",
+        "responsible_unit": "宿舍管理或設備維修單位",
+        "evidence_ids": [
+          "e2",
+          "e3"
+        ]
+      },
+      {
+        "action": "建立定期檢查與保養計畫，包含加熱系統功能測試與錯誤燈狀態檢查，以預防熱水供應中斷。",
+        "audience": "school",
+        "horizon": "long",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "responsible_unit": "宿舍管理或總務處",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      },
+      {
+        "action": "要求廠商或維修單位提供近期香港或近期該型號飲水機的常見故障與維修建議，以作為後續預防保養依據。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "responsible_unit": "宿舍管理或總務處",
+        "evidence_ids": [
+          "e2"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3"
+    ],
+    "reason": "這個系列描述多起宿舍區飲水機出現熱水無法供應的問題，證據指出各地點皆為熱水故障或顯示錯誤燈。",
+    "abstain_reason": null
+  }
+}

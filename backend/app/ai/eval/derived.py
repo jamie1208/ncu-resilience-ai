@@ -11,6 +11,9 @@
 - S10 scenario-simulator（P7-T02）：`explained_measures`（有解釋的措施，依 measure_id 排序成
   「m1;m2」，abstain 為 None）、`limitation_set`（限制標註依代碼排序，abstain 時同樣比對）、
   `hypothetical_flagged`（標明假設情境、不是成效預測）。
+- S12 series-analyst（P8-T05）：`patterns_supported`（每個規律都至少引用 2 起不同的子事件；
+  沒有規律時為 True）、`cited_events`（所有區塊引用的子事件代號，排序去重的清單，用來檢查
+  是否引用輸入中不存在的事件）。
 """
 
 from __future__ import annotations
@@ -85,3 +88,19 @@ def scenario_fields(output: Mapping[str, Any]) -> dict[str, Any]:
         "limitation_set": ";".join(sorted(limitations)),
         "hypothetical_flagged": "hypothetical_not_prediction" in limitations,
     }
+
+
+_SERIES_SECTIONS = ("burst_explanations", "location_groups", "patterns", "causes")
+
+
+def series_analysis_fields(output: Mapping[str, Any]) -> dict[str, Any]:
+    """S12 輸出的衍生欄位；abstain 時同樣計算。"""
+    patterns = _items(output, "patterns")
+    supported = all(len({str(e) for e in p.get("event_ids") or []}) >= 2 for p in patterns)
+    cited = {
+        str(e)
+        for key in _SERIES_SECTIONS
+        for x in _items(output, key)
+        for e in x.get("event_ids") or []
+    }
+    return {"patterns_supported": supported, "cited_events": sorted(cited)}

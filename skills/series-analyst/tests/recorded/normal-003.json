@@ -1,0 +1,168 @@
+{
+  "case_id": "normal-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "校內系統或服務暫停",
+    "burst_explanations": [],
+    "location_groups": [
+      {
+        "label": "K書中心",
+        "event_ids": [
+          "E1"
+        ],
+        "reason": "E1 明確標示地點為 K書中心；其他事件未提供地點。"
+      }
+    ],
+    "pattern_status": "ok",
+    "pattern_abstain_reason": null,
+    "patterns": [
+      {
+        "pattern_id": "p1",
+        "description": "因系統更新、維護或異常導致線上服務暫停或改以人工方式處理。",
+        "event_ids": [
+          "E1",
+          "E2",
+          "E3"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "K書中心預約系統更新，暫停線上預約，門禁改為人工登記。"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "選課系統將於週六上午進行維護，暫停服務。"
+          },
+          {
+            "evidence_id": "e3",
+            "quote": "宿網首頁因系統異常，暫停校外連線服務。"
+          }
+        ]
+      }
+    ],
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "可能是系統更新或排程性維護作業，導致暫時停用線上功能或改為人工流程。",
+        "event_ids": [
+          "E1",
+          "E2"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "K書中心預約系統更新，暫停線上預約，門禁改為人工登記。"
+          },
+          {
+            "evidence_id": "e2",
+            "quote": "選課系統將於週六上午進行維護，暫停服務。"
+          }
+        ],
+        "to_verify": "向各系統維護單位或資訊服務單位確認是否有預定的更新／維護排程與公告，以及維護範圍與時間。"
+      },
+      {
+        "cause_id": "c2",
+        "description": "可能是系統異常或突發故障，導致部分服務暫時中斷或限制外部連線。",
+        "event_ids": [
+          "E3"
+        ],
+        "evidence_ids": [
+          "e3"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e3",
+            "quote": "宿網首頁因系統異常，暫停校外連線服務。"
+          }
+        ],
+        "to_verify": "向網路或系統管理單位確認是否有故障紀錄、故障原因與修復報告。"
+      }
+    ],
+    "measures": [
+      {
+        "action": "在進行系統更新或維護前，提前公告維護時間、受影響服務與預估恢復時間。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "responsible_unit": "資訊服務處",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "維護或更新應安排在使用低峰時段並提供備援方案（例如臨時人工流程或替代入口）。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "responsible_unit": "資訊服務處",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "查證系統異常的根本原因並提供故障報告，包含發生時間、影響範圍、修復措施與後續防範建議。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": "c2",
+        "responsible_unit": "網路/系統管理單位",
+        "evidence_ids": [
+          "e3"
+        ]
+      },
+      {
+        "action": "若服務暫停，提供明確的替代聯絡方式或人工處理流程說明，減少使用者受影響程度。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      },
+      {
+        "action": "建立維護與異常通報流程，並定期檢視維護後系統穩定性與復原狀況。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "responsible_unit": "資訊服務處",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    ],
+    "evidence_ids": [
+      "e1",
+      "e2",
+      "e3"
+    ],
+    "reason": "這個系列描述多起校內線上系統或服務因系統更新、維護或異常而暫停或改為人工處理的情形；整體觀察是服務可用性受系統作業或異常影響。",
+    "abstain_reason": null
+  }
+}
