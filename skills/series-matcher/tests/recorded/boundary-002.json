@@ -1,0 +1,22 @@
+{
+  "case_id": "boundary-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": true,
+    "target_id": "S1",
+    "confidence": 0.92,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "工程一館停電檢修"
+      }
+    ],
+    "reason": "新事件描述為停電檢修（電力中斷類問題）；S1 系列的事件都是建築物停電或跳電，屬於相同的現象與對象類別，因此歸到 S1。",
+    "abstain_reason": null
+  }
+}

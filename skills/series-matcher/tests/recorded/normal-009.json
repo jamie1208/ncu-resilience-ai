@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-009",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": false,
+    "target_id": null,
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "明天全校停課停班。"
+      }
+    ],
+    "reason": "新事件是颱風造成的停課停班（停課），候選系列分別是地震後建物檢查和豪雨造成的積水，兩者與「停課」不是同一種現象，故不屬同一主題。",
+    "abstain_reason": null
+  }
+}

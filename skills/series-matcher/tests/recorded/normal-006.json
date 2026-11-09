@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": true,
+    "target_id": "S1",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "兩台機車對撞"
+      }
+    ],
+    "reason": "新事件描述為機車對撞（車禍），S1 系列也包含機車相關的擦撞/碰撞，屬於同一種交通事故問題，故歸到 S1。",
+    "abstain_reason": null
+  }
+}

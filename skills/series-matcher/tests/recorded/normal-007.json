@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": false,
+    "target_id": null,
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "天花板一直在滴水"
+      }
+    ],
+    "reason": "新事件是廁所天花板漏水（滴水），候選系列是停電與電梯故障，屬於不同的問題。",
+    "abstain_reason": null
+  }
+}

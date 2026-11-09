@@ -1,0 +1,22 @@
+{
+  "case_id": "boundary-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": false,
+    "target_id": null,
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "匯完就封鎖我了"
+      }
+    ],
+    "reason": "新事件是二手交易匯款後對方失聯、疑似詐騙；候選系列是機車/自行車失竊或校園可疑人士，均為實體失竊或可疑人物，和線上交易被封鎖的詐騙不是同一種問題。",
+    "abstain_reason": null
+  }
+}

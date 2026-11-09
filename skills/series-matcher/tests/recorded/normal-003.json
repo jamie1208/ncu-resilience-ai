@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": true,
+    "target_id": "S1",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "機車停在後門停車場"
+      }
+    ],
+    "reason": "新事件是機車被偷（車輛失竊），S1 系列包含宿舍區的機車失竊與校內車輛被偷，屬同一種問題（車輛失竊），只是在不同地點。",
+    "abstain_reason": null
+  }
+}

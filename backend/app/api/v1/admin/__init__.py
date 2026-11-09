@@ -16,6 +16,7 @@ from app.api.v1.admin import (
     relations,
     resilience,
     scenarios,
+    series,
     skills,
     trends,
 )
@@ -37,5 +38,6 @@ router.include_router(resilience.router)
 router.include_router(scenarios.router)
 router.include_router(trends.router)
 router.include_router(locations.router)
+router.include_router(series.router)
 
 __all__ = ["router"]

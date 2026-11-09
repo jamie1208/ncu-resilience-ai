@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": true,
+    "target_id": "S1",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "收到簡訊說 portal 密碼即將過期，要點連結重新登入"
+      }
+    ],
+    "reason": "新事件是冒充 portal 的釣魚簡訊，要求點連結重新登入帳號；S1 也是假冒系所/中心要求輸入帳號密碼的釣魚，屬於相同的問題類型（釣魚、帳號憑證竊取）。",
+    "abstain_reason": null
+  }
+}

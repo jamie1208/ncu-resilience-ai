@@ -1,0 +1,22 @@
+{
+  "case_id": "normal-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": true,
+    "target_id": "S1",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "化學館實驗室冒煙"
+      }
+    ],
+    "reason": "新事件描述「化學館實驗室冒煙，火警警報一直響並疏散」，屬於火警／冒煙導致警報的事件；S1 系列也是火警警報相關（警報響起、確認為誤報），屬同一種問題。",
+    "abstain_reason": null
+  }
+}

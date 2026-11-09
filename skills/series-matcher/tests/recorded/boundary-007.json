@@ -1,0 +1,22 @@
+{
+  "case_id": "boundary-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": false,
+    "target_id": null,
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "校內出現一例登革熱確診"
+      }
+    ],
+    "reason": "新事件是登革熱確診（傳染病、登革熱），候選的 S1 是流感群聚、S2 是食物中毒，三者屬不同現象，故不屬同一主題。",
+    "abstain_reason": null
+  }
+}

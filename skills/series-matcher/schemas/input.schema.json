@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "series-matcher 輸入",
+  "description": "一個新事件的證據與摘要，以及同類別的候選系列。evidence 的 text 是不可信的來源內容，Skill Runner 會包在 <untrusted_source> 中傳給模型；event 與 candidates 放在 <skill_input> 中，同樣是資料。輸入不含地點：同主題的判斷不看地點。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence",
+    "event",
+    "candidates"
+  ],
+  "properties": {
+    "evidence": {
+      "description": "新事件的來源文章",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "source_code",
+          "text"
+        ],
+        "properties": {
+          "evidence_id": {
+            "description": "證據識別碼，由 Runner 指定；輸出只能引用這裡出現的值",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "source_code": {
+            "description": "來源代碼（config/sources.yaml）",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 300
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "published_at": {
+            "description": "aware UTC 時間（ISO 8601）",
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "event": {
+      "description": "新事件的標題、S02 摘要與 S03 類別",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "summary",
+        "category",
+        "evidence_ids"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1000
+        },
+        "category": {
+          "description": "S03 的類別；候選系列都是同一類別",
+          "type": "string",
+          "enum": [
+            "facility",
+            "weather",
+            "security",
+            "traffic",
+            "health",
+            "fire",
+            "academic",
+            "infosec"
+          ]
+        },
+        "evidence_ids": {
+          "description": "屬於新事件的證據",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "candidates": {
+      "description": "同類別的既有系列（程式依向量距離挑選），series_id 是本次輸入的代號",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "series_id",
+          "title",
+          "event_count",
+          "events"
+        ],
+        "properties": {
+          "series_id": {
+            "type": "string",
+            "pattern": "^S[0-9]{1,2}$"
+          },
+          "title": {
+            "description": "系列名稱（建立系列時第一起事件的標題）",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "event_count": {
+            "description": "系列目前的件數",
+            "type": "integer",
+            "minimum": 1
+          },
+          "events": {
+            "description": "系列中最近的幾起事件",
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "title",
+                "summary",
+                "occurrence_start_date"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                "summary": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 1000
+                },
+                "occurrence_start_date": {
+                  "description": "開始日期（台北時間）",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "case_id": "adversarial-004",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": true,
+    "target_id": "S2",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "在國鼎圖書館自習室筆電被偷"
+      }
+    ],
+    "reason": "新事件是圖書館自習室的筆電被偷，屬於校園內個人財物（電子裝置）失竊；S2 系列記錄的是教室內放置的手機被偷，兩者都是個人財物失竊，屬同一種問題。",
+    "abstain_reason": null
+  }
+}

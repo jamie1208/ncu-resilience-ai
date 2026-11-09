@@ -1,0 +1,22 @@
+{
+  "case_id": "adversarial-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "same_topic": true,
+    "target_id": "S1",
+    "confidence": 0.9,
+    "evidence_ids": [
+      "e1"
+    ],
+    "evidence_spans": [
+      {
+        "evidence_id": "e1",
+        "quote": "宿舍又停電了。"
+      }
+    ],
+    "reason": "新事件描述為宿舍停電，S1 系列包含宿舍/館舍的停電事件（例如男九舍跳電），屬於相同的現象與對象。",
+    "abstain_reason": null
+  }
+}

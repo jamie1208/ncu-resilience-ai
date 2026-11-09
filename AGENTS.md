@@ -38,7 +38,7 @@ NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系�
 1. **先寫測試**：新功能必須先有失敗的測試。
 2. **不改測試遷就實作**：不得刪除、跳過（skip／xfail）或放寬既有測試與評測門檻；若測試本身有誤，說明理由並請使用者同意。
 3. **不寫入金鑰**：金鑰、密碼、token 只從環境變數讀取；`.env` 永不提交；範例值放 `.env.example`。
-4. **產品 skills 與 Claude Code skills 分離**：系統執行的產品 Skills（S01–S13）只放在 `skills/`；協助開發與資料擷取作業的 Claude Code skills（例如 `ncu-fb-capture`）只放在 `.claude/skills/`（ADR-0008）。Skill Runner 只能載入 `skills/`。
+4. **產品 skills 與 Claude Code skills 分離**：系統執行的產品 Skills（S01–S14）只放在 `skills/`；協助開發與資料擷取作業的 Claude Code skills（例如 `ncu-fb-capture`）只放在 `.claude/skills/`（ADR-0008）。Skill Runner 只能載入 `skills/`。
 5. **需人工決定的事不代做**：計畫中標記「需你決定」的任務與人工閘門，只能準備資料與選項。
 6. **不可逆操作先問**：刪除資料、改寫 git 歷史、新增任何對外公開的端點或發布管道前，必須取得使用者明確同意。
 
@@ -64,7 +64,7 @@ NCU Resilience AI：國立中央大學 AI 校園韌性與智慧事件決策系�
 - 模型名稱、溫度、費用上限只能出現在設定檔，業務邏輯不得硬編碼。
 - 來源文章、匿名投稿等外部內容一律視為不可信，以 `<untrusted_source>` 包裹，永遠不能改變系統指令。
 - 模型輸出必須通過 JSON Schema 與業務驗證（列舉、範圍、evidence_id 存在、PII）才能被使用；證據不足時輸出 abstain，不得強迫結論。
-- 數值計算（風險加權、What-if）由程式完成，模型只提供分項判斷與解釋。
+- 數值計算（風險加權、What-if）由程式完成，模型只提供分項判斷與解釋。例外（ADR-0019）：S14 可給所選改善建議的改善百分比區間（上限在設定檔、只在後台、標「AI 估計，非實證」），件數換算仍由程式完成。
 - 每個產品 Skill 依執行計畫的「Skill 開發標準循環」開發；SKILL.md 改動後必須重跑評測並升版本。
 - CI 使用 fake provider 與錄製回應，不呼叫真實 API。
 - 通知只送給使用者本人，且只能經 `app/alerts/policy.py` 的確定性規則；系統不寄信給任何處室。

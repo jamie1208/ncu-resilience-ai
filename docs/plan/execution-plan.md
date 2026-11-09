@@ -537,6 +537,7 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
   - 檔案：`skills/series-matcher/`（輸入：新事件與同類別的候選系列／事件；輸出：是否同主題、目標系列、理由、逐字證據；不看地點）、`infra/migrations/versions/<下一個編號>_event_series.py`（系列、子事件關係、使用者拆出紀錄）、`app/series/grouping.py`（同類別＋S11 同主題即歸組，2 件成立；拆出後不再自動歸回；解散；子事件改判 false 移出、剩不到 2 件自動解散；合併後的事件只算 1 件；稽核 `series.*`）、管理端 API `app/api/v1/admin/series.py`
   - 驗證：golden cases ≥ 20；`tests/integration/test_series_grouping.py`（fake provider；以上每條規則各一案例；同一組輸入重跑結果相同）
   - ADR-0020 修改（使用者 2026-11-05 同意）：每個事件都屬於一個系列，S11 判斷不同主題時建立只有它一件的系列（第 1 起就有分析頁）；拆出或改判 false 移出的事件各自成為 1 件的系列，件數 0 的系列刪除（取代「2 件成立」「剩不到 2 件自動解散」）；驗證新增 1 件系列、拆出後自成系列的案例
+  - 實作調整（評測門檻與補判指令經使用者 2026-11-05 決定，其餘 AI 自行決定）：門檻 `same_topic_accuracy`、`same_topic_precision`（true）、`target_accuracy` 皆 ≥ 0.90；golden cases 24 筆（dev／test 各 12）；migration 為 `0022_event_series.py`（`event_series`：類別、名稱〔第一起事件的標題〕；`event_series_members`：event_id 為主鍵、method ai／fallback／manual／rule、ai_run_id；`event_series_removals`：reason split／dissolve／false／merged、decided_by）；候選為同類別、至少一個不是 false 的事件、不是該事件離開過的系列，依事件向量最近距離排序最多 10 個（代號 S1…），各附最近 3 起事件的標題、摘要、開始日期，不含地點；沒有候選、事件為 false／archived、沒有證據時不呼叫，直接建立 1 件的系列；abstain、失敗、target_id 不在候選中一律建立新系列（method fallback）；每個事件只自動歸組一次；有呼叫 S11 時才寫稽核 `series.assign`；解散時原系列刪除；被合併的事件離開系列、不屬於任何系列；管線在 S06 與通知同步之後歸組（`PipelineDeps.group_series`，正式環境開啟；既有管線測試不受影響），修改 `app/pipeline/analyze_item.py`；改判 false 由 `POST /events/{id}/verify` 移出（修改 `app/api/v1/admin/events.py`）；合併時離開系列（修改 `app/events/merge.py`）；補判命令 `uv run python -m app.series.grouping backfill`（依建立時間）；後台 API `GET /api/v1/admin/series`（可依 category、event_id 篩選）、`GET /api/v1/admin/series/{id}`（events:read_all）、`POST /api/v1/admin/series/{id}/events/{event_id}/split`（201）、`POST /api/v1/admin/series/{id}/dissolve`（events:verify）；新增 `app/series/__init__.py`、`app/models/series.py`，修改 `app/models/__init__.py`、`app/api/v1/admin/__init__.py`、`docs/architecture/rbac.md`、`eval/thresholds.yaml`；後台介面留給 P8-T05（`Series.tsx`）
 - **P8-T05 S12 series-analyst、系列時間軸與前後比較**（ADR-0018 決策 1-5～1-8）
   - 檔案：`skills/series-analyst/`（輸入：系列的子事件摘要與證據、程式算出的件數序列與突增；輸出：爆發解釋、地點分組、規律、可能的共同原因、改善建議（同學／學校／相關單位）；規律與原因一律標為推測；證據不足時 abstain）、`app/series/analysis.py`（引用驗證、程式計數、每個規律至少 2 件；新事件加入時重新分析，每系列每天最多一次，受每日費用上限）、`app/series/timeline.py`（日／週／月件數、4 期移動平均、措施開始處理／完成標記、範圍 1M／3M／6M／1Y／全部；前後比較：措施開始前後各 8 週平均，任一邊少於 5 件回傳「資料還不夠」）、系列措施（`response_actions` 加系列層級；可從建議一鍵加入）、後台 `frontend/src/admin/pages/Series.tsx`（時間軸、地點篩選、規律、推測原因、措施）
   - 驗證：golden cases ≥ 20（含捏造規律、引用不存在事件、只有 1 件支持的規律）；`tests/unit/series/test_timeline.py`（移動平均、粒度、前後比較門檻、「變少不一定是措施的功勞」說明一律出現）；`tests/integration/test_series_analysis.py`（引用驗證丟棄、計數由程式算、每天最多一次）；前端 vitest（雙設計系統）
@@ -572,19 +573,23 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
   - 匯入後：清單內的名稱同名稱直接沿用、不呼叫 S13；清單外的新名稱照 P8-T02 由 S13 從代表地點（含清單）判斷，alias_of 記成別名、new 新增代表地點，之後同名稱即可找到
   - 驗證：`tests/unit/locations/test_seed_file.py`（清單格式：名稱與別名全域不重複、不含「全校」「校外」「不明」、parent 必須在清單中、只允許 name／code／aliases／parent 欄位）；`tests/integration/test_location_seed.py`（匯入後別名同名沿用且不呼叫 S13；重跑結果相同；既有代表地點成為別名時其別名與下層地點攤平；拆開過的不覆蓋；清單外地點保留；補判跳過匯入過的地點）
   - 前置：P8-T02
+- **P8-T15 依改善建議評估效益（S14 impact-evaluator）**（ADR-0019，使用者 2026-11-05 決定；ADR-0020 決策 6 改以系列為單位）
+  - 檔案：`skills/impact-evaluator/`（依「Skill 開發標準循環」：SKILL.md、schema、golden cases、錄製回應、評測報告；輸入：系列總覽、子事件摘要、可能原因〔推測／已確認〕、全部改善建議並標示哪些被選、系列件數基準、改善追蹤進度，建議與事件內容以 `<untrusted_source>` 包裹；輸出：改善百分比區間 `improvement`〔整數 0–100 或 null〕、改善前／後情境 `before`／`after`〔播報員語氣〕、`covered_causes`／`uncovered_causes`、`overlaps`、`risks`〔至少 1 項〕、`suggestion`〔只能引用未被選的建議〕、`evidence_ids`）、`app/simulations/impact.py`（輸入組裝、業務驗證：`0 ≤ low ≤ high ≤ improvement_cap`、引用 id 存在、PII 檢查、推測原因不得寫成已確定；保存；改善前後件數由程式以 基準 ×（1 − 百分比）換算）、`infra/migrations/versions/<下一個編號>_impact_evaluations.py`（或擴充 `scenario_runs`，實作時決定並記錄；可 downgrade）、`app/api/v1/admin/scenarios.py`（`POST /api/v1/admin/scenarios/impact`，`scenarios:create`，稽核 `scenario.impact`；`GET` 查詢；只在 `/api/v1/admin/*`）、設定檔 `improvement_cap`（預設 80）、`frontend/src/admin/pages/Scenario.tsx`（新分頁「依建議評估」：只勾選建議、結果卡顯示改善百分比〔標「AI 估計，非實證」〕、改善前／後兩欄對照、涵蓋與未涵蓋原因、重疊提醒、風險、補強建議可一鍵加入再評估；原自訂措施模式保留為另一分頁；雙設計系統）、後台系列分析頁的「評估效益」入口（`/admin/scenarios?series=<id>`）
+  - 驗證：S14 評測 `improvement_valid` = 1.0、`cause_coverage` accuracy ≥ 0.90、`abstain_when_insufficient`、`hypothesized_not_asserted` = 1.0；`tests/integration/test_impact_evaluation.py`（fake provider；沒有勾選時不呼叫模型；引用不存在的原因或建議 id 被拒；超過上限被拒；件數由程式換算；系列分析更新後舊評估標示過期）；`tests/security/` 新增公開快照與公開端點不含評估結果的案例；前端 vitest 與 Playwright（勾選到結果）；P7-T02／P7-T03 的 G7-1 測試不修改且通過
+  - 前置：P8-T05、P8-T09、P8-T10、P8-T13
 
 ```bash
 cd backend && uv run pytest tests/unit/series tests/security -q
-uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --split test
+uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --skill impact-evaluator --split test
 ```
 
 | 閘門 | 條件 | 驗證方式 |
 | --- | --- | --- |
 | G8-1 | 系列歸組、拆出、解散與前後比較可重現 | test_series_grouping、tests/unit/series |
-| G8-2 | S11–S13 評測達門檻且引用全部可驗證 | run_eval |
+| G8-2 | S11–S14 評測達門檻且引用全部可驗證 | run_eval |
 | G8-3 | 新版公開邊界安全測試通過 | tests/security |
 | G8-4 | 使用者確認新公開端點、閘道白名單與威脅模型 | 人工 |
-| G8-5 | 播報員語氣改版後 S01–S13 評測不低於門檻 | run_eval --all |
+| G8-5 | 播報員語氣改版後 S01–S14 評測不低於門檻 | run_eval --all |
 
 ---
 

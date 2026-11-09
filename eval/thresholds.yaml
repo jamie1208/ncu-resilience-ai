@@ -167,3 +167,20 @@ skills:
         type: accuracy
         field: target_id
         threshold: 0.90
+
+  series-matcher:
+    # P8-T04：使用者 2026-11-05 決定比照 S13，三項都 ≥ 0.90
+    metrics:
+      - name: same_topic_accuracy
+        type: accuracy
+        field: same_topic
+        threshold: 0.90
+      - name: same_topic_precision
+        type: precision
+        field: same_topic
+        positive: true
+        threshold: 0.90
+      - name: target_accuracy
+        type: accuracy
+        field: target_id
+        threshold: 0.90
