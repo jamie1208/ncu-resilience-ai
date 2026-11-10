@@ -34,7 +34,9 @@ def upgrade() -> None:
             "series_id",
             postgresql.UUID(as_uuid=True),
             sa.ForeignKey(
-                "event_series.id", ondelete="CASCADE", name=op.f("fk_publications_series_id_event_series")
+                "event_series.id",
+                ondelete="CASCADE",
+                name=op.f("fk_publications_series_id_event_series"),
             ),
             nullable=True,
             comment="系列的公開狀態（P8-T06）；與 event_id 恰好一個不為 NULL",
