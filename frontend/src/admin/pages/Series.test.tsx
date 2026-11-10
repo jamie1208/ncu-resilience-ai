@@ -130,7 +130,7 @@ describe('Series', () => {
     expect(matchRoute('/admin/series')).toEqual({ page: 'series', seriesId: null })
     expect(matchRoute('/admin/series/s-1')).toEqual({ page: 'series', seriesId: 's-1' })
     open('/admin/series', { 'GET /api/v1/admin/series': { data: [] } })
-    expect(await screen.findByText('還沒有任何系列')).toBeInTheDocument()
+    expect(await screen.findByText('還沒有任何系列，同類事件累積到 2 起就會自動成立。')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '系列' })).toHaveAttribute('href', '/admin/series')
   })
 

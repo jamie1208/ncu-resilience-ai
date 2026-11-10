@@ -45,12 +45,12 @@ export const METRIC_LABELS: Record<string, string> = {
   repeat_ratio: '重複事件比例',
 }
 
-/** 各構面在問什麼（白話說明）。 */
+/** 各構面在問什麼（白話說明，ADR-0020 決策 5）。 */
 export const DIMENSION_QUESTIONS: Record<DimensionKey, string> = {
-  detection: '事情發生後，多快被發現？',
-  response: '發現之後，多快開始處理？',
-  recovery: '開始處理之後，多快恢復？',
-  adaptation: '改善有沒有做完、同樣的事有沒有再發生？',
+  detection: '出事後，多快有人知道？',
+  response: '知道之後，多快開始處理？',
+  recovery: '開始處理後，多久恢復正常？',
+  adaptation: '同樣的事，有沒有一再發生？',
 }
 
 export const NA = 'N/A'

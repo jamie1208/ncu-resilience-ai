@@ -124,7 +124,7 @@ function Weekly({ series }: { series: PublicSeries }) {
           </Button>
         ))}
       </div>
-      {points.length > 0 ? <Chart points={points} markers={markers} /> : <Muted>這段期間沒有資料。</Muted>}
+      {points.length > 0 ? <Chart points={points} markers={markers} /> : <Muted>這段期間沒有任何一起。</Muted>}
       <p className="text-xs text-muted-foreground">長條是每週件數，線是 4 週移動平均；虛線是措施開始處理，實線是完成。</p>
       {series.bursts.length > 0 && (
         <ul aria-label="突增週" className="space-y-1 text-sm">
@@ -141,7 +141,7 @@ function Weekly({ series }: { series: PublicSeries }) {
 }
 
 function Findings({ items, note }: { items: PublicFinding[]; note?: string | null }) {
-  if (items.length === 0) return <Muted>{note ?? '目前沒有足夠的資料。'}</Muted>
+  if (items.length === 0) return <Muted>{note ?? '目前資料還不夠，先不下結論。'}</Muted>
   return (
     <ul className="space-y-3">
       {items.map((f) => (
@@ -161,7 +161,7 @@ function Measures({ measures }: { measures: PublicMeasure[] }) {
   const groups = AUDIENCES.map(([key, title]) => [title, measures.filter((m) => m.audience === key)] as const).filter(
     ([, items]) => items.length > 0,
   )
-  if (groups.length === 0) return <Muted>目前沒有改善建議。</Muted>
+  if (groups.length === 0) return <Muted>目前還沒有改善建議。</Muted>
   return (
     <div className="space-y-4">
       {groups.map(([title, items]) => (
@@ -270,11 +270,11 @@ export function Series({ id, from }: { id: string; from: string | null }) {
       )}
 
       <Section id="series-patterns" title="AI 看到的規律">
-        <Findings items={series.patterns} note={series.pattern_note ?? '目前沒有找到有足夠證據的規律。'} />
+        <Findings items={series.patterns} note={series.pattern_note ?? '目前還沒找到有足夠證據的規律，持續觀察中。'} />
       </Section>
 
       <Section id="series-causes" title="可能原因">
-        <Findings items={series.causes} note="目前沒有足夠的資料推測原因。" />
+        <Findings items={series.causes} note="資料還不夠推測原因，持續觀察中。" />
       </Section>
 
       <Section id="series-measures" title="改善建議">
@@ -282,7 +282,7 @@ export function Series({ id, from }: { id: string; from: string | null }) {
       </Section>
 
       <Section id="series-progress" title="改善追蹤">
-        {series.progress.length > 0 ? <ActionList actions={series.progress} /> : <Muted>目前還沒有追蹤中的改善措施。</Muted>}
+        {series.progress.length > 0 ? <ActionList actions={series.progress} /> : <Muted>目前還沒有追蹤中的改善措施，有進度會更新在這裡。</Muted>}
       </Section>
 
       {series.comparisons.length > 0 && (

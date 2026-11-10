@@ -36,7 +36,7 @@ export function Publications() {
     <div className="space-y-4">
       <PageHeader
         title="公開內容"
-        description="公開與否由公開規則決定；你可以隨時下架，下架後公開網站立即不再顯示。"
+        description="網站上正在播出的內容都在這裡。公開與否由公開規則決定；你可以隨時下架，下架後公開網站立即不再顯示。"
         actions={
           <label className="flex items-center gap-2 text-sm font-medium text-foreground">
             <span className="shrink-0">狀態</span>
@@ -51,7 +51,7 @@ export function Publications() {
           </label>
         }
       />
-      <LoadState loading={list.loading} error={list.error} empty={items.length === 0} emptyText="目前沒有公開內容" />
+      <LoadState loading={list.loading} error={list.error} empty={items.length === 0} emptyText="目前沒有公開內容，網站上暫時沒有播出任何快報。" />
       {items.length > 0 && (
         <ul className="space-y-3">
           {items.map((pub) => (

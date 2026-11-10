@@ -12,27 +12,27 @@ const MAX_LOCATION_CHARS = 100
 
 const NOTES = [
   '回報的原文不會公開，只有站主能在後台看到；AI 整理並經公開規則判斷後，才可能以摘要或中性提醒的形式出現在網站上。',
-  '本站不記錄 IP、裝置資訊，也不要求留下聯絡方式，所以無法回覆或追問你；送出後會拿到一組收據碼，可以用來查詢處理進度或補充說明。',
+  '本站不記錄 IP、裝置資訊，也不要求留下聯絡方式，所以沒辦法回覆或追問你；送出後會拿到一組收據碼，用它就能查進度或補充說明。',
   '請勿填寫姓名、電話、學號等個人資料，也不要指控特定的人；這類內容不會被公開。',
 ]
 
 function failure(err: unknown): string {
   if (err instanceof ApiError) {
-    if (err.code === 'RATE_LIMITED') return '回報太頻繁，請稍後再試。'
-    if (err.code === 'VALIDATION_ERROR') return '內容格式不正確，請確認字數並移除特殊控制字元後再送出。'
+    if (err.code === 'RATE_LIMITED') return '送出得有點頻繁，請稍後再試。'
+    if (err.code === 'VALIDATION_ERROR') return '內容格式不太對，請確認字數並移除特殊控制字元後再送出。'
   }
-  return '目前無法送出，請稍後再試。'
+  return '目前送不出去，請稍後再試。'
 }
 
 const STATUS_TEXT: Record<ReportStatus, { label: string; note: string }> = {
-  received: { label: '已收到', note: '回報已收到，還在等待系統整理。' },
-  processing: { label: '處理中', note: '系統正在分析，或相關事件還在追蹤中。' },
-  handled: { label: '已處理', note: '分析已完成，相關事件也已結束或不需要後續追蹤。' },
+  received: { label: '已收到', note: '回報已經收到，正在排隊等系統整理。' },
+  processing: { label: '處理中', note: '系統正在分析，或相關事件還在持續追蹤。' },
+  handled: { label: '已處理', note: '分析完成，相關事件也已結束或不需要後續追蹤。' },
 }
 
 function lookupFailure(err: unknown): string {
   if (err instanceof ApiError) {
-    if (err.code === 'NOT_FOUND') return '找不到這張收據碼，請確認是否輸入正確。'
+    if (err.code === 'NOT_FOUND') return '找不到這張收據碼，請確認有沒有打錯。'
     if (err.code === 'RATE_LIMITED') return '查詢太頻繁，每 10 分鐘最多查詢 20 次，請稍後再試。'
   }
   return '目前無法查詢，請稍後再試。'
@@ -103,7 +103,7 @@ function ReceiptLookup() {
       <h2 id="receipt-heading" className="text-lg font-semibold text-foreground">
         查詢進度與補件
       </h2>
-      <p className="text-sm text-muted-foreground">輸入送出時拿到的收據碼。為了防止有人亂猜收據碼，每 10 分鐘最多查詢 20 次。</p>
+      <p className="text-sm text-muted-foreground">拿出送出時的收據碼，就能查目前的進度。為了防止有人亂猜收據碼，每 10 分鐘最多查詢 20 次。</p>
       <form aria-label="查詢進度" className="flex flex-col gap-3 sm:flex-row sm:items-end" onSubmit={lookUp}>
         <label className="block flex-1 space-y-1 text-sm text-foreground">
           <span>收據碼</span>
@@ -205,7 +205,7 @@ export function Report() {
   return (
     <div className="space-y-8">
       <PageIntro eyebrow="回報" title="匿名回報">
-        <p>看到校園裡的設施故障、安全疑慮或其他異常，可以在這裡告訴我們。</p>
+        <p>看到怪怪的事？匿名跟我們說。設施故障、安全疑慮或其他不對勁的狀況，都可以在這裡告訴我們。</p>
       </PageIntro>
 
       <Card className="space-y-2">
@@ -216,7 +216,7 @@ export function Report() {
           ))}
         </ul>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          這裡不是通報管道。遇到緊急狀況請直接撥打 110 或 119，或聯絡學校校安中心。
+          這裡不是報案管道。遇到緊急狀況請直接撥打 110 或 119，或聯絡學校校安中心。
         </p>
       </Card>
 
@@ -246,7 +246,7 @@ export function Report() {
         {error && <ErrorText>{error}</ErrorText>}
         {sent && (
           <div role="status" className="space-y-2 rounded-lg border border-border bg-muted px-4 py-3 text-sm text-foreground">
-            <p>已收到你的回報，謝謝。系統會和其他來源一起分析，不會直接公開。</p>
+            <p>已收到你的回報，謝謝你！系統會把它和其他來源一起比對分析，不會直接公開。</p>
             {receipt && (
               <>
                 <p>
@@ -254,7 +254,7 @@ export function Report() {
                   <code className="select-all font-mono font-semibold tracking-wide">{receipt}</code>
                 </p>
                 <p className="text-muted-foreground">
-                  收據碼只會顯示這一次，本站只保存它的雜湊、無法幫你找回；請自行抄下或截圖，之後可以在下方查詢進度或補件。
+                  收據碼只會顯示這一次，本站只保存它的雜湊、沒辦法幫你找回；請先抄下或截圖，之後就能在下方查進度或補件。
                 </p>
               </>
             )}

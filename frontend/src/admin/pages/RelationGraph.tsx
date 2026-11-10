@@ -110,7 +110,7 @@ export function RelationGraph() {
         loading={graph.loading && !graph.data}
         error={graph.error}
         empty={edges.length === 0}
-        emptyText="目前沒有符合條件的關聯"
+        emptyText="目前沒有符合條件的關聯，換個篩選條件試試。"
       />
       {edges.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_24rem]">

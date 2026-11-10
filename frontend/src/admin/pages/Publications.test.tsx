@@ -98,6 +98,6 @@ describe('Publications', () => {
 
   it('沒有公開內容時顯示空狀態', async () => {
     open({ 'GET /api/v1/admin/publications': { data: [] } })
-    expect(await screen.findByText('目前沒有公開內容')).toBeInTheDocument()
+    expect(await screen.findByText('目前沒有公開內容，網站上暫時沒有播出任何快報。')).toBeInTheDocument()
   })
 })

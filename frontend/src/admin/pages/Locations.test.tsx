@@ -91,7 +91,7 @@ describe('Locations', () => {
 
   it('導覽列有「地點」', async () => {
     open({ 'GET /api/v1/admin/locations': { data: [] } })
-    expect(await screen.findByText('還沒有任何地點')).toBeInTheDocument()
+    expect(await screen.findByText('還沒有任何地點，有事件進來後就會出現在這裡。')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '地點' })).toHaveAttribute('href', '/admin/locations')
   })
 })

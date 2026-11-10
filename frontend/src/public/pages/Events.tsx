@@ -15,7 +15,7 @@ export function Events() {
   return (
     <div className="space-y-8">
       <PageIntro eyebrow="事件查詢" title="事件分類查詢">
-        <p>依類別列出所有公開的快報。每則都標示查證狀態，「尚未查證」的內容不代表事情確實發生。</p>
+        <p>想找特定類別的消息？點下面的類別，快報依時間排好給你看。每則都標示查證狀態，「尚未查證」的內容不代表事情確實發生。</p>
       </PageIntro>
 
       {categories.error && <ErrorText>{categories.error.message}</ErrorText>}

@@ -84,7 +84,7 @@ export function Scenario() {
             loading={history.loading && !history.data}
             error={history.error}
             empty={history.data?.length === 0}
-            emptyText="還沒有模擬紀錄"
+            emptyText="還沒有模擬紀錄，跑一次試試看。"
           />
           {history.data && history.data.length > 0 && (
             <ul className="divide-y divide-border">

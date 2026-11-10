@@ -41,7 +41,7 @@ describe('公開版韌性成績單', () => {
     const overall = await screen.findByRole('region', { name: '總分' })
     expect(within(overall).getByText('N/A')).toBeInTheDocument()
     expect(within(overall).getByText(/資料不足/)).toBeInTheDocument()
-    const recovery = screen.getByRole('article', { name: '恢復' })
+    const recovery = screen.getByRole('article', { name: '開始處理後，多久恢復正常？' })
     expect(within(recovery).getByText('N/A')).toBeInTheDocument()
     expect(within(recovery).getByText(/樣本 2 筆/)).toBeInTheDocument()
     expect(within(recovery).getByText(/少於 5 筆/)).toBeInTheDocument()
@@ -52,11 +52,28 @@ describe('公開版韌性成績單', () => {
     await screen.findByRole('region', { name: '總分' })
     expect(screen.getByText(/2026-05-02 至 2026-10-28（180 天）/)).toBeInTheDocument()
     expect(screen.getByText(/24 件事件/)).toBeInTheDocument()
-    const detection = screen.getByRole('article', { name: '發現' })
+    const detection = screen.getByRole('article', { name: '出事後，多快有人知道？' })
     expect(within(detection).getByText('85')).toBeInTheDocument()
     expect(within(detection).getByText(/覆蓋率 83%/)).toBeInTheDocument()
     const limits = screen.getByRole('region', { name: '資料限制' })
     expect(within(limits).getByText('公開版只統計已查證並公開的事件。')).toBeInTheDocument()
+  })
+
+  it('白話說明：四個構面改成四個問題，並寫明目標是本專題自訂（ADR-0020 決策 5）', async () => {
+    open(PUBLIC_RESILIENCE)
+    await screen.findByRole('heading', { level: 1, name: '校園韌性成績單' })
+    expect(screen.getByText(/學校遇到狀況時，處理得好不好？/)).toBeInTheDocument()
+    expect(screen.getByText(/幾天算好是本專題自己訂的目標，不是學校的官方標準/)).toBeInTheDocument()
+    const questions = within(screen.getByRole('list', { name: '四個問題' }))
+    for (const q of [
+      '出事後，多快有人知道？',
+      '知道之後，多快開始處理？',
+      '開始處理後，多久恢復正常？',
+      '同樣的事，有沒有一再發生？',
+    ]) {
+      expect(questions.getByRole('article', { name: q })).toBeInTheDocument()
+    }
+    expect(screen.queryByText(/構面/)).not.toBeInTheDocument()
   })
 
   it('資料齊全時顯示整數總分', async () => {

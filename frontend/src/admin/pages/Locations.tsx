@@ -62,7 +62,7 @@ export function Locations() {
       />
       {error && <ErrorText>{error}</ErrorText>}
       {notice && <Notice>{notice}</Notice>}
-      <LoadState loading={list.loading && !list.data} error={list.error} empty={items.length === 0} emptyText="還沒有任何地點" />
+      <LoadState loading={list.loading && !list.data} error={list.error} empty={items.length === 0} emptyText="還沒有任何地點，有事件進來後就會出現在這裡。" />
       {items.length > 0 && (
         <ul className="space-y-3">
           {items.map((loc) => (
