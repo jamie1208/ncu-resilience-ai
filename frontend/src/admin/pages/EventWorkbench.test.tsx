@@ -56,6 +56,27 @@ describe('EventWorkbench', () => {
     expect(calls.map((c) => c.path)).toContain('/api/v1/admin/events?status=verified')
   })
 
+  it('匿名回報的補件在來源對照中標示補件（P8-T08）', async () => {
+    const [first, second] = EVENT_DETAIL.evidence
+    open(`/admin/events/${EVENT_ID}`, {
+      'GET /api/v1/admin/events': { data: EVENTS },
+      [DETAIL]: {
+        data: {
+          ...EVENT_DETAIL,
+          evidence: [
+            { ...first, source_code: 'anonymous-report' },
+            { ...second, source_code: 'anonymous-report', supplement_of: first.source_item_id },
+          ],
+        },
+      },
+    })
+    const sources = await screen.findByRole('region', { name: '來源對照' })
+    const items = within(sources).getAllByRole('listitem')
+    expect(within(items[0]).queryByText('補件')).not.toBeInTheDocument()
+    expect(within(items[1]).getByText('補件')).toBeVisible()
+    expect(within(items[1]).getByText(/補充第 1 則來源/)).toBeVisible()
+  })
+
   it('事件詳細：來源對照、風險分項與歷史；外部連結不帶 referrer，摘錄不當作 HTML', async () => {
     const { user } = open('/admin/events', {
       'GET /api/v1/admin/events': { data: EVENTS },

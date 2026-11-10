@@ -40,6 +40,13 @@
 代表地點（P8-T02）：建立新事件時，S02 的地點名稱經 `app/locations/resolver.py` 對應到 locations；
 沒見過的名稱才呼叫 S13 location-resolver（執行紀錄同 S01–S03 補上 event_id）。
 
+匿名回報的補件（P8-T08）：補件是一則獨立的匿名回報文章，但不經 S01–S04 判斷：
+原投稿已屬於某個（未封存的）事件時，補件直接掛到該事件（linked），再重跑 S05、S06；
+原投稿還沒擷取或還在等待分析時延後（deferred，回到 pending、不計失敗次數，下一輪掃描再試）；
+原投稿分析完卻沒有事件（例：單獨看不算事件）或分析失敗時，補件照一般文章分析，但原投稿
+作為同一則回報的第二份證據一起交給 S01–S04（補件在前），補件建立或併入事件時原投稿也一起
+成為該事件的證據；原投稿只在使用者封存的事件中時，只當作脈絡、不帶進新事件。
+
 系列（P8-T04）：`PipelineDeps.group_series` 為 True 時（正式環境），S06 與通知同步之後以
 `app/series/grouping.py` 更新事件的系列：還沒有系列的事件經 S11 series-matcher 歸組，
 改判 false 的事件移出自成一件。之後以 `PipelineDeps.series_hook`（正式環境排入 Celery）
@@ -50,6 +57,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import dataclasses
 import uuid
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -92,6 +100,7 @@ from app.models.source import AnalysisStatus, Source, SourceItem, SourceItemVers
 from app.risk.engine import RiskPolicy, assessment_record, load_policy
 from app.series.grouping import S11, sync_event_series
 from app.services.audit import record_audit
+from app.services.report_receipts import supplement_origins
 from app.verification.rules import (
     assessments_from_output,
     decide,
@@ -152,6 +161,7 @@ class Outcome(StrEnum):
     ANALYZED = "analyzed"  # 重跑既有事件的 S05、S06
     STOPPED = "stopped"  # S01–S03 或 embedding 沒有結果（abstain、failed）
     SKIPPED = "skipped"  # 事件已封存或沒有證據
+    DEFERRED = "deferred"  # 匿名回報的補件：原投稿還在等待分析（P8-T08）
 
 
 SeriesHook = Callable[[uuid.UUID, str], None]
@@ -549,7 +559,9 @@ async def _mark_analysis(session: AsyncSession, item_id: uuid.UUID, result: Pipe
     if item is None:
         return
     item.analysis_queued_at = None
-    if result.outcome is not Outcome.STOPPED or (
+    if result.outcome is Outcome.DEFERRED:
+        item.analysis_status = AnalysisStatus.PENDING
+    elif result.outcome is not Outcome.STOPPED or (
         last is not None and last.status == RunStatus.ABSTAINED.value
     ):
         item.analysis_status = AnalysisStatus.DONE
@@ -649,12 +661,14 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
     )
     if linked is not None:
         return await _analyze_event(ctx, linked)
+    handled, context = await _supplement(ctx, item_id)
+    if handled is not None:
+        return handled
 
-    evidence = await _evidence(session, [item_id])
-    if not evidence:
+    evidence = await _evidence(session, [item_id, *([context.item_id] if context else [])])
+    if not evidence or evidence[0]["evidence_id"] != item_id.hex:
         raise LookupError(f"來源文章 {item_id} 不存在或沒有內容")
     article = evidence[0]
-    eid = str(article["evidence_id"])
     payload = {"evidence": evidence}
 
     if ctx.deps.check_relevance:
@@ -702,12 +716,12 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
     )
     location = extracted.get("location")
     article_summary = {
-        "evidence_ids": [eid],
+        "evidence_ids": [str(e["evidence_id"]) for e in evidence],
         "category": category,
         "occurrence_start_date": extracted.get("occurrence_start_date"),
         "location": location,
     }
-    target, related = await _link(ctx, article, article_summary, candidates)
+    target, related = await _link(ctx, evidence, article_summary, candidates)
 
     if target is not None:
         event = await session.get(Event, target)
@@ -722,7 +736,7 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
             location_id=await resolve_location(
                 session,
                 str(location) if location else None,
-                evidence=[article],
+                evidence=evidence,
                 run=lambda p: ctx.run(S13, p),
                 principal=PIPELINE_PRINCIPAL,
                 request_id=ctx.trace_id,
@@ -748,6 +762,8 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
     session.add(
         EventEvidence(event_id=event.id, source_item_id=item_id, support_type=INITIAL_SUPPORT)
     )
+    if context is not None and context.attach:
+        await _attach_once(session, event.id, context.item_id)
     await _update_summary(
         session,
         event,
@@ -774,9 +790,61 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
     )
 
 
+@dataclass(frozen=True)
+class _SupplementContext:
+    """補件照一般文章分析時一起交給模型的原投稿；`attach` 為是否一起成為事件的證據。"""
+
+    item_id: uuid.UUID
+    attach: bool
+
+
+async def _attach_once(session: AsyncSession, event_id: uuid.UUID, item_id: uuid.UUID) -> None:
+    exists = await session.scalar(
+        select(EventEvidence.source_item_id).where(
+            EventEvidence.event_id == event_id, EventEvidence.source_item_id == item_id
+        )
+    )
+    if exists is None:
+        session.add(
+            EventEvidence(event_id=event_id, source_item_id=item_id, support_type=INITIAL_SUPPORT)
+        )
+
+
+async def _supplement(
+    ctx: _Context, item_id: uuid.UUID
+) -> tuple[PipelineResult | None, _SupplementContext | None]:
+    """匿名回報的補件：掛到原投稿的事件或延後（回傳結果）；需要照一般文章分析時回傳原投稿脈絡。
+
+    不是補件時回傳（None, None）。
+    """
+    origins = await supplement_origins(ctx.session, [item_id])
+    if item_id not in origins:
+        return None, None
+    origin_item, origin_status = origins[item_id]
+    if origin_item is None or origin_status in (AnalysisStatus.PENDING, AnalysisStatus.QUEUED):
+        return PipelineResult(Outcome.DEFERRED, None, ctx.trace_id, tuple(ctx.steps)), None
+    events = (
+        await ctx.session.execute(
+            select(EventEvidence.event_id, Event.status)
+            .join(Event, Event.id == EventEvidence.event_id)
+            .where(EventEvidence.source_item_id == origin_item)
+            .order_by(EventEvidence.created_at)
+        )
+    ).all()
+    open_event = next((eid for eid, status in events if status != EventStatus.ARCHIVED.value), None)
+    if open_event is None:
+        return None, _SupplementContext(origin_item, attach=not events)
+    ctx.session.add(
+        EventEvidence(event_id=open_event, source_item_id=item_id, support_type=INITIAL_SUPPORT)
+    )
+    await ctx.session.commit()
+    result = await _analyze_event(ctx, open_event)
+    return dataclasses.replace(result, outcome=Outcome.LINKED), None
+
+
 async def _link(
     ctx: _Context,
-    article: Mapping[str, Any],
+    articles: Sequence[Mapping[str, Any]],
     article_summary: Mapping[str, Any],
     candidates: Sequence[Candidate],
 ) -> tuple[uuid.UUID | None, list[tuple[uuid.UUID, uuid.UUID, float, list[str]]]]:
@@ -788,7 +856,7 @@ async def _link(
         if not candidate_evidence:
             continue
         payload = {
-            "evidence": [article, *candidate_evidence],
+            "evidence": [*articles, *candidate_evidence],
             "article": article_summary,
             "candidate": {
                 "title": candidate.title[:MAX_TITLE_CHARS],

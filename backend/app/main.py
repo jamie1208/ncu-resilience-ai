@@ -12,7 +12,7 @@ from fastapi import FastAPI, Request, Response
 
 from app.api.errors import register_error_handlers
 from app.api.v1 import admin, auth, health, public
-from app.api.v1.public.reports import ReportRateLimiter
+from app.api.v1.public.reports import LookupRateLimiter, ReportRateLimiter
 from app.api.v1.public.route import RateLimiter
 from app.core import metrics
 from app.core.config import get_settings
@@ -96,6 +96,7 @@ def create_app() -> FastAPI:
     app.include_router(public.router, prefix=settings.api_prefix)
     app.state.public_rate_limiter = RateLimiter()
     app.state.report_rate_limiter = ReportRateLimiter()
+    app.state.report_lookup_rate_limiter = LookupRateLimiter()
     if settings.metrics_port is not None:
         metrics.start_metrics_server(settings.metrics_port)
     return app

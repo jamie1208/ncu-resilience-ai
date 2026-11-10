@@ -71,6 +71,7 @@ from app.reports.service import (
 )
 from app.series.grouping import sync_event_series
 from app.services.audit import AuditMetadataError, prepare_metadata, record_audit
+from app.services.report_receipts import supplement_origins
 from app.worker.celery_app import ANALYZE_EVENT_TASK, celery_app
 
 router = APIRouter(prefix="/events", tags=["admin"])
@@ -131,6 +132,8 @@ class EvidenceOut(BaseModel):
     published_at: AwareDatetime | None
     support_type: str
     excerpt: str | None
+    supplement_of: uuid.UUID | None = None
+    """匿名回報的補件（P8-T08）：原投稿的來源文章 id；不是補件時不輸出這個欄位。"""
 
 
 class SummaryOut(BaseModel):
@@ -379,6 +382,8 @@ async def get_event(event_id: uuid.UUID, session: Session, _: CanRead) -> dict[s
         .where(EventEvidence.event_id == event_id)
         .order_by(SourceItem.published_at.asc().nulls_last(), SourceItem.id)
     )
+    evidence_list = list(evidence_rows.all())
+    origins = await supplement_origins(session, [item.id for _, item, _ in evidence_list])
     evidence = [
         EvidenceOut(
             source_item_id=item.id,
@@ -387,8 +392,9 @@ async def get_event(event_id: uuid.UUID, session: Session, _: CanRead) -> dict[s
             published_at=item.published_at,
             support_type=ev.support_type,
             excerpt=ev.excerpt,
-        ).model_dump(mode="json")
-        for ev, item, code in evidence_rows
+            supplement_of=origins[item.id][0] if item.id in origins else None,
+        ).model_dump(mode="json", exclude={"supplement_of"} if item.id not in origins else None)
+        for ev, item, code in evidence_list
     ]
     risk_rows = await session.execute(
         select(RiskAssessment)

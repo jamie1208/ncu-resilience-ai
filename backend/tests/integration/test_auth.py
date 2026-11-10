@@ -40,8 +40,11 @@ CSRF_HEADER = "X-CSRF-Token"
 PUBLIC_ROUTES = {("GET", "/api/v1/health"), ("POST", LOGIN)}
 # 公開唯讀 API（P5-T11，ADR-0015）：只允許 GET；這個前綴下的其他方法一律不得存在
 PUBLIC_READ_PREFIX = "/api/v1/public/"
-# 唯一的例外：匿名回報入口（P5-T13，使用者 2026-10-28 同意）
-PUBLIC_WRITE_ROUTES = {("POST", "/api/v1/public/reports")}
+# 例外：匿名回報入口（P5-T13，使用者 2026-10-28 同意）與補件（P8-T08，使用者 2026-11-10 同意）
+PUBLIC_WRITE_ROUTES = {
+    ("POST", "/api/v1/public/reports"),
+    ("POST", "/api/v1/public/reports/supplements"),
+}
 
 
 @pytest.fixture()

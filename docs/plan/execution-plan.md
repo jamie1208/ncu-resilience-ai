@@ -588,6 +588,10 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
   - 驗證：S14 評測 `improvement_valid` = 1.0、`cause_coverage` accuracy ≥ 0.90、`abstain_when_insufficient`、`hypothesized_not_asserted` = 1.0；`tests/integration/test_impact_evaluation.py`（fake provider；沒有勾選時不呼叫模型；引用不存在的原因或建議 id 被拒；超過上限被拒；件數由程式換算；系列分析更新後舊評估標示過期）；`tests/security/` 新增公開快照與公開端點不含評估結果的案例；前端 vitest 與 Playwright（勾選到結果）；P7-T02／P7-T03 的 G7-1 測試不修改且通過
   - 前置：P8-T05、P8-T09、P8-T10、P8-T13
 
+- **P8-T16 後台匿名回報收件匣**（使用者 2026-11-10 決定新增；P8-T08 只在事件的來源對照標出補件）
+  - 檔案：`app/api/v1/admin/anonymous_reports.py`（`GET /api/v1/admin/anonymous-reports`：收到時間、原投稿或補件、同一張收據的分組、擷取與分析狀態、所屬事件；原文只在管理端顯示；只在 `/api/v1/admin/*`，不經通道）、後台 `frontend/src/admin/pages/AnonymousReports.tsx`（導覽「匿名回報」）、`admin/api.ts`、`admin/router.ts`
+  - 驗證：`tests/integration/test_admin_anonymous_reports.py`（需要登入；不回傳收據碼或雜湊；補件依收據分組；沒有成立事件的投稿也看得到）、前端 vitest；`tests/security/test_anonymous_report.py`、`tests/security/test_report_receipt.py` 不修改且通過
+  - 前置：P8-T08
 ```bash
 cd backend && uv run pytest tests/unit/series tests/security -q
 uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --skill impact-evaluator --split test

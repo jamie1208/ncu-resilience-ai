@@ -709,6 +709,12 @@ function SplitForm({ event, onSplit }: { event: EventDetail; onSplit: () => void
 }
 
 /** 來源對照：每則證據的來源、時間、支持類型與摘錄（摘錄是不可信的外部內容，只當純文字顯示）。 */
+/** 匿名回報補件的說明（P8-T08）：指出補充的是第幾則來源。 */
+function supplementNote(evidence: EventDetail['evidence'], origin: string): string {
+  const index = evidence.findIndex((other) => other.source_item_id === origin)
+  return index >= 0 ? `同一張收據碼的補件，補充第 ${index + 1} 則來源` : '同一張收據碼的補件（原投稿不在這個事件）'
+}
+
 function SourceComparison({ event }: { event: EventDetail }) {
   return (
     <Card>
@@ -721,9 +727,13 @@ function SourceComparison({ event }: { event: EventDetail }) {
               <li key={ev.source_item_id} className="rounded-lg border border-border p-3">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   <Badge tone={SUPPORT_TONES[ev.support_type]}>{label(SUPPORT_LABELS, ev.support_type)}</Badge>
+                  {ev.supplement_of && <Badge tone="info">補件</Badge>}
                   <span className="font-mono text-foreground">{ev.source_code}</span>
                   <span className="font-mono text-muted-foreground">{formatTime(ev.published_at)}</span>
                 </div>
+                {ev.supplement_of && (
+                  <p className="mt-1 text-xs text-muted-foreground">{supplementNote(event.evidence, ev.supplement_of)}</p>
+                )}
                 {ev.excerpt ? (
                   <blockquote className="mt-2 border-l-2 border-border pl-3 text-sm leading-relaxed whitespace-pre-wrap text-foreground">
                     {ev.excerpt}
