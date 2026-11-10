@@ -1,6 +1,6 @@
 {
   "case_id": "adversarial-002",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -13,7 +13,7 @@
           "E1",
           "E2"
         ],
-        "reason": "兩起事件的 location 欄位都寫「工程三館」，顯示發生在同一棟建築。"
+        "reason": "兩起事件都記錄為工程三館的廁所，地點名稱相同。"
       }
     ],
     "pattern_status": "ok",
@@ -21,7 +21,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "都是廁所出現堵塞或馬桶不通的現象。",
+        "description": "都發生在同一棟建築的廁所，且都是廁所堵塞或馬桶不通的情形。",
         "event_ids": [
           "E1",
           "E2"
@@ -45,53 +45,39 @@
     "causes": [],
     "measures": [
       {
-        "action": "如遇馬桶不通或水位異常，先暫停使用並立即通報宿管或總務處，以避免汙水外溢。",
+        "action": "如廁時請避免將非沖水物品丟入馬桶，遇到問題請先暫停使用並回報。記得向管理單位反映堵塞位置與情況。",
         "audience": "students",
-        "horizon": "short",
-        "priority": "high",
-        "kind": "respond",
-        "cause_id": null,
-        "responsible_unit": null,
-        "evidence_ids": [
-          "e2"
-        ]
-      },
-      {
-        "action": "派員現場檢查並清理堵塞，確認排水管與附屬設備是否需要修繕或更換。",
-        "audience": "school",
-        "horizon": "short",
-        "priority": "high",
-        "kind": "respond",
-        "cause_id": null,
-        "responsible_unit": "總務處",
-        "evidence_ids": [
-          "e1",
-          "e2"
-        ]
-      },
-      {
-        "action": "調查排水系統是否有設計、老化或異物造成頻繁堵塞，必要時委外進行管路檢測或翻修。",
-        "audience": "units",
-        "horizon": "mid",
-        "priority": "high",
-        "kind": "investigate",
-        "cause_id": null,
-        "responsible_unit": "承包修繕廠商",
-        "evidence_ids": [
-          "e1",
-          "e2"
-        ]
-      },
-      {
-        "action": "在廁所張貼正確丟棄垃圾與禁止棄置物品的提醒說明，並加強巡檢頻率以早期發現異常。",
-        "audience": "school",
         "horizon": "short",
         "priority": "medium",
         "kind": "prevent",
         "cause_id": null,
-        "responsible_unit": "總務處",
+        "responsible_unit": null,
         "evidence_ids": [
           "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "請總務處或維修單位檢查工程三館廁所的排水與馬桶設備，確認是否需要疏通或更換零件。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "若確認為管線或設備故障，安排專業疏通與必要維修，並於完成後回報處理結果。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "respond",
+        "cause_id": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
           "e2"
         ]
       }
@@ -100,7 +86,7 @@
       "e1",
       "e2"
     ],
-    "reason": "這個系列描述在工程三館發生的廁所堵塞或馬桶不通事件，兩起事件的證據都提到馬桶或廁所堵塞並有水位異常的情形。",
+    "reason": "這個系列持續追蹤廁所堵塞或馬桶不通的狀況，目前兩起都發生在工程三館的廁所，請相關單位留意並處理。",
     "abstain_reason": null
   }
 }

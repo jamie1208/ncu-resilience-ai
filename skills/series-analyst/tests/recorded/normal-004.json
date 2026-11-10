@@ -1,10 +1,10 @@
 {
   "case_id": "normal-004",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "校內建築物漏水",
+    "title": "校內建築漏水或積水",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -12,21 +12,21 @@
         "event_ids": [
           "E1"
         ],
-        "reason": "事件位置明確指向總圖書館。"
+        "reason": "事件地點欄記為「總圖書館」。"
       },
       {
-        "label": "工程二館",
+        "label": "工程二館走廊",
         "event_ids": [
           "E2"
         ],
-        "reason": "事件位置明確指向工程二館。"
+        "reason": "事件地點欄記為「工程二館」，描述為走廊漏水。"
       },
       {
         "label": "文學院地下室",
         "event_ids": [
           "E3"
         ],
-        "reason": "事件位置明確指向文學院地下室。"
+        "reason": "事件地點欄記為「文學院」，描述為地下室積水漏水。"
       }
     ],
     "pattern_status": "ok",
@@ -34,7 +34,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "多起漏水或積水發生在豪雨或連日大雨之後。",
+        "description": "都在大雨或豪雨之後發生漏水或積水。",
         "event_ids": [
           "E1",
           "E2",
@@ -64,16 +64,14 @@
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能是豪雨或連日降雨導致屋頂、排水或下水道積水或滲水。",
+        "description": "可能是豪雨造成屋頂或排水系統進水、滲漏，導致室內天花板或走廊滴水。",
         "event_ids": [
           "E1",
-          "E2",
-          "E3"
+          "E2"
         ],
         "evidence_ids": [
           "e1",
-          "e2",
-          "e3"
+          "e2"
         ],
         "evidence_spans": [
           {
@@ -83,46 +81,43 @@
           {
             "evidence_id": "e2",
             "quote": "大雨過後工二走廊天花板在滴水，地板很滑。"
-          },
+          }
+        ],
+        "to_verify": "向總務處或廠商確認屋頂、排水系統與天窗是否有滲水或排水不良的情況。"
+      },
+      {
+        "cause_id": "c2",
+        "description": "文學院地下室疑似排水或防水層功能不足，遇連日大雨發生積水。",
+        "event_ids": [
+          "E3"
+        ],
+        "evidence_ids": [
+          "e3"
+        ],
+        "evidence_spans": [
           {
             "evidence_id": "e3",
             "quote": "連日大雨，文學院地下室又漏水積水了。"
           }
         ],
-        "to_verify": "向總務或維修單位確認各建築屋頂、排水管與地下室排水系統在豪雨後的狀況與檢修紀錄。"
+        "to_verify": "請文學院或總務處確認地下室排水系統與防水層狀況。"
       }
     ],
     "measures": [
       {
-        "action": "遇到漏水處先以明顯標示或布條警告地面濕滑並暫時封鎖危險區域，並放置容器接水以減少擴散。",
+        "action": "雨後若經過有滴水或積水區域，記得避開濕滑地面，減少滑倒風險。",
         "audience": "students",
         "horizon": "short",
-        "priority": "high",
+        "priority": "medium",
         "kind": "respond",
         "cause_id": null,
         "responsible_unit": null,
         "evidence_ids": [
-          "e1",
-          "e2",
-          "e3"
+          "e2"
         ]
       },
       {
-        "action": "發現漏水應立即向總務或維修通報並拍照回報位置與情況以利派工。",
-        "audience": "students",
-        "horizon": "short",
-        "priority": "medium",
-        "kind": "investigate",
-        "cause_id": null,
-        "responsible_unit": null,
-        "evidence_ids": [
-          "e1",
-          "e2",
-          "e3"
-        ]
-      },
-      {
-        "action": "檢查各建築屋頂、排水溝與雨水下水系統是否堵塞或損壞，並在必要時清理或維修。",
+        "action": "請總務處盡速檢視並清理主要建築的屋頂排水系統與落水口，排查豪雨後的進水路徑。",
         "audience": "school",
         "horizon": "short",
         "priority": "high",
@@ -131,30 +126,29 @@
         "responsible_unit": "總務處",
         "evidence_ids": [
           "e1",
-          "e2",
-          "e3"
+          "e2"
         ]
       },
       {
-        "action": "在近期強降雨前進行屋頂與排水系統巡檢與預防性維修，並檢視地下室排水與抽水設備是否可用。",
+        "action": "針對有地下室積水的建築，建議安排防水層與排水系統的專業檢測與必要維修。",
         "audience": "school",
         "horizon": "mid",
         "priority": "high",
         "kind": "prevent",
-        "cause_id": "c1",
+        "cause_id": "c2",
         "responsible_unit": "總務處",
         "evidence_ids": [
           "e3"
         ]
       },
       {
-        "action": "若檢修需委外，請由學校指派合格廠商進行詳細檢測與修復，並提供檢測報告。",
+        "action": "要求承包或維修廠商檢查屋頂、窗邊與地下室的防水與接縫，確認是否需加強施工或更換老舊材質。",
         "audience": "units",
         "horizon": "mid",
         "priority": "medium",
         "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": "維修承包廠商",
+        "responsible_unit": "維修廠商",
         "evidence_ids": [
           "e1",
           "e2",
@@ -162,11 +156,11 @@
         ]
       },
       {
-        "action": "完成維修後公開維修項目與改善措施，並在雨季後追蹤是否仍有漏水回報。",
+        "action": "建立雨後巡檢機制，豪雨或連日降雨後由維修單位優先檢查易漏水地點並記錄維修狀況。",
         "audience": "school",
-        "horizon": "long",
-        "priority": "medium",
-        "kind": "investigate",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "prevent",
         "cause_id": "c1",
         "responsible_unit": "總務處",
         "evidence_ids": [
@@ -181,7 +175,7 @@
       "e2",
       "e3"
     ],
-    "reason": "本系列為校內多起建築物漏水或積水通報，三起事件的證據皆提到豪雨或連日大雨後出現滴水或積水情形。",
+    "reason": "這個系列持續追蹤校內建築在大雨或豪雨後出現的漏水與積水情形。建議關注豪雨後的屋頂、排水與地下室排水狀況。",
     "abstain_reason": null
   }
 }

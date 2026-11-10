@@ -1,10 +1,10 @@
 {
   "case_id": "boundary-002",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "學生用餐後腹瀉",
+    "title": "學餐午後腹瀉疑似食物相關",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -12,7 +12,7 @@
         "event_ids": [
           "E1"
         ],
-        "reason": "事件的地點欄位標示為「第二餐廳」。"
+        "reason": "事件地點欄位記載為「第二餐廳」，與當事人敘述中的「二餐」對應。"
       }
     ],
     "pattern_status": "abstain",
@@ -21,7 +21,7 @@
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能為餐點污染或食物相關原因造成的急性腸胃不適（疑似食物中毒）。",
+        "description": "可能與在第二餐廳午餐所食用的餐點或製備處理有關。",
         "event_ids": [
           "E1"
         ],
@@ -34,12 +34,12 @@
             "quote": "中午吃完二餐之後我跟室友都拉肚子，有人也這樣嗎？"
           }
         ],
-        "to_verify": "向校內衛保單位或第二餐廳確認當日餐點是否有異常、是否有多名用餐者出現類似症狀，以及是否有食材或製備紀錄可供檢驗。"
+        "to_verify": "向學校衛生保健單位或餐廳管理單位確認當日菜單、食品來源與製備流程，以及是否有其他通報個案。"
       }
     ],
     "measures": [
       {
-        "action": "若有腹瀉或其他不適，盡快就醫並告知醫師最近的用餐地點與菜色。",
+        "action": "有腹瀉或其它疑似食物中毒症狀時，建議你儘速就醫或向校內衛生單位通報，並暫時避免食用疑似來源餐點。",
         "audience": "students",
         "horizon": "short",
         "priority": "high",
@@ -51,19 +51,7 @@
         ]
       },
       {
-        "action": "調查當日第二餐廳的餐點與食材來源、備餐流程，並保存或採樣可疑食材進行檢驗。",
-        "audience": "units",
-        "horizon": "short",
-        "priority": "high",
-        "kind": "investigate",
-        "cause_id": "c1",
-        "responsible_unit": "第二餐廳業者或廠商",
-        "evidence_ids": [
-          "e1"
-        ]
-      },
-      {
-        "action": "由校方衛生或環安單位協調，對第二餐廳進行食安檢查與必要的衛生稽查，並通知校內醫務或衛保提供協助與追蹤。",
+        "action": "請校內衛生保健單位立即調查該日第二餐廳供餐狀況，確認菜單、食品來源、保存與製備流程，並匯整是否有其他通報個案。",
         "audience": "school",
         "horizon": "short",
         "priority": "high",
@@ -75,25 +63,13 @@
         ]
       },
       {
-        "action": "提醒學生如有相同症狀向學校回報，以便彙整是否為群聚事件並加速處理。",
-        "audience": "students",
+        "action": "請餐廳管理單位配合檢視當日食材來源與廚房衛生與保存流程，必要時先行暫停相關菜色並改善製備與保存程序。",
+        "audience": "units",
         "horizon": "short",
-        "priority": "medium",
+        "priority": "high",
         "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": null,
-        "evidence_ids": [
-          "e1"
-        ]
-      },
-      {
-        "action": "如果確認與餐廳有關，要求餐廳改善備餐與存放流程並加強員工衛生教育，必要時暫停涉事菜色供應直到查清。",
-        "audience": "units",
-        "horizon": "mid",
-        "priority": "high",
-        "kind": "prevent",
-        "cause_id": "c1",
-        "responsible_unit": "第二餐廳業者或廠商",
+        "responsible_unit": "餐廳管理單位",
         "evidence_ids": [
           "e1"
         ]
@@ -102,7 +78,7 @@
     "evidence_ids": [
       "e1"
     ],
-    "reason": "這個系列記錄學生用餐後出現腹瀉的通報，集中在第二餐廳；目前只有一則通報，尚不足以判定是否為群聚或長期規律。",
+    "reason": "這個系列持續追蹤學餐後腹瀉的通報，目前有一則通報疑似與第二餐廳午餐有關，建議相關單位與同學注意並查證。",
     "abstain_reason": null
   }
 }

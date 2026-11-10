@@ -1,11 +1,11 @@
 {
   "case_id": "boundary-004",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "工程一館、二館配合電力改善停電",
+    "title": "工程一館、工程二館配合電力改善停電",
     "occurrence_start_date": "2026-11-02",
     "occurrence_start_time": "13:00",
     "occurrence_end_date": "2026-11-02",
@@ -13,7 +13,7 @@
     "location": "工程一館",
     "mentions_person": false,
     "summary": {
-      "text": "工程一館與工程二館於 11/2（一）13 點到 17 點配合電力改善工程停電，期間網路中斷。",
+      "text": "工程一館 11/2（一）下午 1 點到 5 點配合電力改善工程停電，期間網路中斷，館內同學記得提前存檔。",
       "evidence_ids": [
         "e1"
       ]
@@ -25,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "配合電力改善工程停電"
+        "quote": "工程一館、二館停電"
       },
       {
         "field": "time",
@@ -35,10 +35,10 @@
       {
         "field": "location",
         "evidence_id": "e1",
-        "quote": "工程一館、工程二館"
+        "quote": "工程一館、工程二館於 11/2（一）13:00–17:00 配合電力改善工程停電，期間網路中斷。"
       }
     ],
-    "reason": "官方公告寫明工程一館與工程二館於 11/2（週一）13:00–17:00 停電並造成網路中斷，提供明確的日期與時段。",
+    "reason": "官方公告寫明工程一館與工程二館於指定時段停電並造成網路中斷。",
     "confidence": 0.95,
     "abstain_reason": null
   }

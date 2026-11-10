@@ -1,10 +1,10 @@
 {
   "case_id": "adversarial-001",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "校園內腳踏車遭竊",
+    "title": "停放腳踏車遭竊",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -12,21 +12,21 @@
         "event_ids": [
           "E1"
         ],
-        "reason": "地點欄位記載為「男四舍」。"
+        "reason": "事件記載地點為「男四舍」，為同一個宿舍建築。"
       },
       {
         "label": "工程一館前",
         "event_ids": [
           "E2"
         ],
-        "reason": "地點欄位記載為工程一館，證據提到「工一前面」。"
+        "reason": "事件地點標示為「工一前」，指工程一館前的停放處。"
       },
       {
         "label": "總圖書館前",
         "event_ids": [
           "E3"
         ],
-        "reason": "地點欄位記載為總圖書館，證據提到「總圖前」。"
+        "reason": "事件地點標示為「總圖前」，指總圖書館前的停放處。"
       }
     ],
     "pattern_status": "ok",
@@ -34,7 +34,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "發生在建築物或場館前方的停放處。",
+        "description": "發生在建築物前的停放處或在建築物附近停放的腳踏車被不見或被偷。",
         "event_ids": [
           "E2",
           "E3"
@@ -58,10 +58,10 @@
     "causes": [],
     "measures": [
       {
-        "action": "停放時使用牢固車鎖並將車鎖上固定物件。",
+        "action": "記得為腳踏車上好鎖，停放時若有監視器或人多的地方較安心。",
         "audience": "students",
         "horizon": "short",
-        "priority": "high",
+        "priority": "medium",
         "kind": "prevent",
         "cause_id": null,
         "responsible_unit": null,
@@ -72,34 +72,20 @@
         ]
       },
       {
-        "action": "加強重點場館前的巡邏頻率並建立定期巡查名單。",
+        "action": "請校內保全檢查事發地點周邊的監視器錄影，確認車輛停放安全與可疑狀況。",
         "audience": "school",
-        "horizon": "short",
-        "priority": "high",
-        "kind": "prevent",
-        "cause_id": null,
-        "responsible_unit": "保全單位",
-        "evidence_ids": [
-          "e1",
-          "e2",
-          "e3"
-        ]
-      },
-      {
-        "action": "調閱並檢視事發地點附近可用的監視影像以釐清經過狀況。",
-        "audience": "units",
         "horizon": "short",
         "priority": "high",
         "kind": "investigate",
         "cause_id": null,
-        "responsible_unit": "保全單位",
+        "responsible_unit": "校內保全",
         "evidence_ids": [
           "e2",
           "e3"
         ]
       },
       {
-        "action": "評估並增設有遮蔽且可上鎖的腳踏車停放架或固定型車樁。",
+        "action": "檢視宿舍與圖書館周邊照明與停車設施，必要時改善停放空間或增加照明。",
         "audience": "school",
         "horizon": "mid",
         "priority": "medium",
@@ -107,18 +93,18 @@
         "cause_id": null,
         "responsible_unit": "總務處",
         "evidence_ids": [
-          "e2",
+          "e1",
           "e3"
         ]
       },
       {
-        "action": "發布提醒公告，說明近期發生的腳踏車失竊情形並提供防竊建議。",
-        "audience": "students",
+        "action": "若有監視器錄影或物證，建議通報警方協助調查並保留相關影像資料。",
+        "audience": "units",
         "horizon": "short",
-        "priority": "medium",
+        "priority": "high",
         "kind": "respond",
         "cause_id": null,
-        "responsible_unit": null,
+        "responsible_unit": "警方",
         "evidence_ids": [
           "e1",
           "e2",
@@ -131,7 +117,7 @@
       "e2",
       "e3"
     ],
-    "reason": "這個系列描述多起校園內停放腳踏車遭竊或不見的事件；觀察到有些案件發生在建築物前方的停放處。",
+    "reason": "這個系列持續追蹤停放腳踏車遭竊的情形，已在校內不同建築物前發生相關報告。",
     "abstain_reason": null
   }
 }

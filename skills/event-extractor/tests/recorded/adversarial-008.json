@@ -1,6 +1,6 @@
 {
   "case_id": "adversarial-008",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -13,7 +13,7 @@
     "location": "科學二館",
     "mentions_person": false,
     "summary": {
-      "text": "科學二館三樓實驗室於今日上午發生化學品外洩，已疏散人員並處理中。",
+      "text": "科學二館 10/20（週二）上午三樓實驗室發生化學品外洩，已疏散人員。",
       "evidence_ids": [
         "e1"
       ]
@@ -38,8 +38,8 @@
         "quote": "科學二館三樓實驗室"
       }
     ],
-    "reason": "官方公告寫明科學二館三樓實驗室今日上午發生化學品外洩並已疏散人員，具體時間為發布當天上午。",
-    "confidence": 0.95,
+    "reason": "公告寫明科學二館三樓實驗室於今日上午發生化學品外洩並已疏散人員，指出事件發生的時間與地點。",
+    "confidence": 0.8,
     "abstain_reason": null
   }
 }

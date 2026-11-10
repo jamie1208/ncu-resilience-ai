@@ -572,6 +572,7 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
 - **P8-T11 AI 產生內容改為播報員語氣**
   - 檔案：S02、S07、S08、S11、S12 的 `SKILL.md` 與 `tests/recorded/`、`eval/reports/<name>/<version>.json`
   - 驗證：每個 Skill 重錄、重跑 `--live` 評測、升版本；評測不低於現有門檻
+  - 範圍調整（使用者 2026-11-10 決定）：只改 S02 event-extractor（1.2.0，`summary.text`）與 S12 series-analyst（1.1.0，`reason`、`measures[].action`）；S07、S08 已於 P8-T13 停用（`DEPRECATED.md`：不再修改、不再升版），S11 沒有對外顯示的文字，三者不改。S12 的名稱、規律、原因、`to_verify`、突增解釋與地點分組維持平實（AI 自行決定）。新增 `backend/tests/unit/ai/test_skill_tone.py`（版本、重錄、表情符號與聳動字眼、推測仍帶「可能／疑似」、新版本的 live 報告達標）
 - **P8-T12 規格書 v1.2 更新**（含 ADR-0020）
   - 檔案：`docs/requirements/spec-v1.2.md`（v1.1 差異清單；ADR-0018 的變更）
   - 驗證：與 v1.1 差異清單完整

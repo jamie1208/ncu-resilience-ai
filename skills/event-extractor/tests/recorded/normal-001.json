@@ -1,6 +1,6 @@
 {
   "case_id": "normal-001",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -13,7 +13,7 @@
     "location": "工程五館",
     "mentions_person": false,
     "summary": {
-      "text": "工程五館 11/2（一）上午 8 點到 12 點配合台電檢修停電，公告提醒提前儲存資料。",
+      "text": "工程五館 11/2（一）上午 8 點到 12 點配合台電檢修停電，在館內的同學記得提前存檔。",
       "evidence_ids": [
         "e1"
       ]
@@ -38,7 +38,7 @@
         "quote": "工程五館"
       }
     ],
-    "reason": "公告寫明工程五館停電的日期與時段。",
+    "reason": "校方公告寫明工程五館於 11/2 08:00–12:00 停電並提醒提前儲存資料。",
     "confidence": 0.95,
     "abstain_reason": null
   }
