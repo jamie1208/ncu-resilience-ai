@@ -1,11 +1,13 @@
-import { useId, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useId, useState, type FormEvent, type ReactNode } from 'react'
 
 import { Badge, Button, Card, Input, Textarea } from '@design'
 
 import {
   createScenario,
+  getScenarioBaseline,
   listScenarios,
   type CostTier,
+  type ScenarioBaseline,
   type ScenarioLimitation,
   type ScenarioMeasureSpec,
   type ScenarioRequest,
@@ -18,6 +20,7 @@ import { ErrorText, LoadState, Muted, PageHeader, Section } from '../ui'
 const MAX_MEASURES = 10
 const MAX_SEED = 2 ** 31 - 1
 const HYPOTHETICAL = '假設情境，非成效預測'
+const BASELINE_DELAY_MS = 300
 
 const COST_TIER_LABELS: Record<CostTier, string> = {
   low: '成本低',
@@ -47,6 +50,7 @@ function measureNames(run: ScenarioRun): Record<string, string> {
 /**
  * What-if 模擬（P7-T03，規格 F09）：填寫基準件數與措施的效果假設，數值由引擎計算（P7-T02），
  * S10 只解釋假設與限制。結果一律標示「假設情境，非成效預測」。只在管理端。
+ * 基準件數依時間窗、類別、地點自動帶入歷史基準（P8-T09），可手改，手改值優先。
  */
 export function Scenario() {
   const history = useLoad(listScenarios, 'scenarios')
@@ -177,9 +181,47 @@ function toMeasure(draft: MeasureDraft, index: number): ScenarioMeasureSpec {
   return { name, effect_low: effectLow, effect_high: effectHigh, cost, rationale: draft.rationale.trim() || null }
 }
 
+/** 自動基準的說明：依據的週數與件數，或沒有歷史資料、查詢失敗的提示。 */
+function baselineHint(auto: ScenarioBaseline | null, failed: boolean, manual: boolean): string | null {
+  if (failed) return '暫時算不出歷史基準，請手動填寫。'
+  if (!auto) return null
+  if (auto.baseline === null) return '沒有歷史資料可以推算，請手動填寫。'
+  const basis = `依過去 ${auto.weeks} 週的 ${auto.observed} 件推算（${auto.history_start}～${auto.history_end}）`
+  return manual ? `已手動修改；自動計算為 ${auto.baseline} 件，${basis}。` : `${basis}，可直接修改。`
+}
+
+/** 依時間窗、類別、地點查詢歷史基準（P8-T09）；輸入停下一小段時間才查，舊的回應不覆蓋新的。 */
+function useAutoBaseline(windowDays: string, eventType: string, location: string) {
+  const [auto, setAuto] = useState<ScenarioBaseline | null>(null)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    const days = Number(windowDays.trim())
+    if (windowDays.trim() === '' || !Number.isInteger(days) || days < 1 || days > 730) return
+    let current = true
+    const timer = setTimeout(() => {
+      getScenarioBaseline({ windowDays: days, eventType: eventType.trim(), location: location.trim() })
+        .then((result) => {
+          if (!current) return
+          setAuto(result)
+          setFailed(false)
+        })
+        .catch(() => {
+          if (!current) return
+          setAuto(null)
+          setFailed(true)
+        })
+    }, BASELINE_DELAY_MS)
+    return () => {
+      current = false
+      clearTimeout(timer)
+    }
+  }, [windowDays, eventType, location])
+  return { auto, failed }
+}
+
 function ScenarioForm({ onCreated }: { onCreated: (run: ScenarioRun) => void }) {
   const message = useErrorMessage()
-  const [baseline, setBaseline] = useState('')
+  const [manualBaseline, setManualBaseline] = useState<string | null>(null)
   const [windowDays, setWindowDays] = useState('90')
   const [eventType, setEventType] = useState('')
   const [location, setLocation] = useState('')
@@ -188,6 +230,9 @@ function ScenarioForm({ onCreated }: { onCreated: (run: ScenarioRun) => void }) 
   const [nextKey, setNextKey] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const { auto, failed } = useAutoBaseline(windowDays, eventType, location)
+  const autoValue = auto?.baseline ?? null
+  const baseline = manualBaseline ?? (autoValue === null ? '' : String(autoValue))
 
   function update(key: number, change: Partial<MeasureDraft>) {
     setMeasures((list) => list.map((m) => (m.key === key ? { ...m, ...change } : m)))
@@ -199,11 +244,12 @@ function ScenarioForm({ onCreated }: { onCreated: (run: ScenarioRun) => void }) 
   }
 
   function build(): ScenarioRequest {
-    const body: ScenarioRequest = {
-      baseline: parseNumber(baseline, '基準件數要是 0 以上的數字'),
-      window_days: parseNumber(windowDays, '期間要是 1–730 天的整數', { integer: true, min: 1, max: 730 }),
-      measures: measures.map(toMeasure),
-    }
+    const window_days = parseNumber(windowDays, '期間要是 1–730 天的整數', { integer: true, min: 1, max: 730 })
+    // 沒有手改時不送 baseline，由後端以同一規則計算並記錄依據（手改值優先）
+    const body: ScenarioRequest =
+      manualBaseline === null && autoValue !== null
+        ? { window_days, measures: measures.map(toMeasure) }
+        : { baseline: parseNumber(baseline, '基準件數要是 0 以上的數字'), window_days, measures: measures.map(toMeasure) }
     if (seed.trim()) body.seed = parseNumber(seed, `種子要是 0–${MAX_SEED} 的整數`, { integer: true, max: MAX_SEED })
     if (eventType.trim()) body.event_type = eventType.trim()
     if (location.trim()) body.location = location.trim()
@@ -236,7 +282,7 @@ function ScenarioForm({ onCreated }: { onCreated: (run: ScenarioRun) => void }) 
       <h2 className="text-sm font-semibold text-foreground">模擬參數</h2>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="基準件數">
-          <Input inputMode="decimal" value={baseline} placeholder="例如 12" onChange={(e) => setBaseline(e.target.value)} />
+          <Input inputMode="decimal" value={baseline} placeholder="例如 12" onChange={(e) => setManualBaseline(e.target.value)} />
         </Field>
         <Field label="期間（天）">
           <Input inputMode="numeric" value={windowDays} onChange={(e) => setWindowDays(e.target.value)} />
@@ -251,6 +297,10 @@ function ScenarioForm({ onCreated }: { onCreated: (run: ScenarioRun) => void }) 
           <Input inputMode="numeric" value={seed} placeholder="留空自動產生" onChange={(e) => setSeed(e.target.value)} />
         </Field>
       </div>
+      <BaselineHint
+        text={baselineHint(auto, failed, manualBaseline !== null)}
+        onReset={manualBaseline !== null && autoValue !== null ? () => setManualBaseline(null) : null}
+      />
       <p className="text-xs text-muted-foreground">
         效果是件數降低比例的假設區間（%）；上下限都留空代表效果未知，該措施不納入計算。
       </p>
@@ -276,6 +326,20 @@ function ScenarioForm({ onCreated }: { onCreated: (run: ScenarioRun) => void }) 
         </Button>
       </div>
     </form>
+  )
+}
+
+function BaselineHint({ text, onReset }: { text: string | null; onReset: (() => void) | null }) {
+  if (!text) return null
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <p>{text}</p>
+      {onReset && (
+        <Button type="button" variant="ghost" size="sm" onClick={onReset}>
+          改回自動計算
+        </Button>
+      )}
+    </div>
   )
 }
 
@@ -353,7 +417,10 @@ function ScenarioResult({ run }: { run: ScenarioRun }) {
             </div>
           )}
           <dl className="mt-3 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
-            <Fact term="情境" value={`基準 ${out.baseline} 件／${run.input.window_days} 天`} />
+            <Fact
+              term="情境"
+              value={`基準 ${out.baseline} 件／${run.input.window_days} 天${run.input.baseline_source === 'auto' ? '（依歷史自動計算）' : ''}`}
+            />
             {est && (
               <>
                 <Fact term="效果全取上限／下限" value={`${formatCount(est.low)} – ${formatCount(est.high)} 件`} />

@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -178,5 +178,67 @@ describe('What-if 模擬', () => {
     expect(await within(history).findAllByRole('button')).toHaveLength(2)
     expect(within(history).getByText('2026-11-04 10:00')).toBeInTheDocument()
     expect(within(history).getByText('無法估計')).toBeInTheDocument()
+  })
+})
+
+describe('What-if 基準件數自動帶入（P8-T09）', () => {
+  const BASELINE = {
+    baseline: 4.5,
+    observed: 8,
+    weeks: 4,
+    history_start: '2026-05-18',
+    history_end: '2026-06-14',
+    window_days: 90,
+    event_type: null,
+    location: null,
+  }
+
+  it('依時間窗、類別、地點查詢並自動帶入，送出時交給後端計算', async () => {
+    const api = open({ 'GET /api/v1/admin/scenarios/baseline': { data: BASELINE } })
+    const form = await screen.findByRole('form', { name: '模擬參數' })
+    await waitFor(() => expect(within(form).getByLabelText('基準件數')).toHaveValue('4.5'))
+    expect(within(form).getByText(/依過去 4 週的 8 件推算/)).toBeInTheDocument()
+
+    await userEvent.type(within(form).getByLabelText('事件類型（選填）'), 'security')
+    await userEvent.type(within(form).getByLabelText('地點（選填）'), '總圖')
+    await waitFor(() =>
+      expect(api.calls.some((c) => c.path === '/api/v1/admin/scenarios/baseline?window_days=90&event_type=security&location=%E7%B8%BD%E5%9C%96')).toBe(true),
+    )
+
+    await fillMeasure(1, { name: '加裝路燈', low: '20', high: '40' })
+    await userEvent.click(within(form).getByRole('button', { name: '執行模擬' }))
+    await screen.findByRole('region', { name: '模擬結果' })
+    const post = api.calls.find((c) => c.method === 'POST' && c.path === '/api/v1/admin/scenarios')
+    expect(post?.body).not.toHaveProperty('baseline')
+    expect(post?.body).toMatchObject({ window_days: 90, event_type: 'security', location: '總圖' })
+  })
+
+  it('手改值優先，之後不被自動值覆蓋，可改回自動計算', async () => {
+    const api = open({ 'GET /api/v1/admin/scenarios/baseline': { data: BASELINE } })
+    const form = await screen.findByRole('form', { name: '模擬參數' })
+    const input = within(form).getByLabelText('基準件數')
+    await waitFor(() => expect(input).toHaveValue('4.5'))
+    await userEvent.clear(input)
+    await userEvent.type(input, '12')
+    await userEvent.clear(within(form).getByLabelText('期間（天）'))
+    await userEvent.type(within(form).getByLabelText('期間（天）'), '30')
+    await waitFor(() => expect(api.calls.some((c) => c.path.includes('window_days=30'))).toBe(true))
+    expect(input).toHaveValue('12')
+
+    await fillMeasure(1, { name: '加裝路燈', low: '20', high: '40' })
+    await userEvent.click(within(form).getByRole('button', { name: '執行模擬' }))
+    await screen.findByRole('region', { name: '模擬結果' })
+    const post = api.calls.find((c) => c.method === 'POST' && c.path === '/api/v1/admin/scenarios')
+    expect(post?.body).toMatchObject({ baseline: 12, window_days: 30 })
+
+    await userEvent.click(within(form).getByRole('button', { name: '改回自動計算' }))
+    expect(input).toHaveValue('4.5')
+  })
+
+  it('沒有歷史資料時提示手動填寫', async () => {
+    open({ 'GET /api/v1/admin/scenarios/baseline': { data: { ...BASELINE, baseline: null, observed: 0, weeks: 0, history_start: null, history_end: null } } })
+    const form = await screen.findByRole('form', { name: '模擬參數' })
+    expect(await within(form).findByText(/沒有歷史資料可以推算/)).toBeInTheDocument()
+    expect(within(form).getByLabelText('基準件數')).toHaveValue('')
   })
 })

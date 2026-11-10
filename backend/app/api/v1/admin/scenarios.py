@@ -4,6 +4,10 @@
   S10 scenario-simulator 解釋假設與限制，結果寫入 scenario_runs；回 201。需要 `scenarios:create`，
   寫入稽核 `scenario.create`（metadata 只有引擎版本、狀態、措施數與解釋狀態）。
   效果全部未知時回傳 not_estimable（無法估計），不呼叫模型；S10 失敗時仍保存引擎結果。
+  未填 `baseline` 時依時間窗、類別、代表地點自動計算歷史基準（P8-T09），手填值優先；
+  沒有歷史資料又未填時回 VALIDATION_ERROR（field body.baseline）。
+- `GET /api/v1/admin/scenarios/baseline`：依 `window_days`、`event_type`、`location` 計算歷史
+  基準件數與依據，供前端自動帶入。需要 `events:read_all`。
 - `GET /api/v1/admin/scenarios`：最近 50 次模擬，可依事件篩選。需要 `events:read_all`。
 - `GET /api/v1/admin/scenarios/{id}`：一次模擬。需要 `events:read_all`。
 
@@ -13,6 +17,7 @@ S10 在請求內同步執行（只呼叫一次 Skill，不經 Celery）。只在
 from __future__ import annotations
 
 import uuid
+from datetime import date, datetime
 from typing import Annotated, Any, Self
 
 from fastapi import APIRouter, Depends, Query, status
@@ -28,6 +33,8 @@ from app.core.config import get_settings
 from app.core.security import Permission, Principal
 from app.models.ai import AIAnalysisRun
 from app.models.scenario import ScenarioRun
+from app.resilience.recurrence import TAIPEI
+from app.simulations.baseline import load_baseline
 from app.simulations.engine import MAX_MEASURES, MAX_SEED, ScenarioInputError
 from app.simulations.service import (
     SKILL_NAME,
@@ -46,6 +53,7 @@ CanRead = Annotated[Principal, Depends(require_permission(Permission.EVENTS_READ
 CanCreate = Annotated[Principal, Depends(require_permission(Permission.SCENARIOS_CREATE))]
 
 Effect = Annotated[float | None, Field(ge=0, le=1)]
+WindowDays = Annotated[int, Field(ge=1, le=730)]
 
 
 def get_explainer() -> Explainer:
@@ -81,10 +89,10 @@ class MeasureIn(BaseModel):
 
 
 class ScenarioIn(BaseModel):
-    """模擬參數；未給 seed 時自動產生。"""
+    """模擬參數；未給 seed 時自動產生，未給 baseline 時自動計算歷史基準。"""
 
-    baseline: Annotated[float, Field(ge=0, allow_inf_nan=False)]
-    window_days: Annotated[int, Field(ge=1, le=730)]
+    baseline: Annotated[float | None, Field(ge=0, allow_inf_nan=False)] = None
+    window_days: WindowDays
     measures: Annotated[list[MeasureIn], Field(min_length=1, max_length=MAX_MEASURES)]
     seed: Annotated[int | None, Field(ge=0, le=MAX_SEED)] = None
     event_id: uuid.UUID | None = None
@@ -185,6 +193,39 @@ async def create_scenario_run(
     await session.commit()
     run, ai_run = await get_scenario(session, run.id)
     return envelope(_out(run, ai_run))
+
+
+class BaselineOut(BaseModel):
+    """自動計算的基準件數；`baseline` 為 None 代表沒有歷史資料。"""
+
+    baseline: float | None
+    observed: int
+    weeks: int
+    history_start: date | None
+    history_end: date | None
+    window_days: int
+    event_type: str | None
+    location: str | None
+
+
+@router.get("/baseline")
+async def get_baseline(
+    session: Session,
+    _: CanRead,
+    window_days: Annotated[int, Query(ge=1, le=730)],
+    event_type: Annotated[str | None, Query(max_length=32)] = None,
+    location: Annotated[str | None, Query(max_length=100)] = None,
+) -> dict[str, Any]:
+    """依時間窗、類別、地點計算歷史基準件數（以今天、台北時間為準，進行中的週不列入）。"""
+    result = await load_baseline(
+        session,
+        as_of=datetime.now(TAIPEI).date(),
+        window_days=window_days,
+        event_type=event_type or None,
+        location=location or None,
+    )
+    out = BaselineOut.model_validate(result, from_attributes=True)
+    return envelope(out.model_dump(mode="json"))
 
 
 @router.get("")
