@@ -73,14 +73,14 @@ export function Home() {
     <div className="space-y-10">
       <PageIntro eyebrow="校園快報" title="最新校園快報">
         <p>
-          整理中央大學校園內的公共安全、設施與交通事件。每則快報都附上查證狀態：標示「尚未查證」的內容是
-          AI 依公開來源整理的摘要，不代表事情確實發生。
+          中大校園大小事，快報幫你整理好了：公共安全、設施、交通的最新消息都在這裡，每則都附上查證狀態。
         </p>
+        <p>標示「尚未查證」的內容是 AI 依公開來源整理的摘要，不代表事情確實發生。</p>
       </PageIntro>
 
       {error && <ErrorText>{error.message}</ErrorText>}
       {!error && loading && <Muted>載入中…</Muted>}
-      {!error && !loading && rows.length === 0 && <Muted>目前沒有公開的快報。</Muted>}
+      {!error && !loading && rows.length === 0 && <Muted>目前沒有公開的快報，校園暫時風平浪靜。</Muted>}
       {rows.map((section) => (
         <CategoryRow key={section.type} section={section} />
       ))}
@@ -94,7 +94,7 @@ export function Home() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Entry to="/resilience" title="校園韌性成績單">
-          學校遇到狀況時，處理得好不好？看整體的處理速度與再發生情形。
+          學校遇到狀況時，處理得好不好？用四個問題帶你看處理速度與再發生情形。
         </Entry>
         <Entry to="/report" title="匿名回報">
           看到怪怪的事？匿名跟我們說。這裡不是報案管道，緊急狀況請撥 110 或 119。

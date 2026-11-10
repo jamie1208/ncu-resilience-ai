@@ -11,7 +11,7 @@ export function SkillsDashboard() {
   const items = skills.data ?? []
   return (
     <div className="space-y-4">
-      <PageHeader title="Skills" description="產品 Skills 的版本、近 7 天執行統計與評測結果。" />
+      <PageHeader title="Skills" description="產品 Skills 的最新狀況：版本、近 7 天執行統計與評測結果。" />
       <LoadState loading={skills.loading} error={skills.error} empty={items.length === 0} emptyText="沒有產品 Skill" />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {items.map((skill) => (

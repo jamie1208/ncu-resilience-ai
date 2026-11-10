@@ -45,7 +45,7 @@ function Page({ route }: { route: PublicRoute }) {
       return (
         <PageIntro eyebrow="404" title="找不到頁面">
           <p>
-            這個網址沒有內容。
+            這個網址目前沒有任何快報，可能是網址打錯了。
             <Link to="/" className="underline underline-offset-4">
               回到最新快報
             </Link>

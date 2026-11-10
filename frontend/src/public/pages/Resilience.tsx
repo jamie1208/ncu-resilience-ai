@@ -20,7 +20,11 @@ export function Resilience() {
   return (
     <div className="space-y-8">
       <PageIntro eyebrow="把點連成線" title="校園韌性成績單">
-        <p>看校園遇到問題時，從發現、回應、恢復到改善做得如何。分數 0–100，資料不夠時直接顯示 N/A。</p>
+        <p>
+          學校遇到狀況時，處理得好不好？這份成績單用四個問題來看：多快有人知道、多快開始處理、多久恢復正常、
+          同樣的事有沒有一再發生。分數 0–100，資料不夠時直接顯示 N/A。
+        </p>
+        <p>換算分數時，幾天算好是本專題自己訂的目標，不是學校的官方標準。</p>
       </PageIntro>
       <aside
         role="note"
@@ -49,11 +53,11 @@ function ReportBody({ report }: { report: Report }) {
           {report.score === null && <Badge tone="warning">資料不足，暫不計算總分</Badge>}
         </div>
         <p className="text-sm text-muted-foreground">
-          {`統計期間 ${report.window.start} 至 ${report.window.end}（${report.window.days} 天），共 ${report.event_count} 件事件。四個構面都有足夠資料時才計算總分。`}
+          {`統計期間 ${report.window.start} 至 ${report.window.end}（${report.window.days} 天），共 ${report.event_count} 件事件。四個問題都有足夠資料時才計算總分。`}
         </p>
       </Card>
 
-      <ul aria-label="四個構面" className="grid gap-4 sm:grid-cols-2">
+      <ul aria-label="四個問題" className="grid gap-4 sm:grid-cols-2">
         {report.dimensions.map((d) => (
           <li key={d.key} className="min-w-0">
             <DimensionCard dimension={d} minSamples={report.min_samples} />
@@ -79,13 +83,13 @@ function DimensionCard({ dimension: d, minSamples }: { dimension: ResilienceDime
   const titleId = `cri-${d.key}`
   return (
     <Card as="article" aria-labelledby={titleId} className="h-full space-y-2">
+      <p className="text-xs font-medium text-muted-foreground">{d.label}</p>
       <div className="flex items-baseline justify-between gap-3">
         <h3 id={titleId} className="text-base font-semibold text-foreground">
-          {d.label}
+          {DIMENSION_QUESTIONS[d.key]}
         </h3>
         <span className="font-display text-3xl text-foreground">{formatScore(d.score)}</span>
       </div>
-      <p className="text-sm text-foreground">{DIMENSION_QUESTIONS[d.key]}</p>
       <p className="text-xs text-muted-foreground">
         {`樣本 ${d.sample_size} 筆・覆蓋率 ${formatCoverage(d.coverage)}`}
         {d.score === null && `・樣本少於 ${minSamples} 筆，暫不計分`}

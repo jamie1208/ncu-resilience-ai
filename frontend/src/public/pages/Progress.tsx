@@ -11,7 +11,7 @@ export function Progress() {
   return (
     <div className="space-y-8">
       <PageIntro eyebrow="追蹤到底" title="改善進度">
-        <p>每個系列後續的改善措施與目前狀態，狀態更新後這裡會同步。點系列名稱可以看完整的分析。</p>
+        <p>事情不是報完就結束。這裡持續追蹤每個系列的改善措施，狀態一更新就同步；點系列名稱，看完整分析。</p>
       </PageIntro>
       {list.items.length > 0 && (
         <ul aria-label="改善進度" className="space-y-4">
@@ -41,7 +41,7 @@ export function Progress() {
         loading={list.loading}
         error={list.error}
         empty={list.items.length === 0}
-        emptyText="目前沒有公開的改善措施。"
+        emptyText="目前還沒有公開的改善措施，有新進度會第一時間更新在這裡。"
         loadMore={list.loadMore}
       />
     </div>

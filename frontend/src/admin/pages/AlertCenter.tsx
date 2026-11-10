@@ -51,7 +51,7 @@ export function AlertCenter() {
     <div className="space-y-4">
       <PageHeader
         title="通知中心"
-        description="只送給你本人的通知；通知內容由確定性規則產生，未核實的指控不會呈現為事實。"
+        description="你的專屬快報提醒，只送給你本人；通知內容由確定性規則產生，未核實的指控不會呈現為事實。"
         actions={
           <label className="flex items-center gap-2 text-sm font-medium text-foreground">
             <span className="shrink-0">狀態</span>

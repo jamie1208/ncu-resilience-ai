@@ -55,8 +55,8 @@ function SeriesLink({ event }: { event: PublicEventDetail }) {
       </h2>
       <p className="text-sm text-muted-foreground">
         {series.event_count > 1
-          ? `這個系列目前公開 ${series.event_count} 起，分析頁有每週件數、AI 看到的規律、改善建議與追蹤。`
-          : '之後有同類型的事件時，會一起放進分析頁。'}
+          ? `同類型的事已經公開 ${series.event_count} 起。多常發生、AI 看到什麼規律、怎麼改善，到分析頁一次看。`
+          : '之後若有同類型的事，會一起放進分析頁持續追蹤。'}
       </p>
       <Button variant="primary" size="sm" onClick={() => navigate(to)}>
         看這系列的分析
@@ -82,7 +82,7 @@ export function EventReport({ id }: { id: string }) {
     return (
       <div className="space-y-6">
         <PageIntro eyebrow="快報全文" title="找不到這個事件">
-          <p>這個事件不存在，或可能已經下架。</p>
+          <p>這則快報不存在，或可能已經下架。</p>
         </PageIntro>
         {back}
       </div>

@@ -63,7 +63,7 @@ const INVALID_LABELS: Record<string, string> = { event_false: '事件已被查�
 export function EventWorkbench({ eventId }: { eventId: string | null }) {
   return (
     <div className="space-y-4">
-      <PageHeader title="事件工作台" description="比對來源、檢視風險分項，記錄查證結果。" />
+      <PageHeader title="事件工作台" description="今天進來的事件都在這裡：比對來源、看風險分項，再記下查證結果。" />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <div className={cn(eventId && 'hidden lg:block')}>
           <EventList selectedId={eventId} />
@@ -125,7 +125,7 @@ function EventList({ selectedId }: { selectedId: string | null }) {
         loading={first.loading}
         error={first.error}
         empty={items.length === 0}
-        emptyText="沒有符合條件的事件"
+        emptyText="沒有符合條件的事件，換個篩選條件試試。"
       />
       {items.length > 0 && (
         <ul className="divide-y divide-border">

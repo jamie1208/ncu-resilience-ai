@@ -65,9 +65,9 @@ function SeriesList() {
     <div className="space-y-4">
       <PageHeader
         title="系列"
-        description="同一種問題的事件會自動歸成一個系列（不限地點），用來看多常發生、改善後有沒有變少。"
+        description="同一種問題的事件會自動歸成一個系列（不限地點），一路追蹤多常發生、改善後有沒有變少。"
       />
-      <LoadState loading={list.loading && !list.data} error={list.error} empty={items.length === 0} emptyText="還沒有任何系列" />
+      <LoadState loading={list.loading && !list.data} error={list.error} empty={items.length === 0} emptyText="還沒有任何系列，同類事件累積到 2 起就會自動成立。" />
       {items.length > 0 && (
         <ul className="space-y-2">
           {items.map((s) => (

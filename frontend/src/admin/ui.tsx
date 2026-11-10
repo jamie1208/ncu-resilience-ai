@@ -65,7 +65,7 @@ export function LoadState({ loading, error, empty, emptyText }: {
 }) {
   if (error) return <ErrorText>{error}</ErrorText>
   if (loading) return <Muted>載入中…</Muted>
-  if (empty) return <Muted>{emptyText ?? '沒有資料'}</Muted>
+  if (empty) return <Muted>{emptyText ?? '目前沒有資料'}</Muted>
   return null
 }
 

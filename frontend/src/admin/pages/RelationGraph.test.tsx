@@ -193,6 +193,6 @@ describe('RelationGraph', () => {
 
   it('沒有關聯時顯示空狀態', async () => {
     open({ [LIST]: { data: { nodes: [], edges: [] } } })
-    expect(await screen.findByText('目前沒有符合條件的關聯')).toBeInTheDocument()
+    expect(await screen.findByText('目前沒有符合條件的關聯，換個篩選條件試試。')).toBeInTheDocument()
   })
 })
