@@ -452,7 +452,9 @@ export const ACTION_DETAIL: ResponseActionDetail = {
 export const PUBLICATIONS: PublicationItem[] = [
   {
     id: 'pub-1',
+    subject: 'event',
     event_id: EVENT_ID,
+    series_id: null,
     event_title: '工程一館停電',
     level: 'content',
     state: 'published',
@@ -466,7 +468,9 @@ export const PUBLICATIONS: PublicationItem[] = [
   },
   {
     id: 'pub-2',
+    subject: 'event',
     event_id: EVENT_ID_2,
+    series_id: null,
     event_title: '圖書館網路維護',
     level: 'safety_notice',
     state: 'taken_down',

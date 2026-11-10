@@ -19,11 +19,12 @@ afterEach(() => {
 describe('App', () => {
   it('根路徑是公開網站首頁，不檢查登入狀態', async () => {
     const { calls } = mockApi({
-      'GET /api/v1/public/feed': { data: [PUBLIC_EVENT], meta: { next_cursor: null } },
+      // P8-T06（ADR-0020 決策 4）：首頁改為依類別分區的快報卡片
+      'GET /api/v1/public/feed?limit=50': { data: [PUBLIC_EVENT], meta: { next_cursor: null } },
     })
     at('/')
     render(<App />)
-    expect(await screen.findByRole('heading', { level: 1, name: /最新動態/ })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: /最新校園快報/ })).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: /工程五館外牆整修施工/ })).toBeInTheDocument()
     expect(screen.queryByLabelText('密碼')).not.toBeInTheDocument()
     expect(calls.every((c) => c.path.startsWith('/api/v1/public/'))).toBe(true)

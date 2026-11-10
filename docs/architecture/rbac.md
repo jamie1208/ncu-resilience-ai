@@ -80,6 +80,7 @@
 | GET | `/api/v1/admin/alerts` | `alerts:read_all` | |
 | POST | `/api/v1/admin/alerts/{id}/retract` | `alerts:retract` | `alert.retract`（含原因） |
 | GET | `/api/v1/admin/publications` | `alerts:read_all` | |
+| GET | `/api/v1/admin/publications/reminders` | `alerts:read_all` | （P8-T06：通知中心的公開提醒，唯讀） |
 | POST | `/api/v1/admin/publications/{id}/takedown` | `alerts:retract` | `publication.take_down`（原因選填） |
 | POST | `/api/v1/admin/publications/{id}/restore` | `events:verify` | `publication.restore` |
 | GET | `/api/v1/admin/dashboard` | `events:read_all` | |
@@ -97,6 +98,7 @@
 | GET | `/api/v1/public/events` | **免登入**（限速） | |
 | GET | `/api/v1/public/events/{id}` | **免登入**（限速） | |
 | GET | `/api/v1/public/progress` | **免登入**（限速） | |
+| GET | `/api/v1/public/series/{id}` | **免登入**（限速） | （P8-T06，ADR-0018 2-7 使用者同意新增） |
 | POST | `/api/v1/public/reports` | **免登入**（限速：每用戶端 10 分鐘 3 則、全站 30 則） | `anonymous_report.submit`（actor `anonymous`，metadata 只有字數與有無地點） |
 
 除 health、登入與 `/api/v1/public/*` 外，所有端點都需要登入；`/api/v1/admin/*` 在 router 層就先擋未登入，新端點即使忘了加權限依賴也不會變成免登入。`/docs`、`/redoc`、`/openapi.json` 預設關閉（`NCU_API_DOCS_ENABLED=true` 才開，僅供本機開發）。`tests/integration/test_auth.py` 會列舉所有路由驗證這點，並確認 `/api/v1/public/` 底下除了 `POST /api/v1/public/reports`（P5-T13）只有 GET。
@@ -109,7 +111,7 @@
 - 只讀取 `publications` 中 state 為 published 的目前版本（公開規則產生、已遮蔽 PII 的快照），不讀任何原始資料表；回傳欄位以白名單挑選，`id` 是 publication ID。
 - 不讀取 session cookie、不需要也不使用 CSRF；沒有寫入，所以不寫稽核。
 - 每用戶端每 60 秒 60 次，超過回 `RATE_LIMITED`（429）與 `Retry-After`；用戶端只以加鹽雜湊識別，不保存位址。
-- 公開狀態由 `backend/app/publishing/sync.py` 以 `service_notifier` 身分寫入（Celery beat 每分鐘），每次公開、更新、撤下寫入稽核 `publication.publish`／`publication.update`／`publication.withdraw`（metadata 只有事件 ID、版本、公開程度與規則代碼）。
+- 公開狀態由 `backend/app/publishing/sync.py` 以 `service_notifier` 身分寫入（Celery beat 每分鐘），每次公開、更新、撤下寫入稽核 `publication.publish`／`publication.update`／`publication.withdraw`（metadata 只有事件 ID 或系列 ID〔P8-T06〕、版本、公開程度與規則代碼）。
 - 一鍵下架（P5-T14）：使用者以 `alerts:retract` 把公開內容改為 taken_down，公開 API 下一個請求起就不再回傳，同步不會覆蓋；重新上架（`events:verify`）只把狀態交回公開規則重新判斷，管理者仍不能直接公開。
 - 匿名回報（P5-T13）：`POST /api/v1/public/reports` 是公開端唯一的寫入，不經 `Principal` 權限檢查，以 anonymous 身分只寫入 `anonymous_reports` 收件匣並記稽核；不保存 IP 與裝置資訊。投稿由 `anonymous_report` Adapter 以 `service_ingestion` 身分拉進擷取管線，公開端點本身沒有擷取寫入權限。
 - 管理端（`/admin`、`/api/v1/admin/*`、登入）不經通道對外（P5-T15）。

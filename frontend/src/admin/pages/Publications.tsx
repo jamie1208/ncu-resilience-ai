@@ -58,11 +58,16 @@ export function Publications() {
             <Card as="li" key={pub.id} className="space-y-2">
               <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 <Link
-                  to={`/admin/events/${encodeURIComponent(pub.event_id)}`}
+                  to={
+                    pub.series_id
+                      ? `/admin/series/${encodeURIComponent(pub.series_id)}`
+                      : `/admin/events/${encodeURIComponent(pub.event_id ?? '')}`
+                  }
                   className="text-sm text-accent underline underline-offset-4"
                 >
                   {pub.event_title}
                 </Link>
+                {pub.subject === 'series' && <Badge tone="info">系列分析頁</Badge>}
               </div>
               <PublicationControls publication={pub} onChange={replace} />
             </Card>

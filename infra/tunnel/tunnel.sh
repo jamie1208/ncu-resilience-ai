@@ -56,7 +56,8 @@ check() {
   fi
 
   echo "公開網站與公開 API（應可存取）："
-  for path in / /events /events/00000000-0000-0000-0000-000000000000 /progress /resilience /about /report "$asset" \
+  for path in / /events /events/00000000-0000-0000-0000-000000000000 \
+    /series/00000000-0000-0000-0000-000000000000 /progress /resilience /about /report "$asset" \
     /api/v1/public/feed /api/v1/public/notices /api/v1/public/categories \
     /api/v1/public/events /api/v1/public/progress /api/v1/public/resilience; do
     expect allow GET "$path"
@@ -75,6 +76,8 @@ check() {
   expect deny POST /api/v1/auth/login '{"username":"x","password":"x"}'
   expect deny POST /api/v1/auth/logout
   expect deny POST /api/v1/admin/publications/x/takedown
+  expect deny GET /api/v1/admin/publications/reminders
+  expect deny GET /series
 
   echo "公開路徑上不允許的方法（不可成功）："
   expect method DELETE /api/v1/public/events

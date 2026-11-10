@@ -10,11 +10,12 @@ import { Home } from './pages/Home'
 import { Progress } from './pages/Progress'
 import { Report } from './pages/Report'
 import { Resilience } from './pages/Resilience'
+import { Series } from './pages/Series'
 import { matchPublicRoute, type PublicRoute } from './routes'
 import { PageIntro, SiteFooter } from './ui'
 
 const NAV = [
-  { to: '/', label: '最新動態', pages: ['home'] },
+  { to: '/', label: '最新快報', pages: ['home', 'series'] },
   { to: '/events', label: '事件查詢', pages: ['events', 'event'] },
   { to: '/progress', label: '改善進度', pages: ['progress'] },
   { to: '/resilience', label: '韌性成績單', pages: ['resilience'] },
@@ -30,6 +31,8 @@ function Page({ route }: { route: PublicRoute }) {
       return <Events />
     case 'event':
       return <EventReport key={route.id} id={route.id} />
+    case 'series':
+      return <Series key={route.id} id={route.id} from={route.from} />
     case 'progress':
       return <Progress />
     case 'resilience':
@@ -44,7 +47,7 @@ function Page({ route }: { route: PublicRoute }) {
           <p>
             這個網址沒有內容。
             <Link to="/" className="underline underline-offset-4">
-              回到最新動態
+              回到最新快報
             </Link>
           </p>
         </PageIntro>
@@ -58,7 +61,7 @@ function Page({ route }: { route: PublicRoute }) {
  */
 export function PublicApp() {
   const path = usePath()
-  const route = matchPublicRoute(path)
+  const route = matchPublicRoute(path, window.location.search)
 
   useEffect(() => {
     window.scrollTo?.(0, 0)

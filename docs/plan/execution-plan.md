@@ -426,7 +426,7 @@ bash infra/scripts/backup.sh && bash infra/scripts/restore.sh --target local
 | 閘門 | 條件 | 驗證方式 |
 | --- | --- | --- |
 | G5-2 | 備份可完整還原 | 還原演練紀錄 |
-| G5-5 | 疑似指控、推測原因、FB 原文與投稿原文不出現在公開端（P8-T06 起依 ADR-0018 改為：推測原因、FB 原文與投稿原文不出現；未查證與疑似指控內容帶標籤並經 PII 遮蔽） | test_public_exposure、test_anonymous_report |
+| G5-5 | 疑似指控、推測原因、FB 原文與投稿原文不出現在公開端（P8-T06 起依 ADR-0018、ADR-0020 改為：舊小報告的推測原因、FB 原文、逐字證據與投稿原文不出現；推測的規律與原因只出現在系列分析頁且一律帶「推測，尚未查證」；未查證與疑似指控內容帶標籤並經 PII 遮蔽；疑似指控與提到特定對象的推測公開時必定產生提醒與下架入口） | test_public_exposure、test_anonymous_report |
 | G5-6 | 公開端與附錄 A 端到端測試全過 | `make e2e` |
 | G5-7 | 下架即時生效並留稽核 | test_takedown |
 | G5-8 | 上線前確認威脅模型與公開端點清單 | 使用者本人審閱 `threat-model-public.md` 並同意上線 |
@@ -547,6 +547,15 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
   - 檔案：`app/publishing/policy.py`、`app/publishing/sync.py`（未查證事件公開 AI 摘要並標「尚未查證」；疑似指控照原文摘要公開並立即在通知中心提醒、附一鍵下架；改善建議公開但不寫依據的原因；推測原因、FB 原文、投稿原文仍不公開；全部經 PII 遮蔽）、`app/api/v1/public/series.py`（系列頁：時間軸、子事件、前後比較、改善建議、改善進度；不含推測原因與規律）、`frontend/src/public/pages/Series.tsx`、`docs/architecture/threat-model-public.md`、`docs/architecture/rbac.md`、通道閘道白名單
   - 驗證：`tests/unit/publishing/test_publish_policy.py`、`tests/security/test_public_exposure.py` 依 G5-5 新定義修改（使用者 2026-11-05 同意，只限 ADR-0018 放寬的規則）；新增系列頁不含推測原因、規律與 FB 原文的案例；公開前端 vitest 與 `tests/e2e/public.e2e.ts`
   - ADR-0020 修改（使用者 2026-11-05 同意）：公開系列頁加上規律與可能原因（一律標「推測，尚未查證」，人工確認的標「已確認」；首次公開或改變時通知中心提醒並附一鍵下架；提到特定個人、群體、店家或單位的比照疑似指控公開並在提醒中註明）；公開首頁改為依類別分區的橫向滑動快報卡片（類別圖示與配色、查證標籤、系列第 N 起）；快報全文頁不含單一事件小報告，只連到系列分析頁；底部放韌性成績單與匿名回報入口；AGENTS.md 推測原因的硬性邊界與 G5-5 定義依 ADR-0020 修改；`test_public_exposure` 依新定義修改（使用者 2026-11-05 同意，只限 ADR-0020 放寬的規則），新增「提到個人或單位的原因公開時必定產生提醒與下架入口」「未帶推測標籤不得公開」的案例
+  - 實作調整（AI 自行決定，2026-11-10）：
+    - 系列頁的公開狀態沿用 publications（migration `0025_series_publications.py`：新增 `series_id`〔event_series，CASCADE，唯一〕，`event_id` 改為可為 NULL，兩者恰好一個；downgrade 刪除系列的公開狀態），版本快照、一鍵下架、重新上架與稽核與事件相同；`sync_all` 先同步事件、再同步系列
+    - 事件：不是 false、封存、排除類別的事件都公開（移除 `safety_notice_levels`，`policy_version` 2026-11-10.1）；快照新增 `verification`（verified／unverified／disputed）與 `verification_label`（已查證／尚未查證）；疑似指控照公開、標 `needs_review`；事件的改善進度改在系列頁公開（快照 `progress` 為空）
+    - 系列頁只依公開中的子事件（內容取自事件的公開快照）組出，件數、每週時間軸（全部期間的週粒度與 4 週移動平均，前端切 1M／3M／6M／1Y／全部）、前後比較與突增週（P6-T03 規則，依公開子事件重算）由程式計算；規律與原因的標籤由規則加上、引用換成公開的快報 ID（`related_ids`）並依公開子事件重算件數；不公開逐字證據、證據 ID、`to_verify`、建議依據的原因、突增的 AI 解釋與前後比較的變化比例；舊小報告依未確認推測原因的措施在系列頁同樣不公開
+    - 公開提醒不另建資料表：新版本中需要注意的內容（疑似指控的文字、推測的規律與原因，`review_parts()`）和目前版本不同時，版本 reasons 加 `remind`；後台 `GET /api/v1/admin/publications/reminders`（alerts:read_all）列出並附一鍵下架，通知中心新增「公開提醒」區塊
+    - 公開 API：新增 `GET /api/v1/public/series/{id}`；feed／events／events/{id} 每筆附所屬系列（讀取時再比對子事件的公開狀態，下架的子事件立即消失）；`/progress` 改以系列為單位；事件列表與詳細頁不含系列快照
+    - 公開版韌性成績單只統計快照沒有標為未查證的事件（維持「只統計已查證並公開的事件」的說明）
+    - 額外修改的檔案：`app/publishing/takedown.py`、`app/api/v1/public/content.py`、`app/api/v1/public/__init__.py`、`app/api/v1/admin/publications.py`、`app/models/publication.py`、`app/resilience/cri.py`、`config/publish-policy.yaml`、`infra/tunnel/tunnel.sh`、前端 `public/api.ts`、`routes.ts`、`ui.tsx`、`PublicApp.tsx`、`pages/Home.tsx`、`EventReport.tsx`、`Events.tsx`、`Progress.tsx`、`About.tsx`、後台 `AlertCenter.tsx`、`Publications.tsx`、`admin/api.ts`；測試新增 `tests/integration/test_public_series.py`，並依 ADR-0018 2-6、ADR-0020 修改 `test_public_api`、`test_takedown`、`test_cause_confirmation`、`test_cause_confirmation_policy`、`App.test.tsx`、`PublicApp.test.tsx`、`frontend/e2e/public.e2e.ts`
+    - `tests/e2e/seed_appendix_a.py`：S13 沒有腳本時一律 abstain（P8-T02 起管線會呼叫 S13，種子腳本未更新導致 `make e2e` 無法啟動）；種子最後以 `backfill_series`（不呼叫 S11）把每個事件歸入 1 件的系列
 - **P8-T07 通知失敗重試**（v1.0 A10，D41）
   - 檔案：`app/alerts/delivery.py`（failed 最多重試 3 次、遞增間隔；唯一約束仍防重複遞送）、`infra/migrations/versions/<下一個編號>_delivery_attempts.py`（嘗試次數、下次時間）、Celery 排程
   - 驗證：`tests/integration/test_delivery_retry.py`（第 3 次仍失敗就停止；成功後不再重送；不重複遞送）、`tests/e2e/a10-delivery.e2e.ts`

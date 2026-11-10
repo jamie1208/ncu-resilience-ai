@@ -212,7 +212,8 @@ async def test_old_etag_no_longer_matches_after_take_down(
     events = await seed_public(session)
     pub = await publication_of(session, events["notice"])
     etags = {}
-    for path in ("feed", "notices", "categories"):
+    # P8-T06：未查證事件公開為事件內容（不再是安全提醒），改以 /events 檢查
+    for path in ("feed", "events", "categories"):
         etags[path] = (await public.get(f"{PUBLIC}/{path}")).headers["etag"]
 
     assert (await admin.post(f"{ADMIN_API}/{pub.id}/takedown", json={})).status_code == 200
@@ -221,8 +222,8 @@ async def test_old_etag_no_longer_matches_after_take_down(
         res = await public.get(f"{PUBLIC}/{path}", headers={"If-None-Match": etag})
         assert res.status_code == 200, path
         assert res.headers["etag"] != etag, path
-    notices = (await public.get(f"{PUBLIC}/notices")).json()["data"]
-    assert notices == []
+    listed = (await public.get(f"{PUBLIC}/events")).json()["data"]
+    assert str(pub.id) not in {i["id"] for i in listed}
 
 
 # ---------- 管理端 API ----------
@@ -297,7 +298,8 @@ async def test_list_publications(admin: httpx2.AsyncClient, session: AsyncSessio
     assert down["event_title"] == "總圖書館三樓漏水"
     assert down["preview"] == "總圖書館三樓漏水"
     notice = by_event[str(events["notice"].id)]
-    assert (notice["level"], notice["state"]) == ("safety_notice", "published")
+    # P8-T06：未查證事件公開為事件內容並標「尚未查證」
+    assert (notice["level"], notice["state"]) == ("content", "published")
     assert notice["preview"]
     assert notice["takedown_reason"] is None
     gone = by_event[str(events["gone"].id)]

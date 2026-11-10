@@ -1,5 +1,8 @@
 """P5-T11：公開唯讀 API（/api/v1/public/*）與公開狀態同步（app/publishing/sync.py）。
 
+P8-T06（ADR-0018 2-1，使用者 2026-11-05 同意修改，只限放寬的規則）：未查證、有爭議與只有第一手
+來源的事件改為公開 AI 摘要並標「尚未查證」，不再改寫成安全提醒；改善進度改以系列為單位。
+
 - 同步：從事件、證據、風險評估、最新有效的小報告、改善措施與查證稽核組出 P5-T10 的輸入，
   寫入 publications 與版本快照；內容沒變不升版；不公開時撤下；已下架（P5-T14）的不覆蓋。
 - 公開 API：只讀取 state 為 published 的目前版本；免登入、只有 GET；cursor 分頁、
@@ -31,6 +34,7 @@ from app.models.event import Event, EventEvidence, Location
 from app.models.publication import Publication, PublicationVersion
 from app.models.report import EventReport
 from app.models.response_action import ResponseAction
+from app.models.series import EventSeries, EventSeriesMember
 from app.models.source import Source, SourceItem, SourceItemVersion
 from app.publishing.sync import SyncAction, sync_all, sync_publication
 from app.services.audit import record_audit
@@ -213,6 +217,23 @@ async def add_event(
     return event
 
 
+async def add_series(
+    session: AsyncSession, events: Sequence[Event], *, title: str = "總圖書館漏水"
+) -> EventSeries:
+    """把事件放進同一個系列（P8-T04 的資料表；已 commit）。"""
+    series = EventSeries(category=events[0].type, title=title)
+    session.add(series)
+    await session.flush()
+    for e in events:
+        session.add(
+            EventSeriesMember(
+                event_id=e.id, series_id=series.id, method="rule", joined_at=PUBLISHED_AT
+            )
+        )
+    await session.commit()
+    return series
+
+
 async def publish(session: AsyncSession, event: Event) -> SyncAction:
     action = await sync_publication(session, event.id)
     await session.commit()
@@ -273,20 +294,33 @@ async def test_official_source_publishes_content(session: AsyncSession) -> None:
     assert (await publication_of(session, event)).level == "content"
 
 
-async def test_verified_without_official_or_user_only_publishes_notice(
+async def current_content(session: AsyncSession, event: Event) -> dict[str, Any]:
+    pub = await publication_of(session, event)
+    version = await session.scalar(
+        select(PublicationVersion).where(
+            PublicationVersion.publication_id == pub.id, PublicationVersion.version == pub.version
+        )
+    )
+    assert version is not None and version.content is not None
+    return version.content
+
+
+async def test_verified_without_official_or_user_is_labelled_unverified(
     session: AsyncSession,
 ) -> None:
     event = await add_event(session, confirm=None)
     await publish(session, event)
     pub = await publication_of(session, event)
-    assert pub.level == "safety_notice"
+    assert pub.level == "content"
     assert "not_confirmed" in pub.reasons
+    assert (await current_content(session, event))["verification_label"] == "尚未查證"
 
 
-async def test_unverified_below_threshold_is_not_published(session: AsyncSession) -> None:
+async def test_unverified_low_risk_is_published_labelled(session: AsyncSession) -> None:
     event = await add_event(session, status=EventStatus.UNVERIFIED, confirm=None, risk="medium")
-    assert await publish(session, event) is SyncAction.NONE
-    assert await session.scalar(select(func.count()).select_from(Publication)) == 0
+    assert await publish(session, event) is SyncAction.PUBLISHED
+    content = await current_content(session, event)
+    assert (content["verification"], content["verification_label"]) == ("unverified", "尚未查證")
 
 
 async def test_unchanged_content_keeps_version(session: AsyncSession) -> None:
@@ -362,7 +396,7 @@ async def test_monitoring_after_user_verification_keeps_content(session: AsyncSe
     assert (await publication_of(session, event)).level == "content"
 
 
-async def test_monitoring_after_disputed_is_not_content(session: AsyncSession) -> None:
+async def test_monitoring_after_disputed_is_labelled_disputed(session: AsyncSession) -> None:
     event = await add_event(session, status=EventStatus.MONITORING)
     await record_audit(
         session,
@@ -373,7 +407,8 @@ async def test_monitoring_after_disputed_is_not_content(session: AsyncSession) -
     )
     await session.commit()
     await publish(session, event)
-    assert (await publication_of(session, event)).level == "safety_notice"
+    content = await current_content(session, event)
+    assert (content["verification"], content["verification_label"]) == ("disputed", "尚未查證")
 
 
 async def test_later_user_dispute_overrides_earlier_verification(session: AsyncSession) -> None:
@@ -388,7 +423,8 @@ async def test_later_user_dispute_overrides_earlier_verification(session: AsyncS
     )
     await session.commit()
     await publish(session, event)
-    assert (await publication_of(session, event)).level == "safety_notice"
+    content = await current_content(session, event)
+    assert (content["verification"], content["verification_label"]) == ("disputed", "尚未查證")
 
 
 async def test_taken_down_publication_is_not_overwritten(session: AsyncSession) -> None:
@@ -439,8 +475,9 @@ async def test_sync_all_covers_every_event(session: AsyncSession) -> None:
     await add_event(
         session, title="宵夜街機車失竊", event_type="security", risk="low", confirm=None
     )
+    await add_event(session, title="工程四館火災", event_type="fire", status=EventStatus.FALSE)
     counts = await sync_all(session)
-    assert counts[SyncAction.PUBLISHED] == 2
+    assert counts[SyncAction.PUBLISHED] == 3  # P8-T06：未查證的低風險事件也公開
     assert counts[SyncAction.NONE] == 1
 
 
@@ -448,7 +485,7 @@ async def test_sync_all_covers_every_event(session: AsyncSession) -> None:
 
 
 async def seed_public(session: AsyncSession) -> dict[str, Event]:
-    """一個公開內容（有小報告與改善進度）、一個安全提醒、一個撤下的事件。"""
+    """一個已查證（有舊小報告與改善措施）、一個未查證（P8-T06 前是安全提醒）、一個撤下的事件。"""
     content = await add_event(
         session,
         impacts=[{"dimension": "safety", "score": 2, "uncertainty": "low", "reason": "地面濕滑"}],
@@ -487,10 +524,12 @@ async def test_feed_lists_published_items_newest_first(
     assert body["error"] is None
     assert body["meta"]["request_id"]
     items = body["data"]
-    assert [i["kind"] for i in items] == ["safety_notice", "content"]
+    assert [i["kind"] for i in items] == ["content", "content"]
     assert items[0]["id"] == await public_id(session, events["notice"])
+    assert items[0]["title"] == "宿舍區機車失竊"
+    assert items[0]["verification_label"] == "尚未查證"
     assert items[1]["title"] == "總圖書館三樓漏水"
-    assert "notice" in items[0] and "title" not in items[0]
+    assert items[1]["verification_label"] == "已查證"
     for item in items:
         assert {"id", "kind", "event_type", "label", "version", "published_at"} <= set(item)
 
@@ -527,22 +566,21 @@ async def test_unknown_type_is_rejected(client: httpx2.AsyncClient) -> None:
     assert res.json()["error"]["code"] == "VALIDATION_ERROR"
 
 
-async def test_notices_only_lists_safety_notices(
+async def test_notices_are_no_longer_produced(
     client: httpx2.AsyncClient, session: AsyncSession
 ) -> None:
+    """P8-T06：未查證事件公開 AI 摘要，不再改寫成安全提醒。"""
     await seed_public(session)
-    items = (await client.get(f"{PUBLIC}/notices")).json()["data"]
-    assert [i["kind"] for i in items] == ["safety_notice"]
-    assert "治安" in items[0]["notice"]
+    assert (await client.get(f"{PUBLIC}/notices")).json()["data"] == []
 
 
 async def test_events_only_lists_content(client: httpx2.AsyncClient, session: AsyncSession) -> None:
     await seed_public(session)
     items = (await client.get(f"{PUBLIC}/events")).json()["data"]
-    assert [i["title"] for i in items] == ["總圖書館三樓漏水"]
-    assert "report" not in items[0]  # 列表不含小報告，詳細頁才有
+    assert [i["title"] for i in items] == ["宿舍區機車失竊", "總圖書館三樓漏水"]
+    assert "report" not in items[0]  # 列表不含小報告
     filtered = (await client.get(f"{PUBLIC}/events", params={"type": "security"})).json()
-    assert filtered["data"] == []
+    assert [i["title"] for i in filtered["data"]] == ["宿舍區機車失竊"]
 
 
 async def test_categories_count_published_items(
@@ -554,7 +592,7 @@ async def test_categories_count_published_items(
     assert "none" not in by_type
     assert by_type["facility"]["label"]
     assert (by_type["facility"]["content"], by_type["facility"]["safety_notice"]) == (1, 0)
-    assert (by_type["security"]["content"], by_type["security"]["safety_notice"]) == (0, 1)
+    assert (by_type["security"]["content"], by_type["security"]["safety_notice"]) == (1, 0)
     assert by_type["fire"]["content"] == 0
 
 
@@ -568,11 +606,25 @@ async def test_event_detail_returns_public_report(
     assert data["kind"] == "content"
     assert data["report"] is None  # 單一事件小報告停用（P8-T13，ADR-0020 決策 3-5）
     assert data["sources"] == [{"name": "中央大學最新消息", "url": data["sources"][0]["url"]}]
-    assert data["progress"][0]["title"] == "更換三樓天花板防水層"
-    assert "owner" not in data["progress"][0]
+    # 改善進度改在系列分析頁（P8-T06）；不在任何公開系列中時 series 為 null
+    assert "progress" not in data
+    assert data["series"] is None
+    assert "更換三樓天花板防水層" not in res.text
 
 
-@pytest.mark.parametrize("which", ["notice", "gone"])
+async def test_unverified_event_detail_is_public_with_label(
+    client: httpx2.AsyncClient, session: AsyncSession
+) -> None:
+    events = await seed_public(session)
+    res = await client.get(f"{PUBLIC}/events/{await public_id(session, events['notice'])}")
+    assert res.status_code == 200
+    data = res.json()["data"]
+    assert data["verification_label"] == "尚未查證"
+    assert data["sources"] == []  # Facebook 來源不列出
+    assert "我的機車在宿舍區被偷了" not in res.text
+
+
+@pytest.mark.parametrize("which", ["gone"])
 async def test_event_detail_hides_notices_and_withdrawn(
     client: httpx2.AsyncClient, session: AsyncSession, which: str
 ) -> None:
@@ -603,14 +655,27 @@ async def test_taken_down_disappears_immediately(
     assert str(pub.id) not in {i["id"] for i in feed}
 
 
-async def test_progress_lists_content_with_actions(
+async def test_progress_lists_series_with_actions(
     client: httpx2.AsyncClient, session: AsyncSession
 ) -> None:
+    """P8-T06：改善進度以系列為單位（P8-T13 已把事件層級的措施掛到所屬系列）。"""
     events = await seed_public(session)
+    series = await add_series(session, [events["content"]])
+    action = await session.scalar(
+        select(ResponseAction).where(ResponseAction.event_id == events["content"].id)
+    )
+    assert action is not None
+    action.series_id = series.id
+    await session.commit()
+    await sync_all(session)
+    series_pub = await session.scalar(select(Publication).where(Publication.series_id == series.id))
+    assert series_pub is not None
     data = (await client.get(f"{PUBLIC}/progress")).json()["data"]
-    assert [d["id"] for d in data] == [await public_id(session, events["content"])]
+    assert [d["id"] for d in data] == [str(series_pub.id)]
+    assert data[0]["title"] == "總圖書館漏水"
     assert data[0]["progress"][0]["state"] == "handling"
     assert data[0]["counts"] == {"handling": 1}
+    assert "owner" not in data[0]["progress"][0]
 
 
 async def test_responses_carry_cache_headers_and_etag(

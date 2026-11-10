@@ -5,7 +5,8 @@
 2. 建立唯一的使用者（帳號、密碼來自 `E2E_USERNAME`／`E2E_PASSWORD`，只供這個測試資料庫使用）；
 3. 以真實的冪等寫入（`store_items`）與分析管線（`analyze_item`，含 S05 規則、S06 引擎、
    P3-T08 通知同步）建立各案例；模型以腳本化的假供應商代替，不呼叫真實 API；
-   最後以 P5-T11 的 `sync_all` 依公開規則同步公開狀態，供公開網站的測試使用；
+   接著把每個事件歸入系列（P8-T04 的 `backfill_series`，不呼叫 S11，每個事件各自成為 1 件的系列），
+   最後以 P5-T11 的 `sync_all` 依公開規則同步事件與系列的公開狀態，供公開網站的測試使用；
 4. 檢查只有資料庫看得到的不變量（A03 證據數、A07 冪等），不符合時以非零結束碼失敗，
    讓 Playwright 的 webServer 啟動失敗。
 
@@ -45,9 +46,15 @@ from app.ingestion.store import store_items  # noqa: E402
 from app.models.alert import Alert, AlertDelivery  # noqa: E402
 from app.models.event import Event, EventEvidence  # noqa: E402
 from app.models.source import Source, SourceItem, SourceItemVersion  # noqa: E402
-from app.pipeline.analyze_item import Outcome, PipelineDeps, analyze_item  # noqa: E402
+from app.pipeline.analyze_item import (  # noqa: E402
+    PIPELINE_PRINCIPAL,
+    Outcome,
+    PipelineDeps,
+    analyze_item,
+)
 from app.publishing.sync import sync_all  # noqa: E402
 from app.risk.engine import load_policy  # noqa: E402
+from app.series.grouping import backfill_series  # noqa: E402
 from app.services.auth import create_or_reset_admin  # noqa: E402
 from sqlalchemy import URL, func, select, text  # noqa: E402
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine  # noqa: E402
@@ -77,6 +84,20 @@ A08_TITLE = "學生餐廳疑似食物中毒"
 Script = Mapping[str, Any] | Callable[[], Mapping[str, Any]]
 
 
+# S13 location-resolver（P8-T02）：每個案例的地點名稱都不同，一律 abstain，系統當成新地點
+# （method fallback），與 P8-T02 之前的「同名稱才是同一地點」相同
+LOCATION_ABSTAIN: dict[str, Any] = {
+    "status": "abstain",
+    "decision": None,
+    "target_id": None,
+    "confidence": 0.2,
+    "evidence_ids": [],
+    "evidence_spans": [],
+    "reason": "資訊不足，無法判斷是否為同一地點。",
+    "abstain_reason": "insufficient_evidence",
+}
+
+
 class SkillScript:
     """依 Skill 排隊回應；佇列剩最後一個時重複使用它（涵蓋 Skill Runner 的重試）。"""
 
@@ -84,6 +105,7 @@ class SkillScript:
 
     def __init__(self, scripts: Mapping[str, Sequence[Script]]) -> None:
         self._queues = {skill: deque(items) for skill, items in scripts.items()}
+        self._queues.setdefault("location-resolver", deque([LOCATION_ABSTAIN]))
 
     async def generate_structured(
         self,
@@ -547,7 +569,10 @@ async def main() -> None:
             await create_or_reset_admin(session, username, password)
             await session.commit()
             await seed(session)
-            # 公開網站（P5-T12）：與 beat 排程相同，依公開規則同步所有事件的公開狀態
+            # 系列（P8-T04）：不呼叫 S11，每個事件各自成為 1 件的系列，公開網站才有系列分析頁
+            await backfill_series(session, run=None, principal=PIPELINE_PRINCIPAL)
+            await session.commit()
+            # 公開網站（P5-T12、P8-T06）：與 beat 排程相同，依公開規則同步事件與系列的公開狀態
             await sync_all(session)
     finally:
         await engine.dispose()

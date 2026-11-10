@@ -4,14 +4,18 @@ import { Badge, Button, Card, Input, Select } from '@design'
 
 import {
   listAlerts,
+  listPublicationReminders,
   listRecurrences,
   retractAlert,
   RETRACTABLE_STATES,
+  takeDownPublication,
   type AlertItem,
   type AlertState,
   type Page,
+  type PublicationReminder,
   type RecurrenceGroup,
   type RecurrenceReason,
+  type ReminderFlag,
 } from '../api'
 import { ALERT_LABELS, ALERT_TONES, formatTime, label, STATUS_LABELS } from '../format'
 import { Link } from '../Link'
@@ -19,6 +23,12 @@ import { useErrorMessage, useLoad } from '../useLoad'
 import { ErrorText, LoadState, PageHeader, Section } from '../ui'
 
 const STATES = Object.keys(ALERT_LABELS) as AlertState[]
+
+const FLAG_LABELS: Record<ReminderFlag, string> = {
+  possible_allegation: '疑似指控',
+  mentions_party: '提到特定個人、群體、店家或單位',
+  speculation: '推測的規律或原因',
+}
 
 const REASON_LABELS: Record<RecurrenceReason, string> = {
   within_window: '時間窗內再發生',
@@ -56,6 +66,7 @@ export function AlertCenter() {
           </label>
         }
       />
+      <PublicReminders />
       <Recurrences />
       <LoadState loading={alerts.loading} error={alerts.error} empty={items.length === 0} emptyText="目前沒有通知" />
       {items.length > 0 && (
@@ -66,6 +77,88 @@ export function AlertCenter() {
         </ul>
       )}
     </div>
+  )
+}
+
+/**
+ * 公開提醒（P8-T06，ADR-0018 2-2、ADR-0020 2-3）：疑似指控與推測的規律、原因已經公開在網站上，
+ * 第一次公開或內容改變時列在這裡，附一鍵下架。公開與否仍由公開規則判斷，這裡只能撤下。
+ */
+function PublicReminders() {
+  const reminders = useLoad<PublicationReminder[]>(listPublicationReminders, 'publication-reminders')
+  const errorMessage = useErrorMessage()
+  const [busy, setBusy] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  if (reminders.error) return <ErrorText>{`公開提醒載入失敗：${reminders.error}`}</ErrorText>
+  const items = reminders.data ?? []
+  if (items.length === 0) return null
+
+  async function takeDown(item: PublicationReminder) {
+    setBusy(item.publication_id)
+    setError(null)
+    try {
+      const result = await takeDownPublication(item.publication_id)
+      reminders.setData((list) =>
+        (list ?? []).map((r) =>
+          r.publication_id === item.publication_id ? { ...r, state: result.state, can_take_down: false } : r,
+        ),
+      )
+    } catch (e) {
+      setError(errorMessage(e))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <Section id="publication-reminders" title="公開提醒">
+      <p className="text-sm text-muted-foreground">
+        這些內容已經公開在網站上。疑似指控與提到特定對象的推測照原文摘要公開，請確認；有問題就立即下架。
+      </p>
+      {error && <ErrorText>{error}</ErrorText>}
+      <ul className="space-y-3">
+        {items.map((item) => (
+          <Card as="li" key={`${item.publication_id}-${item.version}`} className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <Badge tone={item.subject === 'series' ? 'info' : 'neutral'}>
+                {item.subject === 'series' ? '系列分析頁' : '快報'}
+              </Badge>
+              {item.flags.map((f) => (
+                <Badge key={f} tone={f === 'speculation' ? 'warning' : 'danger'}>
+                  {FLAG_LABELS[f]}
+                </Badge>
+              ))}
+              <span>{`第 ${item.version} 版・${formatTime(item.created_at)}`}</span>
+              {item.state === 'taken_down' && <Badge>已下架</Badge>}
+              {!item.current && item.state !== 'taken_down' && <span>已有新版本</span>}
+            </div>
+            <p className="text-sm font-medium text-foreground">{item.title}</p>
+            <p className="text-sm">
+              <Link
+                to={
+                  item.series_id
+                    ? `/admin/series/${encodeURIComponent(item.series_id)}`
+                    : `/admin/events/${encodeURIComponent(item.event_id ?? '')}`
+                }
+                className="text-accent underline underline-offset-4"
+              >
+                {item.subject === 'series' ? '到後台查看系列' : '到後台查看事件'}
+              </Link>
+            </p>
+            {item.can_take_down && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy === item.publication_id}
+                onClick={() => void takeDown(item)}
+              >
+                立即下架
+              </Button>
+            )}
+          </Card>
+        ))}
+      </ul>
+    </Section>
   )
 }
 

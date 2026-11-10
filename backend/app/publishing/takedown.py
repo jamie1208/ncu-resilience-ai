@@ -1,4 +1,4 @@
-"""一鍵下架（P5-T14，ADR-0015）：使用者在後台立即撤下公開內容。
+"""一鍵下架（P5-T14，ADR-0015）：使用者在後台立即撤下公開內容（事件，P8-T06 起也含系列分析頁）。
 
 - `take_down()`：published 或 withdrawn 的公開狀態改為 taken_down。公開 API（P5-T11）每次請求都
   只讀 state 為 published 的版本，commit 後立即不再回傳；回應的 ETag 依內容計算，舊 ETag 不再
@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import Principal
 from app.models.publication import Publication, PublicationTakedown
-from app.publishing.sync import sync_publication
+from app.publishing.sync import subject_metadata, sync_subject
 from app.services.audit import prepare_metadata, record_audit
 
 TAKEABLE_STATES = frozenset({"published", "withdrawn"})
@@ -75,7 +75,7 @@ async def take_down(
     if previous not in TAKEABLE_STATES:
         raise TakedownConflictError("已經下架")
     metadata: dict[str, object] = {
-        "event_id": pub.event_id,
+        **subject_metadata(pub),
         "version": pub.version,
         "from": previous,
     }
@@ -115,13 +115,13 @@ async def restore(
     pub.state = "withdrawn"
     pub.taken_down_at = None
     await session.flush()
-    action = await sync_publication(session, pub.event_id)
+    action = await sync_subject(session, pub)
     await record_audit(
         session,
         principal,
         "publication.restore",
         target=f"publication:{pub.id}",
-        metadata={"event_id": pub.event_id, "version": pub.version, "sync": action.value},
+        metadata={**subject_metadata(pub), "version": pub.version, "sync": action.value},
     )
     return TakedownResult(pub.id, pub.state, "taken_down")
 
