@@ -7,6 +7,8 @@
 - 措施代號依輸入順序指定為 m1…m10，S10 只能引用這些代號；
 - 引擎回傳 not_estimable（效果全部未知）時不呼叫模型，直接記錄「無法估計」；
 - 未指定種子時隨機產生一個並存下，之後以同參數同種子重跑可得到相同數值（G7-1）；
+- 未填基準件數時依時間窗、類別、地點自動計算歷史基準（P8-T09，`baseline.load_baseline`），
+  手填值優先；輸入紀錄的 `baseline_source` 記 manual／auto，auto 時 `baseline_basis` 記依據；
 - 只在管理端使用，不經公開端（ADR-0015）。
 """
 
@@ -15,7 +17,8 @@ from __future__ import annotations
 import secrets
 import uuid
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from datetime import date, datetime
 from typing import Any
 
 from sqlalchemy import select
@@ -29,12 +32,15 @@ from app.core.security import Principal
 from app.models.ai import AIAnalysisRun
 from app.models.event import Event
 from app.models.scenario import ScenarioRun
+from app.resilience.recurrence import TAIPEI
 from app.services.audit import record_audit
+from app.simulations.baseline import Baseline, load_baseline
 from app.simulations.engine import (
     MAX_SEED,
     EffectRange,
     Measure,
     ScenarioInput,
+    ScenarioInputError,
     SimulationResult,
     SimulationStatus,
     simulate,
@@ -63,9 +69,9 @@ class MeasureSpec:
 
 @dataclass(frozen=True)
 class ScenarioSpec:
-    """使用者輸入的模擬參數。"""
+    """使用者輸入的模擬參數；`baseline` 為 None 時自動計算歷史基準。"""
 
-    baseline: float
+    baseline: float | None
     window_days: int
     measures: Sequence[MeasureSpec]
     seed: int | None = None
@@ -89,7 +95,9 @@ def measure_id(index: int) -> str:
 
 
 def to_engine_input(spec: ScenarioSpec, seed: int) -> ScenarioInput:
-    """把使用者輸入轉成引擎輸入。"""
+    """把使用者輸入轉成引擎輸入；`spec.baseline` 必須已有值。"""
+    if spec.baseline is None:
+        raise ScenarioInputError("baseline", "基準件數尚未決定")
     measures = tuple(
         Measure(
             measure_id=measure_id(i),
@@ -146,9 +154,11 @@ def skill_payload(
     }
 
 
-def _input_record(spec: ScenarioSpec, seed: int) -> dict[str, Any]:
+def _input_record(spec: ScenarioSpec, seed: int, auto: Baseline | None) -> dict[str, Any]:
     return {
         "baseline": spec.baseline,
+        "baseline_source": "manual" if auto is None else "auto",
+        "baseline_basis": None if auto is None else auto.basis(),
         "window_days": spec.window_days,
         "event_type": spec.event_type,
         "location": spec.location,
@@ -174,13 +184,28 @@ async def create_scenario(
     explainer: Explainer,
     *,
     trace_id: str | None = None,
+    as_of: date | None = None,
 ) -> ScenarioRun:
     """計算、解釋並記錄一次模擬（flush，不 commit）。
 
-    輸入不合法時拋出 `engine.ScenarioInputError`；事件不存在拋出 `ScenarioNotFoundError`。
+    未填基準時以 `as_of`（預設今天，台北時間）之前的歷史自動計算；沒有歷史資料時拋出
+    `engine.ScenarioInputError`（field baseline）。輸入不合法時拋出 `engine.ScenarioInputError`；
+    事件不存在拋出 `ScenarioNotFoundError`。
     """
     if spec.event_id is not None and await session.get(Event, spec.event_id) is None:
         raise ScenarioNotFoundError("事件不存在")
+    auto: Baseline | None = None
+    if spec.baseline is None:
+        auto = await load_baseline(
+            session,
+            as_of=as_of or datetime.now(TAIPEI).date(),
+            window_days=spec.window_days,
+            event_type=spec.event_type,
+            location=spec.location,
+        )
+        if auto.baseline is None:
+            raise ScenarioInputError("baseline", "沒有歷史資料可以推算基準件數，請手動填寫")
+        spec = replace(spec, baseline=auto.baseline)
     seed = spec.seed if spec.seed is not None else secrets.randbelow(MAX_SEED + 1)
     scenario = to_engine_input(spec, seed)
     result = simulate(scenario)
@@ -199,7 +224,7 @@ async def create_scenario(
 
     run = ScenarioRun(
         event_id=spec.event_id,
-        input=_input_record(spec, seed),
+        input=_input_record(spec, seed, auto),
         output=result.to_dict(),
         engine_version=result.engine_version,
         seed=seed,
@@ -218,6 +243,7 @@ async def create_scenario(
             "status": result.status.value,
             "measures": len(spec.measures),
             "explanation": None if explained is None else explained.status.value,
+            "baseline_source": "manual" if auto is None else "auto",
         },
     )
     return run

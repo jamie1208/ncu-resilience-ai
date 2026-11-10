@@ -483,9 +483,9 @@ export interface ScenarioMeasureSpec {
   rationale: string | null
 }
 
-/** 建立模擬的參數；未給 seed 時後端自動產生。 */
+/** 建立模擬的參數；未給 seed 時後端自動產生，未給 baseline 時後端依歷史自動計算（P8-T09）。 */
 export interface ScenarioRequest {
-  baseline: number
+  baseline?: number
   window_days: number
   measures: ScenarioMeasureSpec[]
   seed?: number
@@ -537,11 +537,25 @@ export interface ScenarioExplanationOutput {
   abstain_reason: string | null
 }
 
+/** 依時間窗、類別、代表地點自動計算的歷史基準件數（P8-T09）；`baseline` 為 null 代表沒有歷史資料。 */
+export interface ScenarioBaseline {
+  baseline: number | null
+  observed: number
+  weeks: number
+  history_start: string | null
+  history_end: string | null
+  window_days: number
+  event_type: string | null
+  location: string | null
+}
+
 export interface ScenarioRun {
   id: string
   event_id: string | null
   input: {
     baseline: number
+    baseline_source?: 'manual' | 'auto'
+    baseline_basis?: Omit<ScenarioBaseline, 'baseline'> | null
     window_days: number
     event_type: string | null
     location: string | null
@@ -1079,6 +1093,16 @@ export async function getResilience(windowDays: number): Promise<Resilience> {
 /** 建立模擬（P7-T02）：引擎計算數值，S10 解釋假設與限制；結果是假設情境，不是成效預測。 */
 export async function createScenario(body: ScenarioRequest): Promise<ScenarioRun> {
   return (await post<ScenarioRun>('/admin/scenarios', body)).data
+}
+
+/** 歷史基準件數（P8-T09）：以今天為準、進行中的週不列入。 */
+export async function getScenarioBaseline(params: {
+  windowDays: number
+  eventType?: string
+  location?: string
+}): Promise<ScenarioBaseline> {
+  const search = query({ window_days: params.windowDays, event_type: params.eventType, location: params.location })
+  return (await apiGet<ScenarioBaseline>(`${V1}/admin/scenarios/baseline${search}`)).data
 }
 
 /** 最近 50 次模擬（新到舊）。 */
