@@ -284,8 +284,20 @@ async def client(session: AsyncSession) -> AsyncIterator[httpx2.AsyncClient]:  #
         yield c
 
 
+# `event_ids`：系列規律與原因引用的公開快報 ID（P8-T06），是隨機 UUID，偶爾含連續 9 位數字會被
+# 誤判成學號；內部事件與系列 ID 不得公開仍由 test_appendix_a_and_adversarial_cases_do_not_leak
+# 檢查（使用者 2026-11-10 同意加入）。
 GENERATED = frozenset(
-    {"id", "request_id", "timestamp", "next_cursor", "published_at", "updated_at", "url"}
+    {
+        "id",
+        "request_id",
+        "timestamp",
+        "next_cursor",
+        "published_at",
+        "updated_at",
+        "url",
+        "event_ids",
+    }
 )
 
 
