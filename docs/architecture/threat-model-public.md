@@ -1,10 +1,10 @@
-# 公開端威脅模型（P5-T11、P5-T13、P7-T07、P8-T06）
+# 公開端威脅模型（P5-T11、P5-T13、P7-T07、P8-T06、P8-T08）
 
 依據 ADR-0015（公開網站重新規劃）、AGENTS.md「AI 與產品 Skills 規範」、P5-T10 公開規則引擎。
 本文件列出每個公開端點會給出的資料、可能的濫用方式與防護。**上線前（P5-T15）需由使用者本人審閱並同意（閘門 G5-8）。**
 
 - 程式：`backend/app/api/v1/public/`（端點、rate limit、快取標頭；匿名回報 `reports.py`）、`backend/app/ingestion/adapters/anonymous_report.py`（收件匣 → 擷取管線）、`backend/app/publishing/sync.py`（寫入公開狀態）、`backend/app/publishing/policy.py`（公開規則與硬性邊界）
-- 測試：`backend/tests/security/test_public_exposure.py`、`backend/tests/security/test_anonymous_report.py`（G5-5）、`backend/tests/integration/test_public_api.py`、`backend/tests/unit/publishing/test_publish_policy.py`
+- 測試：`backend/tests/security/test_public_exposure.py`、`backend/tests/security/test_anonymous_report.py`（G5-5）、`backend/tests/security/test_report_receipt.py`（P8-T08）、`backend/tests/integration/test_public_api.py`、`backend/tests/unit/publishing/test_publish_policy.py`
 
 > P8-T06（ADR-0018 決策 2、1-9，ADR-0020 決策 2）放寬公開規則：未查證事件公開 AI 摘要並標「尚未查證」；疑似指控照 AI 摘要公開；新增公開系列分析頁（規律與可能原因一律標「推測，尚未查證」，人工確認的標「已確認」）；疑似指控與推測內容第一次公開或改變時必定在通知中心產生公開提醒並附一鍵下架。以下表格已依新規則更新，被取代的舊邊界保留在 git 歷史與 ADR-0015、ADR-0017。
 
@@ -12,6 +12,9 @@
 
 ```
 匿名回報表單 → POST /api/v1/public/reports → anonymous_reports 收件匣（只有內容、地點、收到時間）
+  ＋ report_receipts（收據碼的 SHA-256 → 投稿；P8-T08）；回應帶一次明文收據碼
+收據碼 → GET /api/v1/public/reports/status（X-Receipt-Code 標頭）→ 只回 received／processing／handled
+收據碼 → POST /api/v1/public/reports/supplements → 同一個收件匣（補件，與投稿同樣的限制）
   → anonymous_report Adapter（worker 每 10 分鐘）→ source_items（來源 anonymous-report，非官方）
 
 來源文章、匿名投稿（不可信）
@@ -28,7 +31,7 @@
 
 ## 公開端點
 
-全部免登入；除了匿名回報的 `POST /api/v1/public/reports` 都只有 GET（`tests/integration/test_auth.py` 列舉所有路由確認 `/api/v1/public/` 下沒有其他方法）。回應統一 `{data, meta, error}`；`id` 一律是 publication ID，不是事件 ID。
+全部免登入；除了匿名回報的 `POST /api/v1/public/reports` 與補件的 `POST /api/v1/public/reports/supplements`（P8-T08，使用者 2026-11-10 同意）都只有 GET（`tests/integration/test_auth.py` 列舉所有路由確認 `/api/v1/public/` 下沒有其他方法）。回應統一 `{data, meta, error}`；`id` 一律是 publication ID，不是事件 ID。
 
 | 端點                                    | 回傳的資料                                                                                                                   | 不回傳                                                  |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
@@ -40,7 +43,9 @@
 | `GET /api/v1/public/progress`           | 有改善措施的公開系列頁（P8-T06 起以系列為單位）：系列名稱、最近一起日期、措施名稱、狀態、預計完成日、更新時間、各狀態數量 | 負責人、佐證、依據未經人工確認之舊小報告推測原因的措施  |
 | `GET /api/v1/public/series/{id}`（P8-T06） | 系列分析頁：名稱、S12 總覽、件數、第一起與最近一起、每週件數與 4 週移動平均（全部期間）、措施開始／完成標記、程式判斷的突增週（週期、件數、期望值）、發生地點分組、規律與可能原因（描述、標籤、相關快報 ID、y／x 起）、改善建議（對象、時程、優先、負責單位）、改善進度、前後比較（前後平均、件數、「資料還不夠」、固定說明）、公開中的每一起（快報 ID、第幾起、標題、日期、地點、查證標籤）；子事件讀取時再比對公開狀態 | 逐字證據、證據 ID、`to_verify`、建議依據的原因、`mentions_party`、丟棄紀錄、突增的 AI 解釋、前後比較的變化比例、未公開或已下架的子事件、內部事件與系列 ID |
 | `GET /api/v1/public/resilience`（P6-T05） | 韌性成績單：總分與四構面分數（資料不足為 null）、樣本量、覆蓋率、時間窗（固定 180 天）、限制說明；只統計以事件內容公開中、且快照沒有標為未查證的事件（P8-T06） | 事件、地點、措施、任何 ID；未公開與未查證事件的數量 |
-| `POST /api/v1/public/reports`（P5-T13） | 接收匿名回報：`content`（10–2000 字）、`location`（選填，最多 100 字）；回 202 與固定的 `{"status": "received"}`，`no-store` | 不回顯投稿、不回傳收件匣 id；沒有任何讀取投稿的公開端點 |
+| `POST /api/v1/public/reports`（P5-T13） | 接收匿名回報：`content`（10–2000 字）、`location`（選填，最多 100 字）；回 202 與 `{"status": "received", "receipt_code": "XXXX-…"}`（P8-T08：收據碼只出現這一次），`no-store` | 不回顯投稿、不回傳收件匣 id；沒有任何讀取投稿的公開端點 |
+| `GET /api/v1/public/reports/status`（P8-T08） | 收據碼放在 `X-Receipt-Code` 標頭（不放網址，request 日誌會記路徑；查詢字串一律忽略）；只回 `{"status": "received" \| "processing" \| "handled"}`；`no-store`、沒有 ETag、`Vary: X-Receipt-Code`；錯的、格式不對、缺少、不存在的收據碼一律相同的 404 | 投稿內容、地點、時間、事件、補件數量 |
+| `POST /api/v1/public/reports/supplements`（P8-T08） | 補件：`receipt_code`、`content`（10–2000 字）、`location`（選填）；與投稿同樣的格式限制與共用限速；回 202 與 `{"status": "received"}`；每張收據最多補件 5 次，超過回 409 | 不回顯補件；收據碼錯誤與不存在相同的 404 |
 
 列表參數：`type`（只接受已知類別，其他回 422）、`limit`（1–50，預設 20）、`cursor`（不透明字串，格式不對回 422）。
 
@@ -60,6 +65,7 @@
 | 已下架（P5-T14）不被同步覆蓋；下架與同步互斥（事件與系列相同）                                                   | `sync_publication()`、`sync_series_publication()` 遇 `taken_down` 直接略過；`take_down()` 與同步都以 `SELECT ... FOR UPDATE` 鎖住 publication | `test_public_api`、`test_takedown`、`test_public_series`                        |
 | 一鍵下架後公開 API 立即不再回傳、舊 ETag 失效、寫入稽核；重新上架交回公開規則判斷                  | `app/publishing/takedown.py`、`/api/v1/admin/publications`                                                                         | `test_takedown`                                                                 |
 | 匿名投稿不保存 IP 與裝置資訊；原文永不公開；投稿是非官方的不可信來源                               | `anonymous_reports` 只有內容、地點、收到時間；uvicorn `--no-access-log`；來源代碼 `anonymous-report` 不符合 `is_official_source()` | `test_anonymous_report`                                                         |
+| 收據碼不落地明文：資料庫只存 SHA-256，稽核與日誌不含收據碼；查詢只回三種狀態；補件原文同樣永不公開（P8-T08） | `report_receipts.code_hash`；`reports.py`（`ReceiptRoute` 強制 `no-store`）；補件寫進 `anonymous_reports`，經既有 Adapter 與 `<untrusted_source>` 進入管線 | `test_report_receipt` |
 
 ## 濫用方式與防護
 
@@ -80,6 +86,9 @@
 | 快取殘留               | 撤下或下架後，舊內容仍留在瀏覽器或通道快取                       | max-age 只有 30 秒；錯誤回應 `no-store`；API 每次請求都查目前狀態，沒有伺服器端快取；ETag 依內容計算，下架後舊 ETag 不再得到 304（`test_takedown`）                                                                                           | 已拿到回應的瀏覽器最多再顯示 30 秒；公開 API 回應帶 `Cloudflare-CDN-Cache-Control: no-store`，通道邊緣不快取（P5-T15）                                                                                        |
 | 匿名回報洪水           | 大量投稿塞爆收件匣、拖垮分析與模型費用                           | 每用戶端 10 分鐘 3 則、全站 10 分鐘 30 則（在解析前計數，格式錯誤也算），超過回 429 與 `Retry-After`；請求本文最多 8 KiB；分析仍受每日費用上限限制                                                                                            | 全站上限會讓洪水期間的正常投稿也被擋；換位址的攻擊者仍可用掉全站額度                                                                                                                                          |
 | 投稿者被追蹤           | 從資料庫、稽核或日誌反查投稿者                                   | 收件匣沒有 IP、User-Agent、轉送標頭、聯絡方式欄位；稽核只記字數與有無地點；request 日誌只有方法、路徑、狀態碼；uvicorn 存取日誌關閉；限速只存加鹽雜湊                                                                                         | 投稿內容本身可能透露身分（使用者自行負責，表單有提醒）；公開閘道不記存取日誌、不往內轉送 User-Agent／Referer，cloudflared 維持 info 等級不逐筆記錄（P5-T15）；Cloudflare 本身可見連線資訊，不在本系統控制範圍 |
+| 猜收據碼               | 暴力嘗試收據碼，查別人的處理狀態或冒名補件                       | 收據碼 120 位元隨機；查詢每用戶端 10 分鐘 20 次、全站 10 分鐘 600 次（使用者 2026-11-10 決定）；補件與投稿共用限速（每用戶端 10 分鐘 3 則），錯的收據碼也計數；錯的與不存在的回應相同 | 實際上猜不中（每 10 分鐘 20 次對 2^120 種組合可忽略）；查詢上限是行程內記憶體計數，API 重啟後歸零 |
+| 收據碼外流             | 收據碼被旁人看到或被截圖分享，他人可查狀態或補件                 | 查詢只回三種狀態，不含內容；補件只能新增、不能讀取或修改既有投稿；每張收據最多補件 5 次；補件原文不公開，仍經分析管線與公開規則 | 拿到收據碼的人可以冒名補件（最多 5 次），可能誤導分析；收據碼遺失無法找回（只存雜湊） |
+| 以狀態追蹤處理進度     | 從狀態變化推測事件是否成立、是否已結束                           | 只有三種狀態；「已處理」同時涵蓋「判斷無關」與「事件結束」，無法區分 | 投稿者能得知分析已完成，這是功能本身 |
 | 投稿注入               | 投稿中夾帶「忽略規則」、偽造 `<untrusted_source>` 區塊或官方證據 | 投稿與其他來源一樣以 `<untrusted_source>` 包裹並跳脫標籤；查證只依 source_code 判斷官方；公開與否由確定性規則決定                                                                                                                             | 模型本身是否照做由各 Skill 的對抗 golden cases 評測                                                                                                                                                           |
 | 以投稿灌出查證         | 同一人送兩則看似第一手的投稿，使事件被判為 verified              | 只有兩份第一手來源支持的 verified 不算已查證（P5-T10），公開時標「尚未查證」，也不列入公開版韌性成績單 | 查證規則以每份證據計數，不以來源計數，事件在管理端仍可能顯示 verified、並可能觸發個人通知；使用者 2026-10-28 決定維持現狀，列為已知風險 |
 | 跨站代送投稿           | 惡意網站讓訪客的瀏覽器代送投稿                                   | 只接受 `application/json`，跨站請求需要 CORS 預檢，API 沒有開放 CORS；端點不讀 cookie                                                                                                                                                         | 非瀏覽器的直接請求不受影響（由限速處理）                                                                                                                                                                      |
@@ -97,6 +106,12 @@
 - [x] 使用者本人審閱上方端點清單與每個端點回傳的欄位
 - [x] 使用者本人審閱剩餘風險，同意上線
 - [x] P5-T15 通道只轉送公開網站與 `/api/v1/public/*`
+
+## P8-T08 收據碼與補件確認清單（使用者確認後勾選）
+
+- [x] 使用者同意新增 `GET /api/v1/public/reports/status` 與 `POST /api/v1/public/reports/supplements`（2026-11-10）
+- [ ] 使用者本人審閱上方新增的端點、硬性邊界與剩餘風險（猜收據碼、收據碼外流、以狀態追蹤處理進度）
+- [ ] 閘道沿用 `/api/v1/public/*` 規則（GET、POST），`tunnel.sh check` 通過（含收據碼查詢、補件與不允許的方法）
 
 ## P8-T06 公開端點與閘道確認清單（G8-4，使用者確認後勾選）
 

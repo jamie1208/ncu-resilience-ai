@@ -228,9 +228,37 @@ export interface ReportInput {
   location?: string
 }
 
-/** 送出匿名回報；不帶 cookie（端點不需要登入，也不讀取任何身分資訊）。 */
-export async function submitReport(input: ReportInput): Promise<void> {
-  await apiRequest<{ status: string }>(`${BASE}/reports`, {
+/** 送出匿名回報；不帶 cookie（端點不需要登入，也不讀取任何身分資訊）。回傳只出現一次的收據碼（P8-T08）。 */
+export async function submitReport(input: ReportInput): Promise<{ receiptCode: string | null }> {
+  const res = await apiRequest<{ status: string; receipt_code?: string }>(`${BASE}/reports`, {
+    method: 'POST',
+    credentials: 'omit',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  return { receiptCode: res.data?.receipt_code ?? null }
+}
+
+/** 匿名回報的處理狀態（P8-T08）：只有這三種，不含投稿內容。 */
+export type ReportStatus = 'received' | 'processing' | 'handled'
+
+/** 以收據碼查詢處理狀態；收據碼放在標頭，不進網址，也不快取。 */
+export async function fetchReportStatus(receiptCode: string): Promise<ReportStatus> {
+  const res = await apiRequest<{ status: ReportStatus }>(`${BASE}/reports/status`, {
+    credentials: 'omit',
+    cache: 'no-store',
+    headers: { 'X-Receipt-Code': receiptCode },
+  })
+  return res.data.status
+}
+
+/** 補件（P8-T08）：與投稿同樣的字數與地點限制。 */
+export interface SupplementInput extends ReportInput {
+  receipt_code: string
+}
+
+export async function submitSupplement(input: SupplementInput): Promise<void> {
+  await apiRequest<{ status: string }>(`${BASE}/reports/supplements`, {
     method: 'POST',
     credentials: 'omit',
     headers: { 'Content-Type': 'application/json' },

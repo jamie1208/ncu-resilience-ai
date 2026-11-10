@@ -2,7 +2,7 @@
 
 from app.models.ai import AIAnalysisRun, EventRelation, RiskAssessment
 from app.models.alert import Alert, AlertDelivery
-from app.models.anonymous_report import AnonymousReport
+from app.models.anonymous_report import AnonymousReport, ReportReceipt
 from app.models.audit import AuditLog
 from app.models.base import Base
 from app.models.event import Event, EventEvidence, EventMerge, Location, LocationResolution
@@ -49,6 +49,7 @@ __all__ = [
     "PublicationTakedown",
     "PublicationVersion",
     "ReportCauseDecision",
+    "ReportReceipt",
     "ResponseAction",
     "ResponseActionTransition",
     "RiskAssessment",

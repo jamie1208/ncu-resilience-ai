@@ -193,7 +193,7 @@ async def test_submit_returns_202_without_echo(client: httpx2.AsyncClient) -> No
     assert res.status_code == 202, res.text
     body = res.json()
     assert body["error"] is None
-    assert body["data"] == {"status": "received"}
+    assert body["data"]["status"] == "received"  # P8-T08 起另含收據碼（使用者 2026-11-10 同意）
     assert REPORT_TEXT not in res.text
     assert res.headers["Cache-Control"] == "no-store"
     assert "ETag" not in res.headers

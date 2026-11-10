@@ -95,6 +95,105 @@ describe('Report', () => {
   })
 })
 
+const STATUS = 'GET /api/v1/public/reports/status'
+const SUPPLEMENTS = 'POST /api/v1/public/reports/supplements'
+const RECEIPT = 'ABCD-EFGH-IJKL-MNOP-QRST-UVWX'
+const MORE = '補充：閃爍的是靠近樓梯那三支燈管，今天早上還是一樣'
+
+function receiptBox() {
+  return screen.getByRole('textbox', { name: '收據碼' })
+}
+
+async function lookUp(code = RECEIPT) {
+  await userEvent.type(receiptBox(), code)
+  await userEvent.click(screen.getByRole('button', { name: '查詢進度' }))
+}
+
+describe('Report 收據碼（P8-T08）', () => {
+  it('送出後顯示只出現一次的收據碼，並提醒自行保存', async () => {
+    mockApi({ [REPORTS]: { status: 202, data: { status: 'received', receipt_code: RECEIPT } } })
+    render(<Report />)
+    await userEvent.type(contentBox(), TEXT)
+    await userEvent.click(submitButton())
+    const status = await screen.findByRole('status')
+    expect(status).toHaveTextContent(/已收到/)
+    expect(within(status).getByText(RECEIPT)).toBeVisible()
+    expect(status).toHaveTextContent(/只會顯示這一次/)
+  })
+
+  it('以標頭送出收據碼查詢進度，只顯示處理狀態', async () => {
+    const { calls, fetchMock } = mockApi({ [STATUS]: { status: 200, data: { status: 'processing' } } })
+    render(<Report />)
+    await lookUp(` ${RECEIPT} `)
+    const result = await screen.findByRole('status', { name: '查詢結果' })
+    expect(result).toHaveTextContent('處理中')
+    expect(calls).toHaveLength(1)
+    expect(calls[0].path).not.toContain(RECEIPT)
+    expect(calls[0].headers.get('X-Receipt-Code')).toBe(RECEIPT)
+    expect(fetchMock.mock.calls[0][1]?.credentials).toBe('omit')
+    expect(fetchMock.mock.calls[0][1]?.cache).toBe('no-store')
+  })
+
+  it.each([
+    ['received', '已收到'],
+    ['handled', '已處理'],
+  ])('狀態 %s 顯示為「%s」', async (value, label) => {
+    mockApi({ [STATUS]: { status: 200, data: { status: value } } })
+    render(<Report />)
+    await lookUp()
+    expect(await screen.findByRole('status', { name: '查詢結果' })).toHaveTextContent(label)
+  })
+
+  it('找不到收據碼時顯示請確認，不顯示補件表單', async () => {
+    mockApi({ [STATUS]: { status: 404, error: { code: 'NOT_FOUND', message: '找不到這張收據碼' } } })
+    render(<Report />)
+    await lookUp()
+    expect(await screen.findByRole('alert')).toHaveTextContent(/找不到這張收據碼/)
+    expect(screen.queryByRole('button', { name: '送出補件' })).not.toBeInTheDocument()
+  })
+
+  it('查詢被限速時說明每 10 分鐘最多查詢 20 次', async () => {
+    mockApi({ [STATUS]: { status: 429, error: { code: 'RATE_LIMITED', message: '查詢太頻繁，請稍後再試' } } })
+    render(<Report />)
+    expect(screen.getByText(/為了防止有人亂猜收據碼，每 10 分鐘最多查詢 20 次/)).toBeVisible()
+    await lookUp()
+    expect(await screen.findByRole('alert')).toHaveTextContent('查詢太頻繁，每 10 分鐘最多查詢 20 次，請稍後再試。')
+  })
+
+  it('查到後可以補件，送出收據碼、內容與地點', async () => {
+    const { calls } = mockApi({
+      [STATUS]: { status: 200, data: { status: 'received' } },
+      [SUPPLEMENTS]: { status: 202, data: { status: 'received' } },
+    })
+    render(<Report />)
+    await lookUp()
+    await screen.findByRole('status', { name: '查詢結果' })
+    const form = screen.getByRole('form', { name: '補件' })
+    const send = within(form).getByRole('button', { name: '送出補件' })
+    expect(send).toBeDisabled()
+    await userEvent.type(within(form).getByRole('textbox', { name: /補充說明/ }), `  ${MORE} `)
+    await userEvent.type(within(form).getByRole('textbox', { name: /地點/ }), '工程五館')
+    await userEvent.click(send)
+    expect(await screen.findByRole('status', { name: '補件結果' })).toHaveTextContent(/已收到你的補件/)
+    const sent = calls.find((c) => c.method === 'POST')
+    expect(sent?.body).toEqual({ receipt_code: RECEIPT, content: MORE, location: '工程五館' })
+    expect(within(form).getByRole('textbox', { name: /補充說明/ })).toHaveValue('')
+  })
+
+  it('補件次數達上限時說明', async () => {
+    mockApi({
+      [STATUS]: { status: 200, data: { status: 'processing' } },
+      [SUPPLEMENTS]: { status: 409, error: { code: 'CONFLICT', message: '每張收據最多補件 5 次' } },
+    })
+    render(<Report />)
+    await lookUp()
+    const form = await screen.findByRole('form', { name: '補件' })
+    await userEvent.type(within(form).getByRole('textbox', { name: /補充說明/ }), MORE)
+    await userEvent.click(within(form).getByRole('button', { name: '送出補件' }))
+    expect(await within(form).findByRole('alert')).toHaveTextContent(/上限/)
+  })
+})
+
 describe('PublicApp /report', () => {
   it('導覽列有匿名回報，頁尾標明非官方', async () => {
     mockApi({})

@@ -72,6 +72,8 @@ export interface Evidence {
   published_at: string | null
   support_type: string
   excerpt: string | null
+  /** 匿名回報的補件（P8-T08）：原投稿的來源文章 id；不是補件時沒有或為 null。 */
+  supplement_of?: string | null
 }
 
 export interface DimensionScore {

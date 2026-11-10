@@ -23,11 +23,14 @@ tunnel_url() {
 }
 
 # 期望的狀態碼：allow＝2xx；deny＝404；method＝不可為 2xx（不允許的方法）；
-# reach＝請求有送到後端（後端的驗證錯誤 4xx 可以，閘道的 403／404 不行）
+# reach＝請求有送到後端（後端的驗證錯誤 4xx 可以，閘道的 403／404 不行）；
+# api404＝後端回的 404（JSON 的 NOT_FOUND），用來區分閘道的 404；被後端限速（JSON 的 RATE_LIMITED）也算有送到
+
 FAILED=0
 expect() {
-  local kind="$1" method="$2" path="$3" code
-  code="$(curl -s -o /dev/null -w '%{http_code}' --path-as-is --max-time 15 -X "$method" \
+  local kind="$1" method="$2" path="$3" code body
+  body="$(mktemp)"
+  code="$(curl -s -o "$body" -w '%{http_code}' --path-as-is --max-time 15 -X "$method" \
     -H 'Content-Type: application/json' ${4:+--data "$4"} "$BASE$path" || echo 000)"
   local ok=0
   case "$kind" in
@@ -35,7 +38,10 @@ expect() {
     deny) [[ "$code" == 404 ]] && ok=1 ;;
     method) [[ "$code" != 2* && "$code" != 000 ]] && ok=1 ;;
     reach) [[ "$code" == 4* && "$code" != 403 && "$code" != 404 ]] && ok=1 ;;
+    api404) [[ "$code" == 404 || "$code" == 429 ]] \
+      && grep -Eq '"code": ?"(NOT_FOUND|RATE_LIMITED)"' "$body" && ok=1 ;;
   esac
+  rm -f "$body"
   if ((ok)); then
     printf '  ok    %-6s %-6s %-45s %s\n' "$kind" "$method" "$path" "$code"
   else
@@ -64,6 +70,10 @@ check() {
   done
   # 匿名回報：送空內容，只確認 POST 有到後端（得到驗證錯誤），不建立任何投稿
   expect reach POST /api/v1/public/reports '{}'
+  # 收據碼與補件（P8-T08）：不帶收據碼查詢 → 後端的 404；補件送空內容 → 驗證錯誤，不建立任何補件。
+  # 查詢會用掉這個位址 1 次查詢額度（每 10 分鐘 20 次；被後端限速得到 429 時同樣算通過）。
+  expect api404 GET /api/v1/public/reports/status
+  expect reach POST /api/v1/public/reports/supplements '{}'
 
   echo "管理端、登入與其他內部路徑（應一律 404）："
   for path in /admin /admin/ /admin/events /admin/publications /index.html \
@@ -82,6 +92,8 @@ check() {
   echo "公開路徑上不允許的方法（不可成功）："
   expect method DELETE /api/v1/public/events
   expect method PUT /api/v1/public/reports '{}'
+  expect method POST /api/v1/public/reports/status '{}'
+  expect method DELETE /api/v1/public/reports/supplements
   expect method POST /events
 
   if ((FAILED)); then
