@@ -18,7 +18,9 @@ CRI，不以剩下的構面重新加權。分數只到整數，每個構面附�
 時間窗為 as_of（台北日期，含當天）往前 `window_days` 天；只用 as_of 當天結束前已建立的事件與
 已發生的狀態變更。查證為不實（false）與類別 none 的事件、被手動合併到其他事件的事件
 （`event_merges`，P8-T03：合併後只算 1 件）不列入。公開版（`published_only`）只統計
-目前以「事件內容」公開中的事件。純統計參數放在 `CriParams` 預設值，不放設定檔（同 P6-T03）。
+目前以「事件內容」公開中、且公開快照沒有標為未查證的事件（P8-T06 起未查證事件也公開，
+但不列入；之前的快照沒有 verification 欄位，當時只有已查證的事件能公開內容）。
+純統計參數放在 `CriParams` 預設值，不放設定檔（同 P6-T03）。
 """
 
 from __future__ import annotations
@@ -32,13 +34,13 @@ from statistics import median
 from typing import Any, Literal
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import exists, func, select
+from sqlalchemy import and_, exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.analytics.timeseries import load_locations, representative
 from app.domain.states import EventStatus
 from app.models.event import Event, EventMerge
-from app.models.publication import Publication
+from app.models.publication import Publication, PublicationVersion
 from app.models.response_action import ResponseAction, ResponseActionTransition
 from app.publishing.policy import PublicLevel
 
@@ -385,8 +387,21 @@ async def load_records(
         | (Event.occurrence_start_date.is_(None) & (Event.created_at >= since_at)),
     )
     if published_only:
-        query = query.join(Publication, Publication.event_id == Event.id).where(
-            Publication.state == "published", Publication.level == PublicLevel.CONTENT.value
+        query = (
+            query.join(Publication, Publication.event_id == Event.id)
+            .outerjoin(
+                PublicationVersion,
+                and_(
+                    PublicationVersion.publication_id == Publication.id,
+                    PublicationVersion.version == Publication.version,
+                ),
+            )
+            .where(
+                Publication.state == "published",
+                Publication.level == PublicLevel.CONTENT.value,
+                func.coalesce(PublicationVersion.content["verification"].astext, "verified")
+                == "verified",
+            )
         )
     event_rows = (await session.execute(query)).all()
     ids = [row.id for row in event_rows]

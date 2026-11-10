@@ -4,14 +4,15 @@
 不讀事件、證據、小報告或改善措施等原始資料表。回傳欄位以白名單從快照挑出；`id` 是
 publication 的 ID，不是事件 ID。
 
-- `GET /api/v1/public/feed`：最新動態（事件內容與安全提醒，新到舊），可依 `type` 篩選
-- `GET /api/v1/public/notices`：安全提醒（未經證實事件的中性提醒）
+- `GET /api/v1/public/feed`：最新快報（事件內容，新到舊），可依 `type` 篩選；P8-T06 起未查證的事件
+  也公開 AI 摘要並帶 `verification_label`（「尚未查證」），每筆附所屬系列（`series`，見 series.py）
+- `GET /api/v1/public/notices`：安全提醒（P8-T06 起不再產生，只剩舊版本已撤下前的資料，通常為空）
 - `GET /api/v1/public/categories`：事件類別與各自公開的事件數、提醒數
 - `GET /api/v1/public/events`：事件分類查詢（只有事件內容），可依 `type` 篩選
-- `GET /api/v1/public/events/{id}`：公開版小報告（影響、建議、官方來源、改善進度）
-- `GET /api/v1/public/progress`：改善進度（有改善措施的公開事件）
+- `GET /api/v1/public/events/{id}`：快報全文（官方來源、所屬系列）；單一事件小報告已停用（P8-T13）
+- `GET /api/v1/public/progress`：改善進度（P8-T06 起以系列為單位：有改善措施的公開系列頁）
 
-列表皆為 cursor 分頁（依版本時間新到舊）。
+列表皆為 cursor 分頁（依版本時間新到舊）。系列分析頁的快照不會出現在事件的列表與詳細頁。
 """
 
 from __future__ import annotations
@@ -34,6 +35,7 @@ from app.api.errors import ApiError, ErrorCode
 from app.api.pagination import keyset_after, split_page
 from app.api.responses import envelope
 from app.api.v1.public.route import PublicRoute
+from app.api.v1.public.series import published_series, series_refs
 from app.models.publication import Publication, PublicationVersion
 from app.publishing.policy import PublicLevel, load_policy
 
@@ -52,10 +54,12 @@ _SUMMARY_FIELDS = {
         "location",
         "occurrence_date",
         "risk_level",
+        "verification",
+        "verification_label",
     ),
     PublicLevel.SAFETY_NOTICE.value: ("event_type", "label", "notice"),
 }
-_DETAIL_FIELDS = ("report", "sources", "progress")
+_DETAIL_FIELDS = ("report", "sources")  # report 一律為 null（P8-T13 停用小報告）
 _PUBLIC_LEVELS = (PublicLevel.CONTENT.value, PublicLevel.SAFETY_NOTICE.value)
 
 Session = Annotated[AsyncSession, Depends(get_db_session)]
@@ -88,7 +92,7 @@ def _check_type(value: str | None) -> str | None:
 
 
 def _published(*levels: str) -> Select[Row]:
-    """目前公開中、指定公開程度的版本；只有這裡決定什麼能被讀到。"""
+    """目前公開中、指定公開程度的事件版本；只有這裡決定什麼能被讀到（系列見 series.py）。"""
     return (
         select(
             Publication.id,
@@ -104,6 +108,7 @@ def _published(*levels: str) -> Select[Row]:
             ),
         )
         .where(
+            Publication.event_id.is_not(None),
             Publication.state == "published",
             Publication.level.in_(levels),
             PublicationVersion.level.in_(levels),
@@ -112,19 +117,22 @@ def _published(*levels: str) -> Select[Row]:
     )
 
 
-def _item(row: Row, *, detail: bool = False) -> dict[str, Any]:
+def _item(row: Row, refs: dict[str, dict[str, Any]], *, detail: bool = False) -> dict[str, Any]:
     pub_id, content, version, at = row
     kind = str(content.get("kind"))
     fields = _SUMMARY_FIELDS.get(kind, ())
     if detail and kind == PublicLevel.CONTENT.value:
         fields = (*fields, *_DETAIL_FIELDS)
-    return {
+    item = {
         "id": str(pub_id),
         "kind": kind,
         "version": version,
         "published_at": at.isoformat(),
         **{k: content.get(k) for k in fields},
     }
+    if kind == PublicLevel.CONTENT.value:
+        item["series"] = refs.get(str(pub_id))
+    return item
 
 
 async def _page(
@@ -160,7 +168,8 @@ async def _list(
         limit=limit,
         cursor=cursor,
     )
-    return envelope([_item(r) for r in rows], next_cursor=next_cursor, limit=limit)
+    refs = await series_refs(session)
+    return envelope([_item(r, refs) for r in rows], next_cursor=next_cursor, limit=limit)
 
 
 @router.get("/feed")
@@ -170,7 +179,7 @@ async def feed(
     limit: Limit = DEFAULT_LIMIT,
     cursor: Cursor = None,
 ) -> dict[str, Any]:
-    """最新動態：公開的事件內容與安全提醒，新到舊。"""
+    """最新快報：公開的事件內容（含尚未查證的）與舊安全提醒，新到舊。"""
     return await _list(session, _PUBLIC_LEVELS, type, limit, cursor)
 
 
@@ -212,13 +221,13 @@ async def events(
     limit: Limit = DEFAULT_LIMIT,
     cursor: Cursor = None,
 ) -> dict[str, Any]:
-    """事件分類查詢：已查證、公開內容的事件，新到舊。"""
+    """事件分類查詢：公開內容的事件（含尚未查證的），新到舊。"""
     return await _list(session, (PublicLevel.CONTENT.value,), type, limit, cursor)
 
 
 @router.get("/events/{publication_id}")
 async def event_detail(publication_id: uuid.UUID, session: Session) -> dict[str, Any]:
-    """公開版小報告；只有提醒、已撤下或已下架的事件回 NOT_FOUND。"""
+    """快報全文；只有提醒、已撤下或已下架的事件回 NOT_FOUND。"""
     row = (
         await session.execute(
             _published(PublicLevel.CONTENT.value).where(Publication.id == publication_id)
@@ -226,7 +235,8 @@ async def event_detail(publication_id: uuid.UUID, session: Session) -> dict[str,
     ).first()
     if row is None:
         raise ApiError(ErrorCode.NOT_FOUND, "找不到公開事件")
-    return envelope(_item(tuple(row), detail=True))  # type: ignore[arg-type]
+    refs = await series_refs(session)
+    return envelope(_item(tuple(row), refs, detail=True))  # type: ignore[arg-type]
 
 
 @router.get("/progress")
@@ -236,8 +246,8 @@ async def progress(
     limit: Limit = DEFAULT_LIMIT,
     cursor: Cursor = None,
 ) -> dict[str, Any]:
-    """改善進度：有改善措施的公開事件，附各狀態的措施數。"""
-    stmt = _published(PublicLevel.CONTENT.value).where(
+    """改善進度：有改善措施的公開系列頁，附各狀態的措施數；`id` 是系列的 publication ID。"""
+    stmt = published_series().where(
         func.jsonb_array_length(PublicationVersion.content["progress"]) > 0
     )
     rows, next_cursor = await _page(
@@ -250,9 +260,13 @@ async def progress(
         data.append(
             {
                 "id": str(pub_id),
+                "kind": "series",
                 "version": version,
                 "published_at": at.isoformat(),
-                **{k: content.get(k) for k in ("event_type", "label", "title", "occurrence_date")},
+                "event_type": content.get("event_type"),
+                "label": content.get("label"),
+                "title": content.get("name"),
+                "occurrence_date": content.get("latest_date"),
                 "counts": dict(Counter(str(a.get("state")) for a in actions)),
                 "progress": actions,
             }

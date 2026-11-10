@@ -90,16 +90,15 @@ def test_cause_text_stays_private_after_confirmation(policy: PublishPolicy) -> N
     assert "hypothesized" not in body
 
 
-def test_allegation_in_released_measure_blocks_content(policy: PublishPolicy) -> None:
+def test_allegation_in_released_measure_is_flagged_for_review(policy: PublishPolicy) -> None:
+    """P8-T06（ADR-0018 2-2）：疑似指控照公開，但必定標記給使用者判斷（同步時產生公開提醒）。"""
     accusation = "調查警衛偷竊座位上的筆電"
     report = make_report(
         measures=[hypothesized_measure(accusation)], confirmed_cause_ids=frozenset({"c1"})
     )
     decision = evaluate_policy(make_input(report=report), policy)
-    assert decision.level is not PublicLevel.CONTENT
     assert decision.needs_review
     assert "possible_allegation" in decision.reasons
-    assert accusation not in dumped(decision)
 
 
 def test_released_measure_is_pii_masked(policy: PublishPolicy) -> None:
@@ -120,8 +119,10 @@ def test_confirmation_does_not_bypass_verification(policy: PublishPolicy) -> Non
         make_input(report=report, confirmed_by=ConfirmedBy.FIRST_HAND),
     ):
         decision = evaluate_policy(item, policy)
-        assert decision.level is not PublicLevel.CONTENT
-        assert "更換屋頂防水層" not in dumped(decision)
+        # P8-T06（ADR-0018 2-1）：未查證事件也公開，但確認原因不會讓它變成「已查證」
+        assert decision.content is not None
+        assert decision.content["verification_label"] == "尚未查證"
+        assert "not_confirmed" in decision.reasons
 
 
 def test_progress_from_confirmed_cause_is_public(policy: PublishPolicy) -> None:
@@ -135,10 +136,10 @@ def test_progress_from_confirmed_cause_is_public(policy: PublishPolicy) -> None:
     assert "檢查管線老化" not in dumped(decision)
 
 
-def test_allegation_in_released_action_blocks_content(policy: PublishPolicy) -> None:
+def test_allegation_in_released_action_is_flagged_for_review(policy: PublishPolicy) -> None:
+    """P8-T06（ADR-0018 2-2）：疑似指控照公開，但必定標記給使用者判斷。"""
     accusation = "調查警衛偷竊座位上的筆電"
     action = make_action(title=accusation, cause_basis="hypothesized", cause_confirmed=True)
     decision = evaluate_policy(make_input(actions=(action,)), policy)
-    assert decision.level is not PublicLevel.CONTENT
     assert decision.needs_review
-    assert accusation not in dumped(decision)
+    assert "possible_allegation" in decision.reasons

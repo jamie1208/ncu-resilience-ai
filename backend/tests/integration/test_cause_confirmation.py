@@ -1,8 +1,8 @@
 """P7-T07：人工確認原因（ADR-0017，`app/reports/cause_decisions.py`）；P8-T13 起舊報告唯讀。
 
 - 只能確認最新一份有效小報告中 basis 為 hypothesized 的原因；確認依據必填、最多 200 字、不得含個資；
-- P8-T13（ADR-0020 決策 3）：小報告的措施不再進入公開快照；既有的確認仍讓由該原因建立的改善措施
-  進度公開（系列公開頁完成前，P8-T06），回滾後撤下；
+- P8-T13（ADR-0020 決策 3）：小報告的措施不再進入公開快照；P8-T06 起改善進度只在系列分析頁公開，
+  舊的確認與回滾不再改變事件的公開快照；
 - 疑似指控的措施不出現在公開端；重新產生小報告後要重新確認；
 - 決策 append-only 保存（最新一筆為目前狀態），稽核 `report.cause_decide` 不含依據文字；
 - 管理端 API：`POST /api/v1/admin/events/{id}/report/causes/{cause_id}/decision` 停用，回 CONFLICT
@@ -113,9 +113,10 @@ def public_progress(content: dict[str, Any]) -> list[str]:
 # ---------- 公開同步 ----------
 
 
-async def test_confirmation_publishes_progress_only_and_rollback_withdraws(
+async def test_confirmation_no_longer_changes_event_snapshot(
     session: AsyncSession,
 ) -> None:
+    """P8-T06：改善進度移到系列分析頁，事件快照不因舊的確認或回滾而改變。"""
     event, report = await seed(session)
     await publish(session, event)
     before = await snapshot(session, event)
@@ -123,16 +124,16 @@ async def test_confirmation_publishes_progress_only_and_rollback_withdraws(
     assert public_progress(before) == []
 
     await confirm(session, event, report)
-    assert await publish(session, event) is SyncAction.UPDATED
+    assert await publish(session, event) is SyncAction.NONE
     after = await snapshot(session, event)
-    assert public_measures(after) == []  # 小報告的措施不再公開（P8-T13）
+    assert after == before
     assert after["report"] is None
-    assert public_progress(after) == ["更換屋頂防水層"]
+    assert public_progress(after) == []
     assert "屋頂防水層老化" not in str(after)  # 原因本身仍不公開
     assert BASIS not in str(after)
 
     await rollback(session, event, report)
-    assert await publish(session, event) is SyncAction.UPDATED
+    assert await publish(session, event) is SyncAction.NONE
     assert public_measures(await snapshot(session, event)) == []
     assert public_progress(await snapshot(session, event)) == []
 

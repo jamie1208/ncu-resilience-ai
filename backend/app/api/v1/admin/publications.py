@@ -1,8 +1,12 @@
 """管理端公開內容 API（P5-T14，ADR-0015）。
 
 - `GET /api/v1/admin/publications`：公開內容列表（最近更新的在前），可依狀態、事件篩選；每筆附
-  事件標題、目前版本的公開預覽（事件內容為標題、安全提醒為提醒文字）與最近一次下架原因。
-  需要 `alerts:read_all`。
+  事件或系列（P8-T06，`subject`）的標題、目前版本的公開預覽（事件內容為標題、系列為名稱、安全
+  提醒為提醒文字）與最近一次下架原因。需要 `alerts:read_all`。
+- `GET /api/v1/admin/publications/reminders`：通知中心的公開提醒（P8-T06，ADR-0018 2-2、
+  ADR-0020 2-3）：疑似指控、推測的規律與原因第一次公開或改變時的版本（reasons 含 `remind`，由
+  `app/publishing/sync.py` 寫入），新到舊最多 100 筆；每筆附標記（possible_allegation、
+  mentions_party、speculation）、目前狀態與能否一鍵下架。需要 `alerts:read_all`。
 - `POST /api/v1/admin/publications/{id}/takedown`：一鍵下架（原因可省略）；公開 API 立即不再回傳。
   已下架回 CONFLICT，原因含個資回 VALIDATION_ERROR。需要 `alerts:retract`，寫入稽核
   `publication.take_down`。
@@ -20,7 +24,7 @@ from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Body, Depends, Query
 from pydantic import AwareDatetime, BaseModel, Field
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db_session, require_permission
@@ -29,7 +33,11 @@ from app.api.responses import envelope
 from app.core.security import Permission, Principal
 from app.models.event import Event
 from app.models.publication import Publication, PublicationTakedown, PublicationVersion
+from app.models.series import EventSeries
+from app.publishing.policy import MENTIONS_PARTY, POSSIBLE_ALLEGATION, SPECULATION
+from app.publishing.sync import REMIND
 from app.publishing.takedown import (
+    TAKEABLE_STATES,
     TakedownConflictError,
     TakedownNotFoundError,
     TakedownResult,
@@ -46,16 +54,22 @@ CanTakeDown = Annotated[Principal, Depends(require_permission(Permission.ALERTS_
 CanRestore = Annotated[Principal, Depends(require_permission(Permission.EVENTS_VERIFY))]
 
 LIST_LIMIT = 200
+REMINDER_LIMIT = 100
+REMINDER_FLAGS = (POSSIBLE_ALLEGATION, MENTIONS_PARTY, SPECULATION)
 
 PublicationState = Literal["published", "withdrawn", "taken_down"]
+Subject = Literal["event", "series"]
 
 
 class PublicationOut(BaseModel):
     """公開內容列表的一筆。"""
 
     id: uuid.UUID
-    event_id: uuid.UUID
+    subject: Subject
+    event_id: uuid.UUID | None
+    series_id: uuid.UUID | None
     event_title: str
+    """事件標題，系列為系列名稱。"""
     level: str
     state: str
     version: int
@@ -73,11 +87,32 @@ class TakedownIn(BaseModel):
     reason: Annotated[str | None, Field(max_length=200)] = None
 
 
+class ReminderOut(BaseModel):
+    """一則公開提醒：需要使用者注意的內容在這個版本第一次公開或改變了。"""
+
+    publication_id: uuid.UUID
+    subject: Subject
+    event_id: uuid.UUID | None
+    series_id: uuid.UUID | None
+    title: str
+    version: int
+    flags: list[str]
+    state: str
+    current: bool
+    """是否仍是目前公開的版本。"""
+    can_take_down: bool
+    created_at: AwareDatetime
+
+
 def _preview(content: dict[str, Any] | None) -> str | None:
     if not content:
         return None
-    value = content.get("title") or content.get("notice")
+    value = content.get("title") or content.get("name") or content.get("notice")
     return str(value) if value else None
+
+
+def _subject(pub: Publication) -> Subject:
+    return "series" if pub.series_id is not None else "event"
 
 
 def _result(result: TakedownResult) -> dict[str, Any]:
@@ -102,8 +137,14 @@ async def list_publications(
         .scalar_subquery()
     )
     stmt = (
-        select(Publication, Event.title, PublicationVersion.content, latest_reason)
-        .join(Event, Event.id == Publication.event_id)
+        select(
+            Publication,
+            func.coalesce(Event.title, EventSeries.title),
+            PublicationVersion.content,
+            latest_reason,
+        )
+        .outerjoin(Event, Event.id == Publication.event_id)
+        .outerjoin(EventSeries, EventSeries.id == Publication.series_id)
         .outerjoin(
             PublicationVersion,
             and_(
@@ -122,8 +163,10 @@ async def list_publications(
     data = [
         PublicationOut(
             id=pub.id,
+            subject=_subject(pub),
             event_id=pub.event_id,
-            event_title=title,
+            series_id=pub.series_id,
+            event_title=title or "",
             level=pub.level,
             state=pub.state,
             version=pub.version,
@@ -137,6 +180,38 @@ async def list_publications(
         ).model_dump(mode="json")
         for pub, title, content, reason in rows
     ]
+    return envelope(data)
+
+
+@router.get("/reminders")
+async def list_reminders(session: Session, _: CanRead) -> dict[str, Any]:
+    """通知中心的公開提醒（新到舊），每筆附一鍵下架所需的 publication ID。"""
+    stmt = (
+        select(Publication, PublicationVersion)
+        .join(PublicationVersion, PublicationVersion.publication_id == Publication.id)
+        .where(PublicationVersion.reasons.contains([REMIND]))
+        .order_by(PublicationVersion.created_at.desc(), PublicationVersion.id.desc())
+        .limit(REMINDER_LIMIT)
+    )
+    rows = (await session.execute(stmt)).all()
+    data = []
+    for pub, version in rows:
+        current = version.version == pub.version
+        data.append(
+            ReminderOut(
+                publication_id=pub.id,
+                subject=_subject(pub),
+                event_id=pub.event_id,
+                series_id=pub.series_id,
+                title=_preview(version.content) or "",
+                version=version.version,
+                flags=[f for f in REMINDER_FLAGS if f in (version.reasons or [])],
+                state=pub.state,
+                current=current,
+                can_take_down=current and pub.state in TAKEABLE_STATES,
+                created_at=version.created_at,
+            ).model_dump(mode="json")
+        )
     return envelope(data)
 
 

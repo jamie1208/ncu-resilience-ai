@@ -1,6 +1,7 @@
 /**
- * 公開 API（`/api/v1/public/*`）的型別與呼叫函式：P5-T11 唯讀內容、P5-T13 匿名回報。
- * 只讀取公開規則（P5-T10）判定可公開、已遮蔽 PII 的快照；`id` 是 publication ID，不是事件 ID。
+ * 公開 API（`/api/v1/public/*`）的型別與呼叫函式：P5-T11 唯讀內容、P5-T13 匿名回報、
+ * P8-T06 系列分析頁。只讀取公開規則（P5-T10）判定可公開、已遮蔽 PII 的快照；`id` 是 publication ID，
+ * 不是事件或系列 ID。
  */
 import { apiGet, apiRequest } from '../api/client'
 import type { Resilience } from '../lib/resilience'
@@ -16,7 +17,18 @@ interface PublicBase {
   label: string
 }
 
-/** 已查證事件的摘要（事件內容）。 */
+/** 查證狀態（P8-T06）：只有官方來源或使用者查證為 true 才是 verified，其他一律標「尚未查證」。 */
+export type Verification = 'verified' | 'unverified' | 'disputed'
+
+/** 快報所屬的公開系列：第幾起、目前公開的件數。 */
+export interface SeriesRef {
+  id: string
+  name: string
+  ordinal: number
+  event_count: number
+}
+
+/** 一則快報（事件內容）；P8-T06 起未查證的事件也公開 AI 摘要。 */
 export interface PublicEventSummary extends PublicBase {
   kind: 'content'
   title: string
@@ -24,6 +36,9 @@ export interface PublicEventSummary extends PublicBase {
   location: string | null
   occurrence_date: string | null
   risk_level: RiskLevel | null
+  verification: Verification
+  verification_label: string
+  series: SeriesRef | null
 }
 
 /** 未經證實事件的中性安全提醒：只有類別與模板文字。 */
@@ -62,11 +77,82 @@ export interface PublicAction {
   updated_at: string
 }
 
-/** 公開版小報告：只有影響與建議，沒有任何推測原因。 */
+/** 快報全文：單一事件小報告已停用（P8-T13），`report` 一律為 null；改善進度在系列分析頁。 */
 export interface PublicEventDetail extends PublicEventSummary {
   report: { impacts: PublicImpact[]; measures: PublicMeasure[] } | null
   sources: PublicSource[]
+}
+
+/** 系列分析頁的一起子事件；`id` 是事件的 publication ID。 */
+export interface PublicSeriesEvent {
+  id: string
+  ordinal: number
+  title: string
+  occurrence_date: string | null
+  location: string | null
+  verification: Verification
+  verification_label: string
+}
+
+export interface PublicFinding {
+  description: string
+  /** 「推測，尚未查證」或「已確認」。 */
+  label: string
+  related_ids: string[]
+  event_count: number
+  total: number
+}
+
+export interface PublicCause extends PublicFinding {
+  decision: 'confirmed' | 'speculative'
+}
+
+export interface PublicComparison {
+  title: string
+  start: string
+  status: 'ok' | 'insufficient'
+  before_events: number
+  after_events: number
+  before_weekly_average: number | null
+  after_weekly_average: number | null
+  message: string | null
+  caveat: string
+}
+
+export interface PublicTimelinePoint {
+  period_start: string
+  count: number
+  moving_average: number | null
+}
+
+/** 系列分析頁（P8-T06）：件數、時間軸與前後比較由程式只依公開中的子事件計算。 */
+export interface PublicSeries {
+  id: string
+  kind: 'series'
+  version: number
+  published_at: string
+  event_type: string
+  label: string
+  name: string
+  summary: string | null
+  event_count: number
+  first_date: string | null
+  latest_date: string | null
+  events: PublicSeriesEvent[]
+  timeline: {
+    granularity: 'week'
+    points: PublicTimelinePoint[]
+    markers: { title: string; kind: 'started' | 'completed'; on: string }[]
+  }
+  bursts: { period_start: string; count: number; expected: number }[]
+  location_groups: { label: string; related_ids: string[]; event_count: number; total: number }[]
+  pattern_status: 'ok' | 'abstained'
+  pattern_note: string | null
+  patterns: PublicFinding[]
+  causes: PublicCause[]
+  measures: PublicMeasure[]
   progress: PublicAction[]
+  comparisons: PublicComparison[]
 }
 
 export interface PublicCategory {
@@ -76,8 +162,10 @@ export interface PublicCategory {
   safety_notice: number
 }
 
+/** 改善進度（P8-T06 起以系列為單位）：`id` 是系列的 publication ID，`title` 是系列名稱。 */
 export interface PublicProgress {
   id: string
+  kind: 'series'
   version: number
   published_at: string
   event_type: string
@@ -112,12 +200,15 @@ async function page<T>(path: string, params: Record<string, string | null | unde
 export interface ListParams {
   type?: string | null
   cursor?: string | null
+  limit?: number | null
 }
 
-export const fetchFeed = (p: ListParams = {}) => page<FeedItem>('/feed', { ...p })
-export const fetchNotices = (p: ListParams = {}) => page<PublicNotice>('/notices', { ...p })
-export const fetchEvents = (p: ListParams = {}) => page<PublicEventSummary>('/events', { ...p })
-export const fetchProgress = (p: ListParams = {}) => page<PublicProgress>('/progress', { ...p })
+const params = ({ limit, ...p }: ListParams) => ({ ...p, limit: limit ? String(limit) : null })
+
+export const fetchFeed = (p: ListParams = {}) => page<FeedItem>('/feed', params(p))
+export const fetchNotices = (p: ListParams = {}) => page<PublicNotice>('/notices', params(p))
+export const fetchEvents = (p: ListParams = {}) => page<PublicEventSummary>('/events', params(p))
+export const fetchProgress = (p: ListParams = {}) => page<PublicProgress>('/progress', params(p))
 
 export async function fetchCategories(): Promise<PublicCategory[]> {
   return (await apiGet<PublicCategory[]>(`${BASE}/categories`)).data
@@ -125,6 +216,10 @@ export async function fetchCategories(): Promise<PublicCategory[]> {
 
 export async function fetchEvent(id: string): Promise<PublicEventDetail> {
   return (await apiGet<PublicEventDetail>(`${BASE}/events/${encodeURIComponent(id)}`)).data
+}
+
+export async function fetchSeries(id: string): Promise<PublicSeries> {
+  return (await apiGet<PublicSeries>(`${BASE}/series/${encodeURIComponent(id)}`)).data
 }
 
 /** 匿名回報（P5-T13）：`content` 10–2000 字，`location` 選填、最多 100 字。 */

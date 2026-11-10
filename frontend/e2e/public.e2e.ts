@@ -7,6 +7,9 @@ import {
   PUBLIC_EVENT_ID,
   PUBLIC_NOTICE,
   PUBLIC_PROGRESS,
+  PUBLIC_SERIES,
+  PUBLIC_SERIES_ID,
+  PUBLIC_UNVERIFIED,
 } from '../src/test/publicFixtures'
 
 /**
@@ -16,12 +19,13 @@ import {
 async function mockPublicApi(page: Page) {
   const others: string[] = []
   const routes: Record<string, unknown> = {
-    '/feed': [PUBLIC_EVENT, PUBLIC_NOTICE],
+    '/feed': [PUBLIC_EVENT, PUBLIC_UNVERIFIED, PUBLIC_NOTICE],
     '/notices': [PUBLIC_NOTICE],
     '/categories': PUBLIC_CATEGORIES,
     '/events': [PUBLIC_EVENT],
     [`/events/${PUBLIC_EVENT_ID}`]: PUBLIC_EVENT_DETAIL,
     '/progress': [PUBLIC_PROGRESS],
+    [`/series/${PUBLIC_SERIES_ID}`]: PUBLIC_SERIES,
   }
   await page.route('**/api/v1/**', (route) => {
     const url = new URL(route.request().url())
@@ -57,20 +61,21 @@ async function expectNoHorizontalScroll(page: Page) {
   expect(overflow).toBeLessThanOrEqual(0)
 }
 
-test('公開瀏覽：首頁 → 快報全文 → 分類查詢 → 改善進度 → 關於本站', async ({ page }) => {
+test('公開瀏覽：首頁 → 快報全文 → 系列分析頁 → 分類查詢 → 改善進度 → 關於本站', async ({ page }) => {
   const others = await mockPublicApi(page)
 
   await page.goto('/')
-  await expect(page.getByRole('heading', { level: 1, name: '最新動態與安全提醒' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: '最新校園快報' })).toBeVisible()
   await expectFooter(page)
-  const feed = page.getByRole('list', { name: '最新動態' })
-  await expect(feed.getByRole('listitem')).toHaveCount(2)
-  await expect(feed.getByText(/目前無法確認是否屬實/)).toBeVisible()
+  // 依類別分區的橫向快報卡片（ADR-0020 決策 4）；未查證的標「尚未查證」
+  await expect(page.getByRole('list', { name: '設施快報' }).getByRole('listitem')).toHaveCount(1)
+  const security = page.getByRole('list', { name: '治安快報' })
+  await expect(security.getByText('尚未查證')).toBeVisible()
+  await expect(security.getByText('已查證')).toHaveCount(0)
+  await expect(page.getByText(/目前無法確認是否屬實/)).toHaveCount(0)
+  await expect(page.getByRole('main').getByRole('link', { name: '校園韌性成績單' })).toBeVisible()
+  await expect(page.getByRole('main').getByRole('link', { name: '匿名回報' })).toBeVisible()
   await expect(page.getByLabel('密碼')).toHaveCount(0)
-
-  await page.getByRole('button', { name: '只看安全提醒' }).click()
-  await expect(page.getByRole('list', { name: '安全提醒' }).getByRole('listitem')).toHaveCount(1)
-  await page.getByRole('button', { name: '全部' }).click()
 
   await page.getByRole('link', { name: '工程五館外牆整修施工' }).click()
   await expect(page).toHaveURL(new RegExp(`/events/${PUBLIC_EVENT_ID}$`))
@@ -79,9 +84,21 @@ test('公開瀏覽：首頁 → 快報全文 → 分類查詢 → 改善進度 �
   await expect(page.getByRole('region', { name: '可能的影響' })).toHaveCount(0)
   await expect(page.getByRole('region', { name: '建議' })).toHaveCount(0)
   await expect(page.getByRole('region', { name: '官方來源' }).getByRole('link', { name: '中央大學公告' })).toBeVisible()
-  await expect(page.getByRole('region', { name: '改善進度' })).toBeVisible()
+  await expect(page.getByRole('region', { name: '改善進度' })).toHaveCount(0)
   await expect(page.getByText('原因')).toHaveCount(0)
   await expectFooter(page)
+
+  await page.getByRole('button', { name: '看這系列的分析' }).click()
+  await expect(page).toHaveURL(new RegExp(`/series/${PUBLIC_SERIES_ID}\\?from=${PUBLIC_EVENT_ID}$`))
+  await expect(page.getByRole('heading', { level: 1, name: '工程五館施工封路' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'AI 看到的規律' }).getByText('推測，尚未查證')).toBeVisible()
+  await expect(page.getByRole('region', { name: '可能原因' }).getByText('已確認')).toBeVisible()
+  await expect(page.getByRole('region', { name: '改善前後比較' }).getByText(/變少不一定是措施的功勞/)).toBeVisible()
+  const current = page.getByRole('region', { name: '這個系列的每一起' }).locator('[aria-current="true"]')
+  await expect(current.getByText('你剛剛看的')).toBeVisible()
+  await expectFooter(page)
+  await current.getByRole('link', { name: '工程五館外牆整修施工' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: '工程五館外牆整修施工' })).toBeVisible()
 
   await page.getByRole('link', { name: '← 回事件查詢' }).click()
   await expect(page.getByRole('heading', { level: 1, name: '事件分類查詢' })).toBeVisible()
@@ -92,6 +109,7 @@ test('公開瀏覽：首頁 → 快報全文 → 分類查詢 → 改善進度 �
   await nav.getByRole('link', { name: '改善進度' }).click()
   await expect(page.getByRole('heading', { level: 1, name: '改善進度' })).toBeVisible()
   await expect(page.getByText('加裝夜間照明')).toBeVisible()
+  await expect(page.getByRole('link', { name: '工程五館施工封路' })).toHaveAttribute('href', `/series/${PUBLIC_SERIES_ID}`)
   await expectFooter(page)
 
   await nav.getByRole('link', { name: '關於本站' }).click()
@@ -112,7 +130,7 @@ test.describe('手機寬度 375px', () => {
 
   test('公開各頁沒有水平捲動', async ({ page }) => {
     await mockPublicApi(page)
-    for (const path of ['/', '/events', `/events/${PUBLIC_EVENT_ID}`, '/progress', '/about']) {
+    for (const path of ['/', '/events', `/events/${PUBLIC_EVENT_ID}`, `/series/${PUBLIC_SERIES_ID}`, '/progress', '/about']) {
       await page.goto(path)
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
       await expectFooter(page)

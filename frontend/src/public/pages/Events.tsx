@@ -6,17 +6,16 @@ import { fetchCategories, fetchEvents, type PublicEventSummary } from '../api'
 import { ErrorText, FeedCard, ListState, PageIntro } from '../ui'
 import { useLoad, usePaged } from '../useLoad'
 
-/** 事件分類查詢：依類別列出已查證、公開內容的事件。 */
+/** 事件分類查詢：依類別列出公開的快報（P8-T06 起含尚未查證的，一律帶查證標籤）。 */
 export function Events() {
   const [type, setType] = useState<string | null>(null)
   const categories = useLoad(fetchCategories, 'categories')
   const events = usePaged<PublicEventSummary>((cursor) => fetchEvents({ type, cursor }), type ?? '')
-  const selected = categories.data?.find((c) => c.event_type === type)
 
   return (
     <div className="space-y-8">
       <PageIntro eyebrow="事件查詢" title="事件分類查詢">
-        <p>這裡只列出經官方來源或人工查證證實的事件；未經查證的訊息請看首頁的安全提醒。</p>
+        <p>依類別列出所有公開的快報。每則都標示查證狀態，「尚未查證」的內容不代表事情確實發生。</p>
       </PageIntro>
 
       {categories.error && <ErrorText>{categories.error.message}</ErrorText>}
@@ -50,12 +49,9 @@ export function Events() {
         loading={events.loading}
         error={events.error}
         empty={events.items.length === 0}
-        emptyText={type ? '這個類別目前沒有已查證的公開事件。' : '目前沒有已查證的公開事件。'}
+        emptyText={type ? '這個類別目前沒有公開的快報。' : '目前沒有公開的快報。'}
         loadMore={events.loadMore}
       />
-      {selected && selected.safety_notice > 0 && !events.loading && (
-        <p className="text-sm text-muted-foreground">{`這個類別另有 ${selected.safety_notice} 則安全提醒，可在首頁查看。`}</p>
-      )}
     </div>
   )
 }

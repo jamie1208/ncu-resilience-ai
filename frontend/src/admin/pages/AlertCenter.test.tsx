@@ -136,4 +136,57 @@ describe('AlertCenter', () => {
     expect(await screen.findByText('工程一館停電施工至 12 時，請留意。')).toBeInTheDocument()
     expect(await screen.findByText(/再發生提醒載入失敗/)).toBeInTheDocument()
   })
+
+  it('公開提醒：疑似指控與推測內容已公開時列出標記，可一鍵下架（P8-T06）', async () => {
+    const reminders = [
+      {
+        publication_id: 'pub-s1',
+        subject: 'series',
+        event_id: null,
+        series_id: 's-1',
+        title: '停放機車遭碰撞',
+        version: 3,
+        flags: ['mentions_party', 'speculation'],
+        state: 'published',
+        current: true,
+        can_take_down: true,
+        created_at: '2026-11-10T02:00:00Z',
+      },
+      {
+        publication_id: 'pub-e1',
+        subject: 'event',
+        event_id: EVENT_ID,
+        series_id: null,
+        title: '警衛在停車場偷走機車',
+        version: 1,
+        flags: ['possible_allegation'],
+        state: 'taken_down',
+        current: true,
+        can_take_down: false,
+        created_at: '2026-11-09T02:00:00Z',
+      },
+    ]
+    const { calls, user } = open({
+      'GET /api/v1/admin/alerts': { data: [] },
+      'GET /api/v1/admin/publications/reminders': { data: reminders },
+      'POST /api/v1/admin/publications/pub-s1/takedown': {
+        data: { id: 'pub-s1', state: 'taken_down', previous: 'published' },
+      },
+    })
+    const section = within(await screen.findByRole('region', { name: '公開提醒' }))
+    const series = section.getByText('停放機車遭碰撞').closest('li')!
+    expect(series).toHaveTextContent('提到特定個人、群體、店家或單位')
+    expect(series).toHaveTextContent('推測的規律或原因')
+    expect(within(series).getByRole('link', { name: '到後台查看系列' })).toHaveAttribute('href', '/admin/series/s-1')
+    const event = section.getByText('警衛在停車場偷走機車').closest('li')!
+    expect(within(event).getByRole('link', { name: '到後台查看事件' })).toHaveAttribute('href', `/admin/events/${EVENT_ID}`)
+    expect(event).toHaveTextContent('疑似指控')
+    expect(within(event).getByText('已下架')).toBeInTheDocument()
+    expect(within(event).queryByRole('button', { name: '立即下架' })).not.toBeInTheDocument()
+
+    await user.click(within(series).getByRole('button', { name: '立即下架' }))
+    expect(calls.some((c) => c.method === 'POST' && c.path === '/api/v1/admin/publications/pub-s1/takedown')).toBe(true)
+    expect(await within(series).findByText('已下架')).toBeInTheDocument()
+    expect(within(series).queryByRole('button', { name: '立即下架' })).not.toBeInTheDocument()
+  })
 })

@@ -284,10 +284,15 @@ export interface RecurrenceGroup {
 export type PublicationState = 'published' | 'withdrawn' | 'taken_down'
 export type PublicationLevel = 'content' | 'safety_notice' | 'none'
 
-/** 公開內容（P5-T14）：公開規則判定的公開狀態；preview 為目前版本的公開標題或提醒文字。 */
+/**
+ * 公開內容（P5-T14）：公開規則判定的公開狀態；preview 為目前版本的公開標題、系列名稱或提醒文字。
+ * P8-T06 起也有系列分析頁（`subject` 為 series，`event_id` 為 null，`event_title` 為系列名稱）。
+ */
 export interface PublicationItem {
   id: string
-  event_id: string
+  subject: 'event' | 'series'
+  event_id: string | null
+  series_id: string | null
   event_title: string
   level: PublicationLevel
   state: PublicationState
@@ -304,6 +309,23 @@ export interface PublicationChange {
   id: string
   state: PublicationState
   previous: PublicationState
+}
+
+export type ReminderFlag = 'possible_allegation' | 'mentions_party' | 'speculation'
+
+/** 通知中心的公開提醒（P8-T06）：疑似指控、推測的規律與原因第一次公開或改變的版本。 */
+export interface PublicationReminder {
+  publication_id: string
+  subject: 'event' | 'series'
+  event_id: string | null
+  series_id: string | null
+  title: string
+  version: number
+  flags: ReminderFlag[]
+  state: PublicationState
+  current: boolean
+  can_take_down: boolean
+  created_at: string
 }
 
 export type RelationType = 'same_event' | 'related_event' | 'hypothesized_cause'
@@ -974,6 +996,10 @@ export async function listPublications(
   filters: { state?: PublicationState | ''; event_id?: string } = {},
 ): Promise<PublicationItem[]> {
   return (await apiGet<PublicationItem[]>(`${V1}/admin/publications${query(filters)}`)).data
+}
+
+export async function listPublicationReminders(): Promise<PublicationReminder[]> {
+  return (await apiGet<PublicationReminder[]>(`${V1}/admin/publications/reminders`)).data
 }
 
 /** 一鍵下架；原因可省略（空白不送），會寫入稽核紀錄。 */

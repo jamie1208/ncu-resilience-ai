@@ -1,6 +1,7 @@
 """公開狀態（P5-T10，0013）：publications、publication_versions、publication_takedowns。
 
-每個事件最多一筆 publication，記錄目前的公開程度（`app/publishing/policy.py` 的 PublicLevel）
+每個事件、每個系列（P8-T06，0025；`event_id` 與 `series_id` 恰好一個）最多一筆 publication，
+記錄目前的公開程度（`app/publishing/policy.py` 的 PublicLevel）
 與狀態。公開內容每次改變新增一筆版本快照（已遮蔽 PII，不修改、不刪除）；使用者每次下架
 （P5-T14）新增一筆下架紀錄。公開 API（P5-T11）只讀取 state 為 published 的目前版本。
 """
@@ -39,7 +40,7 @@ def _json_list(*, comment: str | None = None) -> Any:
 
 
 class Publication(Base):
-    """一個事件目前的公開狀態。"""
+    """一個事件或一個系列目前的公開狀態。"""
 
     __tablename__ = "publications"
     __table_args__ = (
@@ -48,11 +49,17 @@ class Publication(Base):
         CheckConstraint("version >= 1", name="version"),
         CheckConstraint("state <> 'published' OR level <> 'none'", name="published_level"),
         CheckConstraint("(state = 'taken_down') = (taken_down_at IS NOT NULL)", name="taken_down"),
+        CheckConstraint("(event_id IS NULL) <> (series_id IS NULL)", name="subject"),
     )
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    event_id: Mapped[uuid.UUID] = mapped_column(
+    event_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("events.id", ondelete="CASCADE"), unique=True
+    )
+    series_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("event_series.id", ondelete="CASCADE"),
+        unique=True,
+        comment="系列的公開狀態（P8-T06）；與 event_id 恰好一個不為 NULL",
     )
     level: Mapped[str] = mapped_column(String(16))
     state: Mapped[str] = mapped_column(String(16), index=True)
@@ -89,6 +96,7 @@ class PublicationVersion(Base):
     content_hash: Mapped[str | None] = mapped_column(String(64))
     policy_version: Mapped[str] = mapped_column(String(32))
     reasons: Mapped[list[str]] = _json_list()
+    """這個版本觸發的規則代碼；含 `remind` 時是通知中心的公開提醒（P8-T06）。"""
     created_at: Mapped[datetime] = created_at_col()
 
 
