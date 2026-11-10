@@ -1,10 +1,10 @@
 {
   "case_id": "boundary-005",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "筆電離座或放置時遭竊",
+    "title": "離座筆電遭竊",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -12,21 +12,21 @@
         "event_ids": [
           "E1"
         ],
-        "reason": "證據明確指出地點為總圖書館。"
+        "reason": "證據與事件欄位都指出地點為總圖書館。"
       },
       {
-        "label": "工程二館教室",
+        "label": "工程二館（教室）",
         "event_ids": [
           "E2"
         ],
-        "reason": "證據提到事件發生在工二教室。"
+        "reason": "證據與事件欄位都指出地點為工程二館教室。"
       },
       {
         "label": "K書中心",
         "event_ids": [
           "E3"
         ],
-        "reason": "證據提到地點為 K 書中心。"
+        "reason": "證據與事件欄位都指出地點為 K 書中心。"
       }
     ],
     "pattern_status": "ok",
@@ -34,7 +34,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "筆電在離座或短暫離開時不見或被偷，顯示有人趁無人看管下取走筆電。",
+        "description": "筆電在離座短時間後不見或被取走。",
         "event_ids": [
           "E1",
           "E3"
@@ -56,7 +56,7 @@
       },
       {
         "pattern_id": "p2",
-        "description": "事件發生在校內的公共學習或教室空間。",
+        "description": "都發生在校內的公共學習空間（圖書館、教室、K 書中心）。",
         "event_ids": [
           "E1",
           "E2",
@@ -86,7 +86,7 @@
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能是離座時筆電未被看管，疑似有人趁機取走。",
+        "description": "可能是離座後未妥善看管個人物品，誘發竊盜行為。",
         "event_ids": [
           "E1",
           "E3"
@@ -105,11 +105,11 @@
             "quote": "K書中心離座去買飲料，回來筆電不見。"
           }
         ],
-        "to_verify": "向校方或警衛確認相關時段是否有監視器畫面、巡邏紀錄或遺失物回報。"
+        "to_verify": "向校方保全或相關單位確認是否有該時段的監視器畫面與報案紀錄，以判定是否為趁離座時竊盜。"
       },
       {
         "cause_id": "c2",
-        "description": "疑似夜間或雨天等特定時段增加遭竊風險（有一則證據提到下雨且為晚間）。",
+        "description": "疑似有趁夜間或下雨等時段實施竊盜的情形。",
         "event_ids": [
           "E2"
         ],
@@ -122,12 +122,12 @@
             "quote": "下雨那天晚上筆電放工二教室被偷。"
           }
         ],
-        "to_verify": "向校安或事發地點管理單位確認此類事件的時間分布、天氣與燈光或監控覆蓋情形。"
+        "to_verify": "向校方保全或相關單位確認該日時間與監視器畫面，並檢視是否有同時段的其他通報或巡邏紀錄。"
       }
     ],
     "measures": [
       {
-        "action": "離開座位時切勿將筆電單獨放置，並攜帶或託付他人看管。",
+        "action": "記得離開座位時把筆電帶走或託人看顧，短暫離開也請留意個人物品安全。",
         "audience": "students",
         "horizon": "short",
         "priority": "high",
@@ -140,55 +140,54 @@
         ]
       },
       {
-        "action": "在學校公共學習空間加強提醒標語，提醒使用者離座勿留置貴重物品。",
-        "audience": "school",
-        "horizon": "short",
-        "priority": "medium",
-        "kind": "prevent",
-        "cause_id": "c1",
-        "responsible_unit": "總務或圖書館管理單位",
-        "evidence_ids": [
-          "e1",
-          "e3"
-        ]
-      },
-      {
-        "action": "檢視並增加相關場域的監視器覆蓋與夜間照明，調整巡邏頻率並保存影像以利查證。",
+        "action": "請保全檢視相關時段監視器畫面，確認是否有可疑進出或同一嫌疑人的行徑。",
         "audience": "units",
-        "horizon": "mid",
+        "horizon": "short",
         "priority": "high",
         "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": "警衛室",
+        "responsible_unit": "校安中心",
         "evidence_ids": [
           "e1",
           "e3"
         ]
       },
       {
-        "action": "查核過去事件的發生時段與天氣關聯，評估夜間或雨天是否需要加強管理措施。",
+        "action": "檢視該夜間及雨天時段的巡邏與通報紀錄，評估是否需要加強夜間或雨天巡邏。",
         "audience": "school",
         "horizon": "mid",
         "priority": "medium",
         "kind": "investigate",
         "cause_id": "c2",
-        "responsible_unit": "校安或總務處",
+        "responsible_unit": "校安中心",
         "evidence_ids": [
           "e2"
         ]
       },
       {
-        "action": "若發生遺失應鼓勵即時通報並協助調閱監視器與協調失物招領。",
-        "audience": "students",
+        "action": "在圖書館、教室及 K 書中心等公共學習空間放置提醒標語，提醒同學離座時留意個人物品。",
+        "audience": "school",
         "horizon": "short",
         "priority": "medium",
-        "kind": "respond",
+        "kind": "prevent",
         "cause_id": null,
-        "responsible_unit": null,
+        "responsible_unit": "圖書館管理單位",
         "evidence_ids": [
           "e1",
           "e2",
           "e3"
+        ]
+      },
+      {
+        "action": "在夜間或天候不佳時段加強保全巡邏頻次，並建議必要時調整巡邏時段。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": "c2",
+        "responsible_unit": "校安中心",
+        "evidence_ids": [
+          "e2"
         ]
       }
     ],
@@ -197,7 +196,7 @@
       "e2",
       "e3"
     ],
-    "reason": "這個系列描述校內筆電在公共學習空間或教室被取走或遺失的事件；整體觀察是多起事件發生於離座或放置筆電時。",
+    "reason": "這個系列持續追蹤校內公共學習空間中筆電離座後遭竊的情形，觀察到多起發生於離座或公共座位時段。",
     "abstain_reason": null
   }
 }

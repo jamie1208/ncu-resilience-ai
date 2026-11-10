@@ -1,10 +1,10 @@
 {
   "case_id": "normal-008",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "宿舍網路晚間斷線或不穩",
+    "title": "宿舍網路斷線或連線不穩",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -12,21 +12,21 @@
         "event_ids": [
           "E1"
         ],
-        "reason": "地點欄記為「男九舍」。"
+        "reason": "事件地點欄位與證據中都寫到「男九舍」。"
       },
       {
         "label": "女十四舍",
         "event_ids": [
           "E2"
         ],
-        "reason": "地點欄記為「女十四舍」。"
+        "reason": "事件地點欄位與證據中都寫到「女十四舍」。"
       },
       {
         "label": "男三舍",
         "event_ids": [
           "E3"
         ],
-        "reason": "地點欄記為「男三舍」。"
+        "reason": "事件地點欄位與證據中都寫到「男三宿」。"
       }
     ],
     "pattern_status": "ok",
@@ -34,7 +34,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "事件多發生在晚間時段，夜間連線問題較明顯。",
+        "description": "多在晚上出現網路無法連線或不穩的情形。",
         "event_ids": [
           "E1",
           "E2",
@@ -48,21 +48,21 @@
         "evidence_spans": [
           {
             "evidence_id": "e1",
-            "quote": "晚上一直斷"
+            "quote": "期中考週男九宿網晚上一直斷，根本沒辦法讀線上講義。"
           },
           {
             "evidence_id": "e2",
-            "quote": "晚上十點後最嚴重"
+            "quote": "期中考這週女十四網路斷斷續續，晚上十點後最嚴重。"
           },
           {
             "evidence_id": "e3",
-            "quote": "晚上連不上"
+            "quote": "男三宿網晚上連不上，是不是大家都在趕報告。"
           }
         ]
       },
       {
         "pattern_id": "p2",
-        "description": "部分事件發生於期中考週，發生時為考試或報告集中的時期。",
+        "description": "事件發生在期中考週周邊時間，疑似與考期時程重疊。",
         "event_ids": [
           "E1",
           "E2"
@@ -74,11 +74,11 @@
         "evidence_spans": [
           {
             "evidence_id": "e1",
-            "quote": "期中考週"
+            "quote": "期中考週男九宿網晚上一直斷，根本沒辦法讀線上講義。"
           },
           {
             "evidence_id": "e2",
-            "quote": "期中考這週"
+            "quote": "期中考這週女十四網路斷斷續續，晚上十點後最嚴重。"
           }
         ]
       }
@@ -86,60 +86,31 @@
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能是晚間尖峰使用量增加導致網路負載過高或連線品質下降。",
+        "description": "可能是晚間使用量增加或多數同學在趕作業、考試而造成的網路塞車或負載過高。",
         "event_ids": [
-          "E1",
           "E2",
           "E3"
         ],
         "evidence_ids": [
           "e2",
-          "e3",
-          "e1"
+          "e3"
         ],
         "evidence_spans": [
+          {
+            "evidence_id": "e2",
+            "quote": "晚上十點後最嚴重。"
+          },
           {
             "evidence_id": "e3",
             "quote": "是不是大家都在趕報告。"
-          },
-          {
-            "evidence_id": "e2",
-            "quote": "晚上十點後最嚴重"
-          },
-          {
-            "evidence_id": "e1",
-            "quote": "晚上一直斷"
           }
         ],
-        "to_verify": "向校園網路維護單位確認晚間各宿舍的流量與交換機/無線設備負載紀錄。"
-      },
-      {
-        "cause_id": "c2",
-        "description": "疑似在期中考週或考試期間使用集中，與時程（期中考週）有關的流量尖峰。",
-        "event_ids": [
-          "E1",
-          "E2"
-        ],
-        "evidence_ids": [
-          "e1",
-          "e2"
-        ],
-        "evidence_spans": [
-          {
-            "evidence_id": "e1",
-            "quote": "期中考週"
-          },
-          {
-            "evidence_id": "e2",
-            "quote": "期中考這週"
-          }
-        ],
-        "to_verify": "向學生事務或網路單位確認期中考週夜間使用模式與流量紀錄是否較平常增加。"
+        "to_verify": "向校內網路管理單位確認晚間頻寬使用情形與各宿舍的流量與連線數據。"
       }
     ],
     "measures": [
       {
-        "action": "夜間尖峰時段盡量避開大流量下載或雲端備份，優先保留帶寬給線上考試或同步教學。",
+        "action": "記得分散上網高峰時段，例如避開晚上十點後集中上傳或多人視訊，減少同時間的高負載。",
         "audience": "students",
         "horizon": "short",
         "priority": "medium",
@@ -147,61 +118,33 @@
         "cause_id": null,
         "responsible_unit": null,
         "evidence_ids": [
-          "e3",
-          "e2",
-          "e1"
-        ]
-      },
-      {
-        "action": "檢查宿舍網路在晚間的流量與設備負載記錄，追蹤是否為流量尖峰或設備故障造成連線中斷。",
-        "audience": "units",
-        "horizon": "short",
-        "priority": "high",
-        "kind": "investigate",
-        "cause_id": "c1",
-        "responsible_unit": "校園網路維護單位（建議）",
-        "evidence_ids": [
-          "e1",
           "e2",
           "e3"
         ]
       },
       {
-        "action": "評估並調整宿舍網路的流量管理或頻寬分配（如必要時與 ISP 協調提升頻寬或更換老舊設備）。",
-        "audience": "units",
-        "horizon": "mid",
+        "action": "請資訊管理單位查看期中考週至晚間時段的流量與連線數據，確認是否為頻寬飽和或連線數過多所致。",
+        "audience": "school",
+        "horizon": "short",
         "priority": "high",
         "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": "校園網路維護單位（建議）",
+        "responsible_unit": "資訊管理單位",
         "evidence_ids": [
           "e2",
-          "e1"
+          "e3"
         ]
       },
       {
-        "action": "於期中考等高負載時段事先公告可能的網路負載與建議替代方案（如借用教室或實體資源）。",
-        "audience": "school",
-        "horizon": "short",
-        "priority": "medium",
-        "kind": "respond",
-        "cause_id": "c2",
-        "responsible_unit": "教務或學生事務單位（建議）",
-        "evidence_ids": [
-          "e1",
-          "e2"
-        ]
-      },
-      {
-        "action": "檢查並維護宿舍內的無線基地台與交換器硬體與韌體，排除個別設備故障可能性。",
+        "action": "若確認為頻寬或設備負載問題，評估短期擴充頻寬或調配流量管理（如流量優先設定）以穩定晚間連線。",
         "audience": "units",
         "horizon": "mid",
-        "priority": "medium",
-        "kind": "investigate",
-        "cause_id": null,
-        "responsible_unit": "校園網路維護單位（建議）",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "responsible_unit": "校內網路維護單位",
         "evidence_ids": [
-          "e1",
+          "e2",
           "e3"
         ]
       }
@@ -211,7 +154,7 @@
       "e2",
       "e3"
     ],
-    "reason": "這個系列描述多起宿舍區在晚間發生的網路斷線或連線不穩事件；整體觀察是夜間（尤其深夜時段）問題明顯，部分事件發生在期中考週，可能與使用集中或負載有關。",
+    "reason": "這個系列持續追蹤宿舍網路在晚間出現斷線或連線不穩的情形。整體觀察顯示問題多發生於晚間，並與期中考週時段重疊，建議進一步調查流量與頻寬使用情形。",
     "abstain_reason": null
   }
 }

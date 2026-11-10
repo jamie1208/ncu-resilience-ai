@@ -1,11 +1,11 @@
 {
   "case_id": "normal-002",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "男三舍宿舍網路設備更新停服務",
+    "title": "男三舍宿舍網路設備更新停機",
     "occurrence_start_date": "2026-10-25",
     "occurrence_start_time": "02:00",
     "occurrence_end_date": "2026-10-25",
@@ -13,7 +13,7 @@
     "location": "男三舍",
     "mentions_person": false,
     "summary": {
-      "text": "男三舍 10/25（日）上午 2 點到 6 點進行設備更新，期間宿舍網路暫停服務。",
+      "text": "男三舍宿舍網路將於 10/25（日）02:00–06:00 進行設備更新，期間暫停服務。住宿的同學記得提前完成線上作業或備份資料。",
       "evidence_ids": [
         "e1"
       ]
@@ -35,10 +35,10 @@
       {
         "field": "location",
         "evidence_id": "e1",
-        "quote": "男三舍"
+        "quote": "男三舍宿舍網路"
       }
     ],
-    "reason": "公告寫明男三舍宿舍網路將於指定時段進行設備更新並暫停服務，含明確日期與時段。",
+    "reason": "公告寫明男三舍宿舍網路在 10/25 的指定時段進行設備更新並暫停服務，具體日期與時段清楚。",
     "confidence": 0.95,
     "abstain_reason": null
   }

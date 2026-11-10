@@ -1,10 +1,10 @@
 {
   "case_id": "boundary-001",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "建築物電梯故障或停用",
+    "title": "建築物電梯故障",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -12,7 +12,7 @@
         "event_ids": [
           "E1"
         ],
-        "reason": "事件的 location 欄位與證據均指出發生在工程五館。"
+        "reason": "事件地點欄位與證據皆指出為工程五館。"
       }
     ],
     "pattern_status": "abstain",
@@ -21,8 +21,20 @@
     "causes": [],
     "measures": [
       {
-        "action": "電梯停用期間於樓梯口與電梯前放置明顯告示，並標示可行的替代路線與樓層。",
-        "audience": "units",
+        "action": "若需上樓，記得預留多一點時間並改走樓梯。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "respond",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "對外發布電梯停用資訊與替代動線，提醒師生注意安全。",
+        "audience": "school",
         "horizon": "short",
         "priority": "high",
         "kind": "respond",
@@ -33,22 +45,22 @@
         ]
       },
       {
-        "action": "若有使用不便或行動不便者，安排臨時協助或聯絡方式以提供協助。",
+        "action": "安排廠商檢修並提供估計復原時間，確認是否需啟動臨時支援措施。",
         "audience": "units",
         "horizon": "short",
         "priority": "high",
-        "kind": "respond",
+        "kind": "investigate",
         "cause_id": null,
-        "responsible_unit": "總務處",
+        "responsible_unit": "廠商",
         "evidence_ids": [
           "e1"
         ]
       },
       {
-        "action": "檢查該電梯的維修與保養記錄，確認故障原因並評估需不需要進一步檢修或更換零件。",
+        "action": "檢視電梯保養紀錄與最近檢修情形，確認是否需調整例行保養頻率。",
         "audience": "school",
         "horizon": "mid",
-        "priority": "high",
+        "priority": "medium",
         "kind": "investigate",
         "cause_id": null,
         "responsible_unit": "總務處",
@@ -57,25 +69,13 @@
         ]
       },
       {
-        "action": "在維修完成前檢討例行保養與檢測頻率，若有必要調整巡檢計畫以減少再次停用。",
-        "audience": "school",
-        "horizon": "long",
-        "priority": "medium",
-        "kind": "prevent",
-        "cause_id": null,
-        "responsible_unit": "總務處",
-        "evidence_ids": [
-          "e1"
-        ]
-      },
-      {
-        "action": "提醒同學出入該棟時留意公告與臨時替代路線，外出時預留更多時間以因應樓梯通行。",
-        "audience": "students",
+        "action": "若有行動不便者需要搬運協助，建議相關單位提供即時協助或臨時替代方案。",
+        "audience": "units",
         "horizon": "short",
-        "priority": "medium",
-        "kind": "prevent",
+        "priority": "high",
+        "kind": "respond",
         "cause_id": null,
-        "responsible_unit": null,
+        "responsible_unit": "宿舍管理或場館服務單位",
         "evidence_ids": [
           "e1"
         ]
@@ -84,7 +84,7 @@
     "evidence_ids": [
       "e1"
     ],
-    "reason": "這個系列描述建築物（工程五館）電梯故障或停用的事件；目前只有一件報告指出電梯在特定日期故障停用，沒有其他事件可供比對，因此無法找出多起事件間的共同規律。",
+    "reason": "這個系列持續追蹤建築物電梯故障或停用的狀況，目前記錄到工程五館電梯故障停用的通報。",
     "abstain_reason": null
   }
 }

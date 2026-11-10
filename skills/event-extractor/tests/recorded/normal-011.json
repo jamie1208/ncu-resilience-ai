@@ -1,6 +1,6 @@
 {
   "case_id": "normal-011",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -11,7 +11,7 @@
     "occurrence_end_date": null,
     "occurrence_end_time": null,
     "location": null,
-    "mentions_person": true,
+    "mentions_person": false,
     "summary": null,
     "evidence_ids": [
       "e1"
@@ -20,10 +20,10 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "大氣系團隊颱風研究登上國際期刊"
+        "quote": "研究成果刊登於國際期刊"
       }
     ],
-    "reason": "內容為本校大氣科學系研究團隊的研究成果刊登於國際期刊，屬於學術新聞而非會影響人的突發事件或公告。",
+    "reason": "內容為本校研究團隊的學術成果刊登消息，屬於學術新聞而非會影響師生的事件。",
     "confidence": 0.9,
     "abstain_reason": null
   }
