@@ -559,6 +559,7 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
 - **P8-T07 通知失敗重試**（v1.0 A10，D41）
   - 檔案：`app/alerts/delivery.py`（failed 最多重試 3 次、遞增間隔；唯一約束仍防重複遞送）、`infra/migrations/versions/<下一個編號>_delivery_attempts.py`（嘗試次數、下次時間）、Celery 排程
   - 驗證：`tests/integration/test_delivery_retry.py`（第 3 次仍失敗就停止；成功後不再重送；不重複遞送）、`tests/e2e/a10-delivery.e2e.ts`
+  - 實作調整（AI 自行決定，2026-11-11）：migration 為 `0028_delivery_attempts.py`（`attempts` 預設 1、`next_attempt_at` 可為 NULL、部分索引；既有 failed 列不回填下次時間）；第一次失敗後重試間隔 1、5、15 分鐘，第 3 次重試（共 4 次送出）仍失敗就清除下次時間；beat `retry-failed-deliveries` 每分鐘執行 `alerts.retry_failed_deliveries`；重試沿用同一列並以 `FOR UPDATE SKIP LOCKED` 防止兩個 worker 同時送出；通知已撤回、過期或已改版時舊版本停止重試；只重試 worker 有設定的管道。額外修改的檔案：`app/models/alert.py`、`app/worker/celery_app.py`、`tests/e2e/seed_appendix_a.py`（A10 以替身外部管道模擬失敗並檢查資料庫不變量）。規格 v1.1 的 A10「不自動重試」由本任務取代（待 P8-T12 寫入 v1.2）
 - **P8-T08 匿名回報收據碼與補件**（v1.0 §2、D11）
   - 檔案：`app/api/v1/public/reports.py`（送出時回傳高熵收據碼，只存雜湊；`GET` 查詢只回 已收到／處理中／已處理；`POST` 補件，同樣限流與格式限制，以 `<untrusted_source>` 進入既有管線）、`infra/migrations/versions/<下一個編號>_report_receipts.py`、公開通報頁的收據碼顯示與查詢
   - 驗證：`tests/security/test_report_receipt.py`（資料庫中沒有明文收據碼；錯的收據碼與不存在的回應相同；查詢不回投稿內容；補件原文不公開；限流）、`tests/security/test_anonymous_report.py` 不修改且通過

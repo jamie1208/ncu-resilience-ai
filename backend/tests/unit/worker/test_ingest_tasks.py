@@ -77,11 +77,17 @@ def test_beat_dispatches_due_sources_every_minute() -> None:
         "task": "series.analyze_stale_series",
         "schedule": float(shortest),
     }
+    # P8-T07：通知失敗重試（使用者 2026-11-11 同意加入）
+    assert schedule["retry-failed-deliveries"] == {
+        "task": "alerts.retry_failed_deliveries",
+        "schedule": 60.0,
+    }
     assert set(schedule) == {
         "dispatch-due-sources",
         "dispatch-pending-items",
         "sync-publications",
         "analyze-stale-series",
+        "retry-failed-deliveries",
     }
 
 
