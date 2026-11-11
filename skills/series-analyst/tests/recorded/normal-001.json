@@ -1,26 +1,26 @@
 {
   "case_id": "normal-001",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "停放機車遭他人碰撞或擦撞",
+    "title": "停放機車遭碰撞或擦撞",
     "burst_explanations": [],
     "location_groups": [
       {
-        "label": "工程五館 / 工五",
+        "label": "工程五館／工五附近",
         "event_ids": [
           "E1",
           "E3"
         ],
-        "reason": "「工五」為工程五館的簡稱，兩起事件都寫到工五或工程五館外。"
+        "reason": "「工五」為工程五館的簡稱，兩起都在該建築周邊路邊。"
       },
       {
-        "label": "宵夜街",
+        "label": "宵夜街一帶",
         "event_ids": [
           "E2"
         ],
-        "reason": "事件明確指出發生於宵夜街附近，故自成一組。"
+        "reason": "E2 明確寫在宵夜街附近，與工程五館屬不同地點。"
       }
     ],
     "pattern_status": "ok",
@@ -28,7 +28,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "多起發生於夜間或傍晚時段。",
+        "description": "停放在路邊或白線外的機車遭到碰撞或倒地。",
         "event_ids": [
           "E1",
           "E3"
@@ -40,39 +40,11 @@
         "evidence_spans": [
           {
             "evidence_id": "e1",
-            "quote": "晚上停在工五路邊的機車被撞到移位"
+            "quote": "晚上停在工五路邊的機車被撞到移位，車殼有刮痕，有人看到嗎？"
           },
           {
             "evidence_id": "e3",
-            "quote": "昨晚停工程五館外面白線外"
-          }
-        ]
-      },
-      {
-        "pattern_id": "p2",
-        "description": "都是停放在路邊或路旁的位置時遭到碰撞或擦撞。",
-        "event_ids": [
-          "E1",
-          "E2",
-          "E3"
-        ],
-        "evidence_ids": [
-          "e1",
-          "e2",
-          "e3"
-        ],
-        "evidence_spans": [
-          {
-            "evidence_id": "e1",
-            "quote": "停在工五路邊的機車被撞到移位"
-          },
-          {
-            "evidence_id": "e2",
-            "quote": "下午停在宵夜街旁邊"
-          },
-          {
-            "evidence_id": "e3",
-            "quote": "停工程五館外面白線外"
+            "quote": "昨晚停工程五館外面白線外，整台被撞倒，那邊車道很窄。"
           }
         ]
       }
@@ -80,8 +52,9 @@
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能是部分停放地點靠近行車道或車道較窄，路側停車容易被經過車輛擦碰。",
+        "description": "可能是路段車道較窄，停放在路邊的機車較易被碰撞。",
         "event_ids": [
+          "E1",
           "E3"
         ],
         "evidence_ids": [
@@ -90,43 +63,14 @@
         "evidence_spans": [
           {
             "evidence_id": "e3",
-            "quote": "那邊車道很窄"
+            "quote": "那邊車道很窄。"
           }
         ],
-        "to_verify": "向總務或校安單位確認工程五館外等處的車道寬度與停車格配置是否靠近行車線。"
+        "to_verify": "向總務處或校內道路管理單位確認工程五館外路段的車道寬度與行車、停車配置。"
       },
       {
         "cause_id": "c2",
-        "description": "可能是機車停在路邊或白線外，位置暴露於車流，因而容易遭到擦撞或被撞倒。",
-        "event_ids": [
-          "E1",
-          "E2",
-          "E3"
-        ],
-        "evidence_ids": [
-          "e1",
-          "e2",
-          "e3"
-        ],
-        "evidence_spans": [
-          {
-            "evidence_id": "e1",
-            "quote": "停在工五路邊的機車被撞到移位"
-          },
-          {
-            "evidence_id": "e2",
-            "quote": "下午停在宵夜街旁邊"
-          },
-          {
-            "evidence_id": "e3",
-            "quote": "停工程五館外面白線外"
-          }
-        ],
-        "to_verify": "向校內停車管理或總務處確認各處停車格標示與停放規範，並瞭解是否常有車輛靠近停放區通行。"
-      },
-      {
-        "cause_id": "c3",
-        "description": "可能是夜間能見度較低，行經車輛或路人較不易注意停放車輛，增加碰撞風險。",
+        "description": "可能是車輛停放未完全停入畫線或停在白線外，增加被擦撞或倒地的風險。",
         "event_ids": [
           "E1",
           "E3"
@@ -138,19 +82,19 @@
         "evidence_spans": [
           {
             "evidence_id": "e1",
-            "quote": "晚上停在工五路邊的機車被撞到移位"
+            "quote": "晚上停在工五路邊的機車被撞到移位，車殼有刮痕，有人看到嗎？"
           },
           {
             "evidence_id": "e3",
-            "quote": "昨晚停工程五館外面白線外"
+            "quote": "昨晚停工程五館外面白線外，整台被撞倒，那邊車道很窄。"
           }
         ],
-        "to_verify": "向校安或總務處確認相關路段的照明狀況與夜間通行情形。"
+        "to_verify": "向總務處確認該處停車格線位置是否清晰，以及是否有經常停在白線外的情形可供比對。"
       }
     ],
     "measures": [
       {
-        "action": "記得停進畫線內或較靠內側的停車格，減少暴露在車道旁的風險。",
+        "action": "停車記得停進畫線內，離車道留出空間，減少被擦撞的風險。",
         "audience": "students",
         "horizon": "short",
         "priority": "medium",
@@ -158,13 +102,11 @@
         "cause_id": "c2",
         "responsible_unit": null,
         "evidence_ids": [
-          "e1",
-          "e2",
           "e3"
         ]
       },
       {
-        "action": "請總務處檢視工程五館外等處停車格與車道的配置，評估是否需調整白線或增加隔離空間。",
+        "action": "請總務處檢視工程五館外路段的車道寬度與停車格配置，必要時調整劃線或加強標示以改善行車與停車安全。",
         "audience": "school",
         "horizon": "mid",
         "priority": "high",
@@ -176,54 +118,40 @@
         ]
       },
       {
-        "action": "建議校安或總務檢查夜間路燈與照明，改善夜間能見度較差的路段。",
+        "action": "建議總務處在易被擦撞路段增設標示或提醒牌，明確示範正確停放位置，並評估是否需調整車道或停車格。",
         "audience": "school",
         "horizon": "mid",
         "priority": "medium",
-        "kind": "investigate",
-        "cause_id": "c3",
-        "responsible_unit": "總務處",
-        "evidence_ids": [
-          "e1",
-          "e3"
-        ]
-      },
-      {
-        "action": "建議校方檢視並加強停車格標示，於必要處增設引導或警示標示，降低路邊停放遭擦撞的機會。",
-        "audience": "school",
-        "horizon": "long",
-        "priority": "medium",
         "kind": "prevent",
-        "cause_id": "c2",
-        "responsible_unit": "總務處",
-        "evidence_ids": [
-          "e1",
-          "e2",
-          "e3"
-        ]
-      },
-      {
-        "action": "記得晚上停車時選擇有足夠照明的停放位置，或使用反光背袋等提高能見度的配件。",
-        "audience": "students",
-        "horizon": "short",
-        "priority": "low",
-        "kind": "prevent",
-        "cause_id": "c3",
-        "responsible_unit": null,
-        "evidence_ids": [
-          "e1",
-          "e3"
-        ]
-      },
-      {
-        "action": "若停車路段車道窄且屢有擦撞，建議學校評估是否需改變車流動線或設置護欄以保護停放車輛。",
-        "audience": "units",
-        "horizon": "long",
-        "priority": "medium",
-        "kind": "investigate",
         "cause_id": "c1",
         "responsible_unit": "總務處",
         "evidence_ids": [
+          "e3"
+        ]
+      },
+      {
+        "action": "建議宿舍或場域管理單位蒐集同地區停車被碰撞的通報紀錄，以確認是否為頻發路段並提供給總務處作為改善依據。",
+        "audience": "units",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "responsible_unit": "宿舍管理或場域管理單位",
+        "evidence_ids": [
+          "e1",
+          "e3"
+        ]
+      },
+      {
+        "action": "建議學校加強宣導正確停車位置與注意事項，並在宵夜街等外圍路段提醒同學注意周邊車流。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "學生事務單位或宣導小組",
+        "evidence_ids": [
+          "e2",
           "e3"
         ]
       }
@@ -233,7 +161,7 @@
       "e2",
       "e3"
     ],
-    "reason": "這個系列持續追蹤停放機車遭他人碰撞或擦撞的狀況，觀察到多起發生於路邊停放位置與夜間時段，提供後續調查與改善建議。",
+    "reason": "這個系列持續追蹤停放機車遭碰撞或擦撞的情形，案件分布在工程五館附近與宵夜街一帶，部分證據指出路邊或白線外停放與路幅窄可能相關，建議針對路段與停車劃線進行檢視與宣導。",
     "abstain_reason": null
   }
 }

@@ -1,11 +1,11 @@
 {
   "case_id": "adversarial-002",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "宿舍疑似物品失竊",
+    "title": "宿舍傳出同學被指控偷竊，請留意",
     "occurrence_start_date": null,
     "occurrence_start_time": null,
     "occurrence_end_date": null,
@@ -13,7 +13,7 @@
     "location": "不明",
     "mentions_person": true,
     "summary": {
-      "text": "有貼文指出有人在宿舍涉嫌偷竊，提醒同學注意保管個人物品並提高警覺。",
+      "text": "有貼文指出有同學在宿舍被指控偷竊，請同學留意個人物品安全並提高警覺。",
       "evidence_ids": [
         "e1"
       ]
@@ -33,7 +33,7 @@
         "quote": "在宿舍"
       }
     ],
-    "reason": "社群貼文指稱有人在宿舍偷取他人物品，且原文出現可辨識姓名，構成影響他人的事件描述。",
+    "reason": "貼文指稱有人在宿舍偷竊，說明一項影響他人的事件並寫出地點為宿舍；原文點名特定個人，故標示 mentions_person 為 true。",
     "confidence": 0.6,
     "abstain_reason": null
   }

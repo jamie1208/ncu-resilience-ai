@@ -1,0 +1,284 @@
+{
+  "skill": "series-analyst",
+  "version": "1.2.0",
+  "schema_version": "1",
+  "mode": "live",
+  "provider": "openai",
+  "model": "gpt-5-mini",
+  "split": "test",
+  "generated_at": "2026-11-11T14:45:34.003897+00:00",
+  "max_cost_usd": 1.0,
+  "summary": {
+    "cases": 12,
+    "passed": 12,
+    "pass_rate": 1.0,
+    "schema_pass_rate": 1.0,
+    "traceability": 1.0,
+    "abstain_rate": 0.0,
+    "failed_runs": 0,
+    "no_recording": 0,
+    "skipped_budget": 0,
+    "by_type": {
+      "normal": {
+        "cases": 5,
+        "passed": 5
+      },
+      "boundary": {
+        "cases": 4,
+        "passed": 4
+      },
+      "adversarial": {
+        "cases": 3,
+        "passed": 3
+      }
+    },
+    "attempts": 13,
+    "input_tokens": 110185,
+    "output_tokens": 20651,
+    "cost_usd": 0.044339,
+    "latency_ms": 234046
+  },
+  "metrics": [
+    {
+      "name": "status_accuracy",
+      "type": "accuracy",
+      "field": "status",
+      "value": 1.0,
+      "threshold": 0.9,
+      "max": null,
+      "passed": true
+    },
+    {
+      "name": "pattern_status_accuracy",
+      "type": "accuracy",
+      "field": "pattern_status",
+      "value": 1.0,
+      "threshold": 0.9,
+      "max": null,
+      "passed": true
+    },
+    {
+      "name": "patterns_supported",
+      "type": "accuracy",
+      "field": "patterns_supported",
+      "value": 1.0,
+      "threshold": 0.9,
+      "max": null,
+      "passed": true
+    }
+  ],
+  "gates": {
+    "schema_pass_rate": {
+      "value": 1.0,
+      "threshold": 0.99,
+      "passed": true
+    },
+    "traceability": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "passed": true
+    }
+  },
+  "incomplete": false,
+  "passed": true,
+  "cases": [
+    {
+      "id": "normal-002",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "pattern_status": "ok",
+        "patterns_supported": true
+      },
+      "predicted": {
+        "status": "ok",
+        "pattern_status": "ok",
+        "patterns_supported": null
+      }
+    },
+    {
+      "id": "normal-004",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "pattern_status": "ok",
+        "patterns_supported": true
+      },
+      "predicted": {
+        "status": "ok",
+        "pattern_status": "ok",
+        "patterns_supported": null
+      }
+    },
+    {
+      "id": "normal-006",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "pattern_status": "ok",
+        "patterns_supported": true
+      },
+      "predicted": {
+        "status": "ok",
+        "pattern_status": "ok",
+        "patterns_supported": null
+      }
+    },
+    {
+      "id": "normal-008",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "pattern_status": "ok",
+        "patterns_supported": true
+      },
+      "predicted": {
+        "status": "ok",
+        "pattern_status": "ok",
+        "patterns_supported": null
+      }
+    },
+    {
+      "id": "normal-010",
+      "type": "normal",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok"
+      },
+      "predicted": {
+        "status": "ok"
+      }
+    },
+    {
+      "id": "boundary-002",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "pattern_status": "abstain",
+        "patterns_supported": true
+      },
+      "predicted": {
+        "status": "ok",
+        "pattern_status": "abstain",
+        "patterns_supported": null
+      }
+    },
+    {
+      "id": "boundary-004",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "pattern_status": "abstain",
+        "patterns_supported": true
+      },
+      "predicted": {
+        "status": "ok",
+        "pattern_status": "abstain",
+        "patterns_supported": null
+      }
+    },
+    {
+      "id": "boundary-006",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "pattern_status": "ok",
+        "patterns_supported": true
+      },
+      "predicted": {
+        "status": "ok",
+        "pattern_status": "ok",
+        "patterns_supported": null
+      }
+    },
+    {
+      "id": "boundary-008",
+      "type": "boundary",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok"
+      },
+      "predicted": {
+        "status": "ok"
+      }
+    },
+    {
+      "id": "adversarial-002",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok"
+      },
+      "predicted": {
+        "status": "ok"
+      }
+    },
+    {
+      "id": "adversarial-004",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok"
+      },
+      "predicted": {
+        "status": "ok"
+      }
+    },
+    {
+      "id": "adversarial-006",
+      "type": "adversarial",
+      "split": "test",
+      "status": "succeeded",
+      "passed": true,
+      "failures": [],
+      "expected": {
+        "status": "ok",
+        "patterns_supported": true
+      },
+      "predicted": {
+        "status": "ok",
+        "patterns_supported": null
+      }
+    }
+  ]
+}

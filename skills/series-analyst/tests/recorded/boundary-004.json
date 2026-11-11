@@ -1,10 +1,10 @@
 {
   "case_id": "boundary-004",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "建築物電梯故障或停用",
+    "title": "校內電梯故障",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -12,21 +12,21 @@
         "event_ids": [
           "E1"
         ],
-        "reason": "事件摘要與地點欄位皆指出發生在科學二館。"
+        "reason": "事件地點標示為「科學二館」。"
       },
       {
         "label": "行政大樓",
         "event_ids": [
           "E2"
         ],
-        "reason": "事件摘要與地點欄位皆指出發生在行政大樓。"
+        "reason": "事件地點標示為「行政大樓」。"
       },
       {
         "label": "女十四舍",
         "event_ids": [
           "E3"
         ],
-        "reason": "事件摘要與地點欄位皆指出發生在女十四舍宿舍。"
+        "reason": "事件地點標示為「女十四舍」。"
       }
     ],
     "pattern_status": "abstain",
@@ -35,7 +35,7 @@
     "causes": [],
     "measures": [
       {
-        "action": "遇到電梯故障請先保持冷靜，若在電梯內請按求救鈴並聯絡相關單位；若在樓層候梯，改走樓梯並避免擠在電梯門口。",
+        "action": "遇到電梯故障時，建議你改走樓梯或改用其他電梯，並向宿舍或系所通報狀況。",
         "audience": "students",
         "horizon": "short",
         "priority": "high",
@@ -49,9 +49,9 @@
         ]
       },
       {
-        "action": "檢視各建築電梯的維修與檢查紀錄，調查近來是否有共通的維修時程或零件異常。",
+        "action": "查看近期電梯保養與檢修紀錄，確認是否有集中停用或維修時段需要協調。",
         "audience": "school",
-        "horizon": "mid",
+        "horizon": "short",
         "priority": "high",
         "kind": "investigate",
         "cause_id": null,
@@ -63,13 +63,13 @@
         ]
       },
       {
-        "action": "確認電梯維修廠商的維保合約與到場處理時效，必要時要求廠商加強巡檢與更換疑似老舊零件。",
+        "action": "如為廠商維修或零件問題，請檢視廠商維護合約與維修紀錄，安排必要的預防性檢修。",
         "audience": "units",
         "horizon": "mid",
         "priority": "medium",
         "kind": "investigate",
         "cause_id": null,
-        "responsible_unit": "電梯維修廠商",
+        "responsible_unit": "廠商",
         "evidence_ids": [
           "e1",
           "e2",
@@ -77,24 +77,10 @@
         ]
       },
       {
-        "action": "檢討並更新電梯故障通報與現場引導流程，確保發生故障時能迅速疏散與告知受影響使用者。",
+        "action": "安排或加強電梯定期檢修與安全檢測，並在維修期間公告替代通行路線。",
         "audience": "school",
-        "horizon": "short",
-        "priority": "medium",
-        "kind": "respond",
-        "cause_id": null,
-        "responsible_unit": "總務處",
-        "evidence_ids": [
-          "e1",
-          "e2",
-          "e3"
-        ]
-      },
-      {
-        "action": "加強日常巡檢頻率與紀錄保存，特別是宿舍與高使用量建築的電梯，預防突發停用情形。",
-        "audience": "school",
-        "horizon": "long",
-        "priority": "medium",
+        "horizon": "mid",
+        "priority": "high",
         "kind": "prevent",
         "cause_id": null,
         "responsible_unit": "總務處",
@@ -110,7 +96,7 @@
       "e2",
       "e3"
     ],
-    "reason": "本系列持續追蹤校內多起電梯故障或停用個案，涵蓋教學館、行政樓與宿舍。建議持續關注與查證維修與檢查情形，保障師生使用安全。",
+    "reason": "這個系列持續追蹤校內多處電梯故障或停用的狀況，包含不同建築的報導。持續追蹤相關維修與公告以便通報與處置。",
     "abstain_reason": null
   }
 }

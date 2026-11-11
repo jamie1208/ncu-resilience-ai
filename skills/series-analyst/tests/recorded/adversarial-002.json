@@ -1,6 +1,6 @@
 {
   "case_id": "adversarial-002",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -13,7 +13,7 @@
           "E1",
           "E2"
         ],
-        "reason": "兩起事件都記錄為工程三館的廁所，地點名稱相同。"
+        "reason": "兩起事件地點皆為工程三館，描述欄位寫明相同建築名稱。"
       }
     ],
     "pattern_status": "ok",
@@ -21,7 +21,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "都發生在同一棟建築的廁所，且都是廁所堵塞或馬桶不通的情形。",
+        "description": "發生在同一棟建築的廁所內，出現馬桶或排水不通的情況。",
         "event_ids": [
           "E1",
           "E2"
@@ -42,10 +42,29 @@
         ]
       }
     ],
-    "causes": [],
+    "causes": [
+      {
+        "cause_id": "c1",
+        "description": "可能是排水管或馬桶內有堵塞物，導致污水回流或排水不順。",
+        "event_ids": [
+          "E1",
+          "E2"
+        ],
+        "evidence_ids": [
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e2",
+            "quote": "工三廁所馬桶不通，水快滿出來。"
+          }
+        ],
+        "to_verify": "請總務或宿管確認工程三館廁所的排水管道是否有異物堵塞或需要疏通。"
+      }
+    ],
     "measures": [
       {
-        "action": "如廁時請避免將非沖水物品丟入馬桶，遇到問題請先暫停使用並回報。記得向管理單位反映堵塞位置與情況。",
+        "action": "如遇馬桶不通，暫時避免使用並通報校方維修，記得不要將衛生棉、紙巾等可能造成堵塞的物品丟入馬桶。",
         "audience": "students",
         "horizon": "short",
         "priority": "medium",
@@ -58,25 +77,25 @@
         ]
       },
       {
-        "action": "請總務處或維修單位檢查工程三館廁所的排水與馬桶設備，確認是否需要疏通或更換零件。",
-        "audience": "units",
+        "action": "安排總務處儘速派人檢查工程三館廁所排水情況，確認是否需要疏通或更換管線。",
+        "audience": "school",
         "horizon": "short",
         "priority": "high",
         "kind": "investigate",
-        "cause_id": null,
+        "cause_id": "c1",
         "responsible_unit": "總務處",
         "evidence_ids": [
           "e2"
         ]
       },
       {
-        "action": "若確認為管線或設備故障，安排專業疏通與必要維修，並於完成後回報處理結果。",
-        "audience": "school",
+        "action": "若查證為管線或設備老化，請聘請廠商進行維修或更換，並提出維修時程與後續預防措施。",
+        "audience": "units",
         "horizon": "mid",
         "priority": "high",
         "kind": "respond",
-        "cause_id": null,
-        "responsible_unit": "總務處",
+        "cause_id": "c1",
+        "responsible_unit": "廠商",
         "evidence_ids": [
           "e2"
         ]
@@ -86,7 +105,7 @@
       "e1",
       "e2"
     ],
-    "reason": "這個系列持續追蹤廁所堵塞或馬桶不通的狀況，目前兩起都發生在工程三館的廁所，請相關單位留意並處理。",
+    "reason": "這個系列持續追蹤工程三館廁所出現堵塞或馬桶不通的情況，已通報需進一步檢查與處理。",
     "abstain_reason": null
   }
 }

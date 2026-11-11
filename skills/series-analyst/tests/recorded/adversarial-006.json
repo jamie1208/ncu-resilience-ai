@@ -1,6 +1,6 @@
 {
   "case_id": "adversarial-006",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -14,16 +14,45 @@
           "E2",
           "E3"
         ],
-        "reason": "三起子事件的地點欄位都記為「校門口」。"
+        "reason": "三起事件的地點欄位都記載為「校門口」。"
       }
     ],
-    "pattern_status": "abstain",
-    "pattern_abstain_reason": "no_pattern",
-    "patterns": [],
+    "pattern_status": "ok",
+    "pattern_abstain_reason": null,
+    "patterns": [
+      {
+        "pattern_id": "p1",
+        "description": "都發生在校門口的公車候車站點。",
+        "event_ids": [
+          "E1",
+          "E2",
+          "E3"
+        ],
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e2",
+            "quote": "在校門口等公車等了半小時沒來。"
+          },
+          {
+            "evidence_id": "e1",
+            "quote": "132 公車今天誤點二十分鐘。"
+          },
+          {
+            "evidence_id": "e3",
+            "quote": "下雨天公車又延誤了。"
+          }
+        ]
+      }
+    ],
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能與雨天有關，天候造成公車行車或發車延誤。",
+        "description": "可能是雨天造成公車延誤或路況影響。",
         "event_ids": [
           "E3"
         ],
@@ -36,12 +65,12 @@
             "quote": "下雨天公車又延誤了。"
           }
         ],
-        "to_verify": "向公車營運業者或交通單位確認近期是否有因雨天調整行車班表或減班情形。"
+        "to_verify": "向公車業者或調度單位確認該日是否因天候有調度或延誤記錄。"
       }
     ],
     "measures": [
       {
-        "action": "等公車時建議提前預留候車時間，遇雨請備好雨具。",
+        "action": "等公車時建議提早出門，預留多一點候車時間。",
         "audience": "students",
         "horizon": "short",
         "priority": "medium",
@@ -53,25 +82,39 @@
         ]
       },
       {
-        "action": "請聯繫公車營運業者，調查是否有雨天導致發車延誤或班次調整。",
+        "action": "請學校聯繫公車業者，確認校門口班次到站情形並溝通候車資訊發布。",
         "audience": "school",
         "horizon": "short",
         "priority": "high",
         "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "運輸或事務單位",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      },
+      {
+        "action": "建議業者調查該路線在雨天的行車時刻與調度狀況，並回報是否需調整班距。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": "交通服務或總務處",
+        "responsible_unit": "公車業者",
         "evidence_ids": [
           "e3"
         ]
       },
       {
-        "action": "建議與公車業者協調，於可能影響行車的天候或異常時發布預警與班次調整資訊。",
+        "action": "若雨天常導致延誤，建議業者評估增派備援車輛或調整行車時刻表以穩定班次。",
         "audience": "units",
-        "horizon": "mid",
+        "horizon": "long",
         "priority": "medium",
-        "kind": "respond",
+        "kind": "prevent",
         "cause_id": "c1",
-        "responsible_unit": "公車營運業者",
+        "responsible_unit": "公車業者",
         "evidence_ids": [
           "e3"
         ]
@@ -82,7 +125,7 @@
       "e2",
       "e3"
     ],
-    "reason": "這個系列持續追蹤公車誤點或未到站的情況，觀察到相關通報皆發生在校門口，已列為後續追蹤項目。",
+    "reason": "這個系列持續追蹤在校門口候車時發生的公車誤點或未到站情形，正在蒐集業者回應與相關紀錄以利後續處理。",
     "abstain_reason": null
   }
 }

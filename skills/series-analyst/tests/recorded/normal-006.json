@@ -1,6 +1,6 @@
 {
   "case_id": "normal-006",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -12,7 +12,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "信件冒充校方或校內單位，內含可疑連結要求更新或驗證帳號。",
+        "description": "電子郵件冒充校方單位或圖書館，內含可疑連結，要求更新或驗證帳號／密碼。",
         "event_ids": [
           "E1",
           "E2",
@@ -42,15 +42,13 @@
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能是釣魚郵件冒充校方單位，並在信中放入非校域的可疑連結以誘騙點擊。",
+        "description": "可能是詐騙者冒充學校或校內單位發送釣魚郵件，企圖誘導使用者點擊連結或輸入帳密。",
         "event_ids": [
           "E1",
-          "E2",
           "E3"
         ],
         "evidence_ids": [
           "e1",
-          "e2",
           "e3"
         ],
         "evidence_spans": [
@@ -59,20 +57,33 @@
             "quote": "近日有信件冒充學校要求更新信箱密碼，請勿點擊連結。"
           },
           {
-            "evidence_id": "e2",
-            "quote": "連結網址怪怪的不是學校網域。"
-          },
-          {
             "evidence_id": "e3",
             "quote": "有信件冒充計中要求點連結驗證帳號，學校不會用信件要求輸入密碼。"
           }
         ],
-        "to_verify": "向資安或計中確認是否有大規模冒充郵件攻擊，以及目前郵件驗證（如寄件人驗證／過濾）設定狀況。"
+        "to_verify": "向計中或資訊單位確認是否有疑似模仿校方格式的釣魚郵件流傳，並確認是否有被冒用的寄件地址或範本。"
+      },
+      {
+        "cause_id": "c2",
+        "description": "可能有郵件內包含非校域名的可疑連結，收信者可能因此誤點進非官方網站。",
+        "event_ids": [
+          "E2"
+        ],
+        "evidence_ids": [
+          "e2"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e2",
+            "quote": "收到一封說我借書逾期的信，連結網址怪怪的不是學校網域。"
+          }
+        ],
+        "to_verify": "檢查該郵件的連結與寄件位址是否為非校方網域，並向圖書館與計中確認是否有類似假冒通知出現。"
       }
     ],
     "measures": [
       {
-        "action": "收到自稱學校或單位的信件，看到要求點連結或輸入帳密時，記得不要點，先向計中或資安單位確認真偽。",
+        "action": "收到要求點連結或輸入帳密的郵件，建議你先不要點，改用校方官網或服務頁面登入確認。",
         "audience": "students",
         "horizon": "short",
         "priority": "high",
@@ -81,60 +92,56 @@
         "responsible_unit": null,
         "evidence_ids": [
           "e1",
-          "e3",
+          "e3"
+        ]
+      },
+      {
+        "action": "提醒同學若收到疑似借書逾期通知但連結非校域，請直接聯繫圖書館確認，不要透過郵件連結操作。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c2",
+        "responsible_unit": null,
+        "evidence_ids": [
           "e2"
         ]
       },
       {
-        "action": "請資安或計中調查近期冒充校方的釣魚郵件來源與發送特徵，並回報是否為同一波攻擊。",
-        "audience": "school",
+        "action": "請計中與圖書館核查近期是否有被冒用的寄信範本或可疑寄件位址，並匯報可疑樣本以利追蹤。",
+        "audience": "units",
         "horizon": "short",
         "priority": "high",
         "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": "資通中心",
+        "responsible_unit": "計中",
         "evidence_ids": [
           "e1",
-          "e3",
-          "e2"
+          "e3"
         ]
       },
       {
-        "action": "檢查並強化郵件寄件人驗證與過濾規則，封鎖已知惡意連結與可疑寄件來源，降低釣魚郵件到達率。",
-        "audience": "units",
+        "action": "建議資訊單位檢查並強化校內電子郵件認證設定（例如寄件來源驗證），以降低外部冒充成功的機會。",
+        "audience": "school",
         "horizon": "mid",
         "priority": "high",
         "kind": "prevent",
         "cause_id": "c1",
-        "responsible_unit": "資通中心",
+        "responsible_unit": "資訊單位",
         "evidence_ids": [
-          "e2",
-          "e1"
+          "e1",
+          "e3"
         ]
       },
       {
-        "action": "對師生發布簡短提醒，說明學校不會以電子郵件要求輸入密碼，並示範辨識可疑連結的方法。",
+        "action": "請學校發布官方公告提醒師生學校不會以電子郵件要求輸入密碼，並說明若有疑問應透過哪些官方通路查證。",
         "audience": "school",
-        "horizon": "short",
-        "priority": "medium",
-        "kind": "respond",
-        "cause_id": "c1",
-        "responsible_unit": "學生事務與資通中心協同",
-        "evidence_ids": [
-          "e3",
-          "e1"
-        ]
-      },
-      {
-        "action": "若發現可疑信件或已有人誤點連結，建議立即通報計中或資安，並依指示變更密碼與檢查帳號異常登入記錄。",
-        "audience": "students",
         "horizon": "short",
         "priority": "high",
         "kind": "respond",
         "cause_id": null,
-        "responsible_unit": null,
+        "responsible_unit": "計中",
         "evidence_ids": [
-          "e1",
           "e3"
         ]
       }
@@ -144,7 +151,7 @@
       "e2",
       "e3"
     ],
-    "reason": "這個系列持續追蹤冒充校方或校內單位的釣魚郵件，發文與公告指出信中含可疑連結並提醒不要輸入密碼。",
+    "reason": "這個系列持續追蹤冒充校方或校內單位的釣魚信件，內容常以可疑連結要求更新或驗證帳號，提醒大家提高警覺並向校方查證。",
     "abstain_reason": null
   }
 }

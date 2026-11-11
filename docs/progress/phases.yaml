@@ -538,6 +538,10 @@ phases:
         title: 後台匿名回報收件匣
         deps: [P8-T08]
         paths: [backend/app/api/v1/admin/anonymous_reports.py, frontend/src/admin/pages/AnonymousReports.tsx, backend/tests/integration/test_admin_anonymous_reports.py]
+      - id: P8-T17
+        title: 既有內容以新語氣重跑
+        deps: [P8-T11, P8-T13]
+        paths: [backend/app/pipeline/rerun_tone.py, backend/tests/integration/test_rerun_tone.py]
     gates:
       - id: G8-1
         title: 系列歸組、拆出、解散與前後比較可重現

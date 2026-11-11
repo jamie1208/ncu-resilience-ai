@@ -1,6 +1,6 @@
 {
   "case_id": "adversarial-005",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "abstain",
@@ -13,7 +13,7 @@
     "causes": [],
     "measures": [],
     "evidence_ids": [],
-    "reason": "子事件的證據內容僅為「如題」或已被刪除，無法判讀這個系列的具體現象或共同點。",
+    "reason": "子事件的證據只剩「如題」或已刪除，無法判斷這個系列在說什麼或找出共同點。",
     "abstain_reason": "insufficient_evidence"
   }
 }

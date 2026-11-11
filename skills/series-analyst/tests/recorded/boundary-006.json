@@ -1,10 +1,10 @@
 {
   "case_id": "boundary-006",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "便當食用後疑似食物中毒",
+    "title": "食用便當後腹痛或腹瀉",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -13,7 +13,7 @@
           "E1",
           "E2"
         ],
-        "reason": "兩起事件的地點都記為「宵夜街」。"
+        "reason": "兩起事件的地點欄位均寫為「宵夜街」。"
       }
     ],
     "pattern_status": "ok",
@@ -21,7 +21,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "均為食用便當後出現腹痛或腹瀉，並提到雞腿疑似未熟。",
+        "description": "食用便當後出現腹痛或腹瀉，相關證據提到雞腿疑似未熟。",
         "event_ids": [
           "E1",
           "E2"
@@ -33,11 +33,11 @@
         "evidence_spans": [
           {
             "evidence_id": "e1",
-            "quote": "吃完我們寢室三個都拉肚子，雞腿好像沒熟。"
+            "quote": "雞腿好像沒熟。"
           },
           {
             "evidence_id": "e2",
-            "quote": "吃完肚子痛一整晚，雞腿裡面是粉紅色的。"
+            "quote": "雞腿裡面是粉紅色的。"
           }
         ]
       }
@@ -45,7 +45,7 @@
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能為烹調未熟，導致病原或未煮熟的部位引發腸胃症狀。",
+        "description": "可能是雞腿未充分加熱或未熟，疑似食用未熟肉類後出現腸胃不適。",
         "event_ids": [
           "E1",
           "E2"
@@ -64,15 +64,15 @@
             "quote": "雞腿裡面是粉紅色的。"
           }
         ],
-        "to_verify": "請向校園衛生單位或地方衛生機關確認是否有對該餐點或該攤點的檢驗結果及檢驗項目。"
+        "to_verify": "向地方衛生主管單位或該店查證烹調加熱流程與食品保存情況，並確認是否有相關檢驗結果。"
       }
     ],
     "measures": [
       {
-        "action": "記得吃東西前觀察是否看起來已熟透，若食用後出現腹痛或腹瀉，建議保留剩餘食物或拍照以利後續查證。",
+        "action": "記得確認肉類熟度，若吃到疑似未熟的食物請立即停止食用並視情況就醫。 ",
         "audience": "students",
         "horizon": "short",
-        "priority": "medium",
+        "priority": "high",
         "kind": "prevent",
         "cause_id": null,
         "responsible_unit": null,
@@ -82,26 +82,39 @@
         ]
       },
       {
-        "action": "請衛生保健單位聯繫地方衛生機關，對相關攤點進行調查與抽樣檢驗以釐清是否因烹調未熟或其他食品安全問題所致。",
+        "action": "通報校內衛生或防疫單位，請協助聯繫地方衛生主管機關進行調查與稽查。",
         "audience": "school",
         "horizon": "short",
         "priority": "high",
         "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": "衛生保健單位",
+        "responsible_unit": "衛生保健中心",
         "evidence_ids": [
           "e1",
           "e2"
         ]
       },
       {
-        "action": "建議地方衛生機關要求業者檢視與改善烹調流程、加強員工食品安全與熟食溫度管控，並依檢驗結果採取後續處置。",
+        "action": "請地方衛生主管機關派員查核該店的烹調與加熱流程、食材保存與冷鏈管理，必要時進行抽驗。",
         "audience": "units",
-        "horizon": "mid",
+        "horizon": "short",
         "priority": "high",
-        "kind": "prevent",
+        "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": "地方衛生機關",
+        "responsible_unit": "地方衛生局",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "提醒同學購買餐點時注意熟度與外觀，並張貼衛教資訊說明如何辨別與處理疑似未熟肉品的情形。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "衛生保健中心",
         "evidence_ids": [
           "e1",
           "e2"
@@ -112,7 +125,7 @@
       "e1",
       "e2"
     ],
-    "reason": "這個系列持續追蹤食用便當後出現腹痛或腹瀉的狀況，並注意到證據指出雞腿疑似未熟，建議相關單位調查。",
+    "reason": "這個系列持續追蹤學生食用同一家便當後出現腹痛或腹瀉的情況；證據中出現雞腿疑似未熟的描述，建議相關單位調查與提醒同學注意。",
     "abstain_reason": null
   }
 }

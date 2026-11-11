@@ -1,11 +1,11 @@
 {
   "case_id": "normal-007",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "依仁堂前同學騎車滑倒並送醫",
+    "title": "依仁堂前今午有同學騎車滑倒，已叫救護車",
     "occurrence_start_date": "2026-10-20",
     "occurrence_start_time": null,
     "occurrence_end_date": null,
@@ -13,7 +13,7 @@
     "location": "依仁堂",
     "mentions_person": false,
     "summary": {
-      "text": "10/20（今天）中午依仁堂前有同學騎車滑倒，已叫救護車。路面濕滑，經過請小心。",
+      "text": "今天中午在依仁堂前有同學騎車滑倒，已經叫救護車處理。經過的同學請小心，地面較滑。",
       "evidence_ids": [
         "e1"
       ]
@@ -25,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "有同學騎車滑倒"
+        "quote": "有同學騎車滑倒，已經叫救護車了"
       },
       {
         "field": "time",
@@ -38,8 +38,8 @@
         "quote": "依仁堂前面"
       }
     ],
-    "reason": "社群貼文指出今中午在依仁堂前有人騎車滑倒並已叫救護車，且提到路面很滑，為會影響師生通行的突發事故。",
-    "confidence": 0.8,
+    "reason": "貼文描述今天中午在依仁堂前有同學騎車滑倒並已叫救護車，屬於會影響人的即時意外事件。",
+    "confidence": 0.9,
     "abstain_reason": null
   }
 }
