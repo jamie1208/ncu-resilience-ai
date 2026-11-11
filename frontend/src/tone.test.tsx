@@ -16,7 +16,8 @@ const EMERGENCY_FOOTER =
 const EMERGENCY_ADMIN =
   '緊急狀況請直接撥打 110（警察）或 119（消防、救護），或聯絡學校校安中心；本系統不是緊急通報管道。'
 const EMERGENCY_REPORT = '這裡不是報案管道。遇到緊急狀況請直接撥打 110 或 119，或聯絡學校校安中心。'
-const EMERGENCY_HOME = '看到怪怪的事？匿名跟我們說。這裡不是報案管道，緊急狀況請撥 110 或 119。'
+// 「看到怪怪的事？匿名跟我們說」改為入口卡片標題（照示範頁），緊急提醒句逐字不變
+const EMERGENCY_HOME = '這裡不是報案管道，緊急狀況請撥 110 或 119。'
 const UNVERIFIED_NOTE = '尚未查證：這是 AI 依公開來源整理的摘要，目前沒有官方來源證實，也還沒有人工查證。'
 const UNVERIFIED_HOME = '標示「尚未查證」的內容是 AI 依公開來源整理的摘要，不代表事情確實發生。'
 const HYPOTHESIS_NOTE = '規律與可能原因是 AI 依公開資料整理的推測，標示「推測，尚未查證」的內容不代表事實；件數由程式計算。'

@@ -99,13 +99,13 @@ function ReceiptLookup() {
   }
 
   return (
-    <section aria-labelledby="receipt-heading" className="max-w-2xl space-y-4">
-      <h2 id="receipt-heading" className="text-lg font-semibold text-foreground">
+    <Card as="section" aria-labelledby="receipt-heading" className="space-y-3 rounded-2xl p-5">
+      <h2 id="receipt-heading" className="text-lg font-bold text-foreground">
         查詢進度與補件
       </h2>
       <p className="text-sm text-muted-foreground">拿出送出時的收據碼，就能查目前的進度。為了防止有人亂猜收據碼，每 10 分鐘最多查詢 20 次。</p>
       <form aria-label="查詢進度" className="flex flex-col gap-3 sm:flex-row sm:items-end" onSubmit={lookUp}>
-        <label className="block flex-1 space-y-1 text-sm text-foreground">
+        <label className="block flex-1 space-y-1.5 text-sm font-semibold text-foreground">
           <span>收據碼</span>
           <Input
             aria-label="收據碼"
@@ -165,7 +165,7 @@ function ReceiptLookup() {
           </form>
         </>
       )}
-    </section>
+    </Card>
   )
 }
 
@@ -203,67 +203,83 @@ export function Report() {
   }
 
   return (
-    <div className="space-y-8">
-      <PageIntro eyebrow="回報" title="匿名回報">
-        <p>看到怪怪的事？匿名跟我們說。設施故障、安全疑慮或其他不對勁的狀況，都可以在這裡告訴我們。</p>
+    <div className="mx-auto max-w-3xl space-y-5">
+      <PageIntro title="看到怪怪的事？匿名跟我們說">
+        <p>設備壞了、哪裡不安全、或校園裡有什麼不對勁，都可以寫下來。系統會整理成快報，同類型的事累積多了，就能看出問題出在哪。</p>
       </PageIntro>
 
-      <Card className="space-y-2">
-        <h2 className="text-lg font-semibold text-foreground">送出前請先看</h2>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-foreground">
+      <aside
+        role="note"
+        aria-label="緊急狀況"
+        className="rounded-[14px] border border-danger/30 bg-danger-muted px-4 py-3.5 text-[15px] leading-relaxed text-danger"
+      >
+        <p className="font-semibold">這裡不是報案管道。遇到緊急狀況請直接撥打 110 或 119，或聯絡學校校安中心。</p>
+      </aside>
+
+      <Card as="section" aria-labelledby="report-notes" className="space-y-2 rounded-2xl px-5 py-[18px]">
+        <h2 id="report-notes" className="text-base font-bold text-foreground">
+          送出前先知道
+        </h2>
+        <ul className="list-disc space-y-1 pl-5 text-[15px] leading-relaxed text-foreground/80">
           {NOTES.map((note) => (
             <li key={note}>{note}</li>
           ))}
         </ul>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          這裡不是報案管道。遇到緊急狀況請直接撥打 110 或 119，或聯絡學校校安中心。
-        </p>
       </Card>
 
-      <form aria-label="匿名回報" className="max-w-2xl space-y-4" onSubmit={submit}>
-        <label className="block space-y-1 text-sm text-foreground">
-          <span>發生了什麼事（{MIN_CHARS}–{MAX_CHARS} 字）</span>
-          <Textarea
-            value={content}
-            rows={6}
-            maxLength={MAX_CHARS}
-            placeholder="例如：工程五館二樓走廊的燈從昨晚開始一直閃爍"
-            onChange={(e) => setContent(e.target.value)}
-          />
-        </label>
-        <p className="text-right font-mono text-xs text-muted-foreground" aria-live="polite">
-          {`${length} / ${MAX_CHARS}`}
-        </p>
-        <label className="block space-y-1 text-sm text-foreground">
-          <span>地點（選填）</span>
-          <Input
-            value={location}
-            maxLength={MAX_LOCATION_CHARS}
-            placeholder="例如：工程五館"
-            onChange={(e) => setLocation(e.target.value)}
-          />
-        </label>
-        {error && <ErrorText>{error}</ErrorText>}
-        {sent && (
-          <div role="status" className="space-y-2 rounded-lg border border-border bg-muted px-4 py-3 text-sm text-foreground">
-            <p>已收到你的回報，謝謝你！系統會把它和其他來源一起比對分析，不會直接公開。</p>
-            {receipt && (
-              <>
-                <p>
-                  你的收據碼：
-                  <code className="select-all font-mono font-semibold tracking-wide">{receipt}</code>
-                </p>
-                <p className="text-muted-foreground">
-                  收據碼只會顯示這一次，本站只保存它的雜湊、沒辦法幫你找回；請先抄下或截圖，之後就能在下方查進度或補件。
-                </p>
-              </>
-            )}
-          </div>
-        )}
-        <Button type="submit" disabled={!ready || busy}>
-          送出回報
-        </Button>
-      </form>
+      <Card as="div" className="rounded-2xl p-5">
+        <form aria-label="匿名回報" className="space-y-4" onSubmit={submit}>
+          <label className="block space-y-1.5 text-[15px] font-semibold text-foreground">
+            <span>發生了什麼事？（{MIN_CHARS}–{MAX_CHARS} 字）</span>
+            <Textarea
+              value={content}
+              rows={5}
+              maxLength={MAX_CHARS}
+              placeholder="例如：工程五館二樓走廊的燈從昨晚開始一直閃"
+              className="font-normal"
+              onChange={(e) => setContent(e.target.value)}
+            />
+          </label>
+          <p className="text-right text-xs text-muted-foreground" aria-live="polite">
+            {`${length} / ${MAX_CHARS} 字`}
+          </p>
+          <label className="block space-y-1.5 text-[15px] font-semibold text-foreground">
+            <span>地點（可以不填）</span>
+            <Input
+              value={location}
+              maxLength={MAX_LOCATION_CHARS}
+              placeholder="例如：工程五館"
+              className="font-normal"
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </label>
+          {error && <ErrorText>{error}</ErrorText>}
+          <Button type="submit" disabled={!ready || busy}>
+            送出回報
+          </Button>
+        </form>
+      </Card>
+
+      {sent && (
+        <section
+          role="status"
+          className="space-y-2.5 rounded-2xl border border-success/30 bg-success-muted p-5 text-[15px] leading-relaxed text-foreground"
+        >
+          <h2 className="text-xl font-bold text-success">收到了，謝謝你！</h2>
+          <p>已收到你的回報。系統會把它和其他來源一起比對分析，不會直接公開。</p>
+          {receipt && (
+            <>
+              <p>這是你的收據碼，請截圖或抄下來，之後可以用它查進度或補件：</p>
+              <code className="inline-block rounded-[10px] border border-dashed border-success bg-card px-3.5 py-2 font-mono text-lg font-bold tracking-wide break-all select-all">
+                {receipt}
+              </code>
+              <p className="text-[13px] text-muted-foreground">
+                收據碼只會顯示這一次，本站只保存它的雜湊、沒辦法幫你找回。
+              </p>
+            </>
+          )}
+        </section>
+      )}
 
       <ReceiptLookup />
     </div>

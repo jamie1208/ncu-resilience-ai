@@ -65,7 +65,7 @@ test('公開瀏覽：首頁 → 快報全文 → 系列分析頁 → 分類查�
   const others = await mockPublicApi(page)
 
   await page.goto('/')
-  await expect(page.getByRole('heading', { level: 1, name: '最新校園快報' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: '今天校園發生了什麼' })).toBeVisible()
   await expectFooter(page)
   // 依類別分區的橫向快報卡片（ADR-0020 決策 4）；未查證的標「尚未查證」
   await expect(page.getByRole('list', { name: '設施快報' }).getByRole('listitem')).toHaveCount(1)
@@ -73,8 +73,8 @@ test('公開瀏覽：首頁 → 快報全文 → 系列分析頁 → 分類查�
   await expect(security.getByText('尚未查證')).toBeVisible()
   await expect(security.getByText('已查證')).toHaveCount(0)
   await expect(page.getByText(/目前無法確認是否屬實/)).toHaveCount(0)
-  await expect(page.getByRole('main').getByRole('link', { name: '校園韌性成績單' })).toBeVisible()
-  await expect(page.getByRole('main').getByRole('link', { name: '匿名回報' })).toBeVisible()
+  await expect(page.getByRole('main').getByRole('link', { name: /校園韌性成績單/ })).toBeVisible()
+  await expect(page.getByRole('main').getByRole('link', { name: /看到怪怪的事？匿名跟我們說/ })).toBeVisible()
   await expect(page.getByLabel('密碼')).toHaveCount(0)
 
   await page.getByRole('link', { name: '工程五館外牆整修施工' }).click()
@@ -100,19 +100,22 @@ test('公開瀏覽：首頁 → 快報全文 → 系列分析頁 → 分類查�
   await current.getByRole('link', { name: '工程五館外牆整修施工' }).click()
   await expect(page.getByRole('heading', { level: 1, name: '工程五館外牆整修施工' })).toBeVisible()
 
-  await page.getByRole('link', { name: '← 回事件查詢' }).click()
+  await page.getByRole('link', { name: '← 回快報首頁' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: '今天校園發生了什麼' })).toBeVisible()
+
+  const footer = page.getByRole('contentinfo')
+  await footer.getByRole('link', { name: '事件查詢' }).click()
   await expect(page.getByRole('heading', { level: 1, name: '事件分類查詢' })).toBeVisible()
   await expect(page.getByRole('group', { name: '事件類別' }).getByRole('button', { name: '設施 1' })).toBeVisible()
   await expectFooter(page)
 
-  const nav = page.getByRole('navigation', { name: '主要頁面' })
-  await nav.getByRole('link', { name: '改善進度' }).click()
+  await footer.getByRole('link', { name: '改善進度' }).click()
   await expect(page.getByRole('heading', { level: 1, name: '改善進度' })).toBeVisible()
   await expect(page.getByText('加裝夜間照明')).toBeVisible()
   await expect(page.getByRole('link', { name: '工程五館施工封路' })).toHaveAttribute('href', `/series/${PUBLIC_SERIES_ID}`)
   await expectFooter(page)
 
-  await nav.getByRole('link', { name: '關於本站' }).click()
+  await footer.getByRole('link', { name: '關於本站' }).click()
   await expect(page.getByRole('heading', { level: 1, name: '關於本站' })).toBeVisible()
   await expect(page.getByText(/不是國立中央大學的官方系統/)).toBeVisible()
   await expectFooter(page)

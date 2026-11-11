@@ -25,15 +25,15 @@ describe('公開版韌性成績單', () => {
     expect(matchPublicRoute('/resilience')).toEqual({ page: 'resilience' })
     open(PUBLIC_RESILIENCE)
     const nav = screen.getByRole('navigation', { name: '主要頁面' })
-    const link = within(nav).getByRole('link', { name: '韌性成績單' })
+    const link = within(nav).getByRole('link', { name: '校園韌性' })
     expect(link).toHaveAttribute('aria-current', 'page')
   })
 
   it('醒目標明「回報變多不等於校園變危險」', async () => {
     open(PUBLIC_RESILIENCE)
-    await screen.findByRole('heading', { level: 1, name: '校園韌性成績單' })
+    await screen.findByRole('heading', { level: 1, name: '學校遇到狀況時，處理得好不好？' })
     const note = screen.getByRole('note', { name: '閱讀前請注意' })
-    expect(within(note).getByText(/回報變多不等於校園變危險/)).toBeInTheDocument()
+    expect(within(note).getByText(/回報變多，不代表學校變危險/)).toBeInTheDocument()
   })
 
   it('資料不足時總分與構面顯示 N/A，不顯示數字', async () => {
@@ -61,7 +61,7 @@ describe('公開版韌性成績單', () => {
 
   it('白話說明：四個構面改成四個問題，並寫明目標是本專題自訂（ADR-0020 決策 5）', async () => {
     open(PUBLIC_RESILIENCE)
-    await screen.findByRole('heading', { level: 1, name: '校園韌性成績單' })
+    await screen.findByRole('heading', { level: 1, name: '學校遇到狀況時，處理得好不好？' })
     expect(screen.getByText(/學校遇到狀況時，處理得好不好？/)).toBeInTheDocument()
     expect(screen.getByText(/幾天算好是本專題自己訂的目標，不是學校的官方標準/)).toBeInTheDocument()
     const questions = within(screen.getByRole('list', { name: '四個問題' }))

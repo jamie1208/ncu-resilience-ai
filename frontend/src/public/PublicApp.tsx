@@ -14,13 +14,11 @@ import { Series } from './pages/Series'
 import { matchPublicRoute, type PublicRoute } from './routes'
 import { PageIntro, SiteFooter } from './ui'
 
+/** 導覽列照示範頁只放三個分頁；事件查詢、改善進度、關於本站從頁尾與頁內連結進入。 */
 const NAV = [
-  { to: '/', label: '最新快報', pages: ['home', 'series'] },
-  { to: '/events', label: '事件查詢', pages: ['events', 'event'] },
-  { to: '/progress', label: '改善進度', pages: ['progress'] },
-  { to: '/resilience', label: '韌性成績單', pages: ['resilience'] },
+  { to: '/', label: '快報', pages: ['home', 'event', 'series', 'events'] },
+  { to: '/resilience', label: '校園韌性', pages: ['resilience'] },
   { to: '/report', label: '匿名回報', pages: ['report'] },
-  { to: '/about', label: '關於本站', pages: ['about'] },
 ] as const
 
 function Page({ route }: { route: PublicRoute }) {
@@ -70,9 +68,22 @@ export function PublicApp() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link to="/" className="font-display text-lg text-foreground">
-            NCU Resilience AI
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 pt-3 pb-2">
+          <Link
+            to="/"
+            className="inline-flex min-h-11 items-center gap-2.5 rounded-lg text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span
+              aria-hidden="true"
+              className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-linear-135 from-accent to-accent/70 text-accent-foreground"
+            >
+              <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 11a8 8 0 0 1 16 0" />
+                <path d="M12 11v9" />
+                <path d="M8 20h8" />
+              </svg>
+            </span>
+            <span className="font-display text-xl">中大校園快報</span>
           </Link>
           <nav aria-label="主要頁面" className="flex flex-wrap gap-1">
             {NAV.map((item) => {
@@ -83,9 +94,9 @@ export function PublicApp() {
                   to={item.to}
                   aria-current={current ? 'page' : undefined}
                   className={cn(
-                    'inline-flex min-h-11 items-center rounded-lg px-3 text-sm transition-colors',
+                    'inline-flex min-h-11 items-center rounded-[10px] px-3.5 text-[15px] font-semibold transition-colors',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    current ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                    current ? 'bg-info-muted text-accent' : 'text-foreground/80 hover:bg-muted hover:text-foreground',
                   )}
                 >
                   {item.label}
@@ -94,8 +105,11 @@ export function PublicApp() {
             })}
           </nav>
         </div>
+        <div className="mx-auto max-w-6xl px-4 pb-2.5">
+          <span className="inline-block rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">個人專題，非校方官方系統</span>
+        </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6 sm:py-14">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-8 pb-16">
         <Page route={route} />
       </main>
       <SiteFooter />
