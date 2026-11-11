@@ -207,7 +207,7 @@ skills:
   impact-evaluator:
     # P8-T15（ADR-0019 決策 4-3）：improvement_valid、hypothesized_not_asserted = 1.0、
     # cause_coverage ≥ 0.90 依計畫；abstain_when_insufficient 計畫沒有給數字，AI 提出 1.0（證據不足
-    # 的案例一律 abstain），待使用者確認。衍生欄位見 app/ai/eval/derived.py 的 impact_fields；
+    # 的案例一律 abstain），使用者 2026-11-11 確認。衍生欄位見 app/ai/eval/derived.py 的 impact_fields；
     # 百分比上限、引用的代號與補強建議由 app/simulations/impact.py 的業務驗證保證（重試後仍失敗即
     # 評估不出來），這裡量測模型本身。
     metrics:
