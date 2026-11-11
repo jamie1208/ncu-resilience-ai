@@ -367,7 +367,9 @@ tasks:
     updated_at: '2026-11-11T14:28:19+08:00'
     evidence: docs/progress/records/P8-T15-20261111.md
   P8-T16:
-    status: pending
+    status: done
+    updated_at: '2026-11-11T16:09:03+08:00'
+    evidence: docs/progress/records/P8-T16-20261111.md
 gates:
   G0-1:
     status: pass
@@ -1571,4 +1573,14 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-11-11T14:28:19+08:00'
+- at: '2026-11-11T15:28:00+08:00'
+  id: P8-T16
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-11-11T16:09:03+08:00'
+  id: P8-T16
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-11-11T16:09:03+08:00'

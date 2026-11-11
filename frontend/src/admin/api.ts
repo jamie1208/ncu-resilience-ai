@@ -1071,6 +1071,41 @@ export async function getSourceHealth(): Promise<SourceHealth[]> {
   return (await apiGet<SourceHealth[]>(`${V1}/admin/ingestion-runs/health`)).data
 }
 
+// ---- 匿名回報收件匣（P8-T16） ----
+
+export type InboxIngestionStatus = 'not_ingested' | 'ingested'
+
+export interface InboxEvent {
+  id: string
+  title: string
+  status: string
+}
+
+/** 收件匣中的一則投稿；原文只在管理端出現，不含收據碼或雜湊。 */
+export interface InboxReport {
+  id: number
+  kind: 'original' | 'supplement'
+  content: string
+  location: string | null
+  submitted_at: string
+  ingestion_status: InboxIngestionStatus
+  source_item_id: string | null
+  analysis_status: string | null
+  events: InboxEvent[]
+}
+
+/** 同一張收據的投稿（原投稿在前、補件依收到順序）。 */
+export interface InboxGroup {
+  id: number
+  latest_submitted_at: string
+  reports: InboxReport[]
+  events: InboxEvent[]
+}
+
+export function listAnonymousReports(cursor: string | null = null) {
+  return getPage<InboxGroup>(`/admin/anonymous-reports${query({ cursor })}`)
+}
+
 export function listIngestionRuns(limit = 20) {
   return getPage<IngestionRun>(`/admin/ingestion-runs${query({ limit })}`)
 }

@@ -6,6 +6,7 @@ from app.api.deps import require_login
 from app.api.v1.admin import (
     actions,
     alerts,
+    anonymous_reports,
     audit_logs,
     dashboard,
     events,
@@ -39,5 +40,6 @@ router.include_router(scenarios.router)
 router.include_router(trends.router)
 router.include_router(locations.router)
 router.include_router(series.router)
+router.include_router(anonymous_reports.router)
 
 __all__ = ["router"]
