@@ -9,6 +9,9 @@
 - 不可重試的錯誤（金鑰、請求錯誤）直接 failed；模型拒答 → abstain（model_refusal）；
 - 送出前檢查每次與每日費用上限，超過就不送 → failed（cost_limit）；
 - 紀錄不存提示詞、來源原文與無效的原始輸出。
+
+`check`（P8-T15）：呼叫端額外的業務驗證（例如 S14 的百分比上限與引用的代號），在通用驗證通過後
+執行；回傳的問題與通用驗證的問題一樣視為無效輸出，立即重送。
 """
 
 from __future__ import annotations
@@ -190,6 +193,7 @@ async def run_skill(
     trace_id: str | None = None,
     clock: Callable[[], datetime] = lambda: datetime.now(UTC),
     sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+    check: Callable[[Mapping[str, Any]], list[Issue]] | None = None,
 ) -> SkillRunResult:
     """執行一次 Skill 並寫入紀錄；輸入不合 schema 時拋出 `SkillInputError`（不寫紀錄）。"""
     errors = sorted(
@@ -287,6 +291,8 @@ async def run_skill(
         parsed, issues = parse_output(result.text)
         if parsed is not None:
             issues = validate_output(parsed, skill, evidence_ids, evidence_texts=evidence_texts)
+            if not issues and check is not None:
+                issues = check(parsed)
         if parsed is not None and not issues:
             output = parsed
             if parsed.get("status") == "abstain":

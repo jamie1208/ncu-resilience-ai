@@ -10,8 +10,16 @@
   基準件數與依據，供前端自動帶入。需要 `events:read_all`。
 - `GET /api/v1/admin/scenarios`：最近 50 次模擬，可依事件篩選。需要 `events:read_all`。
 - `GET /api/v1/admin/scenarios/{id}`：一次模擬。需要 `events:read_all`。
+- `POST /api/v1/admin/scenarios/impact`（P8-T15，ADR-0019）：依系列最新一次分析的改善建議評估效益。
+  只送勾選的建議代號（m1…），不送任何數字；S14 impact-evaluator 給改善百分比區間（AI 估計，非實證，
+  上限在 `config/impact.yaml`）與改善前後情境，件數由程式換算。需要 `scenarios:create`，新評估寫入
+  稽核 `scenario.impact`（metadata 只有系列、分析、選擇數與狀態）；同一次分析、同一組選擇沿用既有
+  結果（`reused`）。沒有勾選或勾選不存在的建議回 VALIDATION_ERROR（不呼叫模型）；系列不存在回
+  NOT_FOUND；沒有可用的分析、或 `analysis_id` 不是最新一次回 CONFLICT。
+- `GET /api/v1/admin/scenarios/impact`：最近 50 次評估，可依系列篩選；`GET .../impact/{id}`：
+  一次評估。需要 `events:read_all`；系列分析更新後舊評估 `stale` 為 true。
 
-S10 在請求內同步執行（只呼叫一次 Skill，不經 Celery）。只在管理端，不經公開端（ADR-0015）。
+S10、S14 在請求內同步執行（只呼叫一次 Skill，不經 Celery）。只在管理端，不經公開端（ADR-0015）。
 """
 
 from __future__ import annotations
@@ -32,10 +40,24 @@ from app.api.responses import envelope
 from app.core.config import get_settings
 from app.core.security import Permission, Principal
 from app.models.ai import AIAnalysisRun
+from app.models.impact import ImpactEvaluation
 from app.models.scenario import ScenarioRun
 from app.resilience.recurrence import TAIPEI
 from app.simulations.baseline import load_baseline
 from app.simulations.engine import MAX_MEASURES, MAX_SEED, ScenarioInputError
+from app.simulations.impact import (
+    S14,
+    Evaluator,
+    ImpactConflictError,
+    ImpactError,
+    ImpactInputError,
+    converted_counts,
+    evaluate_impact,
+    get_evaluation,
+    is_stale,
+    latest_analysis_ids,
+    list_evaluations,
+)
 from app.simulations.service import (
     SKILL_NAME,
     Explainer,
@@ -237,6 +259,115 @@ async def list_scenario_runs(
     """最近的模擬（新到舊）。"""
     rows = await list_scenarios(session, event_id=event_id)
     return envelope([_out(run, ai_run) for run, ai_run in rows])
+
+
+def get_evaluator() -> Evaluator:
+    """S14 的相依（依設定檔與環境變數）；測試以 fake provider 替換。"""
+    config = load_llm_config()
+    return Evaluator(
+        skill=load_skill(SKILLS_DIR / S14),
+        provider=create_provider(config, get_settings()),
+        config=config,
+    )
+
+
+class ImpactIn(BaseModel):
+    """要評估的系列與勾選的建議代號；`analysis_id` 有填時必須是系列最新一次分析。"""
+
+    series_id: uuid.UUID
+    measure_ids: Annotated[
+        list[Annotated[str, Field(max_length=4)]], Field(min_length=1, max_length=6)
+    ]
+    analysis_id: uuid.UUID | None = None
+
+
+def _impact_out(
+    row: ImpactEvaluation, latest: dict[uuid.UUID, uuid.UUID], *, reused: bool = False
+) -> dict[str, Any]:
+    return {
+        "id": str(row.id),
+        "series_id": str(row.series_id),
+        "analysis_id": str(row.analysis_id),
+        "selected": list(row.selected),
+        "status": row.status,
+        "abstain_reason": row.abstain_reason,
+        "improvement": (
+            None
+            if row.improvement_low is None
+            else {"low": row.improvement_low, "high": row.improvement_high}
+        ),
+        "cap": row.cap,
+        "result": row.result,
+        "counts": converted_counts(row),
+        "stale": is_stale(row, latest),
+        "reused": reused,
+        "ai_run_id": str(row.ai_run_id) if row.ai_run_id else None,
+        "created_by": row.created_by,
+        "created_at": row.created_at.isoformat(),
+    }
+
+
+def _impact_error(error: ImpactError) -> ApiError:
+    if isinstance(error, ImpactInputError):
+        return ApiError(
+            ErrorCode.VALIDATION_ERROR,
+            str(error),
+            details=[{"field": f"body.{error.field}", "message": str(error)}],
+        )
+    if isinstance(error, ImpactConflictError):
+        return ApiError(ErrorCode.CONFLICT, str(error))
+    return ApiError(ErrorCode.NOT_FOUND, str(error))
+
+
+@router.post("/impact", status_code=status.HTTP_201_CREATED)
+async def create_impact_evaluation(
+    body: ImpactIn,
+    session: Session,
+    principal: CanCreate,
+    evaluator: Annotated[Evaluator, Depends(get_evaluator)],
+) -> dict[str, Any]:
+    """評估所選建議的效益。"""
+    try:
+        outcome = await evaluate_impact(
+            session,
+            principal,
+            body.series_id,
+            body.measure_ids,
+            evaluator,
+            analysis_id=body.analysis_id,
+        )
+    except ImpactError as e:
+        raise _impact_error(e) from None
+    await session.commit()
+    row = outcome.evaluation
+    await session.refresh(row)
+    latest = await latest_analysis_ids(session, [row.series_id])
+    return envelope(_impact_out(row, latest, reused=outcome.reused))
+
+
+@router.get("/impact")
+async def list_impact_evaluations(
+    session: Session,
+    _: CanRead,
+    series_id: Annotated[uuid.UUID | None, Query()] = None,
+) -> dict[str, Any]:
+    """最近的效益評估（新到舊）。"""
+    rows = await list_evaluations(session, series_id=series_id)
+    latest = await latest_analysis_ids(session, [r.series_id for r in rows])
+    return envelope([_impact_out(r, latest) for r in rows])
+
+
+@router.get("/impact/{evaluation_id}")
+async def get_impact_evaluation(
+    evaluation_id: uuid.UUID, session: Session, _: CanRead
+) -> dict[str, Any]:
+    """一次效益評估；不存在回 NOT_FOUND。"""
+    try:
+        row = await get_evaluation(session, evaluation_id)
+    except ImpactError as e:
+        raise _impact_error(e) from None
+    latest = await latest_analysis_ids(session, [row.series_id])
+    return envelope(_impact_out(row, latest))
 
 
 @router.get("/{run_id}")

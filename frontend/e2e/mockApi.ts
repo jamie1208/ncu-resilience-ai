@@ -1,6 +1,6 @@
 import type { Page, Request } from '@playwright/test'
 
-import type { EventReport, RelationEdge, ScenarioRun } from '../src/admin/api'
+import type { EventReport, ImpactEvaluation, RelationEdge, ScenarioRun } from '../src/admin/api'
 import {
   ALERTS,
   AUDIT_LOGS,
@@ -13,7 +13,7 @@ import {
   SKILLS,
   SOURCE_HEALTH,
 } from '../src/test/fixtures'
-import { SCENARIO } from '../src/test/scenarioFixtures'
+import { IMPACT_ALL, IMPACT_OK, IMPACT_SERIES, IMPACT_SERIES_SUMMARY, SCENARIO } from '../src/test/scenarioFixtures'
 
 const CSRF = 'csrf-e2e'
 
@@ -39,6 +39,7 @@ export async function mockBackend(
     report: options.report ?? null,
     relations: RELATION_GRAPH.edges.map((e) => ({ ...e })) as RelationEdge[],
     scenarios: (options.scenarios === 'seeded' ? [SCENARIO] : []) as ScenarioRun[],
+    impacts: [] as ImpactEvaluation[],
   }
   const calls: Recorded[] = []
 
@@ -142,6 +143,16 @@ export async function mockBackend(
       })
       const nodes = RELATION_GRAPH.nodes.filter((n) => n.id === edge.source || n.id === edge.target)
       return reply(200, { edge, nodes })
+    }
+    // 依建議評估（P8-T15）：S14 的結果用固定的 fixture；全選時回傳涵蓋全部原因的版本
+    if (method === 'GET' && path === '/admin/series') return reply(200, [IMPACT_SERIES_SUMMARY])
+    if (method === 'GET' && path === `/admin/series/${IMPACT_SERIES.id}`) return reply(200, IMPACT_SERIES)
+    if (method === 'GET' && path === '/admin/scenarios/impact') return reply(200, state.impacts)
+    if (method === 'POST' && path === '/admin/scenarios/impact') {
+      const ids = (body.measure_ids as string[]).join(',')
+      const evaluation = ids === IMPACT_ALL.selected.join(',') ? IMPACT_ALL : { ...IMPACT_OK, selected: body.measure_ids }
+      state.impacts.unshift(evaluation)
+      return reply(201, evaluation)
     }
     if (method === 'GET' && path === '/admin/scenarios') return reply(200, state.scenarios)
     if (method === 'POST' && path === '/admin/scenarios') {

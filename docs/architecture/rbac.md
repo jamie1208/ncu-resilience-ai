@@ -88,6 +88,9 @@
 | GET | `/api/v1/admin/scenarios/baseline` | `events:read_all` | |
 | GET | `/api/v1/admin/scenarios` | `events:read_all` | |
 | GET | `/api/v1/admin/scenarios/{id}` | `events:read_all` | |
+| POST | `/api/v1/admin/scenarios/impact` | `scenarios:create` | `scenario.impact`（新評估才寫；沿用既有結果不寫） |
+| GET | `/api/v1/admin/scenarios/impact` | `events:read_all` | |
+| GET | `/api/v1/admin/scenarios/impact/{id}` | `events:read_all` | |
 | GET | `/api/v1/admin/trends/forecast` | `events:read_all` | |
 | POST | `/api/v1/admin/trends/forecast` | `events:analyze` | `trend_forecast.run` |
 | GET | `/api/v1/admin/ingestion-runs` | `ingestion_runs:read` | |

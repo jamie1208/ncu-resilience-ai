@@ -1,0 +1,28 @@
+{
+  "case_id": "boundary-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "improvement": {
+      "low": null,
+      "high": null
+    },
+    "before": null,
+    "after": null,
+    "covered_causes": [],
+    "uncovered_causes": [],
+    "overlaps": [],
+    "risks": [
+      "子事件的標題與摘要內容不足，看不出是什麼問題或發生情境，無法判斷建議要處理的對象與效果。",
+      "被選的建議內容也只寫了連結或簡短文字，缺乏可評估的措施細節，無法估算可能的改善幅度。"
+    ],
+    "suggestion": {
+      "measure_id": null,
+      "reason": null
+    },
+    "evidence_ids": [],
+    "reason": "子事件描述與被選建議的內容都不足以判斷問題、原因與措施的對應關係，無法合理估計改善百分比區間。",
+    "abstain_reason": "insufficient_evidence"
+  }
+}

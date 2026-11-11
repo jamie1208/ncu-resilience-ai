@@ -1,11 +1,18 @@
 import { useEffect, useId, useState, type FormEvent, type ReactNode } from 'react'
 
-import { Badge, Button, Card, Input, Textarea } from '@design'
+import { Badge, Button, Card, Input, Select, Textarea } from '@design'
 
 import {
   createScenario,
+  evaluateImpact,
   getScenarioBaseline,
+  getSeries,
+  listImpactEvaluations,
   listScenarios,
+  listSeries,
+  type ImpactCause,
+  type ImpactEvaluation,
+  type SeriesMeasure,
   type CostTier,
   type ScenarioBaseline,
   type ScenarioLimitation,
@@ -15,7 +22,7 @@ import {
 } from '../api'
 import { formatPercent, formatTime, label } from '../format'
 import { useErrorMessage, useLoad } from '../useLoad'
-import { ErrorText, LoadState, Muted, PageHeader, Section } from '../ui'
+import { ErrorText, LoadState, Muted, Notice, PageHeader, Section } from '../ui'
 
 const MAX_MEASURES = 10
 const MAX_SEED = 2 ** 31 - 1
@@ -47,12 +54,74 @@ function measureNames(run: ScenarioRun): Record<string, string> {
   return Object.fromEntries(run.input.measures.map((m) => [m.measure_id, m.name]))
 }
 
+type Mode = 'impact' | 'custom'
+
+const MODES: { mode: Mode; label: string; description: string; note: string }[] = [
+  {
+    mode: 'impact',
+    label: '依建議評估',
+    description: '從系列分析的改善建議勾選要採用的，AI 估計件數可能少多少，再對照改善前後的樣子。',
+    note: '改善百分比是 AI 依現況估計的區間，沒有校準依據，只用來比較不同選擇；不代表措施實際會有的成效，也不能當作決策依據。',
+  },
+  {
+    mode: 'custom',
+    label: '自訂措施',
+    description: '件數 = 基準 × Π(1 − 措施效果)；效果是你填的假設區間，引擎依固定種子計算範圍與敏感度。',
+    note: '結果完全取決於你填寫的效果假設，只用來比較不同假設下的情境；不代表措施實際會有的成效，也不能當作決策依據。',
+  },
+]
+
+function seriesFromUrl(): string | null {
+  return new URLSearchParams(window.location.search).get('series')
+}
+
 /**
- * What-if 模擬（P7-T03，規格 F09）：填寫基準件數與措施的效果假設，數值由引擎計算（P7-T02），
- * S10 只解釋假設與限制。結果一律標示「假設情境，非成效預測」。只在管理端。
- * 基準件數依時間窗、類別、地點自動帶入歷史基準（P8-T09），可手改，手改值優先。
+ * What-if 模擬（P7-T03，規格 F09）。兩個分頁：
+ * - 依建議評估（P8-T15，ADR-0019）：勾選系列分析（S12）的改善建議，S14 估計改善百分比區間（AI 估計，
+ *   非實證）與改善前後情境，件數由程式換算；從系列分析頁的「評估效益」進入（`?series=<id>`）。
+ * - 自訂措施（P7-T03）：填寫基準件數與措施的效果假設，數值由引擎計算（P7-T02），S10 只解釋假設與
+ *   限制；基準件數依時間窗、類別、地點自動帶入（P8-T09），可手改，手改值優先。
+ * 結果一律標示「假設情境，非成效預測」。只在管理端。
  */
 export function Scenario() {
+  const [initialSeries] = useState(seriesFromUrl)
+  const [mode, setMode] = useState<Mode>(initialSeries ? 'impact' : 'custom')
+  const current = MODES.find((m) => m.mode === mode) ?? MODES[1]
+  return (
+    <div className="space-y-6">
+      <PageHeader title="What-if 模擬" description={current.description} />
+      <HypotheticalNote text={current.note} />
+      <ModeTabs mode={mode} onChange={setMode} />
+      <div role="tabpanel" id={`scenario-panel-${mode}`} aria-labelledby={`scenario-tab-${mode}`}>
+        {mode === 'impact' ? <ImpactScenario initialSeries={initialSeries} /> : <CustomScenario />}
+      </div>
+    </div>
+  )
+}
+
+function ModeTabs({ mode, onChange }: { mode: Mode; onChange: (mode: Mode) => void }) {
+  return (
+    <div role="tablist" aria-label="模擬方式" className="flex flex-wrap gap-2 border-b border-border">
+      {MODES.map((m) => (
+        <button
+          key={m.mode}
+          id={`scenario-tab-${m.mode}`}
+          type="button"
+          role="tab"
+          aria-selected={m.mode === mode}
+          aria-controls={`scenario-panel-${m.mode}`}
+          onClick={() => onChange(m.mode)}
+          className="-mb-px min-h-11 border-b-2 border-transparent px-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring aria-selected:border-accent aria-selected:font-semibold aria-selected:text-foreground"
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** 自訂措施分頁（P7-T03）。 */
+function CustomScenario() {
   const history = useLoad(listScenarios, 'scenarios')
   const [selected, setSelected] = useState<ScenarioRun | null>(null)
 
@@ -63,11 +132,6 @@ export function Scenario() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="What-if 模擬"
-        description="件數 = 基準 × Π(1 − 措施效果)；效果是你填的假設區間，引擎依固定種子計算範圍與敏感度。"
-      />
-      <HypotheticalNote />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         <Card className="min-w-0">
           <ScenarioForm onCreated={created} />
@@ -123,16 +187,14 @@ export function Scenario() {
 }
 
 /** 頁面頂端的醒目標示：不加動畫，兩套設計都用警示語意色。 */
-function HypotheticalNote() {
+function HypotheticalNote({ text }: { text: string }) {
   const id = useId()
   return (
     <div role="note" aria-labelledby={id} className="rounded-lg border border-warning/40 bg-warning-muted px-4 py-3">
       <p id={id} className="text-base font-semibold text-warning">
         {HYPOTHETICAL}
       </p>
-      <p className="mt-1 text-sm text-foreground">
-        結果完全取決於你填寫的效果假設，只用來比較不同假設下的情境；不代表措施實際會有的成效，也不能當作決策依據。
-      </p>
+      <p className="mt-1 text-sm text-foreground">{text}</p>
     </div>
   )
 }
@@ -567,6 +629,331 @@ function Fact({ term, value }: { term: string; value: string }) {
     <div className="flex gap-2">
       <dt className="shrink-0 text-muted-foreground">{term}</dt>
       <dd className="min-w-0 break-words text-foreground">{value}</dd>
+    </div>
+  )
+}
+
+// ---- 依建議評估（P8-T15，S14 impact-evaluator，ADR-0019） ----
+
+const AI_ESTIMATE = 'AI 估計，非實證'
+const IMPACT_FAILED = '這次評估不出來'
+
+const AUDIENCE: Record<string, string> = { students: '同學', school: '學校', units: '相關單位' }
+const KIND: Record<string, string> = { respond: '因應', investigate: '查證', prevent: '預防' }
+const HORIZON: Record<string, string> = { short: '短期', mid: '中期', long: '長期' }
+
+function code(index: number): string {
+  return `m${index + 1}`
+}
+
+function codeIndex(measureId: string): number {
+  return Number(measureId.slice(1)) - 1
+}
+
+function sortCodes(codes: Iterable<string>): string[] {
+  return [...new Set(codes)].sort((a, b) => codeIndex(a) - codeIndex(b))
+}
+
+function ImpactScenario({ initialSeries }: { initialSeries: string | null }) {
+  const [seriesId, setSeriesId] = useState<string | null>(initialSeries)
+  return (
+    <div className="space-y-6">
+      <SeriesPicker value={seriesId} onChange={setSeriesId} />
+      {seriesId ? <ImpactWorkspace key={seriesId} seriesId={seriesId} /> : (
+        <Card>
+          <Muted>先選一個系列，或從系列分析頁的「評估效益」進來。</Muted>
+        </Card>
+      )}
+    </div>
+  )
+}
+
+function SeriesPicker({ value, onChange }: { value: string | null; onChange: (id: string | null) => void }) {
+  const list = useLoad(() => listSeries(), 'impact-series')
+  const id = useId()
+  return (
+    <Card>
+      <label htmlFor={id} className="block text-sm font-medium text-foreground">
+        系列
+      </label>
+      <Select
+        id={id}
+        className="mt-1"
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value || null)}
+        disabled={list.loading && !list.data}
+      >
+        <option value="">請選擇系列</option>
+        {value && !list.data?.some((s) => s.id === value) && <option value={value}>目前的系列</option>}
+        {list.data?.map((s) => (
+          <option key={s.id} value={s.id}>{`${s.title}（${s.event_count} 件）`}</option>
+        ))}
+      </Select>
+      {list.error && <ErrorText>{list.error}</ErrorText>}
+    </Card>
+  )
+}
+
+function ImpactWorkspace({ seriesId }: { seriesId: string }) {
+  const series = useLoad(() => getSeries(seriesId), `impact-detail-${seriesId}`)
+  const history = useLoad(() => listImpactEvaluations(seriesId), `impact-history-${seriesId}`)
+  const message = useErrorMessage()
+  const [checked, setChecked] = useState<string[]>([])
+  const [shown, setShown] = useState<ImpactEvaluation | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const analysis = series.data?.analysis ?? null
+
+  async function evaluate(codes: string[]) {
+    if (!analysis || codes.length === 0) return
+    setBusy(true)
+    setError(null)
+    try {
+      const result = await evaluateImpact({ series_id: seriesId, measure_ids: codes, analysis_id: analysis.id })
+      setShown(result)
+      history.setData((list) => [result, ...(list ?? []).filter((e) => e.id !== result.id)].slice(0, 50))
+    } catch (e) {
+      setError(message(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    void evaluate(checked)
+  }
+
+  function addSuggestion(measureId: string) {
+    const next = sortCodes([...checked, measureId])
+    setChecked(next)
+    void evaluate(next)
+  }
+
+  if (!series.data) {
+    return <LoadState loading={series.loading} error={series.error} empty={false} emptyText="" />
+  }
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+        <Card className="min-w-0">
+          {analysis === null || analysis.measures.length === 0 ? (
+            <Muted>這個系列還沒有可用的改善建議，等系列分析完成後再來評估。</Muted>
+          ) : (
+            <form aria-label="選擇改善建議" onSubmit={submit} className="space-y-4">
+              <fieldset className="space-y-2">
+                <legend className="text-sm font-semibold text-foreground">{`${series.data.title}：要採用哪些建議？`}</legend>
+                <p className="text-xs text-muted-foreground">只要勾選，不用填數字；AI 會依系列現況估計效果。</p>
+                {analysis.measures.map((m, i) => (
+                  <label
+                    key={`${i}-${m.action}`}
+                    className="flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mt-1 h-4 w-4 accent-accent"
+                      checked={checked.includes(code(i))}
+                      onChange={(e) =>
+                        setChecked((list) =>
+                          e.target.checked ? sortCodes([...list, code(i)]) : list.filter((c) => c !== code(i)),
+                        )
+                      }
+                    />
+                    <span className="min-w-0 space-y-1">
+                      <span className="block break-words text-foreground">{m.action}</span>
+                      <span className="flex flex-wrap gap-1 text-xs text-muted-foreground">
+                        <Badge tone="neutral">{label(AUDIENCE, m.audience)}</Badge>
+                        <span>{`${label(KIND, m.kind)} · ${label(HORIZON, m.horizon)}`}</span>
+                        {m.tracked_action_id && <Badge tone="info">已在追蹤</Badge>}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </fieldset>
+              {error && <ErrorText>{error}</ErrorText>}
+              <Button type="submit" disabled={busy || checked.length === 0}>
+                {busy ? '評估中…' : '評估效益'}
+              </Button>
+              {checked.length === 0 && <Muted>至少勾選一項建議。</Muted>}
+            </form>
+          )}
+        </Card>
+        <div className="min-w-0 space-y-6">
+          {shown ? (
+            <ImpactResultCard
+              key={shown.id}
+              evaluation={shown}
+              measures={analysis?.measures ?? []}
+              busy={busy}
+              onAdd={shown.stale ? null : addSuggestion}
+            />
+          ) : (
+            <Card>
+              <Muted>勾選建議後按「評估效益」，或從下方「這個系列的評估」開啟。</Muted>
+            </Card>
+          )}
+        </div>
+      </div>
+      <Card>
+        <Section id="impact-history" title="這個系列的評估">
+          <LoadState
+            loading={history.loading && !history.data}
+            error={history.error}
+            empty={history.data?.length === 0}
+            emptyText="還沒有評估紀錄，勾選建議試試看。"
+          />
+          {history.data && history.data.length > 0 && (
+            <ul className="divide-y divide-border">
+              {history.data.map((e) => (
+                <li key={e.id}>
+                  <button
+                    type="button"
+                    aria-pressed={e.id === shown?.id}
+                    onClick={() => setShown(e)}
+                    className="flex min-h-11 w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-lg px-2 py-2 text-left text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring aria-pressed:bg-muted"
+                  >
+                    <span className="font-mono text-xs text-muted-foreground">{formatTime(e.created_at)}</span>
+                    <span className="font-mono text-xs text-foreground">{e.selected.join('、')}</span>
+                    {e.improvement ? (
+                      <span className="font-mono text-xs text-foreground">{`${e.improvement.low}–${e.improvement.high}%`}</span>
+                    ) : (
+                      <Badge tone="warning">{IMPACT_FAILED}</Badge>
+                    )}
+                    {e.stale && <Badge tone="neutral">舊分析</Badge>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+      </Card>
+    </div>
+  )
+}
+
+function ImpactResultCard({ evaluation, measures, busy, onAdd }: {
+  evaluation: ImpactEvaluation
+  measures: SeriesMeasure[]
+  busy: boolean
+  onAdd: ((measureId: string) => void) | null
+}) {
+  const titleId = useId()
+  const result = evaluation.result
+  const counts = evaluation.counts
+  const actions = (ids: string[]) => ids.map((m) => measures[codeIndex(m)]?.action ?? m)
+  return (
+    <section aria-labelledby={titleId}>
+      <Card className="space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 id={titleId} className="text-lg font-semibold text-foreground">評估結果</h2>
+          <span className="font-mono text-xs text-muted-foreground">{formatTime(evaluation.created_at)}</span>
+        </div>
+        {evaluation.stale && <Notice>系列分析已經更新，這是依舊分析做的評估；想看最新的情況，請重新勾選再評估。</Notice>}
+        <p className="text-sm text-muted-foreground">{`採用：${actions(evaluation.selected).join('、')}`}</p>
+        {evaluation.status !== 'ok' || !evaluation.improvement || !result ? (
+          <div className="space-y-1">
+            <p className="text-base font-semibold text-warning">{IMPACT_FAILED}</p>
+            <Muted>
+              {evaluation.status === 'abstained'
+                ? '系列的資料不足以判斷這些建議的效果。'
+                : '這次 AI 的回答沒有通過檢查，可以稍後再試一次。'}
+            </Muted>
+          </div>
+        ) : (
+          <>
+            <div>
+              <p className="text-sm text-muted-foreground">件數可能減少</p>
+              <p className="font-mono text-4xl font-bold text-foreground">
+                {`${evaluation.improvement.low}–${evaluation.improvement.high}%`}
+              </p>
+              <Badge tone="warning">{AI_ESTIMATE}</Badge>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Scene
+                title="改善前"
+                text={result.before}
+                count={counts.shown && counts.baseline !== null ? `約 ${formatCount(counts.baseline)} 件／${counts.window_days} 天` : null}
+              />
+              <Scene
+                title="改善後"
+                text={result.after}
+                count={
+                  counts.shown && counts.after_low !== null && counts.after_high !== null
+                    ? `約 ${formatCount(counts.after_low)}–${formatCount(counts.after_high)} 件／${counts.window_days} 天`
+                    : null
+                }
+              />
+            </div>
+            {!counts.shown && <Muted>這個系列的歷史件數還太少，不換算件數。</Muted>}
+            <CauseList title="有處理到的原因" causes={result.covered_causes} empty="選的建議沒有直接處理任何原因。" />
+            <CauseList title="還沒處理到的原因" causes={result.uncovered_causes} empty="原因都有處理到。" />
+            {result.overlaps.length > 0 && (
+              <Section id="impact-overlaps" title="效果可能重疊">
+                <ul className="list-disc space-y-1 pl-5 text-sm text-foreground">
+                  {result.overlaps.map((o) => (
+                    <li key={o.measure_ids.join(',')}>{`${actions(o.measure_ids).join('、')}：${o.note}`}</li>
+                  ))}
+                </ul>
+              </Section>
+            )}
+            <Section id="impact-risks" title="風險與限制">
+              <ul className="list-disc space-y-1 pl-5 text-sm text-foreground">
+                {result.risks.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+            </Section>
+            {result.suggestion && (
+              <Section id="impact-suggestion" title="可以考慮補上">
+                <p className="text-sm text-foreground">{result.suggestion.action ?? result.suggestion.measure_id}</p>
+                {result.suggestion.reason && <Muted>{result.suggestion.reason}</Muted>}
+                {onAdd && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    disabled={busy}
+                    onClick={() => result.suggestion && onAdd(result.suggestion.measure_id)}
+                  >
+                    加入再評估
+                  </Button>
+                )}
+              </Section>
+            )}
+            {result.reason && <Muted>{`估計方式：${result.reason}`}</Muted>}
+          </>
+        )}
+      </Card>
+    </section>
+  )
+}
+
+function Scene({ title, text, count }: { title: string; text: string | null; count: string | null }) {
+  return (
+    <div className="rounded-lg border border-border p-3">
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      {count && <p className="mt-1 font-mono text-sm text-foreground">{count}</p>}
+      <p className="mt-2 text-sm text-foreground">{text}</p>
+    </div>
+  )
+}
+
+function CauseList({ title, causes, empty }: { title: string; causes: ImpactCause[]; empty: string }) {
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      {causes.length === 0 ? (
+        <Muted>{empty}</Muted>
+      ) : (
+        <ul className="mt-1 space-y-1 text-sm">
+          {causes.map((c) => (
+            <li key={c.cause_id} className="flex flex-wrap items-center gap-2">
+              <span className="text-foreground">{c.description}</span>
+              <Badge tone={c.decision === 'confirmed' ? 'success' : 'warning'}>{c.label}</Badge>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

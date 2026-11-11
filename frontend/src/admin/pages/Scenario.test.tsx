@@ -3,8 +3,17 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from '../../App'
-import { ME, mockApi, type MockRoute } from '../../test/mockApi'
-import { SCENARIO, SCENARIO_EXPLAIN_FAILED, SCENARIO_NOT_ESTIMABLE } from '../../test/scenarioFixtures'
+import { ME, mockApi, type MockCall, type MockRoute } from '../../test/mockApi'
+import {
+  IMPACT_ALL,
+  IMPACT_INVALID,
+  IMPACT_OK,
+  IMPACT_SERIES,
+  IMPACT_SERIES_SUMMARY,
+  SCENARIO,
+  SCENARIO_EXPLAIN_FAILED,
+  SCENARIO_NOT_ESTIMABLE,
+} from '../../test/scenarioFixtures'
 import { matchRoute } from '../router'
 
 afterEach(() => {
@@ -240,5 +249,111 @@ describe('What-if 基準件數自動帶入（P8-T09）', () => {
     const form = await screen.findByRole('form', { name: '模擬參數' })
     expect(await within(form).findByText(/沒有歷史資料可以推算/)).toBeInTheDocument()
     expect(within(form).getByLabelText('基準件數')).toHaveValue('')
+  })
+})
+
+describe('依建議評估（P8-T15）', () => {
+  function openImpact(routes: Record<string, MockRoute | ((c: MockCall) => MockRoute)> = {}, path = '/admin/scenarios?series=ser-1') {
+    const api = mockApi({
+      'GET /api/v1/auth/me': ME,
+      'GET /api/v1/admin/series': { data: [IMPACT_SERIES_SUMMARY] },
+      'GET /api/v1/admin/series/ser-1': { data: IMPACT_SERIES },
+      'GET /api/v1/admin/scenarios/impact?series_id=ser-1': { data: [] },
+      'GET /api/v1/admin/scenarios': { data: [] },
+      ...routes,
+    })
+    window.history.pushState({}, '', path)
+    render(<App />)
+    return api
+  }
+
+  function posts(api: ReturnType<typeof mockApi>) {
+    return api.calls.filter((c) => c.method === 'POST' && c.path === '/api/v1/admin/scenarios/impact')
+  }
+
+  it('從系列頁進入時開啟「依建議評估」，只勾選、不填數字；沒勾選不能送出', async () => {
+    const api = openImpact()
+    const tabs = await screen.findByRole('tablist', { name: '模擬方式' })
+    expect(within(tabs).getByRole('tab', { name: '依建議評估' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('note', { name: '假設情境，非成效預測' })).toBeInTheDocument()
+    const form = await screen.findByRole('form', { name: '選擇改善建議' })
+    expect(within(form).getAllByRole('checkbox')).toHaveLength(3)
+    expect(within(form).queryByRole('spinbutton')).not.toBeInTheDocument()
+    expect(within(form).queryByRole('textbox')).not.toBeInTheDocument()
+    expect(within(form).getByRole('button', { name: '評估效益' })).toBeDisabled()
+    expect(posts(api)).toHaveLength(0)
+  })
+
+  it('勾選到結果：百分比標「AI 估計，非實證」、改善前後兩欄與程式換算的件數、原因、重疊、風險', async () => {
+    const api = openImpact({ 'POST /api/v1/admin/scenarios/impact': { status: 201, data: IMPACT_OK } })
+    const form = await screen.findByRole('form', { name: '選擇改善建議' })
+    await userEvent.click(within(form).getByRole('checkbox', { name: /查看停車區與車道/ }))
+    await userEvent.click(within(form).getByRole('checkbox', { name: /把停車格往內移/ }))
+    await userEvent.click(within(form).getByRole('button', { name: '評估效益' }))
+
+    const result = await screen.findByRole('region', { name: '評估結果' })
+    expect(posts(api)[0].body).toEqual({ series_id: 'ser-1', measure_ids: ['m1', 'm2'], analysis_id: 'a-1' })
+    expect(within(result).getByText('20–40%')).toBeInTheDocument()
+    expect(within(result).getByText('AI 估計，非實證')).toBeInTheDocument()
+    expect(within(result).getByRole('heading', { name: '改善前' })).toBeInTheDocument()
+    expect(within(result).getByRole('heading', { name: '改善後' })).toBeInTheDocument()
+    expect(within(result).getByText('約 15.0 件／90 天')).toBeInTheDocument()
+    expect(within(result).getByText('約 9.0–12.0 件／90 天')).toBeInTheDocument()
+    const covered = within(result).getByRole('heading', { name: '有處理到的原因' }).parentElement as HTMLElement
+    expect(within(covered).getByText('可能是停車格太靠近車道。')).toBeInTheDocument()
+    expect(within(covered).getByText('推測，尚未查證')).toBeInTheDocument()
+    const uncovered = within(result).getByRole('heading', { name: '還沒處理到的原因' }).parentElement as HTMLElement
+    expect(within(uncovered).getByText('疑似夜間照明不足。')).toBeInTheDocument()
+    expect(within(result).getByRole('region', { name: '效果可能重疊' })).toHaveTextContent('兩項都處理停車格與車道的距離。')
+    expect(within(result).getByRole('region', { name: '風險與限制' })).toHaveTextContent('原因還是推測')
+  })
+
+  it('補強建議一鍵加入勾選再評估', async () => {
+    let n = 0
+    const api = openImpact({
+      'POST /api/v1/admin/scenarios/impact': () => ({ status: 201, data: n++ === 0 ? IMPACT_OK : IMPACT_ALL }),
+    })
+    const form = await screen.findByRole('form', { name: '選擇改善建議' })
+    await userEvent.click(within(form).getByRole('checkbox', { name: /把停車格往內移/ }))
+    await userEvent.click(within(form).getByRole('checkbox', { name: /查看停車區與車道/ }))
+    await userEvent.click(within(form).getByRole('button', { name: '評估效益' }))
+    const suggestion = await screen.findByRole('region', { name: '可以考慮補上' })
+    expect(suggestion).toHaveTextContent('在路段加裝路燈。')
+    await userEvent.click(within(suggestion).getByRole('button', { name: '加入再評估' }))
+
+    const result = await screen.findByRole('region', { name: '評估結果' })
+    expect(await within(result).findByText('30–55%')).toBeInTheDocument()
+    expect(posts(api)[1].body).toEqual({ series_id: 'ser-1', measure_ids: ['m1', 'm2', 'm3'], analysis_id: 'a-1' })
+    expect(within(form).getByRole('checkbox', { name: /在路段加裝路燈/ })).toBeChecked()
+  })
+
+  it('評估不出來時平實說明，不顯示百分比與件數', async () => {
+    openImpact({ 'POST /api/v1/admin/scenarios/impact': { status: 201, data: IMPACT_INVALID } })
+    const form = await screen.findByRole('form', { name: '選擇改善建議' })
+    await userEvent.click(within(form).getByRole('checkbox', { name: /查看停車區與車道/ }))
+    await userEvent.click(within(form).getByRole('button', { name: '評估效益' }))
+    const result = await screen.findByRole('region', { name: '評估結果' })
+    expect(within(result).getByText('這次評估不出來')).toBeInTheDocument()
+    expect(within(result).queryByText('AI 估計，非實證')).not.toBeInTheDocument()
+    expect(within(result).queryByText(/件／90 天/)).not.toBeInTheDocument()
+  })
+
+  it('舊分析的評估標示過期，不能一鍵再評估', async () => {
+    const stale = { ...IMPACT_OK, stale: true }
+    openImpact({ 'GET /api/v1/admin/scenarios/impact?series_id=ser-1': { data: [stale] } })
+    await userEvent.click(await screen.findByRole('button', { name: /m1、m2/ }))
+    const result = await screen.findByRole('region', { name: '評估結果' })
+    expect(within(result).getByText(/系列分析已經更新/)).toBeInTheDocument()
+    expect(within(result).queryByRole('button', { name: '加入再評估' })).not.toBeInTheDocument()
+  })
+
+  it('沒有指定系列時可以選系列；自訂措施模式保留在另一個分頁', async () => {
+    openImpact({}, '/admin/scenarios')
+    const tabs = await screen.findByRole('tablist', { name: '模擬方式' })
+    expect(within(tabs).getByRole('tab', { name: '自訂措施' })).toHaveAttribute('aria-selected', 'true')
+    expect(await screen.findByRole('form', { name: '模擬參數' })).toBeInTheDocument()
+    await userEvent.click(within(tabs).getByRole('tab', { name: '依建議評估' }))
+    await userEvent.selectOptions(await screen.findByLabelText('系列'), 'ser-1')
+    expect(await screen.findByRole('form', { name: '選擇改善建議' })).toBeInTheDocument()
   })
 })
