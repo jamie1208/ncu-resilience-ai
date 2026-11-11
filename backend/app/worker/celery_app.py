@@ -38,6 +38,7 @@ ANALYZE_DISPATCH_TASK = "pipeline.dispatch_pending_items"  # P4-T07
 SYNC_PUBLICATIONS_TASK = "publishing.sync_publications"  # P5-T11
 ANALYZE_SERIES_TASK = "series.analyze_series"  # P8-T05
 ANALYZE_STALE_SERIES_TASK = "series.analyze_stale_series"  # P8-T05
+RETRY_FAILED_DELIVERIES_TASK = "alerts.retry_failed_deliveries"  # P8-T07
 DEFAULT_STALE_SERIES_SECONDS = 600.0
 
 
@@ -60,6 +61,7 @@ celery_app = Celery(
         "app.pipeline.analyze_item",
         "app.publishing.sync",
         "app.series.analysis",
+        "app.alerts.delivery",
     ],
 )
 celery_app.conf.update(
@@ -86,6 +88,11 @@ celery_app.conf.update(
         "analyze-stale-series": {
             "task": ANALYZE_STALE_SERIES_TASK,
             "schedule": _shortest_poll_interval(),
+        },
+        # 通知失敗重試（P8-T07）：到期的 failed 遞送最多重試 3 次、間隔遞增
+        "retry-failed-deliveries": {
+            "task": RETRY_FAILED_DELIVERIES_TASK,
+            "schedule": DISPATCH_EVERY_SECONDS,
         },
     },
 )

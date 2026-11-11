@@ -7,7 +7,7 @@
    P3-T08 通知同步）建立各案例；模型以腳本化的假供應商代替，不呼叫真實 API；
    接著把每個事件歸入系列（P8-T04 的 `backfill_series`，不呼叫 S11，每個事件各自成為 1 件的系列），
    最後以 P5-T11 的 `sync_all` 依公開規則同步事件與系列的公開狀態，供公開網站的測試使用；
-4. 檢查只有資料庫看得到的不變量（A03 證據數、A07 冪等），不符合時以非零結束碼失敗，
+4. 檢查只有資料庫看得到的不變量（A03 證據數、A07 冪等、A10 遞送重試），不符合時以非零結束碼失敗，
    讓 Playwright 的 webServer 啟動失敗。
 
 Playwright 再透過真實 API 與前端驗證畫面上的預期結果（tests/e2e/appendix-a.e2e.ts）。
@@ -39,6 +39,15 @@ from app.ai.llm.base import LLMResult, Message, Usage  # noqa: E402
 from app.ai.llm.config import load_llm_config  # noqa: E402
 from app.ai.llm.fake_provider import FakeEmbeddingProvider  # noqa: E402
 from app.ai.runner.loader import discover_skills  # noqa: E402
+from app.alerts.delivery import (  # noqa: E402
+    DELIVERED,
+    FAILED,
+    INBOX,
+    MAX_RETRIES,
+    RETRY_DELAYS,
+    deliver,
+    retry_failed_deliveries,
+)
 from app.core.config import Settings  # noqa: E402
 from app.core.security import Principal, Role  # noqa: E402
 from app.ingestion.normalize import NormalizedItem, content_hash  # noqa: E402
@@ -77,6 +86,7 @@ A05_TITLE = "資工系王小明老師性騷擾學生"
 A06_TITLE = "工程四館火災"
 A07_TITLE = "中大路與校門口車禍封路"
 A08_TITLE = "學生餐廳疑似食物中毒"
+A10_TITLE = "環校道路坍方封閉"
 
 
 # ---------- 腳本化的假模型 ----------
@@ -332,6 +342,23 @@ class Seeder:
         return int(await self.session.scalar(stmt) or 0)
 
 
+class SeedChannel:
+    """A10 用的外部管道替身：前 `failures` 次送出失敗，之後成功；`None` 表示永遠失敗。"""
+
+    def __init__(self, name: str, failures: int | None) -> None:
+        self.name = name
+        self.failures = failures
+        self.calls = 0
+
+    def destination(self, audience: str) -> str:
+        return f"{audience}@{self.name}"
+
+    async def send(self, alert: Alert, destination: str) -> None:
+        self.calls += 1
+        if self.failures is None or self.calls <= self.failures:
+            raise ConnectionError("e2e simulated failure")
+
+
 def check(condition: bool, message: str) -> None:
     if not condition:
         raise SystemExit(f"種子資料不變量不成立：{message}")
@@ -548,6 +575,55 @@ async def seed(session: AsyncSession) -> None:
     )
     status = await session.scalar(select(Event.status).where(Event.title == A08_TITLE))
     check(status != "verified", "A08 不得標為已查證")
+
+    await seed_a10(s)
+
+
+async def seed_a10(s: Seeder) -> None:
+    """A10 通知失敗（P8-T07）：外部管道失敗 → 依排程最多重試 3 次；成功後不再重送、不重複遞送。
+
+    通知中心（inbox）照常送達；另以兩個替身管道模擬外部管道：一個重試 1 次後成功，一個一直失敗。
+    以模擬時間推進排程（每次推進最長的間隔，確保每列都到期）。
+    """
+    session = s.session
+    body = "環校道路靠近大門處發生坍方，目前封閉，請改道。"
+    e = await s.ingest("news", "a10", body, "2026-10-01")
+    scripts: dict[str, list[Script]] = {
+        **new_event(e, A10_TITLE, "2026-10-01", "環校道路", "traffic"),
+        "evidence-verifier": [verification({e: ("supports", "first_hand")}, "unverified")],
+        "risk-assessor": [risk(e, HIGH)],
+    }
+    check(await s.analyze(e, scripts) is Outcome.CREATED, "A10 應建立事件")
+    alert = await session.scalar(
+        select(Alert).join(Event, Event.id == Alert.event_id).where(Event.title == A10_TITLE)
+    )
+    check(alert is not None, "A10 應產生通知")
+    assert alert is not None
+    flaky = SeedChannel("e2e-flaky", failures=1)
+    broken = SeedChannel("e2e-broken", failures=None)
+    channels = (flaky, broken)
+    now = FETCHED
+    check(await deliver(session, alert, channels, now=now) == (), "A10 第一次送出應全部失敗")
+    await session.commit()
+    for _ in range(MAX_RETRIES + 2):
+        now += max(RETRY_DELAYS)
+        await retry_failed_deliveries(session, channels, now=now)
+    await session.refresh(alert)
+    check(await deliver(session, alert, channels, now=now) == (), "A10 同版本不得再遞送")
+    await session.commit()
+
+    rows = (
+        await session.scalars(select(AlertDelivery).where(AlertDelivery.alert_id == alert.id))
+    ).all()
+    states = {r.channel: (r.status, r.attempts, r.next_attempt_at) for r in rows}
+    expected = {
+        INBOX: (DELIVERED, 1, None),
+        flaky.name: (DELIVERED, 2, None),
+        broken.name: (FAILED, 1 + MAX_RETRIES, None),
+    }
+    check(states == expected, f"A10 遞送狀態應為 {expected}，實際 {states}")
+    calls = (flaky.calls, broken.calls)
+    check(calls == (2, 1 + MAX_RETRIES), f"A10 送出次數應為 (2, {1 + MAX_RETRIES})，實際 {calls}")
 
 
 async def main() -> None:

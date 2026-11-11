@@ -9,7 +9,17 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.domain.states import AlertState
@@ -44,10 +54,18 @@ class Alert(Base):
 
 
 class AlertDelivery(Base):
-    """通知的一次遞送；同一版本對同一管道與目的地只遞送一次。"""
+    """通知的一次遞送；同一版本對同一管道與目的地只遞送一次（失敗重試沿用同一列，P8-T07）。"""
 
     __tablename__ = "alert_deliveries"
-    __table_args__ = (UniqueConstraint("alert_id", "channel", "destination", "version"),)
+    __table_args__ = (
+        UniqueConstraint("alert_id", "channel", "destination", "version"),
+        CheckConstraint("attempts >= 1", name="attempts_positive"),
+        Index(
+            "ix_alert_deliveries_next_attempt_at",
+            "next_attempt_at",
+            postgresql_where=text("next_attempt_at IS NOT NULL"),
+        ),
+    )
 
     id: Mapped[uuid.UUID] = uuid_pk()
     alert_id: Mapped[uuid.UUID] = mapped_column(
@@ -57,4 +75,10 @@ class AlertDelivery(Base):
     destination: Mapped[str] = mapped_column(String(200))
     version: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(32))
+    attempts: Mapped[int] = mapped_column(
+        Integer, server_default=text("1"), comment="已送出的次數（含第一次）"
+    )
+    next_attempt_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), comment="failed 且還要重試時的下次時間；其餘為 NULL"
+    )
     created_at: Mapped[datetime] = created_at_col()
