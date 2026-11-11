@@ -43,8 +43,8 @@ def _s12_texts(output: dict[str, Any]) -> Iterator[str]:
 
 
 SKILLS_UNDER_TEST = {
-    "event-extractor": ("1.2.0", _s02_texts),
-    "series-analyst": ("1.1.0", _s12_texts),
+    "event-extractor": ("1.3.0", _s02_texts),
+    "series-analyst": ("1.2.0", _s12_texts),
 }
 
 

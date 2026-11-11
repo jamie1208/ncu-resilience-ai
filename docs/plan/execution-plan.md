@@ -594,6 +594,23 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
   - 檔案：`app/api/v1/admin/anonymous_reports.py`（`GET /api/v1/admin/anonymous-reports`：收到時間、原投稿或補件、同一張收據的分組、擷取與分析狀態、所屬事件；原文只在管理端顯示；只在 `/api/v1/admin/*`，不經通道）、後台 `frontend/src/admin/pages/AnonymousReports.tsx`（導覽「匿名回報」）、`admin/api.ts`、`admin/router.ts`
   - 驗證：`tests/integration/test_admin_anonymous_reports.py`（需要登入；不回傳收據碼或雜湊；補件依收據分組；沒有成立事件的投稿也看得到）、前端 vitest；`tests/security/test_anonymous_report.py`、`tests/security/test_report_receipt.py` 不修改且通過
   - 前置：P8-T08
+- **P8-T17 既有內容以新語氣重跑**（使用者 2026-11-11 決定新增；P8-T11 只改 Skill，正式資料庫中既有的 S02 摘要與 S12 系列分析仍是舊語氣）
+  - 檔案：`app/pipeline/rerun_tone.py`（命令 `uv run python -m app.pipeline.rerun_tone [--dry-run] [--events] [--series]`）
+    - 事件：對象為不是 false、未封存，且目前摘要的 `summary_ai_run_id` 對應的 S02 版本低於現行版本（或沒有紀錄）的事件；以目前摘要的出處文章（`summary_source_item_id`）重跑 S02，只更新 `summary`（經 `mask_pii()`、證據 ID 必須屬於該文章），不改標題、類別、地點、查證與風險，不重跑 S01、S03～S06，出處文章不變；失敗、abstain 或摘要為空時保留舊摘要；稽核 `event.resummarize`（只記事件 id、新舊 Skill 版本與結果）
+    - 系列：對象為最新一次成功分析的 S12 版本低於現行版本的系列；以 `analyze_series` 重跑並略過「每系列每天最多一次」（新增 `force` 參數，只供本命令使用，管線與 beat 不變）；人工改過的名稱不覆蓋（沿用 P8-T05）
+    - 依版本判斷對象，所以可重跑：已更新的不再呼叫；每次呼叫受每日費用上限，超過即停止並回報剩下的數量，隔天重跑接續
+    - `--dry-run` 只列出對象數量與預估費用（依 `ai_analysis_runs` 該 Skill 的平均 `cost_usd`），不呼叫模型
+    - 修改 `app/series/analysis.py`（`force`）、`app/pipeline/analyze_item.py`（只在需要時抽出共用的 S02 輸入組裝，不改行為）
+  - 驗證：`tests/integration/test_rerun_tone.py`（fake provider：只重跑舊版本的事件與系列；false、封存略過；標題、類別、地點、出處文章不變；失敗保留舊摘要；重跑第二次不呼叫模型；費用上限中止；系列 force 略過每日限制、人工名稱不覆蓋；`--dry-run` 不呼叫）；既有 `tests/integration/test_series_analysis.py`、管線測試不修改且通過
+  - 範圍調整（使用者 2026-11-11 決定）：事件標題（S02 `title`）與系列名稱（S12 `title`）也改為播報員語氣，取代 P8-T11「標題與系列名稱維持平實」的 AI 決定
+    - `skills/event-extractor/SKILL.md`（1.2.0 → 1.3.0）、`skills/series-analyst/SKILL.md`（1.1.0 → 1.2.0）：`title` 改用播報員語氣，既有限制不變（S02 約 20 字、不寫人名店名；S12 30 字以內、不寫地點日期與單一事件細節）；緊急狀況維持平實；依「Skill 開發標準循環」重錄 `tests/recorded/`、重跑 `--live` 評測、新增 `eval/reports/<name>/<version>.json`，評測不低於現有門檻
+    - 既有測試 `backend/tests/unit/ai/test_skill_tone.py`：只把版本改為 S02 1.3.0、S12 1.2.0（使用者 2026-11-11 同意；不新增標題的檢查，其餘斷言不變）
+    - 重跑命令同時更新事件標題：只在事件目前的標題等於舊摘要那次 S02 執行輸出的標題時才換（使用者拆分時填的標題、手動改過的不動）；系列名稱沿用 `analyze_series` 的規則（`title_source` manual 不覆蓋）
+    - 對象判斷改為：事件的摘要或標題來自舊版 S02；系列最新成功分析來自舊版 S12
+    - 同步修改 `docs/governance/tone-guide.md`、`docs/requirements/spec-v1.2.md` §11.1（標題與系列名稱不再列為平實例外）
+    - 重跑命令不重新同步個人通知；之後事件有新證據時，通知若因標題改變而改版，依既有規則處理
+  - 執行後：公開同步（每分鐘）會為內容改變的事件與系列產生新版本；疑似指控、推測規律與原因的文字改變時，通知中心會出現「公開提醒」，需使用者逐一檢視。正式資料的執行需使用者同意（先備份）
+  - 前置：P8-T11、P8-T13
 ```bash
 cd backend && uv run pytest tests/unit/series tests/security -q
 uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --skill impact-evaluator --split test

@@ -1,10 +1,10 @@
 {
   "case_id": "normal-007",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "飲水機不出熱水",
+    "title": "飲水機熱水故障",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -12,21 +12,21 @@
         "event_ids": [
           "E1"
         ],
-        "reason": "地點欄與證據都記為「男七三樓」或「男七」，屬於同一棟宿舍。"
+        "reason": "地點欄位為「男七舍」，與事件 E1 相同。"
       },
       {
         "label": "女十二舍",
         "event_ids": [
           "E2"
         ],
-        "reason": "地點欄與證據都記為「女十二」，屬於同一棟宿舍。"
+        "reason": "地點欄位為「女十二舍」，與事件 E2 相同。"
       },
       {
         "label": "男九舍",
         "event_ids": [
           "E3"
         ],
-        "reason": "地點欄與證據都記為「男九」，屬於同一棟宿舍。"
+        "reason": "地點欄位為「男九舍」，與事件 E3 相同。"
       }
     ],
     "pattern_status": "ok",
@@ -34,7 +34,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "熱水出水功能故障，只有冷水或無熱水供應。",
+        "description": "飲水機出現熱水無法供應或僅有冷水、並伴隨錯誤/異常訊號。",
         "event_ids": [
           "E1",
           "E2",
@@ -64,7 +64,7 @@
     "causes": [],
     "measures": [
       {
-        "action": "記得暫時改用其他設施取水，避免等待可能故障的熱水出水。",
+        "action": "遇到飲水機沒有熱水，建議你先向宿舍管理或維修系統回報，並暫時改用其他有熱水的飲水點。",
         "audience": "students",
         "horizon": "short",
         "priority": "medium",
@@ -77,27 +77,40 @@
         ]
       },
       {
-        "action": "請設備維護單位檢查宿舍飲水機的加熱模組與錯誤燈號，確認是否需要維修或更換零件。",
+        "action": "請總務處或宿舍管理調查故障機台的加熱元件與溫控設定，確認是否需要更換零件或調校。",
         "audience": "school",
-        "horizon": "mid",
+        "horizon": "short",
         "priority": "high",
         "kind": "investigate",
         "cause_id": null,
-        "responsible_unit": "總務處或設備維護單位",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      },
+      {
+        "action": "建議學校啟動飲水設備定期檢修計畫，包含加熱系統與錯誤燈號的例行檢查，以降低重複故障風險。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "總務處",
         "evidence_ids": [
           "e2"
         ]
       },
       {
-        "action": "若確定為設備故障，請廠商盡速派員檢修並提供維修報告，避免同款問題在其他宿舍重複發生。",
+        "action": "若設備由外包廠商維護，請聯繫維修廠商儘速派員檢修並回報檢修結果與更換零件明細。",
         "audience": "units",
         "horizon": "short",
         "priority": "high",
         "kind": "respond",
         "cause_id": null,
-        "responsible_unit": "設備供應或維修廠商",
+        "responsible_unit": "維修廠商",
         "evidence_ids": [
-          "e1",
           "e2",
           "e3"
         ]
@@ -108,7 +121,7 @@
       "e2",
       "e3"
     ],
-    "reason": "這個系列持續追蹤宿舍飲水機熱水功能故障的情形，已在不同宿舍出現類似的熱水無法供應問題，建議相關單位檢查與維修。",
+    "reason": "這個系列持續追蹤飲水機熱水無法供應的狀況，分別發生在多個宿舍樓的飲水機上，正在觀察是否需進一步檢修與預防措施。",
     "abstain_reason": null
   }
 }

@@ -1,11 +1,11 @@
 {
   "case_id": "boundary-003",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "中大路與雙連坡路口管線施工",
+    "title": "中大路與雙連坡路口 10/26–10/30 管線施工，請注意安全",
     "occurrence_start_date": "2026-10-26",
     "occurrence_start_time": null,
     "occurrence_end_date": "2026-10-30",
@@ -13,7 +13,7 @@
     "location": "中大路",
     "mentions_person": false,
     "summary": {
-      "text": "中大路與雙連坡路口自 10/26（一）至 10/30（五）進行管線施工，路過師生請注意安全。",
+      "text": "中大路與雙連坡路口 10/26（一）到 10/30（五）進行管線施工，期間通行請注意安全。",
       "evidence_ids": [
         "e1"
       ]
@@ -38,7 +38,7 @@
         "quote": "中大路與雙連坡路口"
       }
     ],
-    "reason": "校方公告寫明中大路與雙連坡路口在 10/26–10/30 有管線施工並提醒注意安全，為會影響通行的校園施工事件。",
+    "reason": "公告寫明中大路與雙連坡路口在 10/26–10/30 有管線施工並提醒用路人注意安全，為會影響通行的校內施工事件。",
     "confidence": 0.95,
     "abstain_reason": null
   }

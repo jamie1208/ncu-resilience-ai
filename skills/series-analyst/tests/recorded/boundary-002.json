@@ -1,10 +1,10 @@
 {
   "case_id": "boundary-002",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "學餐午後腹瀉疑似食物相關",
+    "title": "學餐用餐後腹瀉",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -12,7 +12,7 @@
         "event_ids": [
           "E1"
         ],
-        "reason": "事件地點欄位記載為「第二餐廳」，與當事人敘述中的「二餐」對應。"
+        "reason": "事件位置欄記載為「第二餐廳」。"
       }
     ],
     "pattern_status": "abstain",
@@ -21,7 +21,7 @@
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能與在第二餐廳午餐所食用的餐點或製備處理有關。",
+        "description": "可能與在第二餐廳用餐後出現症狀有關，疑似食物或餐廳衛生因素所致。",
         "event_ids": [
           "E1"
         ],
@@ -34,12 +34,12 @@
             "quote": "中午吃完二餐之後我跟室友都拉肚子，有人也這樣嗎？"
           }
         ],
-        "to_verify": "向學校衛生保健單位或餐廳管理單位確認當日菜單、食品來源與製備流程，以及是否有其他通報個案。"
+        "to_verify": "請向衛保單位或餐飲承包廠商確認該時段菜色、配菜來源與作業紀錄，並檢視是否採樣檢驗。"
       }
     ],
     "measures": [
       {
-        "action": "有腹瀉或其它疑似食物中毒症狀時，建議你儘速就醫或向校內衛生單位通報，並暫時避免食用疑似來源餐點。",
+        "action": "記得如有腹瀉或不適，盡快就醫並向衛保單位通報你的用餐地點與時間。",
         "audience": "students",
         "horizon": "short",
         "priority": "high",
@@ -51,25 +51,37 @@
         ]
       },
       {
-        "action": "請校內衛生保健單位立即調查該日第二餐廳供餐狀況，確認菜單、食品來源、保存與製備流程，並匯整是否有其他通報個案。",
+        "action": "請衛保單位聯絡第二餐廳，暫時封存當日剩餘食材並安排採樣檢驗與衛生稽查，以釐清是否與餐飲有關。",
         "audience": "school",
         "horizon": "short",
         "priority": "high",
         "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": "衛生保健單位",
+        "responsible_unit": "衛保單位",
         "evidence_ids": [
           "e1"
         ]
       },
       {
-        "action": "請餐廳管理單位配合檢視當日食材來源與廚房衛生與保存流程，必要時先行暫停相關菜色並改善製備與保存程序。",
+        "action": "建議學校要求餐飲承包廠商檢視當日作業紀錄、食材來源與人員衛生管理，並回報查核結果。",
         "audience": "units",
         "horizon": "short",
         "priority": "high",
         "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": "餐廳管理單位",
+        "responsible_unit": "餐飲承包廠商",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "若確認與餐飲有關，建議廠商加強食材保存、分裝與加熱溫度記錄，並強化員工食品安全教育。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "responsible_unit": "餐飲承包廠商",
         "evidence_ids": [
           "e1"
         ]
@@ -78,7 +90,7 @@
     "evidence_ids": [
       "e1"
     ],
-    "reason": "這個系列持續追蹤學餐後腹瀉的通報，目前有一則通報疑似與第二餐廳午餐有關，建議相關單位與同學注意並查證。",
+    "reason": "這個系列持續追蹤學餐用餐後腹瀉的通報，相關通報來自第二餐廳。",
     "abstain_reason": null
   }
 }

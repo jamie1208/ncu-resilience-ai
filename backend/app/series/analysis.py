@@ -470,11 +470,15 @@ async def analyze_series(
     now: datetime | None = None,
     trace_id: str | None = None,
     policy: NotificationPolicy | None = None,
+    force: bool = False,
 ) -> SeriesAnalysis | None:
-    """分析系列並寫入結果；今天已分析、系列不存在、沒有事件或證據時不呼叫（回傳 None）。"""
+    """分析系列並寫入結果；今天已分析、系列不存在、沒有事件或證據時不呼叫（回傳 None）。
+
+    `force` 略過「今天已分析」的限制，只供 P8-T17 的語氣重跑命令使用（管線與 beat 不傳）。
+    """
     now = now or datetime.now(UTC)
     series = await session.get(EventSeries, series_id)
-    if series is None or await analyzed_today(session, series_id, now):
+    if series is None or (not force and await analyzed_today(session, series_id, now)):
         return None
     events = await series_events(session, series_id)
     prepared = await _prepare(session, series, events, taipei_date(now)) if events else None

@@ -1,10 +1,10 @@
 {
   "case_id": "boundary-008",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "圖書館自習室冷氣異常",
+    "title": "自習室冷氣不冷或故障",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -13,7 +13,7 @@
           "E1",
           "E2"
         ],
-        "reason": "兩起事件的地點都記載為「國鼎圖書館」。"
+        "reason": "兩起事件都標示地點為「國鼎圖書館」，屬同一個館內自習空間。"
       }
     ],
     "pattern_status": "ok",
@@ -21,7 +21,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "發生在自習室，冷氣出風不冷或吹熱風。",
+        "description": "都發生在國鼎圖書館自習室，描述冷氣出風不冷或吹出熱風。",
         "event_ids": [
           "E1",
           "E2"
@@ -45,7 +45,7 @@
     "causes": [],
     "measures": [
       {
-        "action": "使用自習室時，若遇到冷氣不冷建議先換到風向感覺較涼的位置或暫時休息到其他空調良好的區域。",
+        "action": "發現自習室冷氣不冷時，記得先向櫃台或管理人反映，並尋找臨時較涼的座位。",
         "audience": "students",
         "horizon": "short",
         "priority": "medium",
@@ -57,39 +57,39 @@
         ]
       },
       {
-        "action": "請館務單位檢查自習室空調運作與出風溫度，並將檢修進度公告給讀者。",
+        "action": "請學校設備與維護單位檢查國鼎圖書館自習室的冷氣系統，確認是否為設備故障或冷媒不足。",
         "audience": "school",
         "horizon": "short",
         "priority": "high",
         "kind": "investigate",
         "cause_id": null,
-        "responsible_unit": "館務單位",
+        "responsible_unit": "設備維護單位",
         "evidence_ids": [
           "e1",
           "e2"
         ]
       },
       {
-        "action": "如需專業維修，建議學校聯繫空調維護廠商進行設備檢修與冷媒、通風等項目檢測。",
+        "action": "若為外包廠商維修案件，建議聯絡承包廠商進行全面檢修與必要的保養，並回報檢修結果。",
         "audience": "units",
         "horizon": "mid",
-        "priority": "medium",
+        "priority": "high",
         "kind": "investigate",
         "cause_id": null,
-        "responsible_unit": "空調維護廠商",
+        "responsible_unit": "承包維修廠商",
         "evidence_ids": [
           "e1",
           "e2"
         ]
       },
       {
-        "action": "檢修後建議館務單位驗證出風溫度是否恢復至舒適範圍，並在必要時安排後續預防性保養。",
+        "action": "檢修後安排定期巡檢與保養，減少營運期間冷氣性能下降的情形。",
         "audience": "school",
         "horizon": "long",
         "priority": "medium",
         "kind": "prevent",
         "cause_id": null,
-        "responsible_unit": "館務單位",
+        "responsible_unit": "設備維護單位",
         "evidence_ids": [
           "e1",
           "e2"
@@ -100,7 +100,7 @@
       "e1",
       "e2"
     ],
-    "reason": "這個系列持續追蹤圖書館自習室的冷氣異常狀況，發現有回報出風不冷或吹熱風的情形。持續追蹤後續檢修與公告。",
+    "reason": "這個系列持續追蹤國鼎圖書館自習室的冷氣不冷或故障情形，報告整理了相關描述與建議供後續檢修與追蹤使用。",
     "abstain_reason": null
   }
 }

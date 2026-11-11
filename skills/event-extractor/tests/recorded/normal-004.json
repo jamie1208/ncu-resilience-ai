@@ -1,11 +1,11 @@
 {
   "case_id": "normal-004",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "桃園市發布陸上強風特報",
+    "title": "中央氣象署發布桃園市陸上強風特報，今日下午起留意強陣風",
     "occurrence_start_date": "2026-10-20",
     "occurrence_start_time": null,
     "occurrence_end_date": null,
@@ -13,7 +13,7 @@
     "location": "全校",
     "mentions_person": false,
     "summary": {
-      "text": "中央氣象署發布桃園市陸上強風特報，10/20 下午起桃園市沿海及空曠地區易有 9 級以上強陣風，請留意安全。",
+      "text": "中央氣象署對桃園市發布陸上強風特報，今日下午起沿海及空曠地區易有 9 級以上強陣風，請留意風力狀況並加強物品固定與安全防範。",
       "evidence_ids": [
         "e1"
       ]
@@ -25,12 +25,12 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "桃園市陸上強風特報"
+        "quote": "中央氣象署發布桃園市陸上強風特報"
       },
       {
         "field": "time",
         "evidence_id": "e1",
-        "quote": "今日下午起桃園市沿海及空曠地區易有 9 級以上強陣風。"
+        "quote": "今日下午起"
       },
       {
         "field": "location",
@@ -38,7 +38,7 @@
         "quote": "桃園市沿海及空曠地區"
       }
     ],
-    "reason": "中央氣象署公告指出今日下午起桃園市沿海及空曠地區將出現強陣風，屬會影響校園的天氣特報，故視為事件並標記為全校範圍。",
+    "reason": "官方（中央氣象署）發布桃園市強風特報，指出今日下午起桃園沿海及空曠地區有 9 級以上強陣風，屬會影響人的天氣事件。",
     "confidence": 0.9,
     "abstain_reason": null
   }
