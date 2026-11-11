@@ -13,7 +13,8 @@ import {
   type PublicSeries,
   type PublicTimelinePoint,
 } from '../api'
-import { ActionList, CategoryIcon, ErrorText, Muted, PageIntro, VerificationTag } from '../ui'
+import { ActionList, ErrorText, Muted, PageIntro, VerificationTag } from '../ui'
+import { categoryTone } from '../categories'
 import { useLoad } from '../useLoad'
 
 const AUDIENCES: [string, string][] = [
@@ -36,12 +37,23 @@ const CONFIRMED = '已確認'
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
-    <Card as="section" aria-labelledby={id} className="min-w-0 space-y-3">
-      <h2 id={id} className="text-lg font-semibold text-foreground">
+    <Card as="section" aria-labelledby={id} className="min-w-0 space-y-3.5 rounded-2xl p-[22px]">
+      <h2 id={id} className="text-lg font-bold text-foreground">
         {title}
       </h2>
       {children}
     </Card>
+  )
+}
+
+/** 數字卡：標籤、大數字、說明（照示範頁）。 */
+function Stat({ term, value, note }: { term: string; value: string; note?: string | null }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1 rounded-2xl border border-border bg-card p-[18px]">
+      <dt className="text-[13px] text-muted-foreground">{term}</dt>
+      <dd className="truncate text-[28px] font-bold text-foreground">{value}</dd>
+      {note && <p className="truncate text-xs text-muted-foreground">{note}</p>}
+    </div>
   )
 }
 
@@ -50,7 +62,15 @@ function FindingTag({ text }: { text: string }) {
   return <VerificationTag verification={text === CONFIRMED ? 'verified' : 'unverified'} text={text} />
 }
 
-function Chart({ points, markers }: { points: PublicTimelinePoint[]; markers: PublicSeries['timeline']['markers'] }) {
+function Chart({
+  points,
+  markers,
+  bursts,
+}: {
+  points: PublicTimelinePoint[]
+  markers: PublicSeries['timeline']['markers']
+  bursts: Set<string>
+}) {
   const total = points.reduce((sum, p) => sum + p.count, 0)
   const max = Math.max(1, ...points.map((p) => Math.max(p.count, p.moving_average ?? 0)))
   const width = 600
@@ -80,7 +100,7 @@ function Chart({ points, markers }: { points: PublicTimelinePoint[]; markers: Pu
           y={y(p.count)}
           width={step * 0.7}
           height={height - y(p.count)}
-          className="fill-accent"
+          className={bursts.has(p.period_start) ? 'fill-warning' : 'fill-accent'}
         >
           <title>{`${p.period_start} 這週：${p.count} 起`}</title>
         </rect>
@@ -124,8 +144,8 @@ function Weekly({ series }: { series: PublicSeries }) {
           </Button>
         ))}
       </div>
-      {points.length > 0 ? <Chart points={points} markers={markers} /> : <Muted>這段期間沒有任何一起。</Muted>}
-      <p className="text-xs text-muted-foreground">長條是每週件數，線是 4 週移動平均；虛線是措施開始處理，實線是完成。</p>
+      {points.length > 0 ? <Chart points={points} markers={markers} bursts={new Set(series.bursts.map((b) => b.period_start))} /> : <Muted>這段期間沒有任何一起。</Muted>}
+      <p className="text-xs text-muted-foreground">藍色長條是每週件數，橘色是程式偵測到的突增週；線是 4 週移動平均；虛線是措施開始處理，實線是完成。</p>
       {series.bursts.length > 0 && (
         <ul aria-label="突增週" className="space-y-1 text-sm">
           {series.bursts.map((b) => (
@@ -145,9 +165,9 @@ function Findings({ items, note }: { items: PublicFinding[]; note?: string | nul
   return (
     <ul className="space-y-3">
       {items.map((f) => (
-        <li key={f.description} className="space-y-1">
+        <li key={f.description} className="space-y-1 rounded-xl border border-border p-3.5">
           <p className="flex flex-wrap items-center gap-2">
-            <span className="text-foreground">{f.description}</span>
+            <span className="text-[15px] leading-relaxed text-foreground">{f.description}</span>
             <FindingTag text={f.label} />
           </p>
           <p className="font-mono text-xs text-muted-foreground">{`${f.total} 起中有 ${f.event_count} 起`}</p>
@@ -166,7 +186,7 @@ function Measures({ measures }: { measures: PublicMeasure[] }) {
     <div className="space-y-4">
       {groups.map(([title, items]) => (
         <div key={title} className="space-y-2">
-          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+          <h3 className="text-[13px] font-bold text-foreground/80">{title}</h3>
           <ul className="space-y-2">
             {items.map((m) => (
               <li key={m.action} className="flex flex-wrap items-center gap-2 text-sm">
@@ -184,17 +204,17 @@ function Measures({ measures }: { measures: PublicMeasure[] }) {
 
 function Comparison({ c }: { c: PublicComparison }) {
   return (
-    <li className="space-y-1 rounded-lg border border-border px-3 py-2 text-sm">
-      <p className="font-medium text-foreground">{`${c.title}（${c.start} 開始處理）`}</p>
+    <li className="space-y-1 text-sm">
+      <p className="font-semibold">{`${c.title}（${c.start} 開始處理）`}</p>
       {c.status === 'ok' && c.before_weekly_average !== null && c.after_weekly_average !== null ? (
-        <p className="text-foreground">
+        <p className="text-[15px] leading-relaxed">
           {`開始前 8 週平均每週 ${c.before_weekly_average.toFixed(1)} 起；開始後平均每週 ${c.after_weekly_average.toFixed(1)} 起。`}
         </p>
       ) : (
-        <p className="text-foreground">{c.message}</p>
+        <p className="text-[15px] leading-relaxed">{c.message}</p>
       )}
-      <p className="text-xs text-muted-foreground">{`開始前 ${c.before_events} 起、開始後 ${c.after_events} 起（任一邊少於 5 起就不比較）`}</p>
-      <p className="text-xs text-muted-foreground">{c.caveat}</p>
+      <p className="text-xs text-background/75">{`開始前 ${c.before_events} 起、開始後 ${c.after_events} 起（任一邊少於 5 起就不比較）`}</p>
+      <p className="text-xs leading-relaxed text-background/75">{c.caveat}</p>
     </li>
   )
 }
@@ -206,28 +226,34 @@ function Comparison({ c }: { c: PublicComparison }) {
  */
 export function Series({ id, from }: { id: string; from: string | null }) {
   const { data: series, error, loading } = useLoad(() => fetchSeries(id), id)
-  const back = (
-    <Link to="/" className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
-      ← 回最新快報
+  const linkClass =
+    'inline-flex min-h-11 items-center text-[15px] text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+  const back = from ? (
+    <Link to={`/events/${encodeURIComponent(from)}`} className={linkClass}>
+      ← 回到這則快報
+    </Link>
+  ) : (
+    <Link to="/" className={linkClass}>
+      ← 回快報首頁
     </Link>
   )
 
   if (error?.code === 'NOT_FOUND') {
     return (
       <div className="space-y-6">
-        <PageIntro eyebrow="系列分析" title="找不到這個系列">
+        {back}
+        <PageIntro title="找不到這個系列">
           <p>這個系列不存在，或可能已經下架。</p>
         </PageIntro>
-        {back}
       </div>
     )
   }
   if (error) {
     return (
       <div className="space-y-6">
+        {back}
         <h1 className="font-display text-3xl text-foreground">系列分析</h1>
         <ErrorText>{error.message}</ErrorText>
-        {back}
       </div>
     )
   }
@@ -235,88 +261,130 @@ export function Series({ id, from }: { id: string; from: string | null }) {
 
   const single = series.event_count < 2
   const latest = series.events.at(-1)
+  const tone = categoryTone(series.event_type)
+  const places = series.location_groups
+  const placeMax = Math.max(1, ...places.map((g) => g.event_count))
+  const top = places[0]
   return (
     <article className="space-y-6">
       {back}
-      <div className="flex items-center gap-3">
-        <CategoryIcon type={series.event_type} />
-        <Badge>{series.label}</Badge>
-      </div>
-      <PageIntro eyebrow={single ? '單一事件' : '系列分析'} title={series.name}>
-        {series.summary && <p>{series.summary}</p>}
+      <PageIntro
+        eyebrowClassName={tone.ink}
+        eyebrow={
+          <>
+            <span>{series.label}</span> · <span>{single ? '單一事件' : '系列分析'}</span>
+          </>
+        }
+        title={series.name}
+      >
+        {series.summary && <p className="text-[17px]">{series.summary}</p>}
+        <p className="text-[13px] text-muted-foreground">{`最後更新 ${formatTime(series.published_at)}`}</p>
+        <p className="text-[13px] text-muted-foreground">
+          規律與可能原因是 AI 依公開資料整理的推測，標示「推測，尚未查證」的內容不代表事實；件數由程式計算。
+        </p>
       </PageIntro>
-      <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
-        <dt className="text-muted-foreground">累計件數</dt>
-        <dd className="text-foreground">{`${series.event_count} 起`}</dd>
-        <dt className="text-muted-foreground">最近一起</dt>
-        <dd className="text-foreground">{latest ? `${latest.occurrence_date ?? '日期未知'}・${latest.title}` : '無'}</dd>
-        <dt className="text-muted-foreground">最後更新</dt>
-        <dd className="text-foreground">{formatTime(series.published_at)}</dd>
+
+      <dl className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+        <Stat term="累計件數" value={`${series.event_count} 起`} note="程式依事件計算，不是 AI 估的" />
+        <Stat term="最近一起" value={latest?.occurrence_date ?? '日期未知'} note={latest?.title ?? null} />
+        <Stat term="主要地點" value={top?.label ?? '未知'} note={top ? `${top.event_count} 起在這裡` : null} />
       </dl>
-      <p className="text-sm text-muted-foreground">
-        規律與可能原因是 AI 依公開資料整理的推測，標示「推測，尚未查證」的內容不代表事實；件數由程式計算。
-      </p>
 
-      <Weekly series={series} />
+      <div className="flex flex-wrap items-start gap-6">
+        <div className="flex min-w-0 flex-[999_1_560px] flex-col gap-6">
+          <Weekly series={series} />
 
-      {series.location_groups.length > 0 && (
-        <Section id="series-locations" title="發生地點">
-          <ul className="space-y-1 text-sm">
-            {series.location_groups.map((g) => (
-              <li key={g.label} className="text-foreground">{`${g.label}：${g.total} 起中有 ${g.event_count} 起`}</li>
-            ))}
-          </ul>
-        </Section>
-      )}
+          <Section id="series-patterns" title="AI 看到的規律">
+            <Findings items={series.patterns} note={series.pattern_note ?? '目前還沒找到有足夠證據的規律，持續觀察中。'} />
+          </Section>
 
-      <Section id="series-patterns" title="AI 看到的規律">
-        <Findings items={series.patterns} note={series.pattern_note ?? '目前還沒找到有足夠證據的規律，持續觀察中。'} />
-      </Section>
+          <Section id="series-causes" title="可能原因">
+            <Findings items={series.causes} note="資料還不夠推測原因，持續觀察中。" />
+          </Section>
 
-      <Section id="series-causes" title="可能原因">
-        <Findings items={series.causes} note="資料還不夠推測原因，持續觀察中。" />
-      </Section>
+          <Section id="series-events" title="這個系列的每一起">
+            <ol className="space-y-2">
+              {series.events.map((e) => {
+                const current = e.id === from
+                return (
+                  <li
+                    key={e.id}
+                    aria-current={current ? 'true' : undefined}
+                    className={cn(
+                      'flex items-start gap-3.5 rounded-xl px-3.5 py-3',
+                      current ? 'border-2 border-accent bg-info-muted' : 'border border-border bg-card',
+                    )}
+                  >
+                    <span className="w-[5.5rem] shrink-0 text-[13px] whitespace-nowrap text-muted-foreground">{e.occurrence_date ?? `第 ${e.ordinal} 起`}</span>
+                    <span className="flex min-w-0 flex-col gap-1">
+                      <Link
+                        to={`/events/${encodeURIComponent(e.id)}`}
+                        className="text-[15px] font-semibold text-foreground underline-offset-4 hover:text-accent hover:underline"
+                      >
+                        {e.title}
+                      </Link>
+                      <span className="flex flex-wrap items-center gap-2 text-[13px] text-muted-foreground">
+                        <span className="font-mono text-xs">{`第 ${e.ordinal} 起`}</span>
+                        {e.location && <span>{e.location}</span>}
+                        <VerificationTag verification={e.verification} text={e.verification_label} />
+                        {current && <Badge tone="info">你剛剛看的</Badge>}
+                      </span>
+                    </span>
+                  </li>
+                )
+              })}
+            </ol>
+          </Section>
+        </div>
 
-      <Section id="series-measures" title="改善建議">
-        <Measures measures={series.measures} />
-      </Section>
+        <aside className="flex min-w-0 flex-[1_1_320px] flex-col gap-6">
+          {places.length > 0 && (
+            <Section id="series-locations" title="發生地點">
+              <ul className="space-y-2.5">
+                {places.map((g) => (
+                  <li key={g.label} className="space-y-1">
+                    <span className="flex justify-between gap-2 text-sm text-foreground">
+                      <span>{g.label}</span>
+                      <span className="font-semibold">{`${g.total} 起中有 ${g.event_count} 起`}</span>
+                    </span>
+                    <span aria-hidden="true" className="block h-2 overflow-hidden rounded bg-muted">
+                      <span
+                        className={cn('block h-full', tone.solid)}
+                        style={{ width: `${Math.round((g.event_count / placeMax) * 100)}%` }}
+                      />
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
 
-      <Section id="series-progress" title="改善追蹤">
-        {series.progress.length > 0 ? <ActionList actions={series.progress} /> : <Muted>目前還沒有追蹤中的改善措施，有進度會更新在這裡。</Muted>}
-      </Section>
+          <Section id="series-measures" title="改善建議">
+            <Measures measures={series.measures} />
+          </Section>
 
-      {series.comparisons.length > 0 && (
-        <Section id="series-compare" title="改善前後比較">
-          <ul className="space-y-2">
-            {series.comparisons.map((c) => (
-              <Comparison key={`${c.title}-${c.start}`} c={c} />
-            ))}
-          </ul>
-        </Section>
-      )}
+          <Section id="series-progress" title="改善追蹤">
+            {series.progress.length > 0 ? (
+              <ActionList actions={series.progress} />
+            ) : (
+              <Muted>目前還沒有追蹤中的改善措施，有進度會更新在這裡。</Muted>
+            )}
+          </Section>
 
-      <Section id="series-events" title="這個系列的每一起">
-        <ol className="space-y-2">
-          {series.events.map((e) => {
-            const current = e.id === from
-            return (
-              <li
-                key={e.id}
-                aria-current={current ? 'true' : undefined}
-                className={cn('flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 text-sm', current ? 'border border-accent bg-accent/10' : 'border border-border')}
-              >
-                <span className="font-mono text-xs text-muted-foreground">{`第 ${e.ordinal} 起`}</span>
-                <Link to={`/events/${encodeURIComponent(e.id)}`} className="text-foreground underline underline-offset-4 hover:text-accent">
-                  {e.title}
-                </Link>
-                <VerificationTag verification={e.verification} text={e.verification_label} />
-                <span className="text-xs text-muted-foreground">{[e.occurrence_date, e.location].filter(Boolean).join('・')}</span>
-                {current && <Badge tone="info">你剛剛看的</Badge>}
-              </li>
-            )
-          })}
-        </ol>
-      </Section>
+          {series.comparisons.length > 0 && (
+            <section aria-labelledby="series-compare" className="space-y-3 rounded-2xl bg-foreground p-[22px] text-background">
+              <h2 id="series-compare" className="text-lg font-bold">
+                改善前後比較
+              </h2>
+              <ul className="space-y-4">
+                {series.comparisons.map((c) => (
+                  <Comparison key={`${c.title}-${c.start}`} c={c} />
+                ))}
+              </ul>
+            </section>
+          )}
+        </aside>
+      </div>
     </article>
   )
 }

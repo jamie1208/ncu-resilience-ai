@@ -62,7 +62,7 @@ describe('PublicApp', () => {
   it('首頁依類別分區顯示快報卡片：查證標籤、系列第 N 起、連到快報全文（ADR-0020 決策 4）', async () => {
     const { calls } = mockApi(ROUTES)
     render(<PublicApp />)
-    expect(await screen.findByRole('heading', { level: 1, name: '最新校園快報' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: '今天校園發生了什麼' })).toBeInTheDocument()
 
     const facility = await screen.findByRole('list', { name: '設施快報' })
     const [card] = within(facility).getAllByRole('listitem')
@@ -88,8 +88,8 @@ describe('PublicApp', () => {
 
     // 底部：校園韌性成績單與匿名回報入口
     const main = within(screen.getByRole('main'))
-    expect(main.getByRole('link', { name: '校園韌性成績單' })).toHaveAttribute('href', '/resilience')
-    expect(main.getByRole('link', { name: '匿名回報' })).toHaveAttribute('href', '/report')
+    expect(main.getByRole('link', { name: /校園韌性成績單/ })).toHaveAttribute('href', '/resilience')
+    expect(main.getByRole('link', { name: /看到怪怪的事？匿名跟我們說/ })).toHaveAttribute('href', '/report')
 
     expect(calls.map((c) => c.path)).toContain('/api/v1/public/feed?limit=50')
     // 公開前端不呼叫任何管理或登入 API
@@ -158,8 +158,9 @@ describe('PublicApp', () => {
     expect(screen.getByText('工程五館外牆整修，施工期間東側出入口封閉。')).toBeInTheDocument()
     expect(screen.getByText(/工程五館/, { selector: 'dd' })).toBeInTheDocument()
 
-    expect(screen.getByText('快報全文')).toBeInTheDocument()
+    expect(screen.getByText('設施')).toBeInTheDocument()
     expect(screen.getByText('已查證')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '← 回快報首頁' })).toHaveAttribute('href', '/')
 
     // 舊快照可能仍帶小報告；快報全文不顯示（ADR-0020 決策 3-5）
     expect(screen.queryByRole('region', { name: '可能的影響' })).not.toBeInTheDocument()
@@ -195,7 +196,8 @@ describe('PublicApp', () => {
     expect(screen.queryByText('已查證')).not.toBeInTheDocument()
     expect(screen.getByText(/目前沒有官方來源證實/)).toBeInTheDocument()
     expect(screen.getByText('單一事件')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '你也遇到類似的事？匿名告訴我們' })).toHaveAttribute('href', '/report')
+    expect(screen.getByRole('link', { name: '匿名告訴我們' })).toHaveAttribute('href', '/report')
+    expect(screen.getByText(/你也遇到類似的事？/)).toBeInTheDocument()
   })
 
   it('事件頁不顯示非 http(s) 的來源連結', async () => {
@@ -251,6 +253,8 @@ describe('PublicApp', () => {
     render(<PublicApp />)
     expect(await screen.findByRole('heading', { level: 1, name: '工程五館施工封路' })).toBeInTheDocument()
     expect(screen.getByText('工程五館周邊施工，出入口陸續封閉。')).toBeInTheDocument()
+    // 從快報全文進來時，返回連結回到那一則
+    expect(screen.getByRole('link', { name: '← 回到這則快報' })).toHaveAttribute('href', `/events/${PUBLIC_EVENT_ID}`)
     expect(screen.getByText('2 起', { selector: 'dd' })).toBeInTheDocument()
 
     const weekly = within(screen.getByRole('region', { name: '每週件數' }))
@@ -339,10 +343,20 @@ describe('PublicApp', () => {
     render(<PublicApp />)
     const user = userEvent.setup()
     const nav = await screen.findByRole('navigation', { name: '主要頁面' })
-    await user.click(within(nav).getByRole('link', { name: '改善進度' }))
+    // 導覽列照示範頁只有三個分頁
+    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['快報', '校園韌性', '匿名回報'])
+    expect(within(nav).getByRole('link', { name: '快報' })).toHaveAttribute('aria-current', 'page')
+    await user.click(within(nav).getByRole('link', { name: '匿名回報' }))
+    expect(await screen.findByRole('heading', { level: 1, name: '看到怪怪的事？匿名跟我們說' })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/report')
+    expect(within(nav).getByRole('link', { name: '匿名回報' })).toHaveAttribute('aria-current', 'page')
+    // 不在導覽列的頁面從頁尾進入
+    const foot = within(footer())
+    expect(foot.getByRole('link', { name: '事件查詢' })).toHaveAttribute('href', '/events')
+    expect(foot.getByRole('link', { name: '改善進度' })).toHaveAttribute('href', '/progress')
+    await user.click(foot.getByRole('link', { name: '改善進度' }))
     expect(await screen.findByRole('heading', { level: 1, name: '改善進度' })).toBeInTheDocument()
     expect(window.location.pathname).toBe('/progress')
-    expect(within(nav).getByRole('link', { name: '改善進度' })).toHaveAttribute('aria-current', 'page')
     expect(screen.queryByRole('link', { name: /登入|管理/ })).not.toBeInTheDocument()
     expect(document.querySelector('a[href^="/admin"]')).toBeNull()
   })

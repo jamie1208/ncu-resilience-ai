@@ -24,7 +24,7 @@ describe('App', () => {
     })
     at('/')
     render(<App />)
-    expect(await screen.findByRole('heading', { level: 1, name: /最新校園快報/ })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: /今天校園發生了什麼/ })).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: /工程五館外牆整修施工/ })).toBeInTheDocument()
     expect(screen.queryByLabelText('密碼')).not.toBeInTheDocument()
     expect(calls.every((c) => c.path.startsWith('/api/v1/public/'))).toBe(true)
