@@ -7,6 +7,7 @@ import { clearCsrfToken, fetchMe, logout, type Me } from './api'
 import { AuthContext } from './auth'
 import { Link } from './Link'
 import { AlertCenter } from './pages/AlertCenter'
+import { AnonymousReports } from './pages/AnonymousReports'
 import { EventWorkbench } from './pages/EventWorkbench'
 import { Locations } from './pages/Locations'
 import { Series } from './pages/Series'
@@ -30,6 +31,7 @@ const NAV = [
   { to: '/admin/relations', label: '事件關聯', page: 'relations' },
   { to: '/admin/series', label: '系列', page: 'series' },
   { to: '/admin/locations', label: '地點', page: 'locations' },
+  { to: '/admin/anonymous-reports', label: '匿名回報', page: 'anonymous_reports' },
   { to: '/admin/resilience', label: '韌性成績單', page: 'resilience' },
   { to: '/admin/scenarios', label: 'What-if 模擬', page: 'scenarios' },
   { to: '/admin/publications', label: '公開內容', page: 'publications' },
@@ -156,6 +158,8 @@ function Page({ route }: { route: Route }) {
       )
     case 'locations':
       return <Locations />
+    case 'anonymous_reports':
+      return <AnonymousReports />
     case 'series':
       return <Series seriesId={route.seriesId} />
     case 'resilience':
