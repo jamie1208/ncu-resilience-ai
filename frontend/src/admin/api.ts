@@ -1110,6 +1110,78 @@ export async function listScenarios(): Promise<ScenarioRun[]> {
   return (await apiGet<ScenarioRun[]>(`${V1}/admin/scenarios`)).data
 }
 
+// ---- 依改善建議評估效益（P8-T15，S14 impact-evaluator，ADR-0019） ----
+
+/** ok：已評估；abstained：證據不足；invalid：輸出重試後仍未通過驗證；failed：呼叫失敗。 */
+export type ImpactStatus = 'ok' | 'abstained' | 'invalid' | 'failed'
+
+export interface ImpactCause {
+  cause_id: string
+  description: string
+  decision: 'confirmed' | 'hypothesized'
+  label: string
+}
+
+export interface ImpactResult {
+  before: string | null
+  after: string | null
+  reason: string | null
+  covered_causes: ImpactCause[]
+  uncovered_causes: ImpactCause[]
+  overlaps: { measure_ids: string[]; note: string }[]
+  risks: string[]
+  suggestion: { measure_id: string; action: string | null; reason: string | null } | null
+  evidence_ids: string[]
+}
+
+/** 程式換算的件數：基準 ×（1 − 百分比）；`shown` 為 false 時件數太少，不顯示。 */
+export interface ImpactCounts {
+  baseline: number | null
+  observed: number
+  history_weeks: number
+  window_days: number
+  category_baseline: number | null
+  min_observed: number
+  shown: boolean
+  after_low: number | null
+  after_high: number | null
+}
+
+export interface ImpactEvaluation {
+  id: string
+  series_id: string
+  analysis_id: string
+  /** 勾選的建議代號（m1…，對應系列分析 measures 的順序） */
+  selected: string[]
+  status: ImpactStatus
+  abstain_reason: string | null
+  /** 改善百分比區間（AI 估計，非實證） */
+  improvement: { low: number; high: number } | null
+  cap: number
+  result: ImpactResult | null
+  counts: ImpactCounts
+  /** 系列分析已更新，這次評估依據的是舊分析 */
+  stale: boolean
+  reused: boolean
+  ai_run_id: string | null
+  created_by: string
+  created_at: string
+}
+
+/** 評估所選建議的效益；同一次分析、同一組選擇會沿用既有結果（`reused`）。 */
+export async function evaluateImpact(body: {
+  series_id: string
+  measure_ids: string[]
+  analysis_id?: string
+}): Promise<ImpactEvaluation> {
+  return (await post<ImpactEvaluation>('/admin/scenarios/impact', body)).data
+}
+
+/** 最近 50 次評估（新到舊），可依系列篩選。 */
+export async function listImpactEvaluations(seriesId?: string): Promise<ImpactEvaluation[]> {
+  return (await apiGet<ImpactEvaluation[]>(`${V1}/admin/scenarios/impact${query({ series_id: seriesId })}`)).data
+}
+
 // ---------- 趨勢解讀（P7-T06，S09 trend-forecaster） ----------
 
 export type TrendOutcome = 'explained' | 'abstained' | 'failed' | 'no_anomaly' | 'insufficient_data'

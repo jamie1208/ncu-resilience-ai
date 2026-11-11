@@ -293,4 +293,13 @@ describe('Series', () => {
     })
     expect(await screen.findByText(/還沒有系列分析/)).toBeInTheDocument()
   })
+
+  it('改善建議區塊有「評估效益」入口（P8-T15），帶系列代號進 What-if 頁', async () => {
+    const { user } = open('/admin/series/s-1', DETAIL_ROUTES)
+    const measures = await screen.findByRole('region', { name: '改善建議' })
+    const link = within(measures).getByRole('link', { name: '評估效益' })
+    expect(link).toHaveAttribute('href', '/admin/scenarios?series=s-1')
+    await user.click(link)
+    expect(window.location.pathname + window.location.search).toBe('/admin/scenarios?series=s-1')
+  })
 })

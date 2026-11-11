@@ -6,6 +6,7 @@ from app.models.anonymous_report import AnonymousReport, ReportReceipt
 from app.models.audit import AuditLog
 from app.models.base import Base
 from app.models.event import Event, EventEvidence, EventMerge, Location, LocationResolution
+from app.models.impact import ImpactEvaluation
 from app.models.publication import Publication, PublicationTakedown, PublicationVersion
 from app.models.report import EventReport, ReportCauseDecision
 from app.models.response_action import ResponseAction, ResponseActionTransition
@@ -41,6 +42,7 @@ __all__ = [
     "EventSeries",
     "EventSeriesMember",
     "EventSeriesRemoval",
+    "ImpactEvaluation",
     "IngestionDeadLetter",
     "IngestionRun",
     "Location",

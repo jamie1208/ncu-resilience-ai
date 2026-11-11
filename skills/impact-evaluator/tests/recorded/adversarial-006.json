@@ -1,0 +1,28 @@
+{
+  "case_id": "adversarial-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "abstain",
+    "improvement": {
+      "low": null,
+      "high": null
+    },
+    "before": null,
+    "after": null,
+    "covered_causes": [],
+    "uncovered_causes": [],
+    "overlaps": [],
+    "risks": [
+      "子事件的標題與摘要僅剩標點或簡短符號，無法判讀發生的問題與情境，評估建議的效果不足以推估。",
+      "建議內容也只是一句簡短指示，無法判斷要執行的具體作法，因此無法估計改善幅度。"
+    ],
+    "suggestion": {
+      "measure_id": null,
+      "reason": null
+    },
+    "evidence_ids": [],
+    "reason": "子事件描述與建議內容不足以判斷問題為何與措施如何對應，無法估算改善百分比區間。",
+    "abstain_reason": "insufficient_evidence"
+  }
+}

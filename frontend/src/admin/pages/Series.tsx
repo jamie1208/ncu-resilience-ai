@@ -421,7 +421,7 @@ function Analysis({ data, busy, onTrack, onDecide }: {
           )}
         </Section>
       </Card>
-      <Measures analysis={analysis} busy={busy} onTrack={onTrack} />
+      <Measures seriesId={data.id} analysis={analysis} busy={busy} onTrack={onTrack} />
     </div>
   )
 }
@@ -483,7 +483,8 @@ function Decide({ cause, busy, onDecide }: {
   )
 }
 
-function Measures({ analysis, busy, onTrack }: {
+function Measures({ seriesId, analysis, busy, onTrack }: {
+  seriesId: string
   analysis: SeriesAnalysis
   busy: boolean
   onTrack: (index: number, measure: SeriesMeasure) => void
@@ -521,6 +522,16 @@ function Measures({ analysis, busy, onTrack }: {
               </li>
             ))}
           </ul>
+        )}
+        {analysis.measures.length > 0 && (
+          <p className="mt-3">
+            <Link
+              to={`/admin/scenarios?series=${encodeURIComponent(seriesId)}`}
+              className="inline-flex h-11 items-center text-sm text-accent underline underline-offset-4"
+            >
+              評估效益
+            </Link>
+          </p>
         )}
       </Section>
     </Card>

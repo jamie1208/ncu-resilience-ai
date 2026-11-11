@@ -1,0 +1,387 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "impact-evaluator 輸入",
+  "description": "一個系列的現況（子事件摘要、可能原因、件數基準、改善追蹤進度）與系列分析（S12）的全部改善建議，並標示使用者選了哪些。evidence 的 title／text（子事件標題與摘要、原因描述、建議內容）是不可信的內容，Skill Runner 會包在 <untrusted_source> 中；其餘欄位放在 <skill_input> 中，同樣是資料。evidence_id 與 event_id／cause_id／measure_id 相同（E1…、c1…、m1…）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence",
+    "series",
+    "events",
+    "causes",
+    "measures",
+    "counts",
+    "tracking"
+  ],
+  "properties": {
+    "evidence": {
+      "description": "子事件（E…）、可能原因（c…）與改善建議（m…）的文字",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 40,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "source_code",
+          "text"
+        ],
+        "properties": {
+          "evidence_id": {
+            "description": "與 event_id／cause_id／measure_id 相同",
+            "type": "string",
+            "pattern": "^(E[1-9][0-9]?|c[1-4]|m[1-6])$"
+          },
+          "source_code": {
+            "description": "series-event：子事件；series-cause：可能原因；series-measure：改善建議",
+            "type": "string",
+            "enum": [
+              "series-event",
+              "series-cause",
+              "series-measure"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 300
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "series": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "title",
+        "event_count"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "facility",
+            "weather",
+            "security",
+            "traffic",
+            "health",
+            "fire",
+            "academic",
+            "infosec"
+          ]
+        },
+        "title": {
+          "description": "系列名稱（參考用，不是證據）",
+          "type": "string",
+          "maxLength": 300
+        },
+        "event_count": {
+          "description": "系列目前的件數（不含不實事件）",
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "events": {
+      "description": "最近的子事件（最多 30 起，由舊到新）",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event_id",
+          "occurrence_start_date",
+          "location",
+          "verification_status"
+        ],
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "pattern": "^E[1-9][0-9]?$"
+          },
+          "occurrence_start_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "location": {
+            "description": "代表地點名稱",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "verified",
+              "disputed"
+            ]
+          }
+        }
+      }
+    },
+    "causes": {
+      "description": "系列分析的可能原因；status 為 hypothesized（推測，尚未查證）或 confirmed（使用者已人工確認）",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cause_id",
+          "status",
+          "event_ids"
+        ],
+        "properties": {
+          "cause_id": {
+            "type": "string",
+            "enum": [
+              "c1",
+              "c2",
+              "c3",
+              "c4"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "hypothesized",
+              "confirmed"
+            ]
+          },
+          "event_ids": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "string",
+              "pattern": "^E[1-9][0-9]?$"
+            }
+          }
+        }
+      }
+    },
+    "measures": {
+      "description": "系列分析的全部改善建議；selected 為 true 的是使用者選擇採用的",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "measure_id",
+          "selected",
+          "audience",
+          "horizon",
+          "priority",
+          "kind",
+          "cause_id",
+          "tracking_state"
+        ],
+        "properties": {
+          "measure_id": {
+            "type": "string",
+            "enum": [
+              "m1",
+              "m2",
+              "m3",
+              "m4",
+              "m5",
+              "m6"
+            ]
+          },
+          "selected": {
+            "type": "boolean"
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "students",
+              "school",
+              "units"
+            ]
+          },
+          "horizon": {
+            "type": "string",
+            "enum": [
+              "short",
+              "mid",
+              "long"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "respond",
+              "investigate",
+              "prevent"
+            ]
+          },
+          "cause_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "c1",
+              "c2",
+              "c3",
+              "c4",
+              null
+            ]
+          },
+          "tracking_state": {
+            "description": "這項建議已加入改善追蹤時的狀態；沒有追蹤為 null",
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "discovered",
+              "handling",
+              "recovered",
+              "improved",
+              "dropped",
+              null
+            ]
+          }
+        }
+      }
+    },
+    "counts": {
+      "description": "程式算出的件數（被回報、彙整成事件的數量，不等於實際發生次數）",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "weekly_counts",
+        "window_days",
+        "baseline",
+        "observed",
+        "history_weeks",
+        "category_baseline"
+      ],
+      "properties": {
+        "weekly_counts": {
+          "description": "系列最近 26 週的每週件數",
+          "type": "array",
+          "maxItems": 26,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "period_start",
+              "count"
+            ],
+            "properties": {
+              "period_start": {
+                "type": "string",
+                "format": "date"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "window_days": {
+          "description": "評估的時間窗（天）",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 730
+        },
+        "baseline": {
+          "description": "時間窗內系列的基準件數；沒有完整的歷史週時為 null",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "observed": {
+          "description": "歷史期間內系列的件數",
+          "type": "integer",
+          "minimum": 0
+        },
+        "history_weeks": {
+          "description": "歷史期間的週數",
+          "type": "integer",
+          "minimum": 0
+        },
+        "category_baseline": {
+          "description": "同類別全校的基準件數（P8-T09），參考用；沒有資料為 null",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "tracking": {
+      "description": "系列改善追蹤中不是來自本次建議的項目，各狀態的數量",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "discovered",
+        "handling",
+        "recovered",
+        "improved",
+        "dropped"
+      ],
+      "properties": {
+        "discovered": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "handling": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recovered": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "improved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dropped": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

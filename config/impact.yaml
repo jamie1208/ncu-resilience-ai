@@ -1,0 +1,15 @@
+# 依改善建議評估效益（P8-T15，ADR-0019）。
+# 由 backend/app/simulations/impact.py 讀取。S14 impact-evaluator 給的改善百分比是 AI 估計、非實證，
+# 程式以 improvement_cap 限制上限（0 ≤ low ≤ high ≤ improvement_cap，超過就重試，仍超過則評估不出來）。
+# 修改上限要由使用者決定（ADR-0019 決策 2-3）。
+
+version: 1
+
+# 改善百分比區間的上限（整數 0–100）
+improvement_cap: 80
+
+# 評估的時間窗（天）：系列基準件數 = 歷史期間件數 ÷ 週數 × window_days ÷ 7（同 P8-T09 的算法）
+window_days: 90
+
+# 歷史期間的件數少於這個數字時，介面不顯示程式換算的改善前後件數（比照 P8-T05 前後比較的 5 件）
+min_observed: 5

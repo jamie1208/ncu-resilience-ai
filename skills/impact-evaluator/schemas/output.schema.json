@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "impact-evaluator 輸出",
+  "description": "依現況與使用者選擇的改善建議，評估改善百分比區間與改善前後情境。百分比是 AI 估計，非實證；件數由程式換算，模型不寫件數。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "improvement",
+    "before",
+    "after",
+    "covered_causes",
+    "uncovered_causes",
+    "overlaps",
+    "risks",
+    "suggestion",
+    "evidence_ids",
+    "reason",
+    "abstain_reason"
+  ],
+  "properties": {
+    "status": {
+      "description": "ok：已評估；abstain：證據不足，評估不出來",
+      "type": "string",
+      "enum": [
+        "ok",
+        "abstain"
+      ]
+    },
+    "improvement": {
+      "description": "預估件數可能減少的百分比區間（整數 0–100）；abstain 時 low、high 都是 null",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "low",
+        "high"
+      ],
+      "properties": {
+        "low": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "high": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "before": {
+      "description": "改善前情境：一段話描述現況（播報員語氣，不寫件數）",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 300
+    },
+    "after": {
+      "description": "改善後情境：採用這些建議後可能的樣子（播報員語氣，不寫件數）；abstain 時為 null",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 300
+    },
+    "covered_causes": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "enum": [
+          "c1",
+          "c2",
+          "c3",
+          "c4"
+        ]
+      },
+      "description": "被選的建議有處理到的原因"
+    },
+    "uncovered_causes": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "enum": [
+          "c1",
+          "c2",
+          "c3",
+          "c4"
+        ]
+      },
+      "description": "被選的建議沒有處理到的原因"
+    },
+    "overlaps": {
+      "description": "效果可能重疊的被選建議組",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "measure_ids",
+          "note"
+        ],
+        "properties": {
+          "measure_ids": {
+            "type": "array",
+            "maxItems": 6,
+            "items": {
+              "type": "string",
+              "enum": [
+                "m1",
+                "m2",
+                "m3",
+                "m4",
+                "m5",
+                "m6"
+              ]
+            },
+            "description": "至少 2 項被選的建議"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 150
+          }
+        }
+      }
+    },
+    "risks": {
+      "description": "限制與副作用（平實語氣）；ok 時至少 1 項",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "maxLength": 150
+      }
+    },
+    "suggestion": {
+      "description": "可以考慮補上的建議（只能是沒有被選的建議）；沒有時兩個欄位都是 null",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "measure_id",
+        "reason"
+      ],
+      "properties": {
+        "measure_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "m1",
+            "m2",
+            "m3",
+            "m4",
+            "m5",
+            "m6",
+            null
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 150
+        }
+      }
+    },
+    "evidence_ids": {
+      "type": "array",
+      "maxItems": 40,
+      "items": {
+        "type": "string"
+      },
+      "description": "評估所依據的子事件、原因與建議；ok 時至少 1 個"
+    },
+    "reason": {
+      "description": "一兩句話說明百分比怎麼估的；不得包含個資，也不得把推測寫成事實",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "insufficient_evidence",
+        null
+      ],
+      "description": "abstain 的原因；ok 時為 null"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import type { ScenarioRun } from '../admin/api'
+import type { ImpactEvaluation, ScenarioRun, SeriesDetail, SeriesSummary } from '../admin/api'
 
 /** 三項措施（一項效果未知）的模擬：數值與 P7-T02 引擎一致（baseline 12，m1 0.2–0.4，m2 0.1–0.2）。 */
 export const SCENARIO: ScenarioRun = {
@@ -86,4 +86,122 @@ export const SCENARIO_EXPLAIN_FAILED: ScenarioRun = {
     error_type: 'provider_error',
     skill_version: '1.0.0',
   },
+}
+
+// ---- 依建議評估（P8-T15） ----
+
+export const IMPACT_SERIES_SUMMARY: SeriesSummary = {
+  id: 'ser-1',
+  category: 'traffic',
+  title: '停放機車遭碰撞',
+  title_source: 'ai',
+  event_count: 6,
+  latest_joined_at: '2026-11-02T02:00:00+00:00',
+  created_at: '2026-09-08T02:00:00+00:00',
+}
+
+/** 系列：兩個推測原因（停車格太靠近車道、照明不足）與三項建議。 */
+export const IMPACT_SERIES: SeriesDetail = {
+  ...IMPACT_SERIES_SUMMARY,
+  events: [],
+  removals: [],
+  analysis: {
+    id: 'a-1',
+    status: 'ok',
+    title: '停放機車遭碰撞',
+    summary: '這個系列持續追蹤停放機車被碰撞的狀況。',
+    bursts: [],
+    location_groups: [],
+    pattern_status: 'abstained',
+    pattern_abstain_reason: 'no_pattern',
+    patterns: [],
+    causes: [
+      { cause_id: 'c1', description: '可能是停車格太靠近車道。', label: '推測，尚未查證', to_verify: null,
+        event_ids: [], event_count: 4, total: 6, quotes: [], mentions_party: false, decision: 'hypothesized' },
+      { cause_id: 'c2', description: '疑似夜間照明不足。', label: '推測，尚未查證', to_verify: null,
+        event_ids: [], event_count: 2, total: 6, quotes: [], mentions_party: false, decision: 'hypothesized' },
+    ],
+    measures: [
+      { action: '把停車格往內移，和車道拉開距離。', audience: 'school', horizon: 'mid', priority: 'high',
+        kind: 'prevent', cause_id: 'c1', responsible_unit: '總務處', tracked_action_id: null },
+      { action: '查看停車區與車道的距離是否足夠。', audience: 'school', horizon: 'short', priority: 'medium',
+        kind: 'investigate', cause_id: 'c1', responsible_unit: '總務處', tracked_action_id: null },
+      { action: '在路段加裝路燈。', audience: 'units', horizon: 'mid', priority: 'medium',
+        kind: 'prevent', cause_id: 'c2', responsible_unit: '總務處', tracked_action_id: null },
+    ],
+    dropped: 0,
+    created_at: '2026-11-10T04:00:00+00:00',
+  },
+  latest_attempt: { status: 'ok', abstain_reason: null, created_at: '2026-11-10T04:00:00+00:00' },
+  actions: [],
+  legacy_cause_decisions: [],
+}
+
+const C1 = { cause_id: 'c1', description: '可能是停車格太靠近車道。', decision: 'hypothesized' as const, label: '推測，尚未查證' }
+const C2 = { cause_id: 'c2', description: '疑似夜間照明不足。', decision: 'hypothesized' as const, label: '推測，尚未查證' }
+
+/** 選 m1、m2：20–40%，基準 15 件／90 天 → 程式換算 9–12 件。 */
+export const IMPACT_OK: ImpactEvaluation = {
+  id: 'imp-1',
+  series_id: 'ser-1',
+  analysis_id: 'a-1',
+  selected: ['m1', 'm2'],
+  status: 'ok',
+  abstain_reason: null,
+  improvement: { low: 20, high: 40 },
+  cap: 80,
+  result: {
+    before: '工程五館外的機車晚上常被擦撞，可能跟停車格太靠近車道有關。',
+    after: '停車格往內移之後，如果原因真的是車道太窄，擦撞可望少一些。',
+    reason: '所選建議處理主要的推測原因，但需要施工時間。',
+    covered_causes: [C1],
+    uncovered_causes: [C2],
+    overlaps: [{ measure_ids: ['m1', 'm2'], note: '兩項都處理停車格與車道的距離。' }],
+    risks: ['原因還是推測，效果可能比估計低。'],
+    suggestion: { measure_id: 'm3', action: '在路段加裝路燈。', reason: '照明不足沒有被選的建議處理到。' },
+    evidence_ids: ['E1', 'c1', 'm1'],
+  },
+  counts: {
+    baseline: 15,
+    observed: 10,
+    history_weeks: 6,
+    window_days: 90,
+    category_baseline: 30,
+    min_observed: 5,
+    shown: true,
+    after_low: 9,
+    after_high: 12,
+  },
+  stale: false,
+  reused: false,
+  ai_run_id: 'run-1',
+  created_by: 'jamie',
+  created_at: '2026-11-11T02:00:00+00:00',
+}
+
+/** 加入補強建議 m3 後再評估：兩個原因都處理到。 */
+export const IMPACT_ALL: ImpactEvaluation = {
+  ...IMPACT_OK,
+  id: 'imp-2',
+  selected: ['m1', 'm2', 'm3'],
+  improvement: { low: 30, high: 55 },
+  result: {
+    ...IMPACT_OK.result!,
+    covered_causes: [C1, C2],
+    uncovered_causes: [],
+    suggestion: null,
+  },
+  counts: { ...IMPACT_OK.counts, after_low: 6.8, after_high: 10.5 },
+}
+
+/** 輸出重試後仍未通過驗證。 */
+export const IMPACT_INVALID: ImpactEvaluation = {
+  ...IMPACT_OK,
+  id: 'imp-3',
+  selected: ['m2'],
+  status: 'invalid',
+  abstain_reason: 'invalid_output',
+  improvement: null,
+  result: null,
+  counts: { ...IMPACT_OK.counts, after_low: null, after_high: null },
 }

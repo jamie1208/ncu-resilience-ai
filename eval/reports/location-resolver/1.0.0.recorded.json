@@ -5,12 +5,12 @@
   "mode": "recorded",
   "provider": "fake",
   "model": "gpt-5-mini-2025-08-07",
-  "split": "all",
-  "generated_at": "2026-11-05T07:39:43.266847+00:00",
+  "split": "test",
+  "generated_at": "2026-11-11T06:27:24.709144+00:00",
   "max_cost_usd": 1.0,
   "summary": {
-    "cases": 24,
-    "passed": 24,
+    "cases": 12,
+    "passed": 12,
     "pass_rate": 1.0,
     "schema_pass_rate": 1.0,
     "traceability": 1.0,
@@ -20,19 +20,19 @@
     "skipped_budget": 0,
     "by_type": {
       "normal": {
-        "cases": 10,
-        "passed": 10
+        "cases": 5,
+        "passed": 5
       },
       "boundary": {
-        "cases": 8,
-        "passed": 8
+        "cases": 4,
+        "passed": 4
       },
       "adversarial": {
-        "cases": 6,
-        "passed": 6
+        "cases": 3,
+        "passed": 3
       }
     },
-    "attempts": 24,
+    "attempts": 12,
     "input_tokens": 0,
     "output_tokens": 0,
     "cost_usd": 0.0,
@@ -83,24 +83,6 @@
   "passed": true,
   "cases": [
     {
-      "id": "normal-001",
-      "type": "normal",
-      "split": "dev",
-      "status": "succeeded",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "ok",
-        "decision": "alias_of",
-        "target_id": "L1"
-      },
-      "predicted": {
-        "status": "ok",
-        "decision": "alias_of",
-        "target_id": "L1"
-      }
-    },
-    {
       "id": "normal-002",
       "type": "normal",
       "split": "test",
@@ -116,24 +98,6 @@
         "status": "ok",
         "decision": "alias_of",
         "target_id": "L4"
-      }
-    },
-    {
-      "id": "normal-003",
-      "type": "normal",
-      "split": "dev",
-      "status": "succeeded",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "ok",
-        "decision": "inside_of",
-        "target_id": "L1"
-      },
-      "predicted": {
-        "status": "ok",
-        "decision": "inside_of",
-        "target_id": "L1"
       }
     },
     {
@@ -155,24 +119,6 @@
       }
     },
     {
-      "id": "normal-005",
-      "type": "normal",
-      "split": "dev",
-      "status": "succeeded",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "ok",
-        "decision": "new",
-        "target_id": null
-      },
-      "predicted": {
-        "status": "ok",
-        "decision": "new",
-        "target_id": null
-      }
-    },
-    {
       "id": "normal-006",
       "type": "normal",
       "split": "test",
@@ -188,24 +134,6 @@
         "status": "ok",
         "decision": "alias_of",
         "target_id": "L1"
-      }
-    },
-    {
-      "id": "normal-007",
-      "type": "normal",
-      "split": "dev",
-      "status": "succeeded",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "ok",
-        "decision": "inside_of",
-        "target_id": "L2"
-      },
-      "predicted": {
-        "status": "ok",
-        "decision": "inside_of",
-        "target_id": "L2"
       }
     },
     {
@@ -227,24 +155,6 @@
       }
     },
     {
-      "id": "normal-009",
-      "type": "normal",
-      "split": "dev",
-      "status": "succeeded",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "ok",
-        "decision": "alias_of",
-        "target_id": "L2"
-      },
-      "predicted": {
-        "status": "ok",
-        "decision": "alias_of",
-        "target_id": "L2"
-      }
-    },
-    {
       "id": "normal-010",
       "type": "normal",
       "split": "test",
@@ -263,24 +173,6 @@
       }
     },
     {
-      "id": "boundary-001",
-      "type": "boundary",
-      "split": "dev",
-      "status": "abstained",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "abstain",
-        "decision": null,
-        "target_id": null
-      },
-      "predicted": {
-        "status": "abstain",
-        "decision": null,
-        "target_id": null
-      }
-    },
-    {
       "id": "boundary-002",
       "type": "boundary",
       "split": "test",
@@ -295,24 +187,6 @@
       "predicted": {
         "status": "abstain",
         "decision": null,
-        "target_id": null
-      }
-    },
-    {
-      "id": "boundary-003",
-      "type": "boundary",
-      "split": "dev",
-      "status": "succeeded",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "ok",
-        "decision": "new",
-        "target_id": null
-      },
-      "predicted": {
-        "status": "ok",
-        "decision": "new",
         "target_id": null
       }
     },
@@ -335,45 +209,9 @@
       }
     },
     {
-      "id": "boundary-005",
-      "type": "boundary",
-      "split": "dev",
-      "status": "abstained",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "abstain",
-        "decision": null,
-        "target_id": null
-      },
-      "predicted": {
-        "status": "abstain",
-        "decision": null,
-        "target_id": null
-      }
-    },
-    {
       "id": "boundary-006",
       "type": "boundary",
       "split": "test",
-      "status": "abstained",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "abstain",
-        "decision": null,
-        "target_id": null
-      },
-      "predicted": {
-        "status": "abstain",
-        "decision": null,
-        "target_id": null
-      }
-    },
-    {
-      "id": "boundary-007",
-      "type": "boundary",
-      "split": "dev",
       "status": "abstained",
       "passed": true,
       "failures": [],
@@ -407,24 +245,6 @@
       }
     },
     {
-      "id": "adversarial-001",
-      "type": "adversarial",
-      "split": "dev",
-      "status": "succeeded",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "ok",
-        "decision": "new",
-        "target_id": null
-      },
-      "predicted": {
-        "status": "ok",
-        "decision": "new",
-        "target_id": null
-      }
-    },
-    {
       "id": "adversarial-002",
       "type": "adversarial",
       "split": "test",
@@ -439,24 +259,6 @@
       "predicted": {
         "status": "ok",
         "decision": "inside_of",
-        "target_id": "L1"
-      }
-    },
-    {
-      "id": "adversarial-003",
-      "type": "adversarial",
-      "split": "dev",
-      "status": "succeeded",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "ok",
-        "decision": "alias_of",
-        "target_id": "L1"
-      },
-      "predicted": {
-        "status": "ok",
-        "decision": "alias_of",
         "target_id": "L1"
       }
     },
@@ -476,24 +278,6 @@
         "status": "ok",
         "decision": "new",
         "target_id": null
-      }
-    },
-    {
-      "id": "adversarial-005",
-      "type": "adversarial",
-      "split": "dev",
-      "status": "succeeded",
-      "passed": true,
-      "failures": [],
-      "expected": {
-        "status": "ok",
-        "decision": "alias_of",
-        "target_id": "L1"
-      },
-      "predicted": {
-        "status": "ok",
-        "decision": "alias_of",
-        "target_id": "L1"
       }
     },
     {
