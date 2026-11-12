@@ -258,10 +258,22 @@ describe('PublicApp', () => {
     expect(screen.getByText('2 起', { selector: 'dd' })).toBeInTheDocument()
 
     const weekly = within(screen.getByRole('region', { name: '每週件數' }))
-    expect(weekly.getByRole('img', { name: /每週件數.*共 2 起/ })).toBeInTheDocument()
+    // 預設 6 個月：系列只有 3 週資料，往前補 0 補滿 26 週，範圍真的會變
+    expect(weekly.getByRole('img', { name: /每週件數，2026-05-11 起到 2026-11-02 這週，共 2 起/ })).toBeInTheDocument()
+    expect(weekly.getAllByTestId('week-bar')).toHaveLength(26)
+    // 柱狀圖下方有週的日期
+    expect(weekly.getByText('11/02')).toBeInTheDocument()
+    // 圖例說明長條、平均線與措施標記
+    expect(weekly.getByText('當週件數')).toBeInTheDocument()
+    expect(weekly.getByText('4 週平均')).toBeInTheDocument()
+    expect(weekly.getByText('措施開始處理')).toBeInTheDocument()
     const user = userEvent.setup()
     await user.click(weekly.getByRole('button', { name: '1 個月' }))
     expect(weekly.getByRole('button', { name: '1 個月' })).toHaveAttribute('aria-pressed', 'true')
+    expect(weekly.getAllByTestId('week-bar')).toHaveLength(5)
+    expect(weekly.getByRole('img', { name: /每週件數，2026-10-05 起到 2026-11-02 這週，共 2 起/ })).toBeInTheDocument()
+    await user.click(weekly.getByRole('button', { name: '全部' }))
+    expect(weekly.getAllByTestId('week-bar')).toHaveLength(3)
 
     const patterns = within(screen.getByRole('region', { name: 'AI 看到的規律' }))
     expect(patterns.getByText('封閉多在平日白天施工時段')).toBeInTheDocument()
