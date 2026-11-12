@@ -62,6 +62,26 @@ function FindingTag({ text }: { text: string }) {
   return <VerificationTag verification={text === CONFIRMED ? 'verified' : 'unverified'} text={text} />
 }
 
+/** 把時間軸補成「最後一週往前 N 週」：系列開始前的週沒有事件，補 0（平均線留空）。 */
+function windowed(points: PublicTimelinePoint[], weeks: number | null): PublicTimelinePoint[] {
+  const last = points.at(-1)
+  if (weeks === null || !last) return points
+  const byWeek = new Map(points.map((p) => [p.period_start, p]))
+  const end = new Date(`${last.period_start}T00:00:00Z`)
+  return Array.from({ length: weeks }, (_, i) => {
+    const day = new Date(end)
+    day.setUTCDate(end.getUTCDate() - 7 * (weeks - 1 - i))
+    const key = day.toISOString().slice(0, 10)
+    return byWeek.get(key) ?? { period_start: key, count: 0, moving_average: null }
+  })
+}
+
+/** 2026-11-02 → 11/02 */
+const shortDate = (day: string) => `${day.slice(5, 7)}/${day.slice(8, 10)}`
+
+/** 柱狀圖區的高度只用 85%，上方留給件數數字。 */
+const SCALE = 85
+
 function Chart({
   points,
   markers,
@@ -71,67 +91,118 @@ function Chart({
   markers: PublicSeries['timeline']['markers']
   bursts: Set<string>
 }) {
+  const n = points.length
   const total = points.reduce((sum, p) => sum + p.count, 0)
   const max = Math.max(1, ...points.map((p) => Math.max(p.count, p.moving_average ?? 0)))
-  const width = 600
-  const height = 160
-  const step = width / Math.max(points.length, 1)
-  const y = (v: number) => height - (v / max) * (height - 10)
+  const y = (v: number) => 100 - (v / max) * SCALE
   const line = points
-    .map((p, i) => (p.moving_average === null ? null : `${i * step + step / 2},${y(p.moving_average)}`))
+    .map((p, i) => (p.moving_average === null ? null : `${i + 0.5},${y(p.moving_average)}`))
     .filter(Boolean)
-    .join(' ')
   const index = (day: string) =>
     points.findIndex((p, i) => p.period_start <= day && (points[i + 1]?.period_start ?? '9999') > day)
+  const every = Math.max(1, Math.ceil(n / 8))
+  const showLabel = (i: number) => i === n - 1 || (n - 1 - i) % every === 0
   const first = points[0]?.period_start ?? ''
   const last = points.at(-1)?.period_start ?? ''
   return (
-    <svg
-      role="img"
-      aria-label={`每週件數，${first} 起到 ${last} 這週，共 ${total} 起`}
-      viewBox={`0 0 ${width} ${height}`}
-      className="h-40 w-full"
-      preserveAspectRatio="none"
-    >
-      {points.map((p, i) => (
-        <rect
-          key={p.period_start}
-          x={i * step + step * 0.15}
-          y={y(p.count)}
-          width={step * 0.7}
-          height={height - y(p.count)}
-          className={bursts.has(p.period_start) ? 'fill-warning' : 'fill-accent'}
-        >
-          <title>{`${p.period_start} 這週：${p.count} 起`}</title>
-        </rect>
-      ))}
-      {line && <polyline points={line} fill="none" strokeWidth={2} className="stroke-foreground" />}
-      {markers.map((m) => {
-        const i = index(m.on)
-        if (i < 0) return null
-        const x = i * step + step / 2
-        return (
-          <line
-            key={`${m.title}-${m.kind}-${m.on}`}
-            x1={x}
-            x2={x}
-            y1={0}
-            y2={height}
-            strokeDasharray={m.kind === 'started' ? '4 3' : undefined}
-            strokeWidth={1.5}
-            className={m.kind === 'started' ? 'stroke-warning' : 'stroke-success'}
-          />
-        )
-      })}
-    </svg>
+    <div role="img" aria-label={`每週件數，${first} 起到 ${last} 這週，共 ${total} 起`} className="space-y-1.5">
+      <div className="relative h-44 border-b border-border">
+        <div className="absolute inset-0 flex items-end gap-0.5">
+          {points.map((p) => (
+            <div key={p.period_start} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
+              {p.count > 0 && <span className="text-[11px] leading-none text-foreground/80">{p.count}</span>}
+              <div
+                data-testid="week-bar"
+                title={`${p.period_start} 這週：${p.count} 起`}
+                className={cn('w-full max-w-7 rounded-t', bursts.has(p.period_start) ? 'bg-warning' : 'bg-accent')}
+                style={{ height: `${(p.count / max) * SCALE}%` }}
+              />
+            </div>
+          ))}
+        </div>
+        <svg aria-hidden="true" viewBox={`0 0 ${Math.max(n, 1)} 100`} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible">
+          {markers.map((m) => {
+            const i = index(m.on)
+            if (i < 0) return null
+            return (
+              <line
+                key={`${m.title}-${m.kind}-${m.on}`}
+                x1={i + 0.5}
+                x2={i + 0.5}
+                y1={100 - SCALE}
+                y2={100}
+                vectorEffect="non-scaling-stroke"
+                strokeDasharray={m.kind === 'started' ? '5 4' : undefined}
+                strokeWidth={2}
+                className={m.kind === 'started' ? 'stroke-warning' : 'stroke-success'}
+              >
+                <title>{`${m.title}：${m.kind === 'started' ? '開始處理' : '完成'}（${m.on}）`}</title>
+              </line>
+            )
+          })}
+          {line.length > 1 && (
+            <polyline
+              points={line.join(' ')}
+              fill="none"
+              vectorEffect="non-scaling-stroke"
+              strokeWidth={2}
+              strokeLinejoin="round"
+              className="stroke-foreground"
+            />
+          )}
+        </svg>
+      </div>
+      <div aria-hidden="true" className="flex gap-0.5">
+        {points.map((p, i) => (
+          <span key={p.period_start} className="min-w-0 flex-1 overflow-visible text-center text-[10px] whitespace-nowrap text-muted-foreground">
+            {showLabel(i) ? shortDate(p.period_start) : ''}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Legend({ series, points }: { series: PublicSeries; points: PublicTimelinePoint[] }) {
+  const hasAverage = points.filter((p) => p.moving_average !== null).length > 1
+  const kinds = new Set(series.timeline.markers.map((m) => m.kind))
+  return (
+    <ul aria-label="圖例" className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+      <li className="flex items-center gap-1.5">
+        <span aria-hidden="true" className="h-3 w-3 rounded-sm bg-accent" />
+        <span>當週件數</span>
+      </li>
+      {series.bursts.length > 0 && (
+        <li className="flex items-center gap-1.5">
+          <span aria-hidden="true" className="h-3 w-3 rounded-sm bg-warning" />
+          <span>突增週（程式判斷）</span>
+        </li>
+      )}
+      <li className="flex items-center gap-1.5">
+        <span aria-hidden="true" className="h-0.5 w-4 bg-foreground" />
+        <span>4 週平均</span>
+        {!hasAverage && <span>（滿 4 週資料後才會出現）</span>}
+      </li>
+      {kinds.has('started') && (
+        <li className="flex items-center gap-1.5">
+          <span aria-hidden="true" className="h-3.5 w-0 border-l-2 border-dashed border-warning" />
+          <span>措施開始處理</span>
+        </li>
+      )}
+      {kinds.has('completed') && (
+        <li className="flex items-center gap-1.5">
+          <span aria-hidden="true" className="h-3.5 w-0 border-l-2 border-success" />
+          <span>措施完成</span>
+        </li>
+      )}
+    </ul>
   )
 }
 
 function Weekly({ series }: { series: PublicSeries }) {
   const [range, setRange] = useState<Range>('6M')
   const weeks = RANGES.find(([key]) => key === range)?.[2] ?? null
-  const all = series.timeline.points
-  const points = weeks === null ? all : all.slice(-weeks)
+  const points = windowed(series.timeline.points, weeks)
   const start = points[0]?.period_start ?? ''
   const markers = series.timeline.markers.filter((m) => m.on >= start)
   return (
@@ -144,8 +215,12 @@ function Weekly({ series }: { series: PublicSeries }) {
           </Button>
         ))}
       </div>
-      {points.length > 0 ? <Chart points={points} markers={markers} bursts={new Set(series.bursts.map((b) => b.period_start))} /> : <Muted>這段期間沒有任何一起。</Muted>}
-      <p className="text-xs text-muted-foreground">藍色長條是每週件數，橘色是程式偵測到的突增週；線是 4 週移動平均；虛線是措施開始處理，實線是完成。</p>
+      {points.length > 0 ? (
+        <Chart points={points} markers={markers} bursts={new Set(series.bursts.map((b) => b.period_start))} />
+      ) : (
+        <Muted>這段期間沒有任何一起。</Muted>
+      )}
+      <Legend series={series} points={points} />
       {series.bursts.length > 0 && (
         <ul aria-label="突增週" className="space-y-1 text-sm">
           {series.bursts.map((b) => (
