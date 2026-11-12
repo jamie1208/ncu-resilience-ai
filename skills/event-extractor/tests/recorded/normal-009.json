@@ -1,11 +1,11 @@
 {
   "case_id": "normal-009",
-  "skill_version": "1.3.0",
+  "skill_version": "1.4.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "工程一館今晨電梯卡住，建議走樓梯",
+    "title": "工一電梯今早再卡住，有人被困約十分鐘",
     "occurrence_start_date": "2026-10-20",
     "occurrence_start_time": null,
     "occurrence_end_date": null,
@@ -13,7 +13,7 @@
     "location": "工程一館",
     "mentions_person": false,
     "summary": {
-      "text": "工程一館 10/20（週二）上午發生電梯故障，有人被關在裡面約 10 分鐘，提醒在館內的同學改走樓梯。",
+      "text": "今天早上有同學發現工程一館的電梯卡住，有人被關在裡面約十分鐘，現在先改走樓梯比較保險。",
       "evidence_ids": [
         "e1"
       ]
@@ -38,8 +38,8 @@
         "quote": "工一的電梯"
       }
     ],
-    "reason": "貼文描述工程一館的電梯今天早上卡住並有人被困，為會影響人的具體故障事件，時間以發布日的「今天早上」換算為 2026-10-20（台北時間）。",
-    "confidence": 0.8,
+    "reason": "貼文寫出工程一館電梯今早卡住並有人被關約十分鐘，為會影響到人的故障事件。",
+    "confidence": 0.9,
     "abstain_reason": null
   }
 }

@@ -24,10 +24,10 @@
 3. **寫 references**：分類法、政策、判斷準則等長內容放 `references/`，SKILL.md 只放指引。
 4. **寫 golden cases**：`tests/cases.jsonl` 至少 20 筆，含正常、邊界、對抗（提示注入、PII、無證據）三類；每筆有 `expected` 與 `must_not`，對抗案例加 `"type": "adversarial"`。
 5. **靜態驗證**：`python scripts/skills/validate_skill.py skills/<name>`。
-6. **評測**：先以錄製回應跑 CI，再以真實模型跑 `scripts/eval/run_eval.py --skill <name> --split test --live`，報告寫入 `eval/reports/<name>/<version>.json`。
-7. **凍結**：達標後升版本號，把報告路徑寫進驗收紀錄；未達標回到步驟 2–4 迭代，並記錄每輪改了什麼。
+6. **評測（選做，ADR-0021）**：需要抽查時，以錄製回應或真實模型跑 `scripts/eval/run_eval.py --skill <name> --split test [--live]`，報告寫入 `eval/reports/<name>/<version>.json`。
+7. **升版**：SKILL.md 改動後升版本號，寫進驗收紀錄；ADR-0021 起不要求重錄與評測達標。
 
-**Skill 完成定義**：靜態驗證通過；golden cases 全過；評測達門檻；輸出 100% 通過 schema 或明確 abstain；評測報告與版本已記錄。
+**Skill 完成定義**：靜態驗證通過；錄製回應 100% 通過 schema 或明確 abstain、事實性結論可追溯；版本已記錄（ADR-0021 起 golden cases 逐筆答對與評測門檻不再是必要條件）。
 
 ```text
 skills/<skill-name>/
@@ -611,6 +611,13 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
     - 重跑命令不重新同步個人通知；之後事件有新證據時，通知若因標題改變而改版，依既有規則處理
   - 執行後：公開同步（每分鐘）會為內容改變的事件與系列產生新版本；疑似指控、推測規律與原因的文字改變時，通知中心會出現「公開提醒」，需使用者逐一檢視。正式資料的執行需使用者同意（先備份）
   - 前置：P8-T11、P8-T13
+- **P8-T18 移除離線評測閘門，AI 語氣以示範頁第一版為準**（使用者 2026-11-11 決定新增，ADR-0021）
+  - 檔案：`docs/decisions/ADR-0021-remove-offline-eval-gates.md`、`AGENTS.md`（規則 2 拿掉評測門檻；SKILL.md 改動後只需升版本）、本計畫「Skill 開發標準循環」第 6、7 步與完成定義改為選做、`docs/governance/tone-guide.md`（範例改用示範頁第一版的快報文字，放寬 P8-T10 比第一版保守的規則）、`skills/event-extractor/SKILL.md`（1.3.0 → 1.4.0：`title`、`summary.text`）、`skills/series-analyst/SKILL.md`（1.2.0 → 1.3.0：`title`、`reason`、`measures[].action`）、`docs/requirements/spec-v1.2.md` §11.1 與驗證表
+  - 既有測試（使用者 2026-11-11 同意）：刪除 `backend/tests/unit/ai/test_skill_tone.py`；`backend/tests/golden/test_skills.py` 只保留 `schema_pass_rate` 與 `traceability` 閘門，拿掉逐筆答對與指標門檻
+  - 以新版本重錄 `tests/recorded/`（使用者 2026-11-11 選擇保留 `validate_skill.py` 的版本檢查；重錄產生的報告不作閘門）；安全規則（人名店名個資、社群說法、推測用語、緊急資訊平實、不用表情符號）與執行時驗證不變；件數由程式顯示（P8-T06 已有「XX 系列 · 第 N 起」），AI 不寫
+  - 驗證：`cd backend && uv run pytest -q`、`uv run ruff check . && uv run ruff format --check . && uv run mypy app`；`python scripts/skills/validate_skill.py skills/event-extractor`、`skills/series-analyst`
+  - 執行後：`rerun_tone` 在正式資料庫重跑既有事件與系列（需使用者同意，先備份），再恢復對外通道
+  - 前置：P8-T17
 ```bash
 cd backend && uv run pytest tests/unit/series tests/security -q
 uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --skill impact-evaluator --split test

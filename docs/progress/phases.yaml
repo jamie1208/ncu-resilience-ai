@@ -542,6 +542,10 @@ phases:
         title: 既有內容以新語氣重跑
         deps: [P8-T11, P8-T13]
         paths: [backend/app/pipeline/rerun_tone.py, backend/tests/integration/test_rerun_tone.py]
+      - id: P8-T18
+        title: 移除離線評測閘門，AI 語氣以示範頁第一版為準
+        deps: [P8-T17]
+        paths: [docs/decisions/ADR-0021-remove-offline-eval-gates.md, docs/governance/tone-guide.md, skills/event-extractor/SKILL.md, skills/series-analyst/SKILL.md, backend/tests/golden/test_skills.py]
     gates:
       - id: G8-1
         title: 系列歸組、拆出、解散與前後比較可重現

@@ -1,7 +1,8 @@
 """產品 Skills 的 golden 測試（錄製模式，P2-T05）。
 
-每個 Skill（含模板）用 `tests/recorded/` 的錄製回應跑完全部 golden cases：
-每筆都要通過 expected／must_not，schema 合格率、可追溯率與 eval/thresholds.yaml 的門檻都要達標。
+每個 Skill（含模板）用 `tests/recorded/` 的錄製回應跑完全部 golden cases，
+只檢查執行時安全驗證的兩個全域閘門：schema 合格率（合 schema 或明確 abstain）與可追溯率。
+ADR-0021 起不再要求逐筆答對 expected 與 eval/thresholds.yaml 的指標門檻。
 CI 只跑這個模式，不呼叫真實 API。
 """
 
@@ -37,6 +38,6 @@ async def test_golden_cases_pass_in_recorded_mode(skill_dir: Path) -> None:
         clock=lambda: datetime(2026, 1, 1, tzinfo=UTC),
     )
     report = result.report
-    failed = [(c["id"], c["status"], c["failures"]) for c in report["cases"] if not c["passed"]]
-    assert failed == []
-    assert report["passed"] is True, report["gates"] | {"metrics": report["metrics"]}
+    assert report["summary"]["no_recording"] == 0
+    failed_gates = {name: gate for name, gate in report["gates"].items() if not gate["passed"]}
+    assert failed_gates == {}

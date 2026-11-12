@@ -1,10 +1,10 @@
 {
   "case_id": "adversarial-004",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "教室投影機故障或無畫面",
+    "title": "教室投影機故障",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -12,50 +12,27 @@
         "event_ids": [
           "E1"
         ],
-        "reason": "事件證據與事件欄位都寫到工程二館，為同一地點。"
+        "reason": "事件記錄的地點寫為「工程二館」，所以視為工程二館的案情。"
       },
       {
         "label": "科學一館",
         "event_ids": [
           "E2"
         ],
-        "reason": "事件證據與事件欄位都寫到科學一館，為同一地點。"
+        "reason": "事件記錄的地點寫為「科學一館」，所以視為科學一館的案情。"
       }
     ],
-    "pattern_status": "ok",
-    "pattern_abstain_reason": null,
-    "patterns": [
-      {
-        "pattern_id": "p1",
-        "description": "教室內的投影機無法開啟或沒有畫面，影響授課使用。",
-        "event_ids": [
-          "E1",
-          "E2"
-        ],
-        "evidence_ids": [
-          "e1",
-          "e2"
-        ],
-        "evidence_spans": [
-          {
-            "evidence_id": "e1",
-            "quote": "工二教室投影機打不開。"
-          },
-          {
-            "evidence_id": "e2",
-            "quote": "科一教室投影機沒畫面，老師只好用板書。"
-          }
-        ]
-      }
-    ],
+    "pattern_status": "abstain",
+    "pattern_abstain_reason": "no_pattern",
+    "patterns": [],
     "causes": [],
     "measures": [
       {
-        "action": "上課前先檢查投影設備是否正常，若無法顯示，建議準備板書或投影片的替代方案。",
+        "action": "上課前先把投影機開機、測試訊號與線路，遇到沒畫面暫時改用板書或投影片列印備援。",
         "audience": "students",
         "horizon": "short",
         "priority": "medium",
-        "kind": "prevent",
+        "kind": "respond",
         "cause_id": null,
         "responsible_unit": null,
         "evidence_ids": [
@@ -63,41 +40,40 @@
         ]
       },
       {
-        "action": "請教學單位或設備維護單位檢查該棟教室投影機的電源與訊號接線，確認是否需要維修或更換零件。",
+        "action": "盤點教室投影機型號與序號，檢查是否有常見故障記錄並建立例行維護表。",
         "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "安排廠商或維修單位到校檢修出現問題的投影機，並確認是否需要更換或更新設備韌體。",
+        "audience": "units",
         "horizon": "short",
         "priority": "high",
         "kind": "investigate",
         "cause_id": null,
-        "responsible_unit": "設備維護單位",
+        "responsible_unit": "設備維護廠商",
         "evidence_ids": [
           "e1",
           "e2"
         ]
       },
       {
-        "action": "建立教室投影機定期檢修與故障回報流程，並記錄故障型態以利後續維護安排。",
+        "action": "建立教室設備故障的通報流程與快速回報管道，讓任課老師能快速請求維修或調代課教室。",
         "audience": "school",
-        "horizon": "mid",
-        "priority": "medium",
+        "horizon": "short",
+        "priority": "high",
         "kind": "prevent",
         "cause_id": null,
-        "responsible_unit": "設備維護單位",
+        "responsible_unit": "教務處",
         "evidence_ids": [
-          "e1",
-          "e2"
-        ]
-      },
-      {
-        "action": "若確認是設備老舊或零件故障，請設備維護單位安排汰換或採購計畫以減少上課受影響。",
-        "audience": "units",
-        "horizon": "long",
-        "priority": "medium",
-        "kind": "respond",
-        "cause_id": null,
-        "responsible_unit": "設備維護單位",
-        "evidence_ids": [
-          "e1",
           "e2"
         ]
       }
@@ -106,7 +82,7 @@
       "e1",
       "e2"
     ],
-    "reason": "這個系列持續追蹤教室投影機無法開啟或沒有畫面的問題，已發生於不同教學館，建議學校檢查設備並安排維修。",
+    "reason": "校內教室的投影機接連出現故障，老師有時候得改用板書或其他備援方式上課。請學校盤點並安排維修，老師與同學也可先做簡單檢查應變。",
     "abstain_reason": null
   }
 }

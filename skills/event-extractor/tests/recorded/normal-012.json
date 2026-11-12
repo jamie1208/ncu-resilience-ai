@@ -1,6 +1,6 @@
 {
   "case_id": "normal-012",
-  "skill_version": "1.3.0",
+  "skill_version": "1.4.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -20,7 +20,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "招新生！"
+        "quote": "社課每週四晚上在松苑一樓"
       },
       {
         "field": "time",
@@ -33,7 +33,7 @@
         "quote": "松苑一樓"
       }
     ],
-    "reason": "內容為社團招新發文與課程時間地點的宣傳，屬活動宣傳而非會影響到大眾的事件。",
+    "reason": "內容為社團招新與上課時間地點的宣傳，屬於活動/招募資訊而非會影響他人的事件。",
     "confidence": 0.9,
     "abstain_reason": null
   }

@@ -1,19 +1,22 @@
 {
   "case_id": "boundary-007",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "校內機車遭拖吊",
+    "title": "機車違停被拖吊",
     "burst_explanations": [
       {
         "burst_id": "b1",
-        "explanation": "證據中看不出原因。",
+        "explanation": "同一週有多起違停機車被拖吊的通報，證據顯示發生於工程一館前與大門附近，造成該週件數升高。",
         "event_ids": [
           "E2",
           "E3"
         ],
-        "evidence_ids": []
+        "evidence_ids": [
+          "e2",
+          "e3"
+        ]
       }
     ],
     "location_groups": [
@@ -23,14 +26,14 @@
           "E1",
           "E3"
         ],
-        "reason": "兩起事件的地點都寫為「大門」，屬同一出入口區域。"
+        "reason": "事件地點欄位與證據都寫到「大門」或「大門那邊」，表示同一處。"
       },
       {
-        "label": "工程一館前",
+        "label": "工程一館",
         "event_ids": [
           "E2"
         ],
-        "reason": "事件地點標示為工程一館前，與其他兩起不同。"
+        "reason": "事件地點欄位與證據指出為工程一館前。"
       }
     ],
     "pattern_status": "ok",
@@ -38,7 +41,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "發生在校門口或主要出入口附近的拖吊事件。",
+        "description": "發生在大門附近的機車遭拖吊。",
         "event_ids": [
           "E1",
           "E3"
@@ -62,7 +65,7 @@
     "causes": [],
     "measures": [
       {
-        "action": "記得不要在校門口或明顯禁停區域停放機車，避免費用或被拖吊。",
+        "action": "不要把機車違規停在出入口或車道旁，盡量停進畫好的車格。",
         "audience": "students",
         "horizon": "short",
         "priority": "medium",
@@ -71,61 +74,60 @@
         "responsible_unit": null,
         "evidence_ids": [
           "e1",
-          "e3"
-        ]
-      },
-      {
-        "action": "建議學校在校門及主要出入口張貼或更新拖吊告示，清楚標示禁停區域與拖吊規定。",
-        "audience": "school",
-        "horizon": "short",
-        "priority": "high",
-        "kind": "prevent",
-        "cause_id": null,
-        "responsible_unit": "總務處",
-        "evidence_ids": [
-          "e1",
-          "e3",
-          "e2"
-        ]
-      },
-      {
-        "action": "請學校或相關單位調查該時段是否有臨時執法或外包拖吊作業，確認拖吊範圍與公告是否到位。",
-        "audience": "school",
-        "horizon": "mid",
-        "priority": "high",
-        "kind": "investigate",
-        "cause_id": null,
-        "responsible_unit": "總務處",
-        "evidence_ids": [
-          "e2",
-          "e3",
-          "e1"
-        ]
-      },
-      {
-        "action": "建議與拖吊業者或執法單位聯繫，確認拖吊作業程序與聯絡資訊，便於同學查詢車輛去向。",
-        "audience": "units",
-        "horizon": "mid",
-        "priority": "medium",
-        "kind": "investigate",
-        "cause_id": null,
-        "responsible_unit": "廠商／承包單位",
-        "evidence_ids": [
           "e2",
           "e3"
         ]
       },
       {
-        "action": "若學校確認有集中拖吊執法，建議於短期內在出入口放置臨時告示並透過校內通訊提醒同學注意停車規定。",
+        "action": "加強出入口與主要路段的巡查，遇到違停優先告知並張貼告示再安排拖吊。",
         "audience": "school",
         "horizon": "short",
         "priority": "high",
         "kind": "respond",
         "cause_id": null,
+        "responsible_unit": "駐警隊",
+        "evidence_ids": [
+          "e1",
+          "e3"
+        ]
+      },
+      {
+        "action": "調查最近幾週拖吊地點與時段，釐清是否集中在某些出入口或時段。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": null,
         "responsible_unit": "總務處",
         "evidence_ids": [
-          "e3",
-          "e1"
+          "e1",
+          "e2",
+          "e3"
+        ]
+      },
+      {
+        "action": "在被常拖吊的出入口張貼臨時停車提醒與違停後果，並在校內公告近期拖吊訊息以提醒同學。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e3"
+        ]
+      },
+      {
+        "action": "如果需要查證個別拖吊原因，請駐警隊或總務處提供拖吊名單與時間以利比對通報紀錄。",
+        "audience": "units",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "駐警隊",
+        "evidence_ids": [
+          "e2",
+          "e3"
         ]
       }
     ],
@@ -134,7 +136,7 @@
       "e2",
       "e3"
     ],
-    "reason": "這個系列持續追蹤校內機車被拖吊的情形，發現事件發生於校門及工程一館前等出入口附近，正在蒐集更多訊息以便了解原因與改善。",
+    "reason": "校內出現多起機車因違規停放而被拖吊的通報，通報多來自校門口與工程一館前。請同學注意不要違停，學校可檢視並加強出入口管理與巡查。",
     "abstain_reason": null
   }
 }

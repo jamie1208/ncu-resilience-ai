@@ -1,10 +1,10 @@
 {
   "case_id": "boundary-003",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "建築物停水或廁所沒水",
+    "title": "館內停水或廁所無水",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -14,7 +14,7 @@
           "E2",
           "E3"
         ],
-        "reason": "證據中使用「工五」與「工程五館」兩種寫法，指同一棟建築。"
+        "reason": "「工五」為工程五館的簡稱，三起事件地點指向同一建築。"
       }
     ],
     "pattern_status": "ok",
@@ -22,7 +22,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "廁所沒水，造成廁所無法使用。",
+        "description": "停水導致廁所無法使用。",
         "event_ids": [
           "E1",
           "E3"
@@ -34,7 +34,7 @@
         "evidence_spans": [
           {
             "evidence_id": "e1",
-            "quote": "10/6 工五整天停水，廁所都不能用。"
+            "quote": "廁所都不能用。"
           },
           {
             "evidence_id": "e3",
@@ -43,35 +43,10 @@
         ]
       }
     ],
-    "causes": [
-      {
-        "cause_id": "c1",
-        "description": "可能為建築內供水設備或管線異常，導致無預警停水或反覆停水。",
-        "event_ids": [
-          "E1",
-          "E2",
-          "E3"
-        ],
-        "evidence_ids": [
-          "e2",
-          "e3"
-        ],
-        "evidence_spans": [
-          {
-            "evidence_id": "e2",
-            "quote": "工程五館今天又無預警停水。"
-          },
-          {
-            "evidence_id": "e3",
-            "quote": "工五廁所又沒水了，這個月第三次。"
-          }
-        ],
-        "to_verify": "向總務處或工程五館管理單位確認是否有設備故障、管線問題或維修紀錄。"
-      }
-    ],
+    "causes": [],
     "measures": [
       {
-        "action": "有需要上課或外出前，記得先備一瓶水以備不時之需。",
+        "action": "上課或使用前先備一點水應急，廁所遇到沒水時可先用備用水暫時應付。",
         "audience": "students",
         "horizon": "short",
         "priority": "medium",
@@ -84,12 +59,26 @@
         ]
       },
       {
-        "action": "請總務處或場館管理調查近期停水紀錄，查明是否為設備或管線故障，並回報處理進度。",
+        "action": "檢查工程五館內供水系統與廁所管線，確認是否有漏水、設備老化或臨時關閉作業並回報處理進度。",
+        "audience": "school",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      },
+      {
+        "action": "若需臨時停水維修，請在維修前公告停水時間與影響範圍，並在廁所放置臨時用水或指示替代廁所位置。",
         "audience": "school",
         "horizon": "short",
         "priority": "high",
-        "kind": "investigate",
-        "cause_id": "c1",
+        "kind": "prevent",
+        "cause_id": null,
         "responsible_unit": "總務處",
         "evidence_ids": [
           "e2",
@@ -97,27 +86,16 @@
         ]
       },
       {
-        "action": "檢視並維修或更換老舊供水設備與管線，排除可能的設備故障以避免重複停水。",
+        "action": "若維修為外包廠商施工，請廠商檢查並改善施工期間的臨時供水與通報流程。",
         "audience": "units",
         "horizon": "mid",
-        "priority": "high",
-        "kind": "prevent",
-        "cause_id": "c1",
-        "responsible_unit": "校內廠商或維修承包商",
-        "evidence_ids": [
-          "e3"
-        ]
-      },
-      {
-        "action": "若確認為設備或管線問題，安排定期巡檢並建立通報機制，減少無預警停水發生。",
-        "audience": "school",
-        "horizon": "long",
         "priority": "medium",
-        "kind": "prevent",
-        "cause_id": "c1",
-        "responsible_unit": "總務處",
+        "kind": "investigate",
+        "cause_id": null,
+        "responsible_unit": "廠商",
         "evidence_ids": [
-          "e2"
+          "e2",
+          "e3"
         ]
       }
     ],
@@ -126,7 +104,7 @@
       "e2",
       "e3"
     ],
-    "reason": "這個系列持續追蹤建築物停水或廁所沒水的狀況。三起事件都和工程五館有關，出現無預警或重複停水的情形，建議進一步查明原因並採取維修或巡檢措施以降低影響。",
+    "reason": "工程五館在十月發生多起停水事件，廁所因此無法使用或沒水。三起事件都指向同一建築，建議先暫時備水並由學校檢查供水與公告維修時程。",
     "abstain_reason": null
   }
 }

@@ -1,10 +1,10 @@
 {
   "case_id": "adversarial-003",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "宿舍旁深夜可疑人士徘徊",
+    "title": "女宿附近深夜有人徘徊",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -13,7 +13,7 @@
           "E1",
           "E2"
         ],
-        "reason": "兩起通報都寫到發生在女十四舍或其附近，地點名稱一致。"
+        "reason": "兩起事件的位置欄都寫「女十四舍」，指向同一棟女宿。"
       }
     ],
     "pattern_status": "ok",
@@ -21,7 +21,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "都在深夜時段有人在宿舍旁徘徊。",
+        "description": "都發生在深夜，地點靠近女宿，有人在外徘徊。",
         "event_ids": [
           "E1",
           "E2"
@@ -45,7 +45,19 @@
     "causes": [],
     "measures": [
       {
-        "action": "遇到可疑人士，記得先到安全亮的地方並撥打校內警衛或 110 等求助電話，保持距離並注意自身安全。",
+        "action": "晚上盡量走有人經過、亮燈的路線，遇到可疑人士先避開並尋求同學幫忙。",
+        "audience": "students",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": null,
+        "evidence_ids": [
+          "e2"
+        ]
+      },
+      {
+        "action": "發生徘徊時請立即通報駐警隊或保全，並告知位置和情況以便快速處理。",
         "audience": "students",
         "horizon": "short",
         "priority": "high",
@@ -53,57 +65,43 @@
         "cause_id": null,
         "responsible_unit": null,
         "evidence_ids": [
-          "e1",
-          "e2"
+          "e1"
         ]
       },
       {
-        "action": "請校方檢視女十四舍周邊的夜間巡邏與警衛巡查頻率，必要時加強深夜時段巡邏。",
-        "audience": "school",
-        "horizon": "short",
-        "priority": "high",
-        "kind": "investigate",
-        "cause_id": null,
-        "responsible_unit": "警衛室",
-        "evidence_ids": [
-          "e1",
-          "e2"
-        ]
-      },
-      {
-        "action": "建議校方檢查該區監視器覆蓋與錄影狀態，確認是否有畫面可協助查證通報內容。",
+        "action": "檢視女宿周邊晚間照明是否足夠，必要時增設或改善路燈與監視器視角。",
         "audience": "school",
         "horizon": "mid",
         "priority": "high",
         "kind": "investigate",
         "cause_id": null,
-        "responsible_unit": "設施管理單位",
+        "responsible_unit": "保全組",
         "evidence_ids": [
           "e1",
           "e2"
         ]
       },
       {
-        "action": "請相關單位考慮在女十四舍周邊加強夜間照明或臨時增設照明設備，以提升夜間可視性。",
+        "action": "加強夜間校園巡邏頻次，巡邏時注意女宿周邊靜止徘徊的可疑人物。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "prevent",
+        "cause_id": null,
+        "responsible_unit": "保全組",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "與地方警方協調必要時增加夜間巡邏或快速反應聯繫管道。",
         "audience": "units",
         "horizon": "mid",
         "priority": "medium",
-        "kind": "prevent",
+        "kind": "investigate",
         "cause_id": null,
-        "responsible_unit": "設施管理單位",
-        "evidence_ids": [
-          "e1",
-          "e2"
-        ]
-      },
-      {
-        "action": "如通報中含有即時危險或可疑人持續出現，建議警察機關加強巡邏並協助蒐證。",
-        "audience": "units",
-        "horizon": "short",
-        "priority": "high",
-        "kind": "respond",
-        "cause_id": null,
-        "responsible_unit": "當地警察機關",
+        "responsible_unit": "校外警方",
         "evidence_ids": [
           "e1",
           "e2"
@@ -114,7 +112,7 @@
       "e1",
       "e2"
     ],
-    "reason": "這個系列持續追蹤宿舍旁深夜出現可疑人士並被通報的情形。建議同學注意自身安全，學校與相關單位檢視並加強夜間防護與查證。",
+    "reason": "女宿附近深夜有不明人士徘徊，兩起都在女十四舍附近發生，發生時在夜間出現外來徘徊情形。",
     "abstain_reason": null
   }
 }

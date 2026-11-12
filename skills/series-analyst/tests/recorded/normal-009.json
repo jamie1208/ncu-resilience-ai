@@ -1,10 +1,10 @@
 {
   "case_id": "normal-009",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "通學路口機車與汽車擦撞",
+    "title": "路口機車擦撞",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -13,7 +13,7 @@
           "E1",
           "E2"
         ],
-        "reason": "兩則證據都指出是在校門口附近的路口（中大路口與校門口為同一校門口路口的不同稱法）。"
+        "reason": "兩起事件都發生在校門口的路口，描述上指向同一交叉口。"
       }
     ],
     "pattern_status": "ok",
@@ -21,7 +21,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "都發生在早上通學尖峰時段，當時路上車流多。",
+        "description": "都發生在上課尖峰的早晨約 8 點，當時車流較多。",
         "event_ids": [
           "E1",
           "E2"
@@ -45,7 +45,7 @@
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能是早上通學尖峰時段車流量大，增加擦撞風險。",
+        "description": "可能是上課尖峰時段車流量大且用路人匆忙，造成駕駛判斷或閃避不及而發生擦撞。",
         "event_ids": [
           "E1",
           "E2"
@@ -57,22 +57,22 @@
         "evidence_spans": [
           {
             "evidence_id": "e1",
-            "quote": "上課尖峰車很多。"
+            "quote": "早上快八點中大路口一台機車跟汽車擦撞，上課尖峰車很多。"
           },
           {
             "evidence_id": "e2",
-            "quote": "趕上課的車超多。"
+            "quote": "八點校門口路口又有機車擦撞，趕上課的車超多。"
           }
         ],
-        "to_verify": "向警衛或交通單位確認校門口平日早上車流量與是否已有交通管制或改善計畫。"
+        "to_verify": "向校內警衛或交通管理單位確認該路口早上車流量、是否有交通號誌或攝影監控可回放。"
       }
     ],
     "measures": [
       {
-        "action": "上學時間請注意車距與路口禮讓，通過路口前放慢速度並留意側方來車。",
+        "action": "早上上學時放慢車速、注意路口來車，預留較多反應時間。",
         "audience": "students",
         "horizon": "short",
-        "priority": "high",
+        "priority": "medium",
         "kind": "prevent",
         "cause_id": null,
         "responsible_unit": null,
@@ -82,39 +82,39 @@
         ]
       },
       {
-        "action": "檢視校門口早上尖峰時段的交通動線與管制措施，評估是否需要增派交通指揮或改善標示。",
+        "action": "校門口早上尖峰時段增加值班或巡邏，並協助疏導車流。",
         "audience": "school",
-        "horizon": "mid",
+        "horizon": "short",
         "priority": "high",
-        "kind": "investigate",
+        "kind": "respond",
         "cause_id": "c1",
-        "responsible_unit": "總務處",
+        "responsible_unit": "警衛室",
         "evidence_ids": [
           "e1",
           "e2"
         ]
       },
       {
-        "action": "如調查顯示車流集中造成風險，建議調整上下課車輛動線或增設時段性交通管制以減少衝突。",
+        "action": "調查該路口早上車流情況與事故成因（檢視監視錄影或車流量資料）。",
         "audience": "units",
+        "horizon": "mid",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": "c1",
+        "responsible_unit": "交通管理單位",
+        "evidence_ids": [
+          "e1",
+          "e2"
+        ]
+      },
+      {
+        "action": "評估是否需要在校門口增設標線、減速設施或調整號誌以降低交叉口衝突風險。",
+        "audience": "school",
         "horizon": "mid",
         "priority": "medium",
         "kind": "prevent",
         "cause_id": "c1",
-        "responsible_unit": "校園保全或交通單位",
-        "evidence_ids": [
-          "e1",
-          "e2"
-        ]
-      },
-      {
-        "action": "蒐集校門口早上時段的車流紀錄與事故紀錄，作為後續改善方案的依據。",
-        "audience": "school",
-        "horizon": "short",
-        "priority": "high",
-        "kind": "investigate",
-        "cause_id": "c1",
-        "responsible_unit": "總務處",
+        "responsible_unit": "總務或交通管理單位",
         "evidence_ids": [
           "e1",
           "e2"
@@ -125,7 +125,7 @@
       "e1",
       "e2"
     ],
-    "reason": "這個系列持續追蹤通學路口早上尖峰時段機車與汽車擦撞的情況，初步證據顯示事故發生於上課時段的車流高峰，建議進一步調查與採取預防措施。",
+    "reason": "校門口路口在上課尖峰時出現機車與其他車輛擦撞的情形，時間多為早上約 8 點，當時車流較多、趕上課的車輛密集。",
     "abstain_reason": null
   }
 }

@@ -1,11 +1,11 @@
 {
   "case_id": "boundary-001",
-  "skill_version": "1.3.0",
+  "skill_version": "1.4.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "科學五館下週三整天停電，實驗記得備份",
+    "title": "科五下週三整天停電，實驗記得先備份",
     "occurrence_start_date": "2026-10-28",
     "occurrence_start_time": null,
     "occurrence_end_date": "2026-10-28",
@@ -13,7 +13,7 @@
     "location": "科學五館",
     "mentions_person": false,
     "summary": {
-      "text": "科學五館 10/28（三）整天停電，有實驗的同學記得提前備份資料。",
+      "text": "系辦有同學轉述，科學五館下週三整天要停電；有實驗的人記得先把資料備份好。",
       "evidence_ids": [
         "e1"
       ]
@@ -25,12 +25,12 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "下週三整天要停電"
+        "quote": "科五下週三整天要停電"
       },
       {
         "field": "time",
         "evidence_id": "e1",
-        "quote": "下週三"
+        "quote": "下週三整天"
       },
       {
         "field": "location",
@@ -38,8 +38,8 @@
         "quote": "科五"
       }
     ],
-    "reason": "貼文指出科五（科學五館）在下週三整天停電，並提醒有實驗的人備份資料。",
-    "confidence": 0.75,
+    "reason": "貼文轉述系辦消息，明確寫出科五（科學五館）在「下週三整天」會停電，並提醒有實驗的同學備份。",
+    "confidence": 0.7,
     "abstain_reason": null
   }
 }
