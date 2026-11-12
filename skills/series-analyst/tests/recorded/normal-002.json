@@ -1,6 +1,6 @@
 {
   "case_id": "normal-002",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -8,7 +8,7 @@
     "burst_explanations": [
       {
         "burst_id": "b1",
-        "explanation": "同一週有多起停電事件，證據中提到事件發生於颱風期間，可能與風雨引發的供電中斷或不穩有關。",
+        "explanation": "證據中提到颱風，該週多起停電發生在颱風期間，可能與颱風造成的供電中斷有關。",
         "event_ids": [
           "E2",
           "E3",
@@ -27,28 +27,28 @@
         "event_ids": [
           "E1"
         ],
-        "reason": "事件的 location 與證據皆標示為工程五館。"
+        "reason": "事件地點欄記為「工程五館」。"
       },
       {
         "label": "男九舍",
         "event_ids": [
           "E2"
         ],
-        "reason": "事件的 location 與證據皆標示為男九舍。"
+        "reason": "事件地點欄記為「男九舍」。"
       },
       {
         "label": "科學一館",
         "event_ids": [
           "E3"
         ],
-        "reason": "事件的 location 與證據皆標示為科學一館。"
+        "reason": "事件地點欄記為「科學一館」。"
       },
       {
         "label": "女十四舍",
         "event_ids": [
           "E4"
         ],
-        "reason": "事件的 location 與證據皆標示為女十四舍。"
+        "reason": "事件地點欄記為「女十四舍」。"
       }
     ],
     "pattern_status": "ok",
@@ -56,7 +56,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "多起停電事件發生於颱風期間。",
+        "description": "發生在颱風期間的停電。",
         "event_ids": [
           "E2",
           "E3",
@@ -86,7 +86,7 @@
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能是颱風期間風雨導致配電或供電中斷，疑似造成多處建築短暫停電。",
+        "description": "可能是颱風造成的外部供電或配電設備中斷，疑似因風雨影響導致多棟建築同時跳電。",
         "event_ids": [
           "E2",
           "E3",
@@ -111,26 +111,41 @@
             "quote": "颱風過境女十四停電大概二十分鐘。"
           }
         ],
-        "to_verify": "向總務處或校內維護單位確認當週是否有因颱風導致的配電設備故障、停電紀錄或電力公司維修通報。"
+        "to_verify": "向校方與供電單位確認該週是否有因颱風導致的外部或校園配電中斷記錄、變壓器或線路受損情形。"
+      },
+      {
+        "cause_id": "c2",
+        "description": "疑似個別建築內部配電或設備故障，因為有起事件的說法未指出颱風原因。",
+        "event_ids": [
+          "E1"
+        ],
+        "evidence_ids": [
+          "e1"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e1",
+            "quote": "工五整棟停電，電腦都關機了，不知道什麼原因。"
+          }
+        ],
+        "to_verify": "向總務處或維修單位確認工程五館的配電盤、分路與備援電源是否有故障或維修記錄。"
       }
     ],
     "measures": [
       {
-        "action": "遇到停電請先關閉重要電器並保持冷靜，注意官方公告與後續通報。",
+        "action": "颱風來時盡量不要搭電梯，發現電梯停用改走樓梯或待在安全地點。",
         "audience": "students",
         "horizon": "short",
-        "priority": "medium",
+        "priority": "high",
         "kind": "respond",
-        "cause_id": null,
+        "cause_id": "c1",
         "responsible_unit": null,
         "evidence_ids": [
-          "e2",
-          "e3",
-          "e4"
+          "e3"
         ]
       },
       {
-        "action": "調查該波停電事件是否與颱風期間的配電設備故障有關，檢視配電室與應變紀錄。",
+        "action": "查詢颱風期間各棟供電紀錄與分區跳電紀錄，確認是否為外部停電或配電設備受損。",
         "audience": "school",
         "horizon": "mid",
         "priority": "high",
@@ -144,13 +159,13 @@
         ]
       },
       {
-        "action": "與區域電力公司聯繫，確認颱風期間是否有配電中斷或維修作業，並討論強化配電保護的可行措施。",
+        "action": "聯絡供電公司檢查外部配電線路與變壓器是否於颱風中受損或跳脫。",
         "audience": "units",
         "horizon": "mid",
         "priority": "high",
         "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": "廠商／電力公司",
+        "responsible_unit": "供電公司",
         "evidence_ids": [
           "e2",
           "e3",
@@ -158,30 +173,40 @@
         ]
       },
       {
-        "action": "檢討並強化颱風期間的校內停電應變流程，例如電梯停用的替代動線與宿舍通報機制。",
+        "action": "檢查工程五館配電盤、分路與備援電源，釐清是否為建築內部設備故障。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "investigate",
+        "cause_id": "c2",
+        "responsible_unit": "總務處",
+        "evidence_ids": [
+          "e1"
+        ]
+      },
+      {
+        "action": "定期檢修重要建築的配電與備援設備，颱風來前做好防護與備援電源檢測。",
         "audience": "school",
         "horizon": "long",
         "priority": "medium",
         "kind": "prevent",
-        "cause_id": "c1",
-        "responsible_unit": "總務處／安全中心",
+        "cause_id": "c2",
+        "responsible_unit": "總務處",
         "evidence_ids": [
-          "e3",
-          "e4"
+          "e1"
         ]
       },
       {
-        "action": "建議學生在颱風來臨前備妥手電與行動電源，並遵守學校發布的停電安全指引。",
+        "action": "颱風期間如遇停電請關閉電腦及實驗設備電源，避免資料或設備損壞。",
         "audience": "students",
         "horizon": "short",
-        "priority": "low",
+        "priority": "medium",
         "kind": "prevent",
         "cause_id": null,
         "responsible_unit": null,
         "evidence_ids": [
-          "e2",
-          "e3",
-          "e4"
+          "e1",
+          "e2"
         ]
       }
     ],
@@ -191,7 +216,7 @@
       "e3",
       "e4"
     ],
-    "reason": "這個系列持續追蹤校內建築停電或跳電事件；部分事件發生在颱風期間，需進一步確認是否為颱風造成的供電中斷。",
+    "reason": "校內出現多起建築物停電或跳電情形，其中有數起發生在颱風期間，部分建築在颱風來時電梯也停用。整體看來有颱風相關的停電與個別建築內部問題的可能性。",
     "abstain_reason": null
   }
 }

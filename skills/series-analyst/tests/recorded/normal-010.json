@@ -1,10 +1,10 @@
 {
   "case_id": "normal-010",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "步道路燈不亮",
+    "title": "湖邊步道路燈不亮",
     "burst_explanations": [],
     "location_groups": [
       {
@@ -13,7 +13,7 @@
           "E1",
           "E2"
         ],
-        "reason": "兩起事件都發生在中大湖一帶的步道路段，敘述指向同一區域。"
+        "reason": "兩筆事件都描述中大湖附近的步道，地點名稱為相同地點的不同寫法。"
       }
     ],
     "pattern_status": "ok",
@@ -21,7 +21,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "晚上步道光源不足，路燈不亮或整段沒燈，行走時視線受影響。",
+        "description": "夜間湖邊步道照明不足，步道整段或好幾盞路燈不亮。",
         "event_ids": [
           "E1",
           "E2"
@@ -33,11 +33,11 @@
         "evidence_spans": [
           {
             "evidence_id": "e1",
-            "quote": "路燈好幾盞不亮"
+            "quote": "中大湖旁邊步道的路燈好幾盞不亮，晚上走很可怕。"
           },
           {
             "evidence_id": "e2",
-            "quote": "晚上走中大湖步道整段都沒燈"
+            "quote": "晚上走中大湖步道整段都沒燈，差點跌倒。"
           }
         ]
       }
@@ -45,7 +45,7 @@
     "causes": [],
     "measures": [
       {
-        "action": "晚上走步道記得結伴或攜帶手電筒，注意腳下路況。",
+        "action": "晚上走路結伴或改走有路燈的道路，盡量避開沒燈的步道。",
         "audience": "students",
         "horizon": "short",
         "priority": "medium",
@@ -58,7 +58,7 @@
         ]
       },
       {
-        "action": "請派人檢查中大湖步道的路燈是否故障，並列出需要維修的燈柱清單。",
+        "action": "檢查中大湖步道路燈的故障位置與原因，確認哪些燈不亮。",
         "audience": "school",
         "horizon": "short",
         "priority": "high",
@@ -71,24 +71,24 @@
         ]
       },
       {
-        "action": "完成檢修後，優先安排夜間照明維修或更換老舊燈具，恢復步道照明。",
+        "action": "修復或更換故障路燈，並補強夜間照明。",
         "audience": "units",
         "horizon": "mid",
         "priority": "high",
         "kind": "respond",
         "cause_id": null,
-        "responsible_unit": "總務處",
+        "responsible_unit": "校園維護單位或廠商",
         "evidence_ids": [
           "e1",
           "e2"
         ]
       },
       {
-        "action": "若檢查發現路燈頻繁故障，建議評估更換為較耐用或節能的燈具並建立定期檢修計畫。",
+        "action": "在修復前於步道入口放置臨時警示與反光標示，並於夜間加派巡查。",
         "audience": "school",
-        "horizon": "long",
-        "priority": "medium",
-        "kind": "prevent",
+        "horizon": "short",
+        "priority": "high",
+        "kind": "respond",
         "cause_id": null,
         "responsible_unit": "總務處",
         "evidence_ids": [
@@ -101,7 +101,7 @@
       "e1",
       "e2"
     ],
-    "reason": "這個系列持續追蹤步道照明不足的情形，主要反映中大湖步道夜間路燈不亮造成行走不便與安全疑慮。",
+    "reason": "湖邊步道的路燈晚上不亮，走在步道上照明不足，行走有跌倒或不安全的風險。請大家夜間盡量結伴或改走有燈的路線，學校可儘速檢查並修復路燈。",
     "abstain_reason": null
   }
 }

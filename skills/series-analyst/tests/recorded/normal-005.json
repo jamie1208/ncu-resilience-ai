@@ -1,6 +1,6 @@
 {
   "case_id": "normal-005",
-  "skill_version": "1.2.0",
+  "skill_version": "1.3.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -8,25 +8,25 @@
     "burst_explanations": [],
     "location_groups": [
       {
-        "label": "男三舍旁停車",
+        "label": "男三舍外",
         "event_ids": [
           "E1"
         ],
-        "reason": "地點欄位明確寫「男三舍」，描述為宿舍旁停放。"
+        "reason": "事件資料寫明地點為「男三舍」，為同一處宿舍外停放區。"
       },
       {
         "label": "女十四舍停車場",
         "event_ids": [
           "E2"
         ],
-        "reason": "地點欄位明確寫「女十四舍」，為另一宿舍停車場。"
+        "reason": "事件資料寫明地點為「女十四舍停車場」，為同一處宿舍停車場。"
       },
       {
         "label": "後門停車場",
         "event_ids": [
           "E3"
         ],
-        "reason": "地點欄位寫「後門停車場」，與宿舍外停車場不同位置。"
+        "reason": "事件資料寫明地點為「後門停車場」，為校園後門一帶的停車區。"
       }
     ],
     "pattern_status": "ok",
@@ -34,7 +34,7 @@
     "patterns": [
       {
         "pattern_id": "p1",
-        "description": "發生在深夜或凌晨、停放在宿舍或校園停車場時被竊。",
+        "description": "多起發生在深夜或凌晨時段。",
         "event_ids": [
           "E1",
           "E2",
@@ -64,7 +64,24 @@
     "causes": [
       {
         "cause_id": "c1",
-        "description": "可能是歹徒在深夜時段流動作案，利用宿舍外的深夜時機竊取停放機車。",
+        "description": "可能是個別車主未使用大鎖或防護不足，讓車輛較易被竊。",
+        "event_ids": [
+          "E3"
+        ],
+        "evidence_ids": [
+          "e3"
+        ],
+        "evidence_spans": [
+          {
+            "evidence_id": "e3",
+            "quote": "半夜停後門停車場的機車被偷，沒上大鎖，週六晚上停的。"
+          }
+        ],
+        "to_verify": "向失物招領或駐警隊確認被偷車輛是否普遍未上大鎖或有防盜裝置失效的紀錄。"
+      },
+      {
+        "cause_id": "c2",
+        "description": "疑似有人在深夜或凌晨時段趁機行竊，選擇宿舍周邊與夜間停車區下手。",
         "event_ids": [
           "E1",
           "E2",
@@ -83,63 +100,36 @@
           {
             "evidence_id": "e2",
             "quote": "週日凌晨女十四停車場機車被偷，鑰匙有拔。"
-          }
-        ],
-        "to_verify": "向校安或校警確認校園夜間巡邏與監視影像是否有可疑人員與作案時間。"
-      },
-      {
-        "cause_id": "c2",
-        "description": "可能是部分車主未使用大鎖或防盜設備，降低了被盜風險的阻隔。",
-        "event_ids": [
-          "E3"
-        ],
-        "evidence_ids": [
-          "e3"
-        ],
-        "evidence_spans": [
+          },
           {
             "evidence_id": "e3",
             "quote": "半夜停後門停車場的機車被偷，沒上大鎖，週六晚上停的。"
           }
         ],
-        "to_verify": "向被害人或停車場管理單位確認被竊車輛當時是否有使用大鎖或其他防盜設備。"
+        "to_verify": "向駐警隊或校安單位確認近期香港或校園周邊是否有深夜行竊趨勢或可疑通報。"
       }
     ],
     "measures": [
       {
-        "action": "記得晚上停車時多使用大鎖與防盜設備，停好後確認已上鎖。",
+        "action": "停車時把大鎖鎖好並把鎖掛在車架上，晚上盡量停在有燈、有人經過的停車位。",
         "audience": "students",
         "horizon": "short",
         "priority": "high",
         "kind": "prevent",
-        "cause_id": "c2",
-        "responsible_unit": null,
-        "evidence_ids": [
-          "e3"
-        ]
-      },
-      {
-        "action": "若發現可疑情形，請立即通報校安或校警，並提供發生時間與地點協助調查。",
-        "audience": "students",
-        "horizon": "short",
-        "priority": "high",
-        "kind": "respond",
         "cause_id": "c1",
         "responsible_unit": null,
         "evidence_ids": [
-          "e1",
-          "e2",
           "e3"
         ]
       },
       {
-        "action": "調查三起事件的監視影像與夜間巡邏紀錄，以確認是否有重複可疑人員或作案手法。",
-        "audience": "school",
+        "action": "駐警隊在深夜時段加強宿舍與後門停車場的巡邏與路檢，重點巡視停車區與出入口。",
+        "audience": "units",
         "horizon": "short",
         "priority": "high",
         "kind": "investigate",
-        "cause_id": "c1",
-        "responsible_unit": "校安或校警",
+        "cause_id": "c2",
+        "responsible_unit": "駐警隊",
         "evidence_ids": [
           "e1",
           "e2",
@@ -147,26 +137,37 @@
         ]
       },
       {
-        "action": "檢視宿舍區與後門停車場的照明與監視設備覆蓋範圍，必要時增加照明或補設攝影機。",
+        "action": "檢查後門停車場與宿舍外的照明是否足夠，必要時補強路燈或增加監視器視角。",
         "audience": "school",
         "horizon": "mid",
         "priority": "medium",
-        "kind": "prevent",
+        "kind": "investigate",
         "cause_id": "c1",
-        "responsible_unit": "總務處或相關維護單位",
+        "responsible_unit": "總務處",
         "evidence_ids": [
-          "e1",
           "e3"
         ]
       },
       {
-        "action": "檢討停車場管理措施，確認是否能加強夜間出入管制或巡視頻次。",
+        "action": "在宿舍群發放夜間停車與防盜提醒，示範如何使用大鎖與停放位置的基本防護做法。",
+        "audience": "school",
+        "horizon": "short",
+        "priority": "medium",
+        "kind": "prevent",
+        "cause_id": "c1",
+        "responsible_unit": "宿舍管理組",
+        "evidence_ids": [
+          "e3"
+        ]
+      },
+      {
+        "action": "彙整近期深夜被偷與可疑通報紀錄，供駐警隊檢視是否有重複作案時段或路徑可資比對。",
         "audience": "units",
         "horizon": "mid",
-        "priority": "medium",
+        "priority": "high",
         "kind": "investigate",
-        "cause_id": "c1",
-        "responsible_unit": "宿舍管理單位或停車場管理單位",
+        "cause_id": "c2",
+        "responsible_unit": "駐警隊",
         "evidence_ids": [
           "e1",
           "e2",
@@ -179,7 +180,7 @@
       "e2",
       "e3"
     ],
-    "reason": "這個系列持續追蹤停放機車在宿舍或校園停車場深夜遭竊的事件，觀察到多起發生在深夜或凌晨，已建議加強調查與預防措施。",
+    "reason": "校內有停放的機車在深夜或凌晨遭到竊取，發生地點包括宿舍外與後門停車場。這些事件都發生在夜間，可能有人趁深夜時段下手，或部分車主未使用足夠防盜措施。",
     "abstain_reason": null
   }
 }

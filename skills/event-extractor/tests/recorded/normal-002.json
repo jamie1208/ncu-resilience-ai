@@ -1,11 +1,11 @@
 {
   "case_id": "normal-002",
-  "skill_version": "1.3.0",
+  "skill_version": "1.4.0",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "男三舍 10/25（日）凌晨網路暫停，進行設備更新",
+    "title": "男三舍凌晨網路停擺，設備更新暫停服務",
     "occurrence_start_date": "2026-10-25",
     "occurrence_start_time": "02:00",
     "occurrence_end_date": "2026-10-25",
@@ -13,7 +13,7 @@
     "location": "男三舍",
     "mentions_person": false,
     "summary": {
-      "text": "男三舍 10/25（日）02:00–06:00 進行設備更新，期間宿舍網路暫停服務，請相關同學留意。",
+      "text": "男三舍公告：10/25（日）凌晨 02:00 到 06:00 進行設備更新，屆時宿舍網路會暫停服務。需要網路的同學可以先把資料離線或另找可用網路。",
       "evidence_ids": [
         "e1"
       ]
@@ -25,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "進行設備更新，期間暫停服務"
+        "quote": "期間暫停服務"
       },
       {
         "field": "time",
@@ -38,7 +38,7 @@
         "quote": "男三舍宿舍網路"
       }
     ],
-    "reason": "宿舍公告寫明男三舍網路將於 10/25（日）02:00–06:00 進行設備更新並暫停服務。",
+    "reason": "校內公告明確寫出男三舍將於 10/25 指定時段進行設備更新並暫停網路服務。",
     "confidence": 0.95,
     "abstain_reason": null
   }

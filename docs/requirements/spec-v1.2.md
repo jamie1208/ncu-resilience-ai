@@ -115,13 +115,13 @@ Skill 封裝標準不變（v1.1 §5）。Skill 清單（2026-11-11）：
 | ID | 名稱 | 版本 | 狀態 |
 | --- | --- | --- | --- |
 | S01 | relevance-filter | 1.2.0 | 使用中 |
-| S02 | event-extractor | **1.3.0**（播報員語氣的 `summary.text`〔P8-T11〕與 `title`〔P8-T17〕） | 使用中 |
+| S02 | event-extractor | **1.4.0**（播報員語氣的 `summary.text`〔P8-T11〕與 `title`〔P8-T17〕；以示範頁第一版為準〔P8-T18〕） | 使用中 |
 | S03～S06 | event-classifier、event-linker、evidence-verifier、risk-assessor | 1.0.0 | 使用中 |
 | S07 | root-cause-analyst | 1.0.0 | **停用**（`DEPRECATED.md`；不再修改、不再升版） |
 | S08 | solution-planner | 1.0.0 | **停用**（同上） |
 | S09、S10 | trend-forecaster、scenario-simulator | 1.0.0 | 使用中 |
 | S11 | series-matcher（新事件與候選系列是否同主題；不看地點） | 1.0.0 | **新增**（P8-T04） |
-| S12 | series-analyst（系列名稱、突增解釋、地點分組、規律、可能原因與 `to_verify`、改善建議） | **1.2.0**（P8-T05 建立 1.0.0，P8-T11 說明與建議改播報員語氣，P8-T17 系列名稱也改） | **新增** |
+| S12 | series-analyst（系列名稱、突增解釋、地點分組、規律、可能原因與 `to_verify`、改善建議） | **1.2.0**（P8-T05 建立 1.0.0，P8-T11 說明與建議改播報員語氣，P8-T17 系列名稱也改，P8-T18 以示範頁第一版為準，1.3.0） | **新增** |
 | S13 | location-resolver（alias_of／inside_of／new） | 1.0.0 | **新增**（P8-T02） |
 | S14 | impact-evaluator（依所選建議估計改善百分比區間與前後情境） | 1.0.0 | **新增**（P8-T15） |
 
@@ -296,7 +296,7 @@ v1.1 的 26 張表加上 9 張新表，共 **35 張資料表**與 2 個 material
 
 ### §11.1 文案語氣（新增）
 
-公開網站、後台介面、通知範本（`factual.txt`）與 AI 產生的對外文字（S02 `title` 與 `summary.text`、S12 `title`〔系列名稱〕、`reason` 與 `measures[].action`；標題與系列名稱自 P8-T17 起，S02 1.3.0、S12 1.2.0）改為「校園快報播報員」語氣：親切、先講重點、不聳動、不用表情符號、不改事實（`docs/governance/tone-guide.md`）。平實例外：緊急資訊（110／119、火災、地震避難）、「尚未查證」與「推測，尚未查證」等標籤、非官方聲明、隱私說明、具體限制、未查證中性提醒範本（`general_safety.txt` 不變）、S12 的規律、原因與 `to_verify`。既有事件與系列以 `python -m app.pipeline.rerun_tone` 重跑一次（P8-T17）。文件、ADR、驗收紀錄不改語氣。
+公開網站、後台介面、通知範本（`factual.txt`）與 AI 產生的對外文字（S02 `title` 與 `summary.text`、S12 `title`〔系列名稱〕、`reason` 與 `measures[].action`；標題與系列名稱自 P8-T17 起，S02 1.3.0、S12 1.2.0）改為「校園快報播報員」語氣，以 2026-11-05 示範頁第一版為準：有畫面、帶情緒、先講重點、像跟同學說話而不是公告，不用表情符號、不改事實（`docs/governance/tone-guide.md`、ADR-0021；P8-T18 起 S02 1.4.0、S12 1.3.0）。平實例外：緊急資訊（110／119、火災、地震避難）、「尚未查證」與「推測，尚未查證」等標籤、非官方聲明、隱私說明、具體限制、未查證中性提醒範本（`general_safety.txt` 不變）、S12 的規律、原因與 `to_verify`。既有事件與系列以 `python -m app.pipeline.rerun_tone` 重跑一次（P8-T17）。文件、ADR、驗收紀錄不改語氣。
 
 ---
 
@@ -336,10 +336,10 @@ P8 任務：T01 手動合併拆分、T02 S13 地點判斷、T03 代表地點計�
 | 系列分析（新增） | S12 `status`、`pattern_status`、`patterns_supported` ≥ 0.90；引用驗證由程式丟棄不合格項 | 使用者 2026-11-09 |
 | 地點判斷（新增） | S13 `decision_accuracy`、`alias_precision`、`target_accuracy` ≥ 0.90 | 使用者 2026-11-05 |
 | 效益評估（新增） | S14 `improvement_valid` = 1.0、`cause_coverage` ≥ 0.90、`abstain_when_insufficient` = 1.0、`hypothesized_not_asserted` = 1.0 | ADR-0019、使用者 2026-11-11 |
-| 語氣（新增） | S02 1.2.0→1.3.0、S12 1.1.0→1.2.0 重錄並重跑 live 評測不低於門檻；`test_skill_tone.py`（無表情符號與聳動字眼、推測仍帶「可能／疑似」）；`test_template_tone.py`、`tone.test.tsx`（緊急與「尚未查證」文案不變） | P8-T10、P8-T11 |
+| 語氣（新增） | ADR-0021 起不以離線評測與 `test_skill_tone.py` 驗證語氣（已刪除），由使用者看實際輸出判斷；錄製回應只需合 schema 與可追溯；`test_template_tone.py`、`tone.test.tsx`（緊急與「尚未查證」文案不變） | P8-T10、P8-T11 |
 | 自動發布 | **G5-5 改為**：推測原因、FB 原文與投稿原文不出現在公開端（推測原因與規律只在系列頁並帶標籤）；未查證與疑似指控內容一律帶標籤並經 PII 遮蔽；提到個人或單位的原因公開時必定產生提醒與下架入口 | ADR-0018 2-6、ADR-0020 2-4 |
 | 系列（新增） | G8-1：歸組、拆出、解散與前後比較可重現；任一邊少於 5 件不出比例 | ADR-0018 5-3 |
-| Skills（新增） | G8-2：S11～S14 評測達門檻且引用全部可驗證；G8-5：語氣改版後 S01～S14 不低於門檻 | ADR-0018、ADR-0019 |
+| Skills（新增） | G8-2：S11～S14 評測達門檻且引用全部可驗證；G8-5：語氣改版後 S01～S14 不低於門檻（已通過；ADR-0021 起之後的 Skill 改動不再以評測門檻為閘門） | ADR-0018、ADR-0019、ADR-0021 |
 | 公開邊界（新增） | G8-3：`tests/security` 全部通過（含 `test_report_receipt.py`、`test_impact_not_public.py`）；G8-4（人工）：使用者確認新公開端點、閘道白名單與威脅模型 | ADR-0018 5-3 |
 | 通知 | 相同版本無重複外送（G3-2 不變）；另加重試不重複遞送（`test_delivery_retry.py`） | P8-T07 |
 
