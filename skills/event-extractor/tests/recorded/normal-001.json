@@ -1,11 +1,11 @@
 {
   "case_id": "normal-001",
-  "skill_version": "1.4.0",
+  "skill_version": "1.5.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "工程五館 11/2（一）上午停電，記得先存檔",
+    "title": "工程五館上午停電四小時，記得先存檔",
     "occurrence_start_date": "2026-11-02",
     "occurrence_start_time": "08:00",
     "occurrence_end_date": "2026-11-02",
@@ -13,7 +13,7 @@
     "location": "工程五館",
     "mentions_person": false,
     "summary": {
-      "text": "工程五館 11/2（一）上午 8 點到 12 點配合台電檢修停電。在館內跑實驗或寫報告的同學，記得提早存檔。",
+      "text": "工程五館 11/2（一）上午 8 點到 12 點停電檢修，整個上午館內都沒電。正在跑實驗或寫報告的同學記得提早存檔！",
       "evidence_ids": [
         "e1"
       ]
@@ -38,7 +38,7 @@
         "quote": "工程五館"
       }
     ],
-    "reason": "公告寫明工程五館於 11/2（一）08:00–12:00 停電配合台電檢修，並提醒提前儲存資料。",
+    "reason": "官方公告寫明工程五館於 11/2（週一）08:00–12:00 停電檢修並提醒提前儲存資料。",
     "confidence": 0.95,
     "abstain_reason": null
   }

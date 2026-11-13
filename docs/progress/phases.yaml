@@ -546,6 +546,14 @@ phases:
         title: 移除離線評測閘門，AI 語氣以示範頁第一版為準
         deps: [P8-T17]
         paths: [docs/decisions/ADR-0021-remove-offline-eval-gates.md, docs/governance/tone-guide.md, skills/event-extractor/SKILL.md, skills/series-analyst/SKILL.md, backend/tests/golden/test_skills.py]
+      - id: P8-T19
+        title: S02 官方公告改寫成播報口吻、相對時間不重複
+        deps: [P8-T18]
+        paths: [skills/event-extractor/SKILL.md, skills/event-extractor/tests/recorded, docs/governance/tone-guide.md]
+      - id: P8-T20
+        title: 快報文案改由獨立 Skill 產生（S15 bulletin-writer）
+        deps: [P8-T19]
+        paths: [skills/bulletin-writer, backend/app/pipeline/analyze_item.py, backend/app/pipeline/rerun_tone.py, docs/governance/tone-guide.md]
     gates:
       - id: G8-1
         title: 系列歸組、拆出、解散與前後比較可重現

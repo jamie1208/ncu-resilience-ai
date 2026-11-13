@@ -1,11 +1,11 @@
 {
   "case_id": "boundary-007",
-  "skill_version": "1.4.0",
+  "skill_version": "1.5.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "十二舍熱水器又壞，洗到一半變冷水",
+    "title": "十二舍熱水器故障，洗澡會變冷水",
     "occurrence_start_date": "2026-10-20",
     "occurrence_start_time": null,
     "occurrence_end_date": null,
@@ -13,7 +13,7 @@
     "location": "十二舍",
     "mentions_person": false,
     "summary": {
-      "text": "有同學回報，十二舍的熱水器今天又壞了，洗到一半會變冷水；宿舍委員說會請廠商來修，想洗熱水的同學可以先注意狀況。",
+      "text": "十二舍的熱水器今天又壞了，洗到一半會變冷水，宿舍委員表示會請廠商來修。",
       "evidence_ids": [
         "e1"
       ]
@@ -38,8 +38,8 @@
         "quote": "12舍"
       }
     ],
-    "reason": "貼文寫出十二舍熱水器今天故障並且洗到一半會變冷水，且提到宿舍委員會請廠商來修，為會影響人使用的故障事件。",
-    "confidence": 0.9,
+    "reason": "貼文描述宿舍熱水器故障並影響洗澡，用詞指向已發生的設備故障並會影響人，且寫出發生地點為 12 舍。",
+    "confidence": 0.8,
     "abstain_reason": null
   }
 }

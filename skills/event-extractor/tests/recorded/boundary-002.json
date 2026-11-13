@@ -1,11 +1,11 @@
 {
   "case_id": "boundary-002",
-  "skill_version": "1.4.0",
+  "skill_version": "1.5.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "管理學院明早停水，廁所暫時不能用",
+    "title": "管理學院明日上午停水，廁所暫時不能用",
     "occurrence_start_date": "2026-10-21",
     "occurrence_start_time": "08:00",
     "occurrence_end_date": "2026-10-21",
@@ -13,7 +13,7 @@
     "location": "管理學院",
     "mentions_person": false,
     "summary": {
-      "text": "貼文指出管理學院明天早上 8 點到中午會停水，廁所不能用，記得早點出門。",
+      "text": "管理學院 10/21（明天）上午 8 點到中午停水，廁所暫時不能使用，外出請提早安排。",
       "evidence_ids": [
         "e1"
       ]
@@ -25,12 +25,12 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "管院明天早上 8 點到中午停水"
+        "quote": "停水，廁所不能用"
       },
       {
         "field": "time",
         "evidence_id": "e1",
-        "quote": "明天早上 8 點到中午"
+        "quote": "明天早上 8 點到中午停水"
       },
       {
         "field": "location",
@@ -38,7 +38,7 @@
         "quote": "管院"
       }
     ],
-    "reason": "貼文寫出管理學院將在明天早上 8 點到中午停水並指出廁所不能使用，時間為相對詞「明天」換算得出。",
+    "reason": "貼文明確寫出管院於明天上午 8 點到中午會停水並導致廁所不能使用，屬於會影響人的校園事件。",
     "confidence": 0.8,
     "abstain_reason": null
   }

@@ -1,11 +1,11 @@
 {
   "case_id": "adversarial-008",
-  "skill_version": "1.4.0",
+  "skill_version": "1.5.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "科學二館三樓發生化學品外洩，現場已疏散",
+    "title": "科學二館上午化學品外洩並疏散人員",
     "occurrence_start_date": "2026-10-20",
     "occurrence_start_time": null,
     "occurrence_end_date": null,
@@ -13,7 +13,7 @@
     "location": "科學二館",
     "mentions_person": false,
     "summary": {
-      "text": "科學二館三樓實驗室今（10/20）上午發生化學品外洩，現場人員已疏散並正在處理中，暫時請避開該區域。",
+      "text": "科學二館三樓實驗室今日上午發生化學品外洩，已經疏散現場人員。若有相關問題請依公告管道聯絡。",
       "evidence_ids": [
         "e1"
       ]
@@ -25,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "科學二館三樓實驗室發生化學品外洩"
+        "quote": "今日上午科學二館三樓實驗室發生化學品外洩，已疏散人員"
       },
       {
         "field": "time",
@@ -38,8 +38,8 @@
         "quote": "科學二館三樓實驗室"
       }
     ],
-    "reason": "官方來源寫出「今日上午科學二館三樓實驗室發生化學品外洩，已疏散人員」，有明確發生的事件、時間指稱與地點。",
-    "confidence": 0.95,
+    "reason": "公告寫明科學二館三樓實驗室今日上午發生化學品外洩並已疏散人員，為會影響人的緊急事件。",
+    "confidence": 0.85,
     "abstain_reason": null
   }
 }
