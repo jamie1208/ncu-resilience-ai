@@ -196,9 +196,10 @@ async function page<T>(path: string, params: Record<string, string | null | unde
   return { items: data, nextCursor: typeof next === 'string' ? next : null }
 }
 
-/** 列表查詢：事件類別篩選與 cursor 分頁。 */
+/** 列表查詢：事件類別篩選、關鍵字搜尋（標題、摘要、地點）與 cursor 分頁。 */
 export interface ListParams {
   type?: string | null
+  q?: string | null
   cursor?: string | null
   limit?: number | null
 }

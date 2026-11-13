@@ -4,14 +4,16 @@
 不讀事件、證據、小報告或改善措施等原始資料表。回傳欄位以白名單從快照挑出；`id` 是
 publication 的 ID，不是事件 ID。
 
-- `GET /api/v1/public/feed`：最新快報（事件內容，新到舊），可依 `type` 篩選；P8-T06 起未查證的事件
-  也公開 AI 摘要並帶 `verification_label`（「尚未查證」），每筆附所屬系列（`series`，見 series.py）
+- `GET /api/v1/public/feed`：最新快報（事件內容，新到舊），可依 `type` 篩選、依 `q` 關鍵字搜尋；
+  P8-T06 起未查證的事件也公開 AI 摘要並帶 `verification_label`（「尚未查證」），
+  每筆附所屬系列（`series`，見 series.py）
 - `GET /api/v1/public/notices`：安全提醒（P8-T06 起不再產生，只剩舊版本已撤下前的資料，通常為空）
 - `GET /api/v1/public/categories`：事件類別與各自公開的事件數、提醒數
-- `GET /api/v1/public/events`：事件分類查詢（只有事件內容），可依 `type` 篩選
+- `GET /api/v1/public/events`：事件分類查詢（只有事件內容），可依 `type` 篩選、依 `q` 關鍵字搜尋
 - `GET /api/v1/public/events/{id}`：快報全文（官方來源、所屬系列）；單一事件小報告已停用（P8-T13）
 - `GET /api/v1/public/progress`：改善進度（P8-T06 起以系列為單位：有改善措施的公開系列頁）
 
+關鍵字只比對快照中已公開的標題、摘要與地點（已遮蔽 PII），`%`、`_` 照字面比對。
 列表皆為 cursor 分頁（依版本時間新到舊）。系列分析頁的快照不會出現在事件的列表與詳細頁。
 """
 
@@ -25,7 +27,7 @@ from functools import cache
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import Select, and_, func, select
+from sqlalchemy import Select, and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.alerts.policy import NotificationPolicy
@@ -66,6 +68,9 @@ Session = Annotated[AsyncSession, Depends(get_db_session)]
 Limit = Annotated[int, Query(ge=1, le=MAX_LIMIT)]
 Cursor = Annotated[str | None, Query(max_length=512)]
 TypeFilter = Annotated[str | None, Query(max_length=32, description="事件類別")]
+Keyword = Annotated[str | None, Query(max_length=50, description="關鍵字（標題、摘要、地點）")]
+
+_KEYWORD_FIELDS = ("title", "summary", "location")
 
 Row = tuple[uuid.UUID, dict[str, Any], int, datetime]
 
@@ -135,6 +140,17 @@ def _item(row: Row, refs: dict[str, dict[str, Any]], *, detail: bool = False) ->
     return item
 
 
+def _match_keyword(stmt: Select[Row], keyword: str | None) -> Select[Row]:
+    """關鍵字篩選：不分大小寫比對公開快照的標題、摘要、地點；空白關鍵字不篩選。"""
+    text = (keyword or "").strip()
+    if not text:
+        return stmt
+    content = PublicationVersion.content
+    return stmt.where(
+        or_(*(content[f].astext.icontains(text, autoescape=True) for f in _KEYWORD_FIELDS))
+    )
+
+
 async def _page(
     session: AsyncSession,
     stmt: Select[Row],
@@ -160,10 +176,11 @@ async def _list(
     event_type: str | None,
     limit: int,
     cursor: str | None,
+    keyword: str | None = None,
 ) -> dict[str, Any]:
     rows, next_cursor = await _page(
         session,
-        _published(*levels),
+        _match_keyword(_published(*levels), keyword),
         event_type=_check_type(event_type),
         limit=limit,
         cursor=cursor,
@@ -178,9 +195,10 @@ async def feed(
     type: TypeFilter = None,
     limit: Limit = DEFAULT_LIMIT,
     cursor: Cursor = None,
+    q: Keyword = None,
 ) -> dict[str, Any]:
     """最新快報：公開的事件內容（含尚未查證的）與舊安全提醒，新到舊。"""
-    return await _list(session, _PUBLIC_LEVELS, type, limit, cursor)
+    return await _list(session, _PUBLIC_LEVELS, type, limit, cursor, q)
 
 
 @router.get("/notices")
@@ -220,9 +238,10 @@ async def events(
     type: TypeFilter = None,
     limit: Limit = DEFAULT_LIMIT,
     cursor: Cursor = None,
+    q: Keyword = None,
 ) -> dict[str, Any]:
     """事件分類查詢：公開內容的事件（含尚未查證的），新到舊。"""
-    return await _list(session, (PublicLevel.CONTENT.value,), type, limit, cursor)
+    return await _list(session, (PublicLevel.CONTENT.value,), type, limit, cursor, q)
 
 
 @router.get("/events/{publication_id}")

@@ -96,6 +96,42 @@ describe('PublicApp', () => {
     expect(calls.every((c) => c.path.startsWith('/api/v1/public/'))).toBe(true)
   })
 
+  it('首頁輸入關鍵字搜尋快報：列出符合的快報、查無結果有提示、清除後回到分區', async () => {
+    const q = (text: string) => `GET /api/v1/public/feed?q=${encodeURIComponent(text)}`
+    const { calls } = mockApi({
+      ...ROUTES,
+      [q('施工')]: { data: [PUBLIC_EVENT], meta: { next_cursor: null } },
+      [q('颱風')]: { data: [], meta: { next_cursor: null } },
+    })
+    render(<PublicApp />)
+    const user = userEvent.setup()
+    await screen.findByRole('list', { name: '設施快報' })
+
+    const search = within(screen.getByRole('search', { name: '搜尋快報' }))
+    await user.type(search.getByRole('searchbox', { name: '關鍵字' }), '  施工 ')
+    await user.click(search.getByRole('button', { name: '搜尋' }))
+
+    const results = await screen.findByRole('list', { name: '搜尋結果' })
+    expect(within(results).getByRole('link', { name: '工程五館外牆整修施工' })).toHaveAttribute(
+      'href',
+      `/events/${PUBLIC_EVENT_ID}`,
+    )
+    expect(within(results).getByText('已查證')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: '「施工」的搜尋結果' })).toBeInTheDocument()
+    // 搜尋時不顯示分區
+    expect(screen.queryByRole('list', { name: '設施快報' })).not.toBeInTheDocument()
+    expect(calls.map((c) => c.path)).toContain(`/api/v1/public/feed?q=${encodeURIComponent('施工')}`)
+
+    const box = search.getByRole('searchbox', { name: '關鍵字' })
+    await user.clear(box)
+    await user.type(box, '颱風{Enter}')
+    expect(await screen.findByText('找不到符合「颱風」的快報，換個關鍵字試試。')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '清除搜尋' }))
+    expect(await screen.findByRole('list', { name: '設施快報' })).toBeInTheDocument()
+    expect(search.getByRole('searchbox', { name: '關鍵字' })).toHaveValue('')
+  })
+
   it('首頁沒有公開快報時顯示空狀態，API 失敗時顯示錯誤', async () => {
     mockApi({ 'GET /api/v1/public/feed?limit=50': { data: [], meta: { next_cursor: null } } })
     const { unmount } = render(<PublicApp />)
