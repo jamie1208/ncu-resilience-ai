@@ -4,14 +4,17 @@ SHELL := /bin/bash
 COMPOSE := docker compose -f infra/docker/docker-compose.yml --env-file .env
 # 本機常駐運行（P5-T06）：疊上 docker-compose.local.yml
 COMPOSE_LOCAL := docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.local.yml --env-file .env
+# 示範環境（P9-T01，ADR-0022）：獨立的 compose project ncu-demo，與真實環境不共用任何容器或資料
+COMPOSE_DEMO := docker compose -p ncu-demo -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.demo.yml -f infra/docker/docker-compose.demo-share.yml --env-file .env
+DEMO_SERVICES := db redis api worker beat web
 API_PORT ?= 8000
 WEB_PORT ?= 8088
 
 .DEFAULT_GOAL := help
-.PHONY: help up up-local listen down ps logs smoke test e2e migrate sources health reset
+.PHONY: help up up-local listen down ps logs smoke test e2e migrate sources health reset demo-up demo-seed demo-down demo-drop demo-share demo-share-url demo-unshare
 
 help: ## 列出可用指令
-	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  make %-8s %s\n", $$1, $$2}'
+	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  make %-15s %s\n", $$1, $$2}'
 
 # .env 不存在時由範例建立（不會覆蓋既有的 .env）
 .env:
@@ -66,3 +69,52 @@ reset: ## 刪除所有容器與資料（資料庫、Redis）；需加 CONFIRM=ye
 		exit 1; \
 	fi
 	$(COMPOSE) down -v --remove-orphans
+
+# ---------- 示範環境（P9-T01，ADR-0022）：見 docs/runbooks/demo.md ----------
+
+demo-up: .env ## 啟動示範環境（虛構資料，http://127.0.0.1:8089）並重新播種；不影響真實環境
+	$(COMPOSE_DEMO) up -d --build --wait $(DEMO_SERVICES)
+	$(MAKE) demo-seed
+
+demo-seed: .env ## 清空示範資料庫並重新建立虛構資料（只在 ncu_resilience_demo 執行）
+	@# 播種期間先停 worker、beat，避免排程的公開同步與種子同時寫入
+	$(COMPOSE_DEMO) stop worker beat
+	$(COMPOSE_DEMO) exec api alembic upgrade head
+	$(COMPOSE_DEMO) exec api python -m app.demo.seed
+	$(COMPOSE_DEMO) start worker beat
+
+demo-down: ## 停止示範環境（含分享通道；保留示範資料）
+	$(COMPOSE_DEMO) --profile share down
+
+demo-drop: ## 刪除示範環境的容器與 volume（只刪 ncu-demo，真實資料不受影響）；需加 CONFIRM=yes
+	@if [ "$(CONFIRM)" != "yes" ]; then \
+		echo "這會刪除示範環境的資料庫與 Redis（ncu-demo_*）。確定要執行請用：make demo-drop CONFIRM=yes"; \
+		exit 1; \
+	fi
+	$(COMPOSE_DEMO) --profile share down -v --remove-orphans --rmi local
+
+# 示範站分享（ADR-0022 決策 9）：只開關示範站的通道；真實網站用 infra/tunnel/tunnel.sh up／down
+DEMO_SHARE_URL = $(COMPOSE_DEMO) --profile share logs --no-log-prefix tunnel 2>/dev/null | grep -Eo 'https://[a-z0-9-]+\.trycloudflare\.com' | tail -n 1
+DEMO_SHARE_RUNNING = $(COMPOSE_DEMO) --profile share ps -q --status running tunnel 2>/dev/null
+
+demo-share: .env ## 開放示範站給組員：建立臨時網址（公開站與 /admin），印出網址；真實網站不受影響
+	$(COMPOSE_DEMO) up -d --wait $(DEMO_SERVICES)
+	@# 每次重建通道容器：Quick Tunnel 每次啟動網址都會變，重建才不會讀到舊網址
+	$(COMPOSE_DEMO) --profile share up -d --force-recreate --no-deps tunnel
+	@for i in $$(seq 1 40); do \
+		url=$$($(DEMO_SHARE_URL)); \
+		if [ -n "$$url" ]; then \
+			echo "示範站已開放：$$url　後台：$$url/admin"; \
+			echo "關閉：make demo-unshare"; exit 0; \
+		fi; \
+		sleep 1; \
+	done; \
+	echo "通道已啟動但還沒取得網址，稍後執行 make demo-share-url"
+
+demo-share-url: ## 印出示範站目前的分享網址（沒有開放時說明未開放）
+	@if [ -n "$$($(DEMO_SHARE_RUNNING))" ]; then $(DEMO_SHARE_URL); \
+	else echo "示範站目前沒有開放分享"; fi
+
+demo-unshare: ## 關閉示範站分享：停止通道，網址立即失效；示範站本機照常運作
+	$(COMPOSE_DEMO) --profile share stop tunnel
+	@echo "示範站分享已關閉（真實網站的通道不受影響）"

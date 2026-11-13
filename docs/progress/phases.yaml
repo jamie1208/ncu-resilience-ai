@@ -570,3 +570,15 @@ phases:
       - id: G8-5
         title: 播報員語氣改版後 S01–S14 評測不低於門檻
         command: cd backend && uv run python ../scripts/eval/run_eval.py --all --split test
+  - id: P9
+    name: 示範模式
+    goal: 以虛構資料跑真實流程完整展示所有功能（含韌性成績單），與真實環境完全隔離、可整套移除（ADR-0022）
+    tasks:
+      - id: P9-T01
+        title: 示範環境與虛構資料種子
+        deps: [P8-T20]
+        paths: [docs/decisions/ADR-0022-demo-mode.md, infra/docker/docker-compose.demo.yml, backend/app/demo, backend/app/core/config.py, frontend/src/DemoBanner.tsx, Makefile, docs/runbooks/demo.md, backend/tests/integration/test_demo_seed.py]
+    gates:
+      - id: G9-1
+        title: 示範種子測試通過且拒絕在非示範資料庫執行
+        command: cd backend && uv run pytest tests/integration/test_demo_seed.py -q

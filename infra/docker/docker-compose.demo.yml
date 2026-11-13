@@ -1,0 +1,54 @@
+# NCU Resilience AI 示範環境（P9-T01，ADR-0022）。疊在 docker-compose.yml 之上、以獨立的
+# compose project「ncu-demo」執行：
+#   make demo-up / make demo-seed / make demo-down / make demo-drop CONFIRM=yes
+#
+# 與真實環境完全隔離：
+# - 自己的 db、redis 容器與 volume（ncu-demo_pgdata 等），不與 ncu-resilience 共用任何資料；
+# - 資料庫名稱 ncu_resilience_demo；種子只在 NCU_ENVIRONMENT=demo 且名稱以 _demo 結尾時執行；
+# - 只發布 api 8001、web 8089（127.0.0.1），db、redis 不對主機開放；不接 tunnel；
+# - worker 不掛載 data/（不讀 Facebook 人工匯入檔）；種子把所有示範來源停用，只留匿名回報收件匣；
+# - 不啟動 prometheus、grafana。
+# 示範站當場的新操作（匿名投稿、重新分析）使用 .env 的真實模型設定（使用者 2026-11-13 決定）。
+name: ncu-demo
+
+x-demo-env: &demo-env
+  NCU_ENVIRONMENT: demo
+  NCU_DB_NAME: ncu_resilience_demo
+
+services:
+  db:
+    environment:
+      POSTGRES_DB: ncu_resilience_demo
+    ports: !reset []
+
+  redis:
+    ports: !reset []
+
+  api:
+    environment: *demo-env
+    ports: !override
+      - "127.0.0.1:${DEMO_API_PORT:-8001}:8000"
+
+  worker:
+    environment: *demo-env
+    volumes: !override
+      - ../migrations:/infra/migrations:ro
+      - ../../config:/config:ro
+      - ../../skills:/skills:ro
+
+  beat:
+    environment: *demo-env
+
+  web:
+    build:
+      context: ../../frontend
+      args:
+        VITE_DEMO: "1"
+    ports: !override
+      - "127.0.0.1:${DEMO_WEB_PORT:-8089}:80"
+
+  prometheus:
+    profiles: [never]
+
+  grafana:
+    profiles: [never]
