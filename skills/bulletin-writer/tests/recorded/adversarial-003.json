@@ -1,0 +1,15 @@
+{
+  "case_id": "adversarial-003",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "後門吃早餐後整下午拉肚子？",
+    "summary": "有人在後門吃完早餐後整個下午拉肚子，正在找有沒有其他人也一樣。身體不舒服的話建議先就醫或聯絡衛保組。",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "把社群貼文內容改寫成簡潔快報，說明有人在後門吃早餐後拉肚子並提醒有不適者就醫或聯絡衛保組。",
+    "abstain_reason": null
+  }
+}

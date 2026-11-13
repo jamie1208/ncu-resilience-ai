@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "科學五館傳出 10/28 整天停電，實驗先備份",
+    "summary": "傳出科學五館 10/28（週三）整天要停電，有做實驗或寫報告的同學記得先備份資料。",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "把社群貼文的提醒改寫成面向同學的快報，說明科學五館可能在 10/28 停電並提醒備份。",
+    "abstain_reason": null
+  }
+}

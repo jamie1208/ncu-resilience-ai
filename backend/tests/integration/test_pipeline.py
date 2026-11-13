@@ -721,3 +721,206 @@ def test_production_pipeline_skips_relevance(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setattr(pipeline, "create_provider", lambda *_: SkillScript({}))
     monkeypatch.setattr(pipeline, "create_embedding_provider", lambda *_: FakeEmbeddingProvider())
     assert build_deps().check_relevance is False
+
+
+# ---------- S15 bulletin-writer（P8-T20） ----------
+
+S15_TITLE = "科學一館上午停電三小時，記得先存檔"
+S15_SUMMARY = "科學一館 10/22 上午 9 點到 12 點停電檢修，館內都沒電。要寫報告的同學記得先存檔！"
+
+
+def bulletin(eid: str, **override: Any) -> dict[str, Any]:
+    base: dict[str, Any] = {
+        "status": "ok",
+        "title": S15_TITLE,
+        "summary": S15_SUMMARY,
+        "evidence_ids": [eid],
+        "reason": "依公告寫明的停電時段改寫成快報。",
+        "abstain_reason": None,
+    }
+    return {**base, **override}
+
+
+class CapturingScript(SkillScript):
+    """另外記下每次呼叫的使用者訊息（檢查 S15 的輸入）。"""
+
+    def __init__(self, scripts: Mapping[str, Sequence[Script]]) -> None:
+        super().__init__(scripts)
+        self.messages: dict[str, list[str]] = {}
+
+    async def generate_structured(
+        self,
+        messages: Sequence[Message],
+        json_schema: Mapping[str, Any],
+        *,
+        schema_name: str,
+        model: str,
+        timeout: float,
+        max_output_tokens: int,
+    ) -> LLMResult:
+        skill = schema_name.removesuffix("_output").replace("_", "-")
+        self.messages.setdefault(skill, []).append(messages[-1].content)
+        return await super().generate_structured(
+            messages,
+            json_schema,
+            schema_name=schema_name,
+            model=model,
+            timeout=timeout,
+            max_output_tokens=max_output_tokens,
+        )
+
+
+def bulletin_deps(provider: SkillScript, embedder: FakeEmbeddingProvider | None = None) -> Any:
+    return replace(deps(provider, embedder), write_bulletin=True)
+
+
+def s15_scripts(e: str, writer: Sequence[Script], **extracted: Any) -> dict[str, Any]:
+    return {
+        "relevance-filter": [relevance(e)],
+        "event-extractor": [{**extraction(e), **extracted}],
+        "event-classifier": [classification(e)],
+        "bulletin-writer": list(writer),
+        "evidence-verifier": [verification({e: ("supports", "official")}, "verified")],
+        "risk-assessor": [risk(e)],
+    }
+
+
+async def test_bulletin_writer_replaces_title_and_summary(session: AsyncSession) -> None:
+    item = await add_item(session, await add_source(session, "ncu-announcements"), NOTICE)
+    e = eid(item)
+    provider = CapturingScript(s15_scripts(e, [bulletin(e)]))
+
+    result = await analyze_item(session, item.id, bulletin_deps(provider))
+
+    assert result.outcome is Outcome.CREATED
+    assert provider.called[:4] == [
+        "relevance-filter",
+        "event-extractor",
+        "event-classifier",
+        "bulletin-writer",
+    ]
+    event = await session.get(Event, result.event_id)
+    assert event is not None
+    assert event.title == S15_TITLE
+    assert event.summary == S15_SUMMARY
+    assert event.summary_evidence_ids == [e]  # 沿用 S02 的 summary.evidence_ids
+    writer_run = next(r for r in await runs(session) if r.skill_name == "bulletin-writer")
+    assert event.summary_ai_run_id == writer_run.id
+    assert writer_run.event_id == event.id
+    # 輸入：原文證據（untrusted）＋ S02 抽出的時間與地點
+    [message] = provider.messages["bulletin-writer"]
+    assert f'<untrusted_source id="{e}"' in message
+    assert "2026-10-22" in message and "09:00" in message and "科學一館" in message
+
+
+async def test_mentions_person_skips_bulletin_writer(session: AsyncSession) -> None:
+    item = await add_item(session, await add_source(session, "facebook"), NOTICE)
+    e = eid(item)
+    provider = SkillScript(s15_scripts(e, [], mentions_person=True))
+
+    result = await analyze_item(session, item.id, bulletin_deps(provider))
+
+    assert result.outcome is Outcome.CREATED
+    assert "bulletin-writer" not in provider.called
+    event = await session.get(Event, result.event_id)
+    assert event is not None
+    assert event.title == "科學一館停電檢修"
+    assert event.summary == "科學一館 10/22 上午停電檢修。"
+    s02_run = next(r for r in await runs(session) if r.skill_name == "event-extractor")
+    assert event.summary_ai_run_id == s02_run.id
+
+
+@pytest.mark.parametrize(
+    "writer",
+    [
+        pytest.param([LLMError("timeout")] * 3, id="failed"),
+        pytest.param(
+            [
+                lambda: {
+                    "status": "abstain",
+                    "title": None,
+                    "summary": None,
+                    "evidence_ids": [],
+                    "reason": "內容不足。",
+                    "abstain_reason": "insufficient_evidence",
+                }
+            ],
+            id="abstain",
+        ),
+        pytest.param(
+            [{"__pii__": True}] * 3,
+            id="pii",
+        ),
+    ],
+)
+async def test_bulletin_failure_falls_back_to_s02(session: AsyncSession, writer: list[Any]) -> None:
+    item = await add_item(session, await add_source(session, "ncu-announcements"), NOTICE)
+    e = eid(item)
+    pii = bulletin(e, summary="停電期間有問題請打 0912-345-678 或寫信到 lab.test@example.com。")
+    scripts = [pii if isinstance(w, dict) and w.get("__pii__") else w for w in writer]
+    provider = SkillScript(s15_scripts(e, scripts))
+
+    result = await analyze_item(session, item.id, bulletin_deps(provider))
+
+    assert result.outcome is Outcome.CREATED  # 不影響事件建立
+    assert "bulletin-writer" in provider.called
+    event = await session.get(Event, result.event_id)
+    assert event is not None
+    assert event.title == "科學一館停電檢修"
+    assert event.summary == "科學一館 10/22 上午停電檢修。"
+    s02_run = next(r for r in await runs(session) if r.skill_name == "event-extractor")
+    assert event.summary_ai_run_id == s02_run.id
+
+
+def test_bulletin_copy_rejects_pii_even_if_runner_missed_it() -> None:
+    """第二道防線：`mask_pii()` 會改動的文字一律視為驗證失敗。"""
+    ok = bulletin("e1")
+    assert pipeline.bulletin_copy(ok) == (S15_TITLE, S15_SUMMARY)
+    assert pipeline.bulletin_copy(bulletin("e1", summary="請寄信到 a.b@example.com")) is None
+    assert pipeline.bulletin_copy(bulletin("e1", title="打 0912345678 問")) is None
+    assert pipeline.bulletin_copy(bulletin("e1", title="  ")) is None
+    assert pipeline.bulletin_copy({**ok, "status": "abstain"}) is None
+    assert pipeline.bulletin_copy(None) is None
+
+
+async def test_linked_item_without_better_summary_skips_bulletin_writer(
+    session: AsyncSession,
+) -> None:
+    """併入既有事件、而且摘要不會覆寫時不呼叫 S15（結果不會被用到）。"""
+    embedder = same_vector_embedder()
+    existing = await _existing_event(session)
+    official_id = (await session.scalars(select(EventEvidence.source_item_id))).one()
+    existing.summary = "官方公告的說明。"
+    existing.summary_evidence_ids = [official_id.hex]
+    existing.summary_source_item_id = official_id
+    await session.flush()
+    item = await add_item(session, await add_source(session, "facebook"), REPOST)
+    e = eid(item)
+    provider = SkillScript(
+        {
+            "relevance-filter": [relevance(e)],
+            "event-extractor": [extraction(e)],
+            "event-classifier": [classification(e)],
+            "event-linker": [linking(e, official_id.hex, "same_event")],
+            "evidence-verifier": [
+                verification(
+                    {official_id.hex: ("supports", "official"), e: ("supports", "first_hand")},
+                    "verified",
+                )
+            ],
+            "risk-assessor": [risk(e)],
+        }
+    )
+
+    result = await analyze_item(session, item.id, bulletin_deps(provider, embedder))
+
+    assert result.outcome is Outcome.LINKED
+    assert "bulletin-writer" not in provider.called
+    await session.refresh(existing)
+    assert existing.summary == "官方公告的說明。"
+
+
+def test_production_pipeline_writes_bulletin(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(pipeline, "create_provider", lambda *_: SkillScript({}))
+    monkeypatch.setattr(pipeline, "create_embedding_provider", lambda *_: FakeEmbeddingProvider())
+    assert build_deps().write_bulletin is True

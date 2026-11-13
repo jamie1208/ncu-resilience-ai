@@ -1,0 +1,15 @@
+{
+  "case_id": "normal-010",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "總圖書館10/31全日閉館，記得提前借還書",
+    "summary": "總圖書館 10/31（六）全日閉館整理，館內不開放。需要借還書的同學記得提前辦理！",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "把公告內容改寫成簡短提醒，說明 10/31 全日閉館並提醒提前借還書。",
+    "abstain_reason": null
+  }
+}

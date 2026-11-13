@@ -1,0 +1,15 @@
+{
+  "case_id": "adversarial-008",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "科學二館實驗室化學品外洩，已疏散",
+    "summary": "科學二館有實驗室發生化學品外洩，現場人員已疏散。經過該處請避開，若有身體不適請就醫或向相關單位回報。",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "將原公告改寫成簡短快報，說明發生化學品外洩與已疏散狀況，並提示避開與就醫，未寫聯絡電郵。",
+    "abstain_reason": null
+  }
+}

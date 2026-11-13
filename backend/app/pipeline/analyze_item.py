@@ -19,6 +19,13 @@
 新文章沒有比目前的出處更強或更新、或沒有摘要時不覆寫。寫入前再經 `mask_pii()` 遮蔽
 （Runner 已拒絕含個資的輸出，這是第二道防線）。
 
+快報文案（P8-T20）：`PipelineDeps.write_bulletin` 為 True 時（正式環境），S02、S03 通過後以
+S15 bulletin-writer 依原文與 S02 抽出的時間、地點重寫標題與說明，取代 S02 的 `title` 與
+`summary.text`（`summary_evidence_ids` 沿用 S02，`summary_ai_run_id` 指向 S15 的執行紀錄）。
+安全規則由程式判斷：S02 `mentions_person` 不是 false 時不呼叫；S15 失敗、abstain，或輸出經
+`mask_pii()` 會被改動（含個資）時沿用 S02 的版本，不影響事件建立。只有結果會被用到時才呼叫
+（建立新事件，或這篇文章會成為事件說明的新出處；AI 決定，見 P8-T20 驗收紀錄）。
+
 `analyze_event`（`POST /api/v1/admin/events/{id}/analyze` 的重跑）：以事件目前的證據重跑 S05、S06。
 事件沒有向量時（例：P8-T01 拆分後），先以最早加入的文章重新計算（與建立事件時相同的文字），
 失敗時記下步驟、不影響 S05、S06。
@@ -120,6 +127,7 @@ S03 = "event-classifier"
 S04 = "event-linker"
 S05 = "evidence-verifier"
 S06 = "risk-assessor"
+S15 = "bulletin-writer"
 EMBEDDING_STEP = "embedding"
 
 MAX_CANDIDATES = 3
@@ -184,6 +192,8 @@ class PipelineDeps:
     """是否在查證後更新系列（S11，P8-T04）。"""
     series_hook: SeriesHook | None = None
     """事件屬於某個系列之後排入系列分析（S12，P8-T05）：（系列 id, trace_id）。"""
+    write_bulletin: bool = False
+    """是否以 S15 bulletin-writer 重寫標題與說明（P8-T20）。"""
 
 
 @dataclass(frozen=True)
@@ -318,6 +328,15 @@ async def _summary_rank(session: AsyncSession, item_id: uuid.UUID) -> tuple[bool
     return is_official_source(code), published_at or fetched_at
 
 
+async def _summary_replaceable(session: AsyncSession, event: Event, item_id: uuid.UUID) -> bool:
+    """文章是否比事件說明目前的出處更強或更新（事件還沒有說明時為 True）。"""
+    if event.summary is None or event.summary_source_item_id is None:
+        return True
+    current = await _summary_rank(session, event.summary_source_item_id)
+    candidate = await _summary_rank(session, item_id)
+    return current is None or (candidate is not None and candidate > current)
+
+
 async def _update_summary(
     session: AsyncSession,
     event: Event,
@@ -333,16 +352,67 @@ async def _update_summary(
     evidence_ids = [str(e) for e in summary.get("evidence_ids") or []]
     if not text or not evidence_ids:
         return
-    if event.summary is not None and event.summary_source_item_id is not None:
-        current = await _summary_rank(session, event.summary_source_item_id)
-        candidate = await _summary_rank(session, item_id)
-        if current is not None and (candidate is None or candidate <= current):
-            return
+    if not await _summary_replaceable(session, event, item_id):
+        return
     event.summary = mask_pii(text)
     event.summary_evidence_ids = evidence_ids
     event.summary_source_item_id = item_id
     event.summary_ai_run_id = run_id
     event.summary_updated_at = datetime.now(UTC)
+
+
+# ---------- 快報文案（S15，P8-T20） ----------
+
+BULLETIN_FACTS = (
+    "occurrence_start_date",
+    "occurrence_start_time",
+    "occurrence_end_date",
+    "occurrence_end_time",
+    "location",
+)
+
+
+def bulletin_payload(
+    evidence: Sequence[Mapping[str, Any]], extracted: Mapping[str, Any]
+) -> dict[str, Any]:
+    """S15 的輸入：原文證據（與 S02 相同）＋ S02 抽出的時間與地點。"""
+    facts: dict[str, Any] = {key: extracted.get(key) for key in BULLETIN_FACTS}
+    if isinstance(facts["location"], str):
+        facts["location"] = facts["location"][:MAX_LOCATION_CHARS]
+    return {"evidence": list(evidence), "facts": facts}
+
+
+def wants_bulletin(extracted: Mapping[str, Any]) -> bool:
+    """S02 判定是事件、而且原文沒有點名個人或店家時才交給 S15（不由模型決定）。"""
+    return extracted.get("is_event") is True and extracted.get("mentions_person") is False
+
+
+def bulletin_copy(output: Mapping[str, Any] | None) -> tuple[str, str] | None:
+    """S15 可以使用的（標題, 說明）；abstain、空白或經 `mask_pii()` 會被改動（含個資）時為 None。"""
+    if not output or output.get("status") != "ok":
+        return None
+    title = str(output.get("title") or "").strip()
+    summary = str(output.get("summary") or "").strip()
+    if not title or not summary:
+        return None
+    if mask_pii(title) != title or mask_pii(summary) != summary:
+        return None
+    return title[:MAX_TITLE_CHARS], summary
+
+
+async def _bulletin(
+    ctx: _Context,
+    evidence: Sequence[Mapping[str, Any]],
+    extracted: Mapping[str, Any],
+    *,
+    event_id: uuid.UUID | None,
+) -> tuple[str, str, uuid.UUID | None] | None:
+    """執行 S15；回傳（標題, 說明, 執行紀錄 id），不能使用時回傳 None（沿用 S02）。"""
+    if not ctx.deps.write_bulletin or not wants_bulletin(extracted):
+        return None
+    result = await ctx.run(S15, bulletin_payload(evidence, extracted), event_id=event_id)
+    copy = bulletin_copy(_ok(result))
+    return (*copy, result.run_id) if copy is not None else None
 
 
 # ---------- 查證與風險（S05、S06） ----------
@@ -723,14 +793,28 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
     }
     target, related = await _link(ctx, evidence, article_summary, candidates)
 
-    if target is not None:
-        event = await session.get(Event, target)
-        if event is None:
-            raise LookupError(f"事件 {target} 不存在")
+    existing = await session.get(Event, target) if target is not None else None
+    if target is not None and existing is None:
+        raise LookupError(f"事件 {target} 不存在")
+    # 快報文案（P8-T20）：只在結果會被用到時呼叫 S15
+    bulletin = (
+        await _bulletin(ctx, evidence, extracted, event_id=target)
+        if existing is None or await _summary_replaceable(session, existing, item_id)
+        else None
+    )
+    summary: Any = extracted.get("summary")
+    summary_run: uuid.UUID | None = extraction.run_id
+    if bulletin is not None and isinstance(summary, Mapping):
+        summary, summary_run = {**summary, "text": bulletin[1]}, bulletin[2]
+
+    if existing is not None:
+        event = existing
         outcome = Outcome.LINKED
     else:
         event = Event(
-            title=str(extracted.get("title") or UNTITLED)[:MAX_TITLE_CHARS],
+            title=(bulletin[0] if bulletin else str(extracted.get("title") or UNTITLED))[
+                :MAX_TITLE_CHARS
+            ],
             type=category,
             status=EventStatus.DETECTED.value,
             location_id=await resolve_location(
@@ -764,14 +848,8 @@ async def _analyze_item(ctx: _Context, item_id: uuid.UUID) -> PipelineResult:
     )
     if context is not None and context.attach:
         await _attach_once(session, event.id, context.item_id)
-    await _update_summary(
-        session,
-        event,
-        extracted.get("summary"),
-        item_id=item_id,
-        run_id=extraction.run_id,
-    )
-    article_runs = [s.run_id for s in ctx.steps if s.name in (S01, S02, S03, S13) and s.run_id]
+    await _update_summary(session, event, summary, item_id=item_id, run_id=summary_run)
+    article_runs = [s.run_id for s in ctx.steps if s.name in (S01, S02, S03, S13, S15) and s.run_id]
     await session.execute(
         update(AIAnalysisRun)
         .where(AIAnalysisRun.id.in_(article_runs), AIAnalysisRun.event_id.is_(None))
@@ -906,6 +984,7 @@ def build_deps() -> PipelineDeps:
         check_relevance=False,
         group_series=True,
         series_hook=enqueue_series_analysis,
+        write_bulletin=True,
     )
 
 
@@ -964,5 +1043,8 @@ __all__ = [
     "Step",
     "analyze_event",
     "analyze_item",
+    "bulletin_copy",
+    "bulletin_payload",
     "dispatch_pending_items",
+    "wants_bulletin",
 ]

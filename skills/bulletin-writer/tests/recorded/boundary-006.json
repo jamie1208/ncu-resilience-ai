@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-006",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "鴻經館外牆施工，路過改走前門",
+    "summary": "鴻經館後方正在施工，經過請注意上方掉落物，建議改走前門以免經過危險。",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "把公告內容改寫成簡明快報：說明施工位置、提醒注意掉落物並建議改走前門。",
+    "abstain_reason": null
+  }
+}

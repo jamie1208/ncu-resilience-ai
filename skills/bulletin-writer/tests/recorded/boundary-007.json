@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-007",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "十二舍熱水器又壞，洗澡會變冷水",
+    "summary": "十二舍的熱水器今天又故障，洗到一半會變冷水；宿舍已會請廠商來修。洗澡時注意保暖或先暫緩使用。",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "把社群貼文內容改寫成快報，說明熱水器故障的現況與可行的應對建議。",
+    "abstain_reason": null
+  }
+}

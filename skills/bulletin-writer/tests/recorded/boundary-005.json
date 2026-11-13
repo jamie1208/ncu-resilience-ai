@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-005",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "中壢火車站附近傳出假客服詐騙",
+    "summary": "傳出有人在中壢火車站附近被假冒客服詐騙，損失約兩萬元。接到不明電話別透露個資，遇到可疑來電要提高警覺。",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "把社群貼文內容改寫成快報，直接提醒同學注意不明來電與保護個資。",
+    "abstain_reason": null
+  }
+}

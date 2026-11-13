@@ -1,0 +1,15 @@
+{
+  "case_id": "boundary-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "管理學院 10/21 上午停水，廁所不能用",
+    "summary": "管理學院 10/21 上午 8 點到 12 點停水，廁所不能用。早上要出門的同學記得先去洗手間或提早出門。",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "把原文通知的停水時間與影響（廁所不能用）改寫成簡短提醒，告訴同學該怎麼做。",
+    "abstain_reason": null
+  }
+}
