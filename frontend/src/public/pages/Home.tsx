@@ -1,9 +1,16 @@
+import { useState, type FormEvent } from 'react'
+
+import { Button, Input } from '@design'
+
 import { Link } from '../../admin/Link'
-import { fetchFeed, type PublicEventSummary } from '../api'
+import { fetchFeed, type FeedItem, type PublicEventSummary } from '../api'
 import { cn } from '../../lib/cn'
-import { ErrorText, Muted, NewsCard, PageIntro } from '../ui'
+import { ErrorText, FeedCard, ListState, Muted, NewsCard, PageIntro } from '../ui'
 import { categoryTone } from '../categories'
-import { useLoad } from '../useLoad'
+import { useLoad, usePaged } from '../useLoad'
+
+/** 關鍵字長度上限（與公開 API 的 `q` 一致）。 */
+const MAX_KEYWORD = 50
 
 /** 首頁一次讀取的快報數（公開 API 單頁上限）。 */
 const FEED_LIMIT = 50
@@ -49,16 +56,53 @@ function CategoryRow({ section }: { section: Section }) {
   )
 }
 
+/** 關鍵字搜尋結果：比對快報的標題、摘要與地點（後端判斷），新到舊，可載入更多。 */
+function SearchResults({ keyword }: { keyword: string }) {
+  const results = usePaged<FeedItem>((cursor) => fetchFeed({ q: keyword, cursor }), keyword)
+  const items = results.items.filter((i): i is PublicEventSummary => i.kind === 'content')
+  return (
+    <section aria-labelledby="home-search" className="space-y-4">
+      <h2 id="home-search" className="text-[22px] font-bold text-foreground">{`「${keyword}」的搜尋結果`}</h2>
+      {items.length > 0 && (
+        <ul aria-label="搜尋結果" className="space-y-4">
+          {items.map((item) => (
+            <FeedCard key={item.id} item={item} />
+          ))}
+        </ul>
+      )}
+      <ListState
+        loading={results.loading}
+        error={results.error}
+        empty={items.length === 0}
+        emptyText={`找不到符合「${keyword}」的快報，換個關鍵字試試。`}
+        loadMore={results.loadMore}
+      />
+    </section>
+  )
+}
+
 const ENTRY = 'group block rounded-[20px] p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none motion-reduce:hover:translate-y-0'
 
 /**
  * 首頁（ADR-0020 決策 4）：依事件類別分區的橫向滑動快報卡片，每張卡片是一則快報（新到舊）；
- * 點卡片先看快報全文，再進系列分析頁。底部放校園韌性成績單與匿名回報入口。
+ * 點卡片先看快報全文，再進系列分析頁。上方可用關鍵字搜尋快報（標題、摘要、地點）。底部放校園韌性成績單與匿名回報入口。
  */
 export function Home() {
   const { data, error, loading } = useLoad(() => fetchFeed({ limit: FEED_LIMIT }), 'home')
   const news = (data?.items ?? []).filter((i): i is PublicEventSummary => i.kind === 'content')
   const rows = sections(news)
+  const [input, setInput] = useState('')
+  const [keyword, setKeyword] = useState('')
+
+  function search(e: FormEvent) {
+    e.preventDefault()
+    setKeyword(input.trim())
+  }
+
+  function clear() {
+    setInput('')
+    setKeyword('')
+  }
 
   return (
     <div className="space-y-10">
@@ -67,12 +111,38 @@ export function Home() {
         <p className="text-sm text-muted-foreground">標示「尚未查證」的內容是 AI 依公開來源整理的摘要，不代表事情確實發生。</p>
       </PageIntro>
 
-      {error && <ErrorText>{error.message}</ErrorText>}
-      {!error && loading && <Muted>載入中…</Muted>}
-      {!error && !loading && rows.length === 0 && <Muted>目前沒有公開的快報，校園暫時風平浪靜。</Muted>}
-      {rows.map((section) => (
-        <CategoryRow key={section.type} section={section} />
-      ))}
+      <form role="search" aria-label="搜尋快報" className="flex flex-col gap-2 sm:flex-row" onSubmit={search}>
+        <Input
+          type="search"
+          aria-label="關鍵字"
+          placeholder="輸入關鍵字，例如：停電、宿舍、施工"
+          value={input}
+          maxLength={MAX_KEYWORD}
+          className="flex-1"
+          onChange={(e) => setInput(e.target.value)}
+        />
+        <div className="flex gap-2">
+          <Button type="submit">搜尋</Button>
+          {keyword && (
+            <Button type="button" variant="outline" onClick={clear}>
+              清除搜尋
+            </Button>
+          )}
+        </div>
+      </form>
+
+      {keyword ? (
+        <SearchResults keyword={keyword} />
+      ) : (
+        <>
+          {error && <ErrorText>{error.message}</ErrorText>}
+          {!error && loading && <Muted>載入中…</Muted>}
+          {!error && !loading && rows.length === 0 && <Muted>目前沒有公開的快報，校園暫時風平浪靜。</Muted>}
+          {rows.map((section) => (
+            <CategoryRow key={section.type} section={section} />
+          ))}
+        </>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Link to="/resilience" className={cn(ENTRY, 'bg-foreground text-background')}>

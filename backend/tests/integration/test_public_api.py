@@ -560,6 +560,64 @@ async def test_feed_filters_by_type(client: httpx2.AsyncClient, session: AsyncSe
     assert [i["event_type"] for i in items] == ["security"]
 
 
+async def seed_search(session: AsyncSession) -> None:
+    """搜尋用：兩則摘要不同的公開事件，加一則已撤下的事件。"""
+    library = await add_event(session)
+    bike = await add_event(
+        session,
+        title="機車失竊",
+        event_type="security",
+        status=EventStatus.UNVERIFIED,
+        summary="有同學反映機車在停車場被偷。",
+        location="宿舍區",
+        confirm=None,
+        evidence=(Evidence("facebook", "我的機車被偷了"),),
+    )
+    gone = await add_event(session, title="工程五館停電", summary="停電", location="工程五館")
+    for e in (library, bike, gone):
+        await publish(session, e)
+    gone.status = EventStatus.FALSE.value
+    await session.commit()
+    await publish(session, gone)
+
+
+async def titles(client: httpx2.AsyncClient, path: str, **params: str) -> list[str]:
+    res = await client.get(f"{PUBLIC}/{path}", params=params)
+    assert res.status_code == 200
+    return [i["title"] for i in res.json()["data"]]
+
+
+async def test_feed_keyword_search_matches_title_summary_and_location(
+    client: httpx2.AsyncClient, session: AsyncSession
+) -> None:
+    await seed_search(session)
+    assert await titles(client, "feed", q="失竊") == ["機車失竊"]  # 標題
+    assert await titles(client, "feed", q="停車場") == ["機車失竊"]  # 摘要
+    assert await titles(client, "feed", q="宿舍區") == ["機車失竊"]  # 地點
+    assert await titles(client, "feed", q="  漏水 ") == ["總圖書館三樓漏水"]  # 去頭尾空白
+    assert await titles(client, "feed", q="漏水", type="security") == []  # 與類別同時篩選
+    # 已撤下的事件搜不到
+    assert await titles(client, "feed", q="停電") == []
+    # 空白關鍵字等於不篩選
+    assert len(await titles(client, "feed", q="   ")) == 2
+
+
+async def test_keyword_search_treats_wildcards_literally(
+    client: httpx2.AsyncClient, session: AsyncSession
+) -> None:
+    await seed_search(session)
+    assert await titles(client, "feed", q="%") == []
+    assert await titles(client, "feed", q="_") == []
+
+
+async def test_events_keyword_search_and_too_long_query_is_rejected(
+    client: httpx2.AsyncClient, session: AsyncSession
+) -> None:
+    await seed_search(session)
+    assert await titles(client, "events", q="總圖") == ["總圖書館三樓漏水"]
+    assert (await client.get(f"{PUBLIC}/feed", params={"q": "字" * 51})).status_code == 422
+
+
 async def test_unknown_type_is_rejected(client: httpx2.AsyncClient) -> None:
     res = await client.get(f"{PUBLIC}/events", params={"type": "drop table"})
     assert res.status_code == 422
