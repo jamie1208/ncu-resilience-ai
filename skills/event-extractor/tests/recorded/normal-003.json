@@ -1,11 +1,11 @@
 {
   "case_id": "normal-003",
-  "skill_version": "1.4.0",
+  "skill_version": "1.5.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "男九舍門口腳踏車昨晚不見，同學請幫忙留意",
+    "title": "男九舍門口腳踏車一夜不見",
     "occurrence_start_date": "2026-10-19",
     "occurrence_start_time": null,
     "occurrence_end_date": null,
@@ -13,7 +13,7 @@
     "location": "男九舍",
     "mentions_person": false,
     "summary": {
-      "text": "有同學回報，昨晚把腳踏車停在男九舍門口，今早發現不見，正在尋找並請目擊者聯絡。停車記得上兩道鎖、盡量停在燈下。",
+      "text": "停在男九舍門口的腳踏車昨晚停放，今天早上發現整台不見，正在尋求有目擊者回報。請有線索者協助提供資訊。",
       "evidence_ids": [
         "e1"
       ]
@@ -38,8 +38,8 @@
         "quote": "男九舍門口"
       }
     ],
-    "reason": "貼文回報昨晚將腳踏車停在男九舍門口，今早發現不見，屬於個人被害或失竊的事件。",
-    "confidence": 0.8,
+    "reason": "原文是一則個人貼文，描述腳踏車昨晚停在男九舍門口，今天早上發現不見，屬於失竊事件且明確寫出時間參考與發生地點。",
+    "confidence": 0.9,
     "abstain_reason": null
   }
 }

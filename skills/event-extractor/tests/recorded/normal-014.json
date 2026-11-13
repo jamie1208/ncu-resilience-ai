@@ -1,6 +1,6 @@
 {
   "case_id": "normal-014",
-  "skill_version": "1.4.0",
+  "skill_version": "1.5.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
@@ -20,15 +20,10 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "實驗地點在科學五館，約 60 分鐘，酬勞 200 元。"
-      },
-      {
-        "field": "location",
-        "evidence_id": "e1",
-        "quote": "科學五館"
+        "quote": "徵求受試者，實驗地點在科學五館，約 60 分鐘，酬勞 200 元。"
       }
     ],
-    "reason": "內容是在徵求受試者並說明實驗地點與報酬，屬於徵才/招募公告，並非會影響多人或持續產生影響的事件。",
+    "reason": "內容是實驗受試者招募的張貼訊息，屬於徵才/徵募類公告，並非會影響多人或造成後續影響的事件。",
     "confidence": 0.9,
     "abstain_reason": null
   }

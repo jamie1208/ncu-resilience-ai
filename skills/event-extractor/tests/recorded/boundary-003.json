@@ -1,11 +1,11 @@
 {
   "case_id": "boundary-003",
-  "skill_version": "1.4.0",
+  "skill_version": "1.5.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "中大路與雙連坡路口 10/26 起管線施工，行經注意",
+    "title": "中大路路口 10/26–10/30 管線施工，路過注意安全",
     "occurrence_start_date": "2026-10-26",
     "occurrence_start_time": null,
     "occurrence_end_date": "2026-10-30",
@@ -13,7 +13,7 @@
     "location": "中大路",
     "mentions_person": false,
     "summary": {
-      "text": "公告指出中大路與雙連坡路口自 10/26（一）到 10/30（五）進行管線施工，可能有施工作業與通行影響。行經該路段的朋友記得注意安全、減速慢行或改道。",
+      "text": "中大路與雙連坡路口自 10/26（一）至 10/30（五）進行管線施工，經過該路口的用路人請注意安全。",
       "evidence_ids": [
         "e1"
       ]
@@ -25,12 +25,12 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "進行管線施工"
+        "quote": "中大路與雙連坡路口自 10/26（一）至 10/30（五）進行管線施工"
       },
       {
         "field": "time",
         "evidence_id": "e1",
-        "quote": "自 10/26（一）至 10/30（五）"
+        "quote": "10/26（一）至 10/30（五）"
       },
       {
         "field": "location",
@@ -38,7 +38,7 @@
         "quote": "中大路與雙連坡路口"
       }
     ],
-    "reason": "校方公告寫明中大路與雙連坡路口在 10/26–10/30 期間進行管線施工，並提醒用路人注意安全，因此判定為會影響通行的事件。",
+    "reason": "公告為校內路口於明訂日期進行管線施工，會影響通行者安全。",
     "confidence": 0.95,
     "abstain_reason": null
   }

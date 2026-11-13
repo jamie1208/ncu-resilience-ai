@@ -1,11 +1,11 @@
 {
   "case_id": "normal-010",
-  "skill_version": "1.4.0",
+  "skill_version": "1.5.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "總圖 10/31（六）全日閉館整理，記得提前借還書",
+    "title": "總圖 10/31（六）全日閉館，記得提前借還書",
     "occurrence_start_date": "2026-10-31",
     "occurrence_start_time": null,
     "occurrence_end_date": "2026-10-31",
@@ -13,7 +13,7 @@
     "location": "總圖書館",
     "mentions_person": false,
     "summary": {
-      "text": "總圖書館 10/31（六）全日閉館進行館藏整理，館內暫不開放。想借或還書的同學可以提早處理，記得先把要借的書帶好。",
+      "text": "總圖書館 10/31（六）全日閉館進行館藏整理，請提前借還書。",
       "evidence_ids": [
         "e1"
       ]
@@ -25,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "總圖書館將於 10/31（六）全日閉館進行館藏整理"
+        "quote": "總圖書館將於 10/31（六）全日閉館進行館藏整理，請讀者提前借還書。"
       },
       {
         "field": "time",
@@ -38,7 +38,7 @@
         "quote": "總圖書館"
       }
     ],
-    "reason": "官方公告寫明總圖書館在 10/31（六）全日閉館進行館藏整理，並建議讀者提前借還書。",
+    "reason": "官方公告寫明總圖書館於 10/31（六）全日閉館進行館藏整理，並提醒提前借還書。",
     "confidence": 0.95,
     "abstain_reason": null
   }

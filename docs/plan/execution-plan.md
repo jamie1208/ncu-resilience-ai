@@ -618,6 +618,17 @@ uv run python ../scripts/eval/run_eval.py --skill trend-forecaster --skill scena
   - 驗證：`cd backend && uv run pytest -q`、`uv run ruff check . && uv run ruff format --check . && uv run mypy app`；`python scripts/skills/validate_skill.py skills/event-extractor`、`skills/series-analyst`
   - 執行後：`rerun_tone` 在正式資料庫重跑既有事件與系列（需使用者同意，先備份），再恢復對外通道
   - 前置：P8-T17
+- **P8-T19 S02 官方公告改寫成播報口吻、相對時間不重複**（使用者 2026-11-12 決定新增；P8-T18 重跑後官方公告類摘要仍照抄公告句子，例如「請於維護前完成相關作業並儲存資料」，另有一則寫成「剛剛晚上約 11/9 晚上 7 點」）
+  - 檔案：`skills/event-extractor/SKILL.md`（1.4.0 → 1.5.1：使用者 2026-11-13 決定精簡，標題與說明的寫法改為口吻說明加「原文 → 標題／說明」範例，只留三條底線；1.4.1～1.4.3 的公告改寫、相對時間規則併入範例）、`skills/event-extractor/tests/recorded/`（以新版本重錄）、`docs/governance/tone-guide.md`（公告改寫範例）
+  - 驗證：`validate_skill.py skills/event-extractor`；`cd backend && uv run pytest tests/golden -q`；重錄輸出由使用者檢視
+  - 執行後：`rerun_tone --events` 在正式資料庫重跑事件（需使用者同意，先備份）
+  - 前置：P8-T18
+- **P8-T20 快報文案改由獨立 Skill 產生（S15 bulletin-writer）**（使用者 2026-11-13 決定新增；P8-T19 1.5.1 重錄後，S02 在同一次呼叫裡同時抽取事實與寫文案，說明仍帶「發文者表示」「期間暫停服務」等轉述與公告用語；實驗把寫文案拆成獨立一步後，口吻接近示範頁第一版。加油添醋的問題先不處理，之後以範例收斂）
+  - 檔案：`skills/bulletin-writer/`（依「Skill 開發標準循環」：SKILL.md 以口吻說明與「原文 → 標題／說明」範例為主、規則精簡；`schemas/` 輸入為原文證據〔`<untrusted_source>` 包裹〕＋ S02 抽出的時間與地點，輸出 `title`、`summary`；`tests/cases.jsonl` 沿用 S02 的事件案例；`tests/recorded/`）、`app/pipeline/analyze_item.py`（S02、S03 通過後呼叫 S15，結果取代 S02 的 `title` 與 `summary.text`；`summary_evidence_ids` 沿用 S02）、`app/pipeline/rerun_tone.py`（對象判斷加入 S15 版本）、`docs/governance/tone-guide.md`
+  - 安全規則（程式確定性判斷，不由模型決定）：S02 `mentions_person` 為 true 時不呼叫 S15，沿用 S02 的標題與說明；S15 輸出經 `mask_pii()`，含 email、電話、學號等個資時視為驗證失敗；S15 失敗、abstain 或驗證失敗時沿用 S02 的版本，不影響事件建立
+  - 驗證：`tests/integration/test_pipeline.py` 新增案例（fake provider：S15 成功時標題與說明來自 S15；`mentions_person` 為 true 不呼叫 S15；S15 失敗或輸出含個資時沿用 S02）；`tests/integration/test_rerun_tone.py` 新增 S15 版本案例；既有測試不修改且通過；`validate_skill.py skills/bulletin-writer`；`run_eval.py --skill bulletin-writer --split all --live --record` 重錄輸出由使用者檢視
+  - 執行後：`rerun_tone --events` 在正式資料庫重跑事件（需使用者同意，先備份）
+  - 前置：P8-T19
 ```bash
 cd backend && uv run pytest tests/unit/series tests/security -q
 uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-analyst --skill location-resolver --skill impact-evaluator --split test

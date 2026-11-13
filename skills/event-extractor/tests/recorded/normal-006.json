@@ -1,11 +1,11 @@
 {
   "case_id": "normal-006",
-  "skill_version": "1.4.0",
+  "skill_version": "1.5.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "男一舍 10/28 停水清洗水塔，暫停供水",
+    "title": "男一舍 10/28 早上停水水塔清洗",
     "occurrence_start_date": "2026-10-28",
     "occurrence_start_time": "09:00",
     "occurrence_end_date": "2026-10-28",
@@ -13,7 +13,7 @@
     "location": "男一舍",
     "mentions_person": false,
     "summary": {
-      "text": "男一舍將於 10/28（週三）09:00 到 15:00 進行水塔清洗，期間暫停供水。想用水的同學可以先儲好用水再出門。",
+      "text": "男一舍 10/28（週三）09:00–15:00 因水塔清洗暫停供水，請提前儲水或安排替代用水。",
       "evidence_ids": [
         "e1"
       ]
@@ -25,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "進行水塔清洗，暫停供水"
+        "quote": "進行水塔清洗，暫停供水。"
       },
       {
         "field": "time",
@@ -38,7 +38,7 @@
         "quote": "男一舍"
       }
     ],
-    "reason": "公告明確寫出男一舍在 115 年 10 月 28 日 09:00–15:00 進行水塔清洗並暫停供水，為會影響到人的校內停水事件。",
+    "reason": "公告寫明男一舍在 115 年 10 月 28 日上午進行水塔清洗並暫停供水，含明確日期與時段。",
     "confidence": 0.95,
     "abstain_reason": null
   }

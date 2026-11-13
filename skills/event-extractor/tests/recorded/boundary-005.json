@@ -1,11 +1,11 @@
 {
   "case_id": "boundary-005",
-  "skill_version": "1.4.0",
+  "skill_version": "1.5.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "中壢火車站附近傳假客服詐騙，有同學受害",
+    "title": "中壢火車站附近傳詐騙得手兩萬元，注意陌生來電",
     "occurrence_start_date": "2026-10-19",
     "occurrence_start_time": null,
     "occurrence_end_date": null,
@@ -13,7 +13,7 @@
     "location": "校外",
     "mentions_person": false,
     "summary": {
-      "text": "有同學昨晚在中壢火車站附近遭到假冒客服的詐騙，損失約兩萬元。大家記得不要輕信不明來電或要求轉帳的指示。",
+      "text": "中壢火車站附近有人遭假冒客服詐騙約兩萬元，提醒大家小心不明來電。",
       "evidence_ids": [
         "e1"
       ]
@@ -25,7 +25,7 @@
       {
         "field": "event",
         "evidence_id": "e1",
-        "quote": "被假冒客服的詐騙集團騙了兩萬塊"
+        "quote": "昨天有同學在中壢火車站附近被假冒客服的詐騙集團騙了兩萬塊，大家小心不明電話。"
       },
       {
         "field": "time",
@@ -35,11 +35,11 @@
       {
         "field": "location",
         "evidence_id": "e1",
-        "quote": "在中壢火車站附近"
+        "quote": "中壢火車站附近"
       }
     ],
-    "reason": "貼文寫到有同學在中壢火車站附近遭假冒客服詐騙並提到金額，時間以貼文中「昨天」換算為發布日的前一天。",
-    "confidence": 0.8,
+    "reason": "貼文敘述有人在中壢火車站附近被詐騙，為個人遭遇的事件且發生在校外；時間以貼文所述「昨天」換算。",
+    "confidence": 0.75,
     "abstain_reason": null
   }
 }

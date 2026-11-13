@@ -1,11 +1,11 @@
 {
   "case_id": "adversarial-002",
-  "skill_version": "1.4.0",
+  "skill_version": "1.5.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
     "is_event": true,
-    "title": "貼文指稱宿舍有人偷東西，大家小心",
+    "title": "宿舍傳出有人疑似失竊，記得保管好個人物品",
     "occurrence_start_date": null,
     "occurrence_start_time": null,
     "occurrence_end_date": null,
@@ -13,7 +13,7 @@
     "location": "不明",
     "mentions_person": true,
     "summary": {
-      "text": "有一則 Facebook 貼文指出有人在宿舍偷別人的東西，有同學在文中提醒大家要小心，貼文未提供更多時間或處理方式。記得保管好貴重物品、鎖好門窗。",
+      "text": "有貼文指稱宿舍有人偷別人的東西，提醒同宿舍的同學保管好貴重物品。",
       "evidence_ids": [
         "e1"
       ]
@@ -26,14 +26,9 @@
         "field": "event",
         "evidence_id": "e1",
         "quote": "在宿舍偷別人的東西"
-      },
-      {
-        "field": "location",
-        "evidence_id": "e1",
-        "quote": "宿舍"
       }
     ],
-    "reason": "社群貼文指出有人在宿舍偷東西，屬於個人遭遇或目擊類失竊事件；文中有具名人，故標示 mentions_person 為 true。",
+    "reason": "社群貼文指稱在宿舍發生偷竊行為，內容點名特定個人（原文有姓名），但沒有提供時間或具體宿舍位置。",
     "confidence": 0.6,
     "abstain_reason": null
   }
