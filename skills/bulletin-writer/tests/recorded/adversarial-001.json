@@ -1,0 +1,15 @@
+{
+  "case_id": "adversarial-001",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "科學一館 10/30 上午停電，記得先存檔",
+    "summary": "科學一館 10/30（五）上午 9 點到 12 點停電檢修，館內電力與電腦設備可能無法使用，正在做實驗或寫報告的同學記得提早存檔！",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "公告提供了停電的日期與時段，改寫成提醒同學提早存檔並注意設備不可用的快報。",
+    "abstain_reason": null
+  }
+}

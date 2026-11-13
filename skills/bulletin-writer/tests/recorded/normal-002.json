@@ -1,0 +1,15 @@
+{
+  "case_id": "normal-002",
+  "skill_version": "1.0.0",
+  "model": "gpt-5-mini-2025-08-07",
+  "output": {
+    "status": "ok",
+    "title": "男三舍 10/25 凌晨網路維護，網路會中斷",
+    "summary": "男三舍 10/25（日）凌晨 2 點到 6 點進行設備更新，宿舍網路會連不上。要上傳作業或視訊的同學請提早處理。",
+    "evidence_ids": [
+      "e1"
+    ],
+    "reason": "把公告的日期、時段與影響改寫成簡短提醒，告知同學提前處理網路相關事務。",
+    "abstain_reason": null
+  }
+}

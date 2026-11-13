@@ -358,3 +358,190 @@ async def test_plan_counts_targets_and_estimates_cost_without_calling(
     assert plan.estimated_usd == pytest.approx(
         plan.events * plan.event_cost_usd + plan.series * plan.series_cost_usd
     )
+
+
+# ---------- S15 bulletin-writer（P8-T20） ----------
+
+S15 = "bulletin-writer"
+S15_TITLE = "科學一館上午停電，記得先存檔"
+S15_SUMMARY = "科學一館 10/22 上午停電檢修，館內都沒電。要寫報告的同學記得先存檔！"
+
+
+def written(payload: Mapping[str, Any], **override: Any) -> dict[str, Any]:
+    eid = str(payload["evidence"][0]["evidence_id"])
+    base: dict[str, Any] = {
+        "status": "ok",
+        "title": S15_TITLE,
+        "summary": S15_SUMMARY,
+        "evidence_ids": [eid],
+        "reason": "依原文改寫成快報。",
+        "abstain_reason": None,
+    }
+    return {**base, **override}
+
+
+class Writer(Extractor):
+    """以 fake provider 跑真的 Skill Runner 執行 S15。"""
+
+    async def __call__(
+        self, payload: Mapping[str, Any], *, event_id: uuid.UUID | None = None
+    ) -> SkillRunResult:
+        self.payloads.append(payload)
+        builder = self.builders.pop(0) if self.builders else written
+        script = builder if isinstance(builder, LLMError) else builder(payload)
+        result = await run_skill(
+            SKILLS[S15],
+            payload,
+            provider=SkillScript({S15: [script] * 3}),
+            config=load_llm_config(),
+            store=SqlRunStore(self.session),
+            event_id=event_id,
+            trace_id="trace-tone",
+        )
+        await self.session.commit()
+        return result
+
+
+async def add_current_event(
+    session: AsyncSession, *, mentions_person: bool = False, title: str = "科學一館停電檢修"
+) -> Event:
+    """摘要來自現行版本 S02（還沒經過 S15）的事件；S02 執行紀錄引用摘要出處文章。"""
+    event = await add_event(session, title=title, version=SKILLS[S02].version)
+    run = await session.get(AIAnalysisRun, event.summary_ai_run_id)
+    assert run is not None and event.summary_source_item_id is not None
+    run.evidence_ids = [event.summary_source_item_id.hex]
+    run.result = {**dict(run.result or {}), "mentions_person": mentions_person}
+    await session.commit()
+    return event
+
+
+async def rerun_with_writer(session: AsyncSession, extractor: Any, writer: Any) -> Any:
+    return await rerun_events(
+        session,
+        run=extractor,
+        version=SKILLS[S02].version,
+        bulletin=writer,
+        bulletin_version=SKILLS[S15].version,
+        now=NOW,
+    )
+
+
+async def test_current_s02_event_gets_bulletin_without_rerunning_s02(
+    session: AsyncSession,
+) -> None:
+    event = await add_current_event(session)
+    writer = Writer(session)
+
+    report = await rerun_with_writer(session, NoCall(), writer)
+
+    assert writer.calls == 1
+    payload = writer.payloads[0]
+    assert payload["evidence"][0]["evidence_id"] == event.summary_source_item_id.hex
+    assert payload["facts"]["location"] == "科學一館"
+    assert payload["facts"]["occurrence_start_date"] == "2026-10-22"
+    event = await reload(session, event)
+    assert (event.title, event.summary) == (S15_TITLE, S15_SUMMARY)
+    assert event.summary_evidence_ids == [event.summary_source_item_id.hex]
+    new_run = await session.get(AIAnalysisRun, event.summary_ai_run_id)
+    assert new_run is not None and new_run.skill_name == S15
+    assert new_run.skill_version == SKILLS[S15].version
+    assert (report.updated, report.titled, report.failed) == (1, 1, 0)
+    # 第二次：摘要已來自現行版本 S15，不再呼叫
+    again = await rerun_with_writer(session, NoCall(), NoCall())
+    assert (again.updated, again.remaining) == (0, 0)
+
+
+async def test_old_s02_event_runs_s02_then_bulletin(session: AsyncSession) -> None:
+    event = await add_event(session)
+    extractor, writer = Extractor(session), Writer(session)
+
+    await rerun_with_writer(session, extractor, writer)
+
+    assert (extractor.calls, writer.calls) == (1, 1)
+    event = await reload(session, event)
+    assert (event.title, event.summary) == (S15_TITLE, S15_SUMMARY)
+
+
+async def test_old_s15_summary_is_rewritten(session: AsyncSession) -> None:
+    event = await add_current_event(session)
+    old = await add_run(session, S15, "0.9.0", event_id=event.id, result={"title": "舊快報標題"})
+    event.summary_ai_run_id = old.id
+    event.title = "舊快報標題"
+    await session.commit()
+    writer = Writer(session)
+
+    await rerun_with_writer(session, NoCall(), writer)
+
+    assert writer.calls == 1
+    event = await reload(session, event)
+    assert (event.title, event.summary) == (S15_TITLE, S15_SUMMARY)  # 舊 S15 標題也算 AI 標題
+
+
+async def test_mentions_person_is_not_a_bulletin_target(session: AsyncSession) -> None:
+    await add_current_event(session, mentions_person=True)
+    report = await rerun_with_writer(session, NoCall(), NoCall())
+    assert (report.updated, report.remaining) == (0, 0)
+
+
+async def test_old_s02_with_person_updates_from_s02_only(session: AsyncSession) -> None:
+    event = await add_event(session)
+    extractor = Extractor(session, lambda p: new_extraction(p, mentions_person=True))
+
+    report = await rerun_with_writer(session, extractor, NoCall())
+
+    event = await reload(session, event)
+    assert (event.title, event.summary) == (NEW_TITLE, NEW_SUMMARY)
+    assert report.updated == 1
+
+
+async def test_bulletin_user_title_is_kept(session: AsyncSession) -> None:
+    event = await add_current_event(session, title="使用者拆分時填的標題")
+    await rerun_with_writer(session, NoCall(), Writer(session))
+    event = await reload(session, event)
+    assert event.summary == S15_SUMMARY
+    assert event.title == "使用者拆分時填的標題"
+
+
+async def test_bulletin_failure_keeps_or_falls_back(session: AsyncSession) -> None:
+    current = await add_current_event(session)  # S02 已是現行版本：保留舊內容
+    old = await add_event(session)  # 剛重跑 S02：沿用新的 S02 版本
+    pii = lambda p: written(p, summary="有問題打 0912-345-678")  # noqa: E731
+    writer = Writer(session, LLMError("timeout"), pii)
+
+    report = await rerun_with_writer(session, Extractor(session), writer)
+
+    current = await reload(session, current)
+    assert current.summary == "科學一館 10/22 上午停電檢修。"
+    old = await reload(session, old)
+    assert (old.title, old.summary) == (NEW_TITLE, NEW_SUMMARY)
+    s02 = await session.get(AIAnalysisRun, old.summary_ai_run_id)
+    assert s02 is not None and s02.skill_name == S02
+    assert (report.updated, report.failed) == (1, 1)
+
+
+async def test_bulletin_cost_limit_stops(session: AsyncSession) -> None:
+    await add_current_event(session)
+    await add_current_event(session)
+    writer = Writer(session, CostLimitExceededError("超過"))
+    report = await rerun_with_writer(session, NoCall(), writer)
+    assert writer.calls == 1
+    assert report.stopped_by_cost is True
+    assert report.remaining == 2
+
+
+async def test_plan_counts_bulletin_targets(session: AsyncSession) -> None:
+    await add_event(session)  # 舊 S02
+    await add_current_event(session)  # 需要 S15
+    await add_current_event(session, mentions_person=True)  # 不需要
+    await add_run(session, S15, SKILLS[S15].version, cost="0.001")
+    await session.commit()
+
+    plan = await plan_rerun(
+        session,
+        s02_version=SKILLS[S02].version,
+        s12_version=SKILLS[S12].version,
+        s15_version=SKILLS[S15].version,
+    )
+
+    assert plan.events == 2
+    assert plan.event_cost_usd == pytest.approx(0.002 + 0.001)

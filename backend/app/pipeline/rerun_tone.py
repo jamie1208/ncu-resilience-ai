@@ -20,6 +20,13 @@ P8-T11 起 S02 的摘要與 S12 的系列說明改為播報員語氣，P8-T17 �
   一遇到費用上限就停止，回報剩下的數量，隔天重跑接續。
 - `--dry-run` 只列出對象數量與預估費用（各 Skill 過去執行的平均 `cost_usd`），不呼叫模型。
 
+快報文案（P8-T20）：命令列會一併傳入 S15 bulletin-writer。事件的對象改為：摘要來自舊版 S15；
+或摘要來自 S02（或沒有執行紀錄），且 S02 是舊版、或該次輸出 `mentions_person` 不是 true
+（還沒經過 S15）。處理時先找這個事件、這篇出處文章的現行版本 S02 成功紀錄，有就直接用它的
+輸出、不重跑 S02；沒有才重跑 S02。S02 判定點名個人或店家時不呼叫 S15，沿用 S02 的摘要與標題；
+S15 失敗、abstain 或含個資時，剛重跑的 S02 結果照舊寫入，沒有重跑 S02 時保留舊內容。
+標題的「AI 產生」判斷同時看 S02 與 S15 的歷次輸出。沒有傳入 S15 時行為與 P8-T17 相同。
+
 執行後，公開同步（每分鐘）會為內容改變的事件與系列產生新版本；疑似指控、推測規律與原因的
 文字改變時，通知中心會出現「公開提醒」。
 """
@@ -48,7 +55,11 @@ from app.pipeline.analyze_item import (
     COST_LIMIT_ERRORS,
     MAX_TITLE_CHARS,
     S02,
+    S15,
     _evidence,
+    bulletin_copy,
+    bulletin_payload,
+    wants_bulletin,
 )
 from app.series.analysis import S12, SkillCall, analyze_series
 from app.services.audit import record_audit
@@ -60,7 +71,7 @@ SKIPPED_STATUSES = (EventStatus.FALSE.value, EventStatus.ARCHIVED.value)
 
 
 class EventSkillCall(Protocol):
-    """執行 S02 一次（帶事件 id，執行紀錄掛在該事件下）。"""
+    """執行 S02（或 S15）一次（帶事件 id，執行紀錄掛在該事件下）。"""
 
     def __call__(
         self, payload: Mapping[str, Any], *, event_id: uuid.UUID | None = None
@@ -108,11 +119,36 @@ def _is_old(version: str | None, current: str) -> bool:
 # ---------- 對象 ----------
 
 
-async def stale_tone_events(session: AsyncSession, version: str) -> list[tuple[Event, str | None]]:
-    """摘要來自舊版 S02 的事件與其摘要的 S02 版本（不含 false、封存與沒有摘要出處的）。"""
+def _is_stale(
+    skill: str | None,
+    old: str | None,
+    result: Mapping[str, Any] | None,
+    version: str,
+    bulletin_version: str | None,
+) -> bool:
+    if bulletin_version is None:  # P8-T17：只看 S02
+        return skill != S15 and _is_old(old, version)
+    if skill == S15:
+        return _is_old(old, bulletin_version)
+    mentions = result.get("mentions_person") if isinstance(result, Mapping) else None
+    return _is_old(old, version) or mentions is not True
+
+
+async def stale_tone_events(
+    session: AsyncSession, version: str, bulletin_version: str | None = None
+) -> list[tuple[Event, str | None]]:
+    """需要重跑的事件與其摘要的 Skill 版本（不含 false、封存與沒有摘要出處的）。
+
+    沒有 `bulletin_version` 時是摘要來自舊版 S02 的事件；有時加入 S15 的判斷（P8-T20）。
+    """
     rows = (
         await session.execute(
-            select(Event, AIAnalysisRun.skill_version)
+            select(
+                Event,
+                AIAnalysisRun.skill_name,
+                AIAnalysisRun.skill_version,
+                AIAnalysisRun.result,
+            )
             .outerjoin(AIAnalysisRun, AIAnalysisRun.id == Event.summary_ai_run_id)
             .where(
                 Event.status.not_in(SKIPPED_STATUSES),
@@ -121,7 +157,11 @@ async def stale_tone_events(session: AsyncSession, version: str) -> list[tuple[E
             .order_by(Event.created_at, Event.id)
         )
     ).all()
-    return [(event, old) for event, old in rows if _is_old(old, version)]
+    return [
+        (event, old)
+        for event, skill, old, result in rows
+        if _is_stale(skill, old, result, version, bulletin_version)
+    ]
 
 
 async def stale_tone_series(session: AsyncSession, version: str) -> list[uuid.UUID]:
@@ -152,12 +192,25 @@ async def _average_cost(session: AsyncSession, skill: str) -> float:
     return float(value or 0)
 
 
-async def plan_rerun(session: AsyncSession, *, s02_version: str, s12_version: str) -> RerunPlan:
-    """列出對象數量與預估費用，不呼叫模型。"""
+async def plan_rerun(
+    session: AsyncSession,
+    *,
+    s02_version: str,
+    s12_version: str,
+    s15_version: str | None = None,
+) -> RerunPlan:
+    """列出對象數量與預估費用，不呼叫模型。
+
+    有 `s15_version` 時每個事件以 S02 加 S15 的平均費用估算（S02 已是現行版本的不會重跑，
+    所以是上限）。
+    """
+    event_cost = await _average_cost(session, S02)
+    if s15_version is not None:
+        event_cost += await _average_cost(session, S15)
     return RerunPlan(
-        events=len(await stale_tone_events(session, s02_version)),
+        events=len(await stale_tone_events(session, s02_version, s15_version)),
         series=len(await stale_tone_series(session, s12_version)),
-        event_cost_usd=await _average_cost(session, S02),
+        event_cost_usd=event_cost,
         series_cost_usd=await _average_cost(session, S12),
     )
 
@@ -166,11 +219,11 @@ async def plan_rerun(session: AsyncSession, *, s02_version: str, s12_version: st
 
 
 async def _ai_titles(session: AsyncSession, event_id: uuid.UUID) -> set[str]:
-    """這個事件歷次成功的 S02 輸出的標題（以建立事件時相同的截斷規則）。"""
+    """這個事件歷次成功的 S02、S15 輸出的標題（以建立事件時相同的截斷規則）。"""
     results = await session.scalars(
         select(AIAnalysisRun.result).where(
             AIAnalysisRun.event_id == event_id,
-            AIAnalysisRun.skill_name == S02,
+            AIAnalysisRun.skill_name.in_((S02, S15)),
             AIAnalysisRun.status == RunStatus.SUCCEEDED.value,
         )
     )
@@ -194,17 +247,51 @@ def _new_summary(output: Mapping[str, Any] | None, item_hex: str) -> str | None:
     return text
 
 
+async def _current_extraction(
+    session: AsyncSession, event_id: uuid.UUID, item_hex: str, version: str
+) -> Mapping[str, Any] | None:
+    """這個事件、這篇文章最新一次現行版本 S02 的成功輸出（是事件時）；沒有時為 None。"""
+    results = await session.scalars(
+        select(AIAnalysisRun.result)
+        .where(
+            AIAnalysisRun.event_id == event_id,
+            AIAnalysisRun.skill_name == S02,
+            AIAnalysisRun.skill_version == version,
+            AIAnalysisRun.status == RunStatus.SUCCEEDED.value,
+            AIAnalysisRun.evidence_ids.contains([item_hex]),
+        )
+        .order_by(AIAnalysisRun.created_at.desc())
+    )
+    for result in results:
+        if isinstance(result, Mapping) and _new_summary(result, item_hex) is not None:
+            return result
+    return None
+
+
+@dataclass(frozen=True)
+class _Rewrite:
+    """一個事件重跑後要寫入的內容。"""
+
+    text: str
+    title: str
+    run_id: uuid.UUID | None
+    version: str
+
+
 async def rerun_events(
     session: AsyncSession,
     *,
     run: EventSkillCall,
     version: str,
+    bulletin: EventSkillCall | None = None,
+    bulletin_version: str | None = None,
     now: datetime | None = None,
     trace_id: str | None = None,
 ) -> RerunReport:
-    """重跑摘要來自舊版 S02 的事件；每個事件處理完就提交。"""
+    """重跑摘要來自舊版 S02（有傳入 S15 時加上 S15 的判斷）的事件；每個事件處理完就提交。"""
     trace = (trace_id or f"tone-{uuid.uuid4().hex[:12]}")[:64]
-    targets = await stale_tone_events(session, version)
+    with_bulletin = bulletin is not None and bulletin_version is not None
+    targets = await stale_tone_events(session, version, bulletin_version if with_bulletin else None)
     updated = titled = failed = 0
     for index, (event, old_version) in enumerate(targets):
         item_id = event.summary_source_item_id
@@ -213,23 +300,48 @@ async def rerun_events(
             failed += 1
             continue
         ai_titles = await _ai_titles(session, event.id)
-        result = await run({"evidence": evidence}, event_id=event.id)
-        if result.error_type in COST_LIMIT_ERRORS:
-            return RerunReport(updated, titled, failed, len(targets) - index, True)
-        output = result.output if result.status is RunStatus.SUCCEEDED else None
-        text = _new_summary(output, item_id.hex)
+
+        rewrite: _Rewrite | None = None
+        extracted = (
+            await _current_extraction(session, event.id, item_id.hex, version)
+            if with_bulletin
+            else None
+        )
+        if extracted is None:
+            result = await run({"evidence": evidence}, event_id=event.id)
+            if result.error_type in COST_LIMIT_ERRORS:
+                return RerunReport(updated, titled, failed, len(targets) - index, True)
+            output = result.output if result.status is RunStatus.SUCCEEDED else None
+            text = _new_summary(output, item_id.hex)
+            if text is not None and output is not None:
+                extracted = output
+                title = str(output.get("title") or "").strip()[:MAX_TITLE_CHARS]
+                rewrite = _Rewrite(text, title, result.run_id, version)
+        if (
+            bulletin is not None
+            and bulletin_version is not None
+            and extracted is not None
+            and wants_bulletin(extracted)
+        ):
+            written = await bulletin(bulletin_payload(evidence, extracted), event_id=event.id)
+            if written.error_type in COST_LIMIT_ERRORS:
+                await session.commit()  # 剛重跑的 S02 紀錄已保存；下次直接沿用
+                return RerunReport(updated, titled, failed, len(targets) - index, True)
+            copy = bulletin_copy(written.output if written.status is RunStatus.SUCCEEDED else None)
+            if copy is not None:
+                rewrite = _Rewrite(copy[1], copy[0], written.run_id, bulletin_version)
+
         title_changed = False
-        if text is None or output is None:
+        if rewrite is None:
             failed += 1
             outcome = "kept"
         else:
-            event.summary = mask_pii(text)
+            event.summary = mask_pii(rewrite.text)
             event.summary_evidence_ids = [item_id.hex]
-            event.summary_ai_run_id = result.run_id
+            event.summary_ai_run_id = rewrite.run_id
             event.summary_updated_at = now or datetime.now(UTC)
-            new_title = str(output.get("title") or "").strip()[:MAX_TITLE_CHARS]
-            if new_title and event.title in ai_titles and event.title != new_title:
-                event.title = mask_pii(new_title)
+            if rewrite.title and event.title in ai_titles and event.title != rewrite.title:
+                event.title = mask_pii(rewrite.title)
                 title_changed = True
             updated += 1
             titled += title_changed
@@ -242,7 +354,7 @@ async def rerun_events(
             request_id=trace,
             metadata={
                 "from_version": old_version,
-                "to_version": version,
+                "to_version": rewrite.version if rewrite else version,
                 "result": outcome,
                 "title_changed": title_changed,
             },
@@ -304,13 +416,22 @@ async def _in_worker(*, events: bool, series: bool, dry_run: bool) -> str:
     from app.worker.tasks.ingest import open_sessionmaker
 
     deps = build_deps()
-    s02, s12 = deps.skills[S02], deps.skills[S12]
+    s02, s12, s15 = deps.skills[S02], deps.skills[S12], deps.skills[S15]
     trace = f"tone-{uuid.uuid4().hex[:12]}"
     lines: list[str] = []
     async with open_sessionmaker() as maker, maker() as session:
         if dry_run:
-            plan = await plan_rerun(session, s02_version=s02.version, s12_version=s12.version)
-            lines.append(f"事件：{plan.events} 個（S02 → {s02.version}）" if events else "")
+            plan = await plan_rerun(
+                session,
+                s02_version=s02.version,
+                s12_version=s12.version,
+                s15_version=s15.version,
+            )
+            lines.append(
+                f"事件：{plan.events} 個（S02 → {s02.version}、S15 → {s15.version}）"
+                if events
+                else ""
+            )
             lines.append(f"系列：{plan.series} 個（S12 → {s12.version}）" if series else "")
             cost = (plan.event_cost_usd * plan.events if events else 0) + (
                 plan.series_cost_usd * plan.series if series else 0
@@ -318,20 +439,23 @@ async def _in_worker(*, events: bool, series: bool, dry_run: bool) -> str:
             lines.append(f"預估費用：約 US${cost:.4f}（依過去平均單次費用）")
             return "\n".join(line for line in lines if line)
 
-        async def call_s02(
-            payload: Mapping[str, Any], *, event_id: uuid.UUID | None = None
-        ) -> SkillRunResult:
-            result = await run_skill(
-                s02,
-                payload,
-                provider=deps.provider,
-                config=deps.config,
-                store=SqlRunStore(session),
-                event_id=event_id,
-                trace_id=trace,
-            )
-            await session.commit()
-            return result
+        def event_call(skill: Any) -> EventSkillCall:
+            async def call(
+                payload: Mapping[str, Any], *, event_id: uuid.UUID | None = None
+            ) -> SkillRunResult:
+                result = await run_skill(
+                    skill,
+                    payload,
+                    provider=deps.provider,
+                    config=deps.config,
+                    store=SqlRunStore(session),
+                    event_id=event_id,
+                    trace_id=trace,
+                )
+                await session.commit()
+                return result
+
+            return call
 
         async def call_s12(payload: Mapping[str, Any]) -> SkillRunResult:
             result = await run_skill(
@@ -347,7 +471,14 @@ async def _in_worker(*, events: bool, series: bool, dry_run: bool) -> str:
 
         reports: list[tuple[str, RerunReport]] = []
         if events:
-            report = await rerun_events(session, run=call_s02, version=s02.version, trace_id=trace)
+            report = await rerun_events(
+                session,
+                run=event_call(s02),
+                version=s02.version,
+                bulletin=event_call(s15),
+                bulletin_version=s15.version,
+                trace_id=trace,
+            )
             reports.append(("事件", report))
         if series and not (reports and reports[-1][1].stopped_by_cost):
             report = await rerun_series(session, run=call_s12, version=s12.version, trace_id=trace)

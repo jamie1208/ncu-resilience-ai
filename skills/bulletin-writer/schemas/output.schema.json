@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "bulletin-writer 輸出",
+  "description": "事件的快報標題與說明（播報員語氣，不含人名、店名與個資）。符合 OpenAI Structured Outputs strict 子集（skill-standard §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "title", "summary", "evidence_ids", "reason", "abstain_reason"],
+  "properties": {
+    "status": {
+      "description": "ok：已寫好；abstain：原文內容不足，寫不出快報",
+      "type": "string",
+      "enum": ["ok", "abstain"]
+    },
+    "title": {
+      "description": "20 字左右的快報標題；abstain 時為 null",
+      "type": ["string", "null"],
+      "maxLength": 80
+    },
+    "summary": {
+      "description": "一到三句、120 字以內的快報說明；abstain 時為 null",
+      "type": ["string", "null"],
+      "maxLength": 200
+    },
+    "evidence_ids": {
+      "description": "寫快報依據的證據；ok 時至少 1 個，且必須存在於輸入",
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "string"
+      }
+    },
+    "reason": {
+      "description": "一句話說明怎麼改寫；不得包含個資與人名、店名",
+      "type": "string",
+      "maxLength": 300
+    },
+    "abstain_reason": {
+      "description": "abstain 的原因；ok 時為 null",
+      "type": ["string", "null"],
+      "enum": ["insufficient_evidence", null]
+    }
+  }
+}

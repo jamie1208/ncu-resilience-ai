@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "bulletin-writer 輸入",
+  "description": "一篇文章的原文證據（與 S02 相同）加上 S02 抽出的時間與地點。text 是不可信的來源內容，Skill Runner 會包在 <untrusted_source id=evidence_id> 中傳給模型；facts 由程式組裝，放在 <skill_input> 中。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["evidence", "facts"],
+  "properties": {
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "source_code", "text"],
+        "properties": {
+          "evidence_id": {
+            "description": "證據識別碼，由 Runner 指定；輸出只能引用這裡出現的值",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "source_code": {
+            "description": "來源代碼（config/sources.yaml）；ncu-* 與 cwa-alerts 是官方來源",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "title": {
+            "type": ["string", "null"],
+            "maxLength": 300
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "published_at": {
+            "description": "aware UTC 時間（ISO 8601）",
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "facts": {
+      "description": "S02 event-extractor 已抽出的時間（台北時間）與地點；沒有寫明的欄位為 null",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "occurrence_start_date",
+        "occurrence_start_time",
+        "occurrence_end_date",
+        "occurrence_end_time",
+        "location"
+      ],
+      "properties": {
+        "occurrence_start_date": {
+          "type": ["string", "null"],
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "occurrence_start_time": {
+          "type": ["string", "null"],
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+        },
+        "occurrence_end_date": {
+          "type": ["string", "null"],
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "occurrence_end_time": {
+          "type": ["string", "null"],
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+        },
+        "location": {
+          "description": "地點的標準名稱，或「全校」「校外」「不明」",
+          "type": ["string", "null"],
+          "maxLength": 50
+        }
+      }
+    }
+  }
+}
