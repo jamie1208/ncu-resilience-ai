@@ -44,6 +44,11 @@ services:
       context: ../../frontend
       args:
         VITE_DEMO: "1"
+    # nginx 啟動時就解析 api 的位址；api 被重建（IP 改變）後要跟著重啟，否則會一直回 502
+    depends_on:
+      api:
+        condition: service_healthy
+        restart: true
     ports: !override
       - "127.0.0.1:${DEMO_WEB_PORT:-8089}:80"
 
