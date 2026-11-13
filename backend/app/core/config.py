@@ -13,7 +13,7 @@ from pydantic import AliasChoices, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
-Environment = Literal["development", "test", "production"]
+Environment = Literal["development", "test", "production", "demo"]
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 _REPO_ENV = Path(__file__).resolve().parents[3] / ".env"

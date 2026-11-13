@@ -1,0 +1,28 @@
+# 示範站分享（P9-T01，ADR-0022 決策 9）。疊在 docker-compose.yml、docker-compose.demo.yml 之上，
+# 只經 Makefile 使用：
+#   make demo-share      開放：啟動 Cloudflare Quick Tunnel，印出臨時網址（公開站與 /admin 都可連）
+#   make demo-share-url  查目前網址
+#   make demo-unshare    關閉：停止並移除通道，網址立即失效
+#
+# - 只屬於 compose project ncu-demo，轉送到示範站的 web；和真實網站的通道（infra/tunnel/，
+#   project ncu-resilience）是不同的容器，各自開關、互不影響。
+# - 放在 profile "share"：沒有明確加 --profile share 時不會啟動，make demo-up 不會意外對外。
+# - restart: "no"：電腦或 Docker 重開後分享自動關閉，不會一直開著。
+# - api 不信任轉送標頭：所有經通道的請求在限速上算同一個用戶端（比較嚴，避免匿名回報被大量送出）。
+name: ncu-demo
+
+services:
+  tunnel:
+    image: cloudflare/cloudflared:2025.8.1
+    profiles: ["share"]
+    # info 等級會印出 trycloudflare.com 網址；逐筆請求只在 debug 等級記錄，不要調到 debug
+    command: ["tunnel", "--no-autoupdate", "--loglevel", "info", "--url", "http://web:80"]
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: "no"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

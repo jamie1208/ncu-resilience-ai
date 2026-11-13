@@ -644,6 +644,20 @@ uv run python ../scripts/eval/run_eval.py --skill series-matcher --skill series-
 
 ---
 
+## P9 示範模式
+
+目標：以虛構資料跑真實流程，完整展示所有功能（含韌性成績單），且與真實環境完全隔離、可隨時整套移除（使用者 2026-11-13 決定新增，ADR-0022）。前置：P8 全部完成。
+
+- **P9-T01 示範環境與虛構資料種子**（使用者 2026-11-13 決定：示範站當場的新操作用真 OpenAI，種子一律用腳本化假模型）
+  - 檔案：`docs/decisions/ADR-0022-demo-mode.md`；`infra/docker/docker-compose.demo.yml`（獨立 compose project `ncu-demo`：自有 db、redis、volume；埠號 api 8001、web 8089、只綁 127.0.0.1；不啟動 prometheus、grafana；worker 不掛載 `data/`；`NCU_ENVIRONMENT=demo`；web 以 `VITE_DEMO=1` 建置）；`backend/app/demo/__init__.py`、`backend/app/demo/dataset.py`（虛構的來源文章與各 Skill 的劇本回應，約 90 天、涵蓋系列、復發、疑似指控、未查證、匿名投稿；不含真實人名、店家）、`backend/app/demo/seed.py`（`python -m app.demo.seed`：只在 `environment=demo` 且資料庫名稱以 `_demo` 結尾時執行；清空後以真實的 `store_items`、`analyze_item`、`backfill_series`、`analyze_series`、`create_action`／`transition_action`、`sync_all` 建資料，模型以腳本化假供應商代替；流程跑完後把事件、措施狀態、通知的時間回推到虛構日期，讓 CRI 四構面都有樣本；示範來源一律 `enabled=false`，排程不會擷取真實來源；建立示範管理員，帳密讀 `DEMO_ADMIN_USERNAME`／`DEMO_ADMIN_PASSWORD`）；修改 `backend/app/core/config.py`（`Environment` 加 `demo`）；`frontend/src/DemoBanner.tsx`（`VITE_DEMO` 為真時在後台與公開站頂端顯示「示範資料」橫幅）並修改 `AdminApp.tsx`、`PublicApp.tsx`、`frontend/Dockerfile`（`ARG VITE_DEMO`）；`Makefile`（`demo-up` 建置啟動並播種、`demo-seed` 重播種、`demo-down` 停止、`demo-drop CONFIRM=yes` 刪除示範容器與 volume）；`.env.example`（示範帳密範例）；`docs/runbooks/demo.md`
+  - 隔離規則：示範站不接 tunnel（`infra/tunnel/` 不變）；不與真實環境共用 db、redis、volume；種子拒絕在非 `_demo` 資料庫執行
+  - 驗證：`backend/tests/integration/test_demo_seed.py`（在測試資料庫跑種子：非 demo 環境或名稱不是 `_demo` 時拒絕執行；事件、證據、風險、通知、關聯、系列與系列分析、改善建議與效益評估、措施、復發、CRI 四構面與總分、What-if、公開快照、匿名投稿、趨勢預測都有資料；公開快照通過既有公開邊界檢查；重跑結果一致）；前端 vitest（橫幅只在 `VITE_DEMO` 時出現）；既有測試不修改且通過；`make demo-up` 後 `curl 127.0.0.1:8001/api/v1/health` 回 `environment=demo`，真實環境 8000／8088 不受影響
+  - 實作調整（AI 自行決定，2026-11-13）：示範環境改為獨立 compose project（自有 db、redis、volume），比同一台 Postgres 另開資料庫更徹底；新增 `backend/app/demo/responder.py`（`DemoProvider`：解析 Skill Runner 組好的訊息，依資料集組出各 Skill 的合法輸出，照常經過 schema、evidence_id、逐字原句與個資驗證）；橫幅掛在 `frontend/src/App.tsx`（後台與公開站共用的進入點），不改 `AdminApp.tsx`、`PublicApp.tsx`，另新增 `frontend/src/lib/demo.ts`（`isDemo`，避免元件檔匯出非元件）、`DemoBanner.test.tsx`，修改 `vite-env.d.ts`；單一事件小報告已於 P8-T13 停用，驗證項目不含小報告；`Makefile` 的 `demo-seed` 播種期間暫停 worker、beat；示範站請用 `127.0.0.1:8089` 開啟，與真實環境 `localhost:8088` 的登入 cookie 分開；修改 `docs/runbooks/README.md`
+  - 範圍追加（使用者 2026-11-13 決定）：主軸改為腳踏車失竊（41 件，改善前後 8 週比較約 -50%），新增測試 `test_bicycle_series_is_main_axis_with_before_after_drop`；限時分享示範站給組員（ADR-0022 決策 9，ADR-0015 的例外，只限示範環境）：新增 `infra/docker/docker-compose.demo-share.yml`（profile share、轉送示範站 web、不自動重啟），`Makefile` 加 `demo-share`、`demo-share-url`、`demo-unshare`；真實後台仍不對外
+  - 前置：P8-T20
+
+---
+
 ## 驗收紀錄
 
 每個任務結案時用 `tracker.py record <ID>` 產生驗收紀錄，每個階段結束再用 `tracker.py record P?` 產生閘門紀錄。模板在 `.claude/skills/ncu-resilience-tracker/templates/acceptance-record.md`，檔名為 `docs/progress/records/{ID}-{YYYYMMDD}.md`。

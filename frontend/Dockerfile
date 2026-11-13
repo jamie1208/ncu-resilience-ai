@@ -12,6 +12,9 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 # 設計系統：minimal（預設）或 playful（ADR-0014）
 ARG VITE_DESIGN=minimal
 ENV VITE_DESIGN=$VITE_DESIGN
+# 示範站（P9-T01，ADR-0022）：1 時顯示「示範資料」橫幅；只由 docker-compose.demo.yml 設定
+ARG VITE_DEMO=""
+ENV VITE_DEMO=$VITE_DEMO
 # e2e 與 playwright.config.ts 已由 .dockerignore 排除，映像內只檢查 app 與 node 設定
 RUN npx tsc -b tsconfig.app.json tsconfig.node.json && npx vite build
 

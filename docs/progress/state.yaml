@@ -390,6 +390,10 @@ tasks:
     status: done
     updated_at: '2026-11-13T15:37:07+08:00'
     evidence: docs/progress/records/P8-T20-20261113.md
+  P9-T01:
+    status: done
+    updated_at: '2026-11-13T18:54:03+08:00'
+    evidence: docs/progress/records/P9-T01-20261113.md
 gates:
   G0-1:
     status: pass
@@ -587,7 +591,9 @@ gates:
     updated_at: '2026-10-28T19:32:13+08:00'
     note: 使用者審閱 threat-model-public.md 並同意上線（2026-10-28）
   G6-1:
-    status: pending
+    status: pass
+    updated_at: '2026-11-13T17:09:43+08:00'
+    note: 使用者 2026-11-13 人工審閱全部現有關聯，確認通過
   G6-2:
     status: pass
     last_run: '2026-11-11T21:07:09+08:00'
@@ -677,6 +683,8 @@ gates:
 
       warning: `VIRTUAL_ENV=/Users/jamie/miniconda3` does not match the project environment path `.venv` and will be ignored;
       use `--active` to target the active environment instead'
+  G9-1:
+    status: pending
 history:
 - at: '2026-10-17T00:16:59+08:00'
   id: P0-T01
@@ -1723,4 +1731,20 @@ history:
   from: in_progress
   to: done
   note: ''
-updated_at: '2026-11-13T15:37:07+08:00'
+- at: '2026-11-13T17:09:43+08:00'
+  id: G6-1
+  from: pending
+  to: pass
+  note: 使用者 2026-11-13 人工審閱全部現有關聯，確認通過
+  confirmed_by_user: true
+- at: '2026-11-13T17:32:29+08:00'
+  id: P9-T01
+  from: pending
+  to: in_progress
+  note: ''
+- at: '2026-11-13T18:54:03+08:00'
+  id: P9-T01
+  from: in_progress
+  to: done
+  note: ''
+updated_at: '2026-11-13T18:54:03+08:00'
