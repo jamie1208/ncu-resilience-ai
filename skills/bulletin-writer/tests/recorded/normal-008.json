@@ -1,15 +1,15 @@
 {
   "case_id": "normal-008",
-  "skill_version": "1.0.0",
+  "skill_version": "1.0.1",
   "model": "gpt-5-mini-2025-08-07",
   "output": {
     "status": "ok",
-    "title": "11/1 凌晨 Portal 維護，系統停機 00:00–04:00",
-    "summary": "Portal 將於 11/1（日）00:00–04:00 進行系統升級，這四小時連不上。要交作業或要用系統的同學記得提前處理！",
+    "title": "全校 Portal 11/1 凌晨升級，服務停四小時",
+    "summary": "全校 Portal 將於 11/1（日）00:00–04:00 進行系統升級，這四小時 Portal 會連不上。要寄信或查成績的同學請提前處理。",
     "evidence_ids": [
       "e1"
     ],
-    "reason": "原公告載明 Portal 在 11/1 凌晨 00:00–04:00 升級停機，改寫成提醒同學提前處理的快報。",
+    "reason": "公告列出 11/1 凌晨 00:00–04:00 的系統升級與停用時段，改寫成提醒同學提前處理的快報。",
     "abstain_reason": null
   }
 }
